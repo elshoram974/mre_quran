@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../data/settings_repository.dart';
 
 class SettingsController extends ChangeNotifier {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mre_quran/app/quran_app.dart';
 import 'package:mre_quran/features/settings/presentation/settings_controller.dart';
+
 import 'helpers/memory_settings_repository.dart';
 
 void main() {

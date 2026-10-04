@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../core/layout/adaptive_layout.dart';
 import '../features/bookmarks/presentation/bookmarks_page.dart';
 import '../features/mushaf/presentation/mushaf_page.dart';
