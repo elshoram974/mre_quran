@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:mre_quran/app/quran_app.dart';
@@ -30,11 +31,11 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(
-        Directionality.of(tester.element(find.byType(GlassScaffold).first)),
+        Directionality.of(tester.element(find.byType(Scaffold).first)),
         TextDirection.rtl,
       );
       expect(
-        find.byType(GlassTabBar),
+        find.byType(NavigationBar),
         width < 600 ? findsOneWidget : findsNothing,
       );
       expect(
@@ -67,7 +68,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-      Directionality.of(tester.element(find.byType(GlassScaffold).first)),
+      Directionality.of(tester.element(find.byType(Scaffold).first)),
       TextDirection.ltr,
     );
     expect(find.text('Verified reader preparation'), findsOneWidget);
@@ -95,5 +96,44 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('iOS uses liquid glass chrome, Android uses Material', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final container = ProviderContainer(
+      overrides: [
+        settingsRepositoryProvider.overrideWithValue(
+          MemorySettingsRepository(),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    Future<void> pump() async {
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: const QuranApp(),
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+    await pump();
+    expect(find.byType(GlassTabBar), findsOneWidget);
+    expect(find.byType(NavigationBar), findsNothing);
+
+    debugDefaultTargetPlatformOverride = TargetPlatform.android;
+    await tester.pumpWidget(const SizedBox());
+    await pump();
+    expect(find.byType(NavigationBar), findsOneWidget);
+    expect(find.byType(GlassTabBar), findsNothing);
+    debugDefaultTargetPlatformOverride = null;
   });
 }

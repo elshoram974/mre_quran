@@ -80,10 +80,14 @@
 - Take radius, spacing, and sizes from `AppTokens`. Add a token instead of repeating a number.
 - Use the Material 3 filled field style defined once in `AppTheme`. Do not restyle a field per screen.
 - Use `MRETextField`/`MRETextFormField` (`mre_fields`) for every text input and keep `MREFieldsTheme` wired to `AppTokens`.
-- Use liquid glass (`liquid_glass_widgets`) for app chrome: app bar, tab bar, rail, sheets, and floating cards. Keep it native-looking and readable in light, dark, and sepia.
-- Build screens inside the shell's `GlassScaffold`, pad content with `pagePadding(context)`, and never place glass over Quran text.
-- Use `AppCard` for grouped content and `GlassModalSheet` for sheets. Do not use bare `Card` or `showModalBottomSheet` in app screens.
-- Pick the glass tab bar on compact widths and the glass rail on medium and expanded widths.
+- Make every platform feel native. Read the platform from `Theme.of(context).platform` (via `context.isCupertino`), never from `defaultTargetPlatform`, so Device Preview and tests can switch it.
+  - iOS/macOS: liquid glass (`liquid_glass_widgets`) for app chrome: app bar, tab bar, rail, sheets, and cards. Keep it readable in light, dark, and sepia.
+  - Android and other platforms: stock Material 3 (`AppBar`, `NavigationBar`, `NavigationRail`, `Card`, `showModalBottomSheet`). No glass.
+  - Put platform branching in shared widgets (`AppShell`, `AppCard`, `AppSelectField`), not in feature screens.
+- Pad content with `pagePadding(context)` and never place glass over Quran text.
+- Use `AppCard` for grouped content. Do not use bare `Card`, `GlassCard`, or `showModalBottomSheet` in app screens.
+- Pick the bottom tab bar on compact widths and the rail on medium and expanded widths.
+- Device Preview (`device_preview_plus`) is enabled in debug builds only. Check UI by switching the simulated device between iOS and Android.
 
 ## Localization and bidirectionality
 

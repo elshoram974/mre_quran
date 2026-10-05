@@ -136,7 +136,7 @@ class _SettingsContent extends ConsumerWidget {
           child: ListTile(
             leading: const Icon(Icons.info_outline),
             title: Text(l10n.about),
-            trailing: const Icon(Icons.arrow_forward_ios),
+            trailing: const Icon(Icons.chevron_right),
             onTap: () => context.push(AppRoute.about.path),
           ),
         ),

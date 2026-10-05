@@ -13,6 +13,7 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  device_preview_plus: ^2.9.4
   firebase_core: ^4.15.0
   firebase_crashlytics: ^5.4.0
   flutter:

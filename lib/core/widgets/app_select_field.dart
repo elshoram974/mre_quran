@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
 import '../l10n/l10n.dart';
+import '../theme/app_platform.dart';
 
 /// Number of options above which [AppSelectField] shows a search field.
 const int appSelectSearchThreshold = 5;
@@ -69,27 +70,43 @@ class AppSelectField<T extends Object> extends StatelessWidget {
 
   Future<void> _open(BuildContext context) async {
     final searchable = options.length > appSelectSearchThreshold;
-    final chosen = await GlassModalSheet.show<T>(
-      context: context,
-      useRootNavigator: true,
-      halfSize: searchable ? 0.62 : 0.42,
-      settings: LiquidGlassSettings(
-        blur: 24,
-        glassColor: Theme.of(context).colorScheme.surface
-            .withValues(alpha: 0.78),
-      ),
-      detents: searchable
-          ? const {GlassSheetDetent.medium, GlassSheetDetent.large}
-          : const {GlassSheetDetent.medium},
-      builder: (_) => Material(
-        type: MaterialType.transparency,
-        child: _SelectSheet<T>(
-          title: sheetTitle ?? label,
-          options: options,
-          value: value,
-        ),
-      ),
+    final sheet = _SelectSheet<T>(
+      title: sheetTitle ?? label,
+      options: options,
+      value: value,
     );
+    final T? chosen;
+    if (context.isCupertino) {
+      chosen = await GlassModalSheet.show<T>(
+        context: context,
+        useRootNavigator: true,
+        halfSize: searchable ? 0.62 : 0.42,
+        detents: searchable
+            ? const {GlassSheetDetent.medium, GlassSheetDetent.large}
+            : const {GlassSheetDetent.medium},
+        settings: LiquidGlassSettings(
+          blur: 24,
+          glassColor: Theme.of(context).colorScheme.surface
+              .withValues(alpha: 0.78),
+        ),
+        builder: (_) => Material(type: MaterialType.transparency, child: sheet),
+      );
+    } else {
+      chosen = await showModalBottomSheet<T>(
+        context: context,
+        isScrollControlled: true,
+        useSafeArea: true,
+        sheetAnimationStyle: MediaQuery.disableAnimationsOf(context)
+            ? AnimationStyle.noAnimation
+            : null,
+        builder: (sheetContext) => ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.sizeOf(sheetContext).height * 0.75,
+          ),
+          child: sheet,
+        ),
+      );
+    }
     if (chosen != null && chosen != value) onChanged(chosen);
   }
 
@@ -179,7 +196,12 @@ class _SelectSheetState<T extends Object> extends State<_SelectSheet<T>> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Padding(
-            padding: const EdgeInsetsDirectional.fromSTEB(24, 32, 24, 8),
+            padding: EdgeInsetsDirectional.fromSTEB(
+              24,
+              context.isCupertino ? 32 : 8,
+              24,
+              8,
+            ),
             child: Align(
               alignment: AlignmentDirectional.centerStart,
               child: Semantics(

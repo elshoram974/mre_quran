@@ -5,19 +5,19 @@ import 'app_tokens.dart';
 
 /// Application themes, including a low-glare reader option.
 abstract final class AppTheme {
-  static ThemeData light = _build(
+  static ThemeData get light => _build(
     brightness: Brightness.light,
     seed: const Color(0xFF176653),
     canvas: const Color(0xFFF8F7F1),
   );
 
-  static ThemeData dark = _build(
+  static ThemeData get dark => _build(
     brightness: Brightness.dark,
     seed: const Color(0xFF79CDB4),
     canvas: const Color(0xFF111513),
   );
 
-  static ThemeData sepia = _build(
+  static ThemeData get sepia => _build(
     brightness: Brightness.light,
     seed: const Color(0xFF765A37),
     canvas: const Color(0xFFF4EBD8),
@@ -45,12 +45,6 @@ abstract final class AppTheme {
       colorScheme: scheme,
       scaffoldBackgroundColor: canvas,
       visualDensity: VisualDensity.standard,
-      appBarTheme: AppBarTheme(
-        backgroundColor: Colors.transparent,
-        surfaceTintColor: Colors.transparent,
-        scrolledUnderElevation: 0,
-        foregroundColor: scheme.onSurface,
-      ),
       cardTheme: CardThemeData(
         elevation: 0,
         color: scheme.surfaceContainerLow,
@@ -109,15 +103,6 @@ abstract final class AppTheme {
             top: Radius.circular(AppTokens.radiusSheet),
           ),
         ),
-      ),
-      navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: Colors.transparent,
-        indicatorColor: scheme.primaryContainer,
-        elevation: 0,
-      ),
-      navigationRailTheme: NavigationRailThemeData(
-        backgroundColor: Colors.transparent,
-        indicatorColor: scheme.primaryContainer,
       ),
       extensions: const [
         MREFieldsTheme(
