@@ -47,7 +47,41 @@
 ## D-007: iOS minimum deployment target is 16.0
 
 - **Decision:** Raise the iOS target from 15.0 to 16.0.
-- **Alternatives:** Remove `liquidify` or ship a separate iOS 15 fallback.
-- **Reason:** The requested `liquidify` plugin declares iOS 16.0 as its minimum
-  platform. iPhone Duo runs a newer system, so this keeps the requested native
-  glass path available without conditional package loading.
+- **Alternatives:** Keep iOS 15 support.
+- **Reason:** The product targets modern iPhone layouts and benefits from a
+  single, current baseline. The shader glass implementation itself has no
+  native iOS plugin requirement.
+
+## D-008: Use typed Flutter ARB localization
+
+- **Decision:** Keep Flutter's generated ARB localization instead of copying
+  Ledger's hand-written string-map engine.
+- **Alternatives:** A key-value map with `.tr()` and static current-locale state.
+- **Reason:** ARB gives compile-time typed strings, ICU plural/select support,
+  reactive rebuilds, and normal Flutter/Shorebird patch compatibility. Ledger's
+  useful practices remain: a supported-locale catalog, stored language choice,
+  and context-based reactive access.
+
+## D-009: Directional APIs are mandatory
+
+- **Decision:** Use `start` and `end` APIs for all locale-relative layout.
+- **Alternatives:** Physical `left`, `right`, `fromLTRB`, and `Alignment.*Left`.
+- **Reason:** Arabic RTL and English LTR must mirror without special branches.
+
+## D-010: Do not use Golden Quran as this app's public name yet
+
+- **Decision:** Keep the existing working name until ownership is confirmed.
+- **Alternatives:** Release as `Golden Quran | المصحف الذهبي`.
+- **Reason:** An established app already uses both names in Google Play and the
+  App Store. Reusing it could confuse users or create trademark risk.
+
+## D-011: Use `liquid_glass_widgets` for restrained cross-platform glass
+
+- **Decision:** Replace `liquidify` with `liquid_glass_widgets` and apply it to
+  application chrome only.
+- **Alternatives:** Keep an unmaintained native-plugin fork, or apply blur over
+  every screen.
+- **Reason:** `liquidify 0.1.1` fails to compile under Xcode 26.6. The selected
+  package is pure Flutter/shader based, works on both target platforms, and its
+  standard-quality mode honors accessibility settings. Quran page content stays
+  opaque for legibility, reverence, and predictable performance.

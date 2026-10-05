@@ -10,9 +10,9 @@ The reader itself remains visually quiet and never places blur over Quran text.
 ## Design direction
 
 - **Reading surface:** warm paper, high contrast ink, no glass or image layer.
-- **Application chrome:** restrained Liquid Glass treatment for navigation and
-  sheets only; native `liquidify` is used on supported Apple targets and a
-  semantic Material fallback is used elsewhere.
+- **Application chrome:** restrained shader-based Liquid Glass treatment for
+  navigation and sheets only. `liquid_glass_widgets` keeps one visual system on
+  iOS and Android while Material semantics remain the fallback.
 - **Adaptive policy:** compact `<600`, medium `600–839`, expanded `>=840` logical
   pixels. Compact shows one page and bottom navigation. Expanded shows a
   constrained two-page spread when authoritative page data is available.
@@ -59,6 +59,8 @@ The reader itself remains visually quiet and never places blur over Quran text.
 - Images mode remains deferred until image source, licence, format, and size are
   approved. It will be downloadable, resumable, Wi-Fi-aware, measurable, and
   deletable.
+- `docs/COMPETITIVE_AUDIT.md` maps public Golden Quran feature categories into
+  a licensed, privacy-first roadmap without copying its content or branding.
 
 ## Mandatory gates
 
