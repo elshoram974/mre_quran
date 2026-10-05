@@ -263,7 +263,7 @@ abstract class AppLocalizations {
   /// No description provided for @crashReportsDescription.
   ///
   /// In en, this message translates to:
-  /// **'Disabled until a Firebase project and explicit consent are available.'**
+  /// **'Share anonymous crash reports to help improve the app. Off by default.'**
   String get crashReportsDescription;
 
   /// No description provided for @about.

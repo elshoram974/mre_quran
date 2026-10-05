@@ -97,7 +97,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get crashReportsDescription =>
-      'Disabled until a Firebase project and explicit consent are available.';
+      'Share anonymous crash reports to help improve the app. Off by default.';
 
   @override
   String get about => 'About and credits';

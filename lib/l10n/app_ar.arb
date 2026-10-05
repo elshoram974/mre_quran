@@ -26,7 +26,7 @@
   "arabicDigitsDescription": "اعرض الأرقام العربية في الواجهة.",
   "privacy": "الخصوصية",
   "crashReports": "تقارير الأعطال",
-  "crashReportsDescription": "متوقفة حتى يتوفر مشروع Firebase وموافقة صريحة.",
+  "crashReportsDescription": "أرسل تقارير أعطال مجهولة لتحسين التطبيق. متوقفة افتراضياً.",
   "about": "عن التطبيق والنسب",
   "retry": "إعادة المحاولة",
   "settingsLoadError": "تعذّر تحميل الإعدادات. حاول مرة أخرى.",

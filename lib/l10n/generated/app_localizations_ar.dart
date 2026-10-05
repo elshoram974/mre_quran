@@ -95,7 +95,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get crashReportsDescription =>
-      'متوقفة حتى يتوفر مشروع Firebase وموافقة صريحة.';
+      'أرسل تقارير أعطال مجهولة لتحسين التطبيق. متوقفة افتراضياً.';
 
   @override
   String get about => 'عن التطبيق والنسب';

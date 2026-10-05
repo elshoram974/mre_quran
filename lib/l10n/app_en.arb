@@ -26,7 +26,7 @@
   "arabicDigitsDescription": "Use Arabic-Indic digits in the interface.",
   "privacy": "Privacy",
   "crashReports": "Crash reports",
-  "crashReportsDescription": "Disabled until a Firebase project and explicit consent are available.",
+  "crashReportsDescription": "Share anonymous crash reports to help improve the app. Off by default.",
   "about": "About and credits",
   "retry": "Retry",
   "settingsLoadError": "Could not load settings. Try again.",
