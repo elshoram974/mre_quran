@@ -22,25 +22,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settings => 'Settings';
 
   @override
-  String get readerPreparationTitle => 'Verified reader preparation';
-
-  @override
-  String get readerPreparationBody =>
-      'The Mushaf renderer will appear only after its text, page map, and font are verified together.';
-
-  @override
-  String get readerPreparationSource =>
-      'The selected text source is Tanzil Uthmani. It will remain unmodified and attributed in the app.';
-
-  @override
   String get search => 'Search';
-
-  @override
-  String get searchHint => 'Search Quran';
-
-  @override
-  String get searchUnavailable =>
-      'Search activates when the verified Quran index is available.';
 
   @override
   String get noBookmarksTitle => 'No bookmarks yet';
@@ -109,26 +91,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsLoadError => 'Could not load settings. Try again.';
 
   @override
-  String get settingsSaveError => 'Could not save settings. Try again.';
-
-  @override
-  String get dataIntegrity => 'Data integrity';
-
-  @override
-  String get dataIntegrityBody =>
-      'No Quran text or page asset is bundled until the source, licence, and checksum are verified.';
-
-  @override
-  String get compactLayout => 'One-page reader';
-
-  @override
-  String get expandedLayout => 'Two-page reading spread';
-
-  @override
-  String get adaptiveBody =>
-      'Layout follows available space and safe areas, including split view and foldable poses.';
-
-  @override
   String get creditsTitle => 'Credits';
 
   @override
@@ -173,4 +135,63 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get startupMushaf => 'Mushaf';
+
+  @override
+  String get quranIndex => 'Index';
+
+  @override
+  String get indexSurahs => 'Surahs';
+
+  @override
+  String get indexJuz => 'Juz';
+
+  @override
+  String get indexSearchHint => 'Search by name or number';
+
+  @override
+  String get revelationMeccan => 'Meccan';
+
+  @override
+  String get revelationMedinan => 'Medinan';
+
+  @override
+  String ayahCount(int count, String formatted) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$formatted ayahs',
+      one: '1 ayah',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String pageNumber(String page) {
+    return 'Page $page';
+  }
+
+  @override
+  String juzTitle(String number) {
+    return 'Juz $number';
+  }
+
+  @override
+  String juzStartsAt(String surah, String ayah) {
+    return 'Starts at $surah, ayah $ayah';
+  }
+
+  @override
+  String get currentPosition => 'Current position';
+
+  @override
+  String currentPositionBody(String page, String surah) {
+    return 'Page $page · $surah';
+  }
+
+  @override
+  String get indexLoadError => 'The index could not be loaded.';
+
+  @override
+  String get readerInfo =>
+      'The Mushaf pages will appear once their text, page map, and font are verified together. The index below already works.';
 }

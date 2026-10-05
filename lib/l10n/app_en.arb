@@ -3,12 +3,7 @@
   "reader": "Mushaf",
   "bookmarks": "Bookmarks",
   "settings": "Settings",
-  "readerPreparationTitle": "Verified reader preparation",
-  "readerPreparationBody": "The Mushaf renderer will appear only after its text, page map, and font are verified together.",
-  "readerPreparationSource": "The selected text source is Tanzil Uthmani. It will remain unmodified and attributed in the app.",
   "search": "Search",
-  "searchHint": "Search Quran",
-  "searchUnavailable": "Search activates when the verified Quran index is available.",
   "noBookmarksTitle": "No bookmarks yet",
   "noBookmarksBody": "Bookmarks will be available after verified reader data is installed.",
   "appearance": "Appearance",
@@ -30,12 +25,6 @@
   "about": "About and credits",
   "retry": "Retry",
   "settingsLoadError": "Could not load settings. Try again.",
-  "settingsSaveError": "Could not save settings. Try again.",
-  "dataIntegrity": "Data integrity",
-  "dataIntegrityBody": "No Quran text or page asset is bundled until the source, licence, and checksum are verified.",
-  "compactLayout": "One-page reader",
-  "expandedLayout": "Two-page reading spread",
-  "adaptiveBody": "Layout follows available space and safe areas, including split view and foldable poses.",
   "creditsTitle": "Credits",
   "creditsTanzil": "Quran text: Tanzil Project, CC BY 3.0. The app will include attribution and a Tanzil link with every bundled copy.",
   "creditsFonts": "Mushaf fonts and page layout: pending verified KFGQPC source and redistribution terms.",
@@ -49,5 +38,63 @@
   "duasEmptyBody": "Duas and adhkar will appear once a verified, licensed source is approved.",
   "startup": "On launch",
   "startupLastTab": "Last tab",
-  "startupMushaf": "Mushaf"
+  "startupMushaf": "Mushaf",
+  "quranIndex": "Index",
+  "indexSurahs": "Surahs",
+  "indexJuz": "Juz",
+  "indexSearchHint": "Search by name or number",
+  "revelationMeccan": "Meccan",
+  "revelationMedinan": "Medinan",
+  "ayahCount": "{count, plural, =1{1 ayah} other{{formatted} ayahs}}",
+  "@ayahCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "formatted": {
+        "type": "String"
+      }
+    }
+  },
+  "pageNumber": "Page {page}",
+  "@pageNumber": {
+    "placeholders": {
+      "page": {
+        "type": "String"
+      }
+    }
+  },
+  "juzTitle": "Juz {number}",
+  "@juzTitle": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "juzStartsAt": "Starts at {surah}, ayah {ayah}",
+  "@juzStartsAt": {
+    "placeholders": {
+      "surah": {
+        "type": "String"
+      },
+      "ayah": {
+        "type": "String"
+      }
+    }
+  },
+  "currentPosition": "Current position",
+  "currentPositionBody": "Page {page} · {surah}",
+  "@currentPositionBody": {
+    "placeholders": {
+      "page": {
+        "type": "String"
+      },
+      "surah": {
+        "type": "String"
+      }
+    }
+  },
+  "indexLoadError": "The index could not be loaded.",
+  "readerInfo": "The Mushaf pages will appear once their text, page map, and font are verified together. The index below already works."
 }

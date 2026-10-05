@@ -122,41 +122,11 @@ abstract class AppLocalizations {
   /// **'Settings'**
   String get settings;
 
-  /// No description provided for @readerPreparationTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Verified reader preparation'**
-  String get readerPreparationTitle;
-
-  /// No description provided for @readerPreparationBody.
-  ///
-  /// In en, this message translates to:
-  /// **'The Mushaf renderer will appear only after its text, page map, and font are verified together.'**
-  String get readerPreparationBody;
-
-  /// No description provided for @readerPreparationSource.
-  ///
-  /// In en, this message translates to:
-  /// **'The selected text source is Tanzil Uthmani. It will remain unmodified and attributed in the app.'**
-  String get readerPreparationSource;
-
   /// No description provided for @search.
   ///
   /// In en, this message translates to:
   /// **'Search'**
   String get search;
-
-  /// No description provided for @searchHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Search Quran'**
-  String get searchHint;
-
-  /// No description provided for @searchUnavailable.
-  ///
-  /// In en, this message translates to:
-  /// **'Search activates when the verified Quran index is available.'**
-  String get searchUnavailable;
 
   /// No description provided for @noBookmarksTitle.
   ///
@@ -284,42 +254,6 @@ abstract class AppLocalizations {
   /// **'Could not load settings. Try again.'**
   String get settingsLoadError;
 
-  /// No description provided for @settingsSaveError.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not save settings. Try again.'**
-  String get settingsSaveError;
-
-  /// No description provided for @dataIntegrity.
-  ///
-  /// In en, this message translates to:
-  /// **'Data integrity'**
-  String get dataIntegrity;
-
-  /// No description provided for @dataIntegrityBody.
-  ///
-  /// In en, this message translates to:
-  /// **'No Quran text or page asset is bundled until the source, licence, and checksum are verified.'**
-  String get dataIntegrityBody;
-
-  /// No description provided for @compactLayout.
-  ///
-  /// In en, this message translates to:
-  /// **'One-page reader'**
-  String get compactLayout;
-
-  /// No description provided for @expandedLayout.
-  ///
-  /// In en, this message translates to:
-  /// **'Two-page reading spread'**
-  String get expandedLayout;
-
-  /// No description provided for @adaptiveBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Layout follows available space and safe areas, including split view and foldable poses.'**
-  String get adaptiveBody;
-
   /// No description provided for @creditsTitle.
   ///
   /// In en, this message translates to:
@@ -403,6 +337,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Mushaf'**
   String get startupMushaf;
+
+  /// No description provided for @quranIndex.
+  ///
+  /// In en, this message translates to:
+  /// **'Index'**
+  String get quranIndex;
+
+  /// No description provided for @indexSurahs.
+  ///
+  /// In en, this message translates to:
+  /// **'Surahs'**
+  String get indexSurahs;
+
+  /// No description provided for @indexJuz.
+  ///
+  /// In en, this message translates to:
+  /// **'Juz'**
+  String get indexJuz;
+
+  /// No description provided for @indexSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search by name or number'**
+  String get indexSearchHint;
+
+  /// No description provided for @revelationMeccan.
+  ///
+  /// In en, this message translates to:
+  /// **'Meccan'**
+  String get revelationMeccan;
+
+  /// No description provided for @revelationMedinan.
+  ///
+  /// In en, this message translates to:
+  /// **'Medinan'**
+  String get revelationMedinan;
+
+  /// No description provided for @ayahCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 ayah} other{{formatted} ayahs}}'**
+  String ayahCount(int count, String formatted);
+
+  /// No description provided for @pageNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Page {page}'**
+  String pageNumber(String page);
+
+  /// No description provided for @juzTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Juz {number}'**
+  String juzTitle(String number);
+
+  /// No description provided for @juzStartsAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Starts at {surah}, ayah {ayah}'**
+  String juzStartsAt(String surah, String ayah);
+
+  /// No description provided for @currentPosition.
+  ///
+  /// In en, this message translates to:
+  /// **'Current position'**
+  String get currentPosition;
+
+  /// No description provided for @currentPositionBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Page {page} · {surah}'**
+  String currentPositionBody(String page, String surah);
+
+  /// No description provided for @indexLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'The index could not be loaded.'**
+  String get indexLoadError;
+
+  /// No description provided for @readerInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'The Mushaf pages will appear once their text, page map, and font are verified together. The index below already works.'**
+  String get readerInfo;
 }
 
 class _AppLocalizationsDelegate

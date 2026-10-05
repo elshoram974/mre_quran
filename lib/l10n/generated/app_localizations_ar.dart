@@ -22,24 +22,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get settings => 'الإعدادات';
 
   @override
-  String get readerPreparationTitle => 'تجهيز قارئ موثّق';
-
-  @override
-  String get readerPreparationBody =>
-      'هيظهر المصحف فقط بعد التحقق معًا من النص وخريطة الصفحات والخط.';
-
-  @override
-  String get readerPreparationSource =>
-      'مصدر النص المختار هو تنـزيل العثماني. سيبقى بلا تعديل مع نسبته داخل التطبيق.';
-
-  @override
   String get search => 'بحث';
-
-  @override
-  String get searchHint => 'ابحث في القرآن';
-
-  @override
-  String get searchUnavailable => 'البحث سيتفعّل بعد توفر فهرس القرآن الموثّق.';
 
   @override
   String get noBookmarksTitle => 'لا توجد علامات بعد';
@@ -107,26 +90,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get settingsLoadError => 'تعذّر تحميل الإعدادات. حاول مرة أخرى.';
 
   @override
-  String get settingsSaveError => 'تعذّر حفظ الإعدادات. حاول مرة أخرى.';
-
-  @override
-  String get dataIntegrity => 'سلامة البيانات';
-
-  @override
-  String get dataIntegrityBody =>
-      'لن يُضمّن نص قرآن أو أصل صفحة قبل التحقق من المصدر والرخصة والبصمة.';
-
-  @override
-  String get compactLayout => 'قارئ بصفحة واحدة';
-
-  @override
-  String get expandedLayout => 'عرض قرائي بصفحتين';
-
-  @override
-  String get adaptiveBody =>
-      'التخطيط يتبع المساحة المتاحة والمناطق الآمنة، بما فيها Split View وأوضاع الأجهزة القابلة للطي.';
-
-  @override
   String get creditsTitle => 'النسب والمصادر';
 
   @override
@@ -171,4 +134,65 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get startupMushaf => 'المصحف';
+
+  @override
+  String get quranIndex => 'الفهرس';
+
+  @override
+  String get indexSurahs => 'السور';
+
+  @override
+  String get indexJuz => 'الأجزاء';
+
+  @override
+  String get indexSearchHint => 'ابحث بالاسم أو الرقم';
+
+  @override
+  String get revelationMeccan => 'مكية';
+
+  @override
+  String get revelationMedinan => 'مدنية';
+
+  @override
+  String ayahCount(int count, String formatted) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$formatted آية',
+      few: '$formatted آيات',
+      two: 'آيتان',
+      one: 'آية واحدة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String pageNumber(String page) {
+    return 'صفحة $page';
+  }
+
+  @override
+  String juzTitle(String number) {
+    return 'الجزء $number';
+  }
+
+  @override
+  String juzStartsAt(String surah, String ayah) {
+    return 'يبدأ من $surah، الآية $ayah';
+  }
+
+  @override
+  String get currentPosition => 'الموضع الحالي';
+
+  @override
+  String currentPositionBody(String page, String surah) {
+    return 'صفحة $page · $surah';
+  }
+
+  @override
+  String get indexLoadError => 'تعذّر تحميل الفهرس.';
+
+  @override
+  String get readerInfo =>
+      'ستظهر صفحات المصحف بعد التحقق معًا من نصها وخريطة صفحاتها وخطها. الفهرس يعمل من الآن.';
 }
