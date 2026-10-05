@@ -96,7 +96,7 @@ abstract final class AppTheme {
       listTileTheme: ListTileThemeData(
         shape: RoundedRectangleBorder(borderRadius: fieldRadius),
         selectedColor: scheme.primary,
-        selectedTileColor: scheme.primaryContainer.withValues(alpha: 0.45),
+        selectedTileColor: scheme.secondaryContainer,
       ),
       dividerTheme: DividerThemeData(color: scheme.outlineVariant, space: 1),
       snackBarTheme: SnackBarThemeData(

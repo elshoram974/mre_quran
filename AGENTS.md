@@ -85,9 +85,11 @@
   - Android and other platforms: stock Material 3 (`AppBar`, `NavigationBar`, `NavigationRail`, `Card`, `showModalBottomSheet`). No glass.
   - Put platform branching in shared widgets (`AppShell`, `AppCard`, `AppSelectField`), not in feature screens.
 - Pad content with `pagePadding(context)` and never place glass over Quran text.
-- Use `AppCard` for grouped content. Do not use bare `Card`, `GlassCard`, or `showModalBottomSheet` in app screens.
+- Follow `docs/UI_UX_PLAN.md` for shapes, colour, layout, motion, and screens.
+- Use `AppCard` for grouped content, `AppSheet` for every bottom sheet (draggable), and `AppSwitchTile` for switches. Do not use bare `Card`, `GlassCard`, `GlassModalSheet`, `showModalBottomSheet`, or `SwitchListTile` in app screens.
+- Apply user settings optimistically: update state first, persist after, roll back on failure. Never put a settings screen into a loading state when saving.
 - Pick the bottom tab bar on compact widths and the rail on medium and expanded widths.
-- Device Preview (`device_preview_plus`) is enabled in debug builds only. Check UI by switching the simulated device between iOS and Android.
+- Device Preview (`device_preview` 3.x) is enabled in debug builds only and is controlled from Flutter DevTools. `syncPreviewPlatform()` switches the app to the chosen device's iOS or Android chrome. Check UI on at least one iPhone and one Android preset.
 
 ## Localization and bidirectionality
 

@@ -37,7 +37,7 @@ void main() {
       expect(repository.settings.localeCode, 'en');
     });
 
-    test('exposes a save failure', () async {
+    test('applies at once and rolls back when saving fails', () async {
       final repository = MemorySettingsRepository();
       final container = ProviderContainer(
         overrides: [
@@ -53,7 +53,30 @@ void main() {
           .read(settingsProvider.notifier)
           .save(const AppSettings(theme: AppThemePreference.dark));
 
-      expect(container.read(settingsProvider).hasError, isTrue);
+      expect(container.read(settingsProvider).value, const AppSettings());
+    });
+
+    test('shows the new value before storage finishes', () async {
+      final repository = MemorySettingsRepository();
+      final container = ProviderContainer(
+        overrides: [
+          settingsRepositoryProvider.overrideWithValue(repository),
+          crashReporterProvider.overrideWithValue(FakeCrashReporter()),
+        ],
+      );
+      addTearDown(container.dispose);
+      await container.read(settingsProvider.future);
+
+      final pending = container
+          .read(settingsProvider.notifier)
+          .save(const AppSettings(theme: AppThemePreference.dark));
+
+      expect(
+        container.read(settingsProvider).value?.theme,
+        AppThemePreference.dark,
+      );
+      expect(container.read(settingsProvider).isLoading, isFalse);
+      await pending;
     });
 
     test('persists explicit crash-report consent', () async {

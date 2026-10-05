@@ -11,7 +11,8 @@ description: Build or change MRE Quran UI with the shared theme, tokens, glass c
 - Radius, spacing, sizes: `AppTokens` in `lib/core/theme/app_tokens.dart`.
 - Fields: Material 3 filled style (container `surfaceContainerHighest`, no outline at rest, `primary` 2 px indicator on focus), set once in `InputDecorationTheme`.
 - Text inputs: `MRETextField` / `MRETextFormField` from `mre_fields`. `MREFieldsTheme` is wired to `AppTokens`, so do not pass per-field radius or padding.
-- Pickers: `AppSelectField` (search appears above 5 options).
+- Pickers: `AppSelectField` (search appears above 5 options). Sheets: `AppSheet` (draggable). Switches: `AppSwitchTile`.
+- Plan and screen list: `docs/UI_UX_PLAN.md`.
 - Cards: `AppCard` (glass). Do not nest a `Card` or glass control inside it.
 
 ## Native per platform
@@ -21,7 +22,7 @@ description: Build or change MRE Quran UI with the shared theme, tokens, glass c
 - Android: stock Material 3 (`Scaffold`, `AppBar`, `NavigationBar`, `Card`, `showModalBottomSheet`). No glass.
 - Keep branching inside shared widgets: `AppShell` (`lib/app/shell/`), `AppCard`, `AppSelectField`.
 - Glass screens pad content with `pagePadding(context)`; the glass shell publishes bar insets through `MediaQuery.padding`.
-- Preview both platforms with Device Preview (debug only) by choosing an iOS or Android device.
+- Preview both platforms with Device Preview 3 (debug only, DevTools panel): choose an iPhone preset for iOS chrome and a Pixel or Galaxy preset for Android.
 
 ## Responsive
 

@@ -88,26 +88,28 @@
   standard-quality mode honors accessibility settings. Quran page content stays
   opaque for legibility, reverence, and predictable performance.
 
-## D-012: Native chrome per platform and Device Preview in debug
+## D-012: Native chrome per platform; Device Preview 3 in debug
 
 - **Decision:** iOS/macOS use liquid glass chrome. Android uses stock Material 3.
-  The platform comes from `Theme.of(context).platform`. `device_preview_plus` wraps
-  the app in debug builds only, to switch the simulated platform.
-- **Alternatives:** Glass on every platform (supersedes the scope of D-011);
-  `device_preview` 3.x (DevTools-driven, no `DevicePreview(builder:)` widget);
-  `device_preview_screenshot` (requires Dart < 3).
-- **Reason:** Each platform should feel native. `device_preview_plus` keeps the
-  `DevicePreview(enabled, tools, builder)` API and sets the theme platform through
-  `DevicePreview.appBuilder`. Its default tools already include screenshots, so no
-  custom screenshot tool or saver is added.
+  The platform comes from `Theme.of(context).platform`. `device_preview` 3.0.0 is
+  enabled with `DevicePreview.enable(enabled: kDebugMode)`, and
+  `syncPreviewPlatform()` (debug only) applies the chosen device's operating system.
+- **Alternatives:** Glass on every platform (narrows D-011 to iOS); `device_preview_plus`
+  and `device_frame_plus` (catalog stops at iPhone 14 Pro); `device_preview_screenshot`
+  (requires Dart < 3).
+- **Reason:** Each platform should feel native. `device_preview` 3.0 ships current
+  presets with real frames and system UI (iPhone 16/17/Air, Pixel 9/10, Galaxy S24/S25,
+  foldables, tablets). It is controlled from Flutter DevTools. Its screenshot tool lives
+  there too, so no custom screenshot tool is added. Device and target platform are
+  separate overrides, which `syncPreviewPlatform()` keeps in step.
 
-## D-013: Extend Device Preview with current generic devices
+## D-013: Shared draggable sheet and optimistic settings
 
-- **Decision:** `lib/core/dev/preview_devices.dart` adds iPhone 15–17, iPad, Pixel,
-  Galaxy, foldable, and tablet presets as generic frames, listed before the bundled
-  `device_frame_plus` catalog.
-- **Alternatives:** Wait for a newer `device_frame_plus` (1.5.0 stops at iPhone 14 Pro
-  and six Android phones); hand-drawn frame artwork.
-- **Reason:** Layout checks need current screen sizes and safe areas. Sizes and
-  insets are approximate, so they validate layout, not pixel-exact appearance.
-  The list is only passed to `DevicePreview`, which is enabled in debug builds only.
+- **Decision:** All bottom sheets use `AppSheet` (`DraggableScrollableSheet`): translucent
+  blurred surface on iOS, Material 3 container on Android. Settings changes apply
+  immediately and persist in the background with rollback on failure.
+- **Alternatives:** `GlassModalSheet` (rendered a clipped artifact inside a scaled
+  preview and is not draggable by content); awaiting storage before applying (delayed
+  theme changes and flashed a spinner).
+- **Reason:** One predictable, draggable sheet on both platforms; theme and locale
+  switches feel instant.
