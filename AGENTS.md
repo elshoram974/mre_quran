@@ -32,6 +32,20 @@
 - No analytics. Crash reporting must be opt-in and cannot initialise until a Firebase project is configured.
 - Do not request permissions at launch.
 
+## Localization and bidirectionality
+
+- Use the `golden-quran-localization` skill for localized UI work.
+- Keep UI strings in `lib/l10n/app_en.arb` and `lib/l10n/app_ar.arb`.
+- Use the generated typed `AppLocalizations` API through `context.l10n`.
+- Do not add string-key translation maps or static current-locale state.
+- Use only directional layout APIs: `EdgeInsetsDirectional`,
+  `BorderRadiusDirectional`, `AlignmentDirectional`, `PositionedDirectional`,
+  `TextAlign.start`, and `TextAlign.end`.
+- Never use `left`, `right`, `EdgeInsets.fromLTRB`, physical `Alignment`, or
+  `Positioned` for locale-relative layout. Exception: verified Mushaf page
+  geometry may be physical only inside a dedicated renderer, documented inline
+  and covered by an RTL/LTR test; it must never leak into ordinary UI.
+
 ## Tests
 
 - Add unit tests for domain/application logic.
