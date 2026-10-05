@@ -22,12 +22,21 @@ class LocalSettingsRepository implements SettingsRepository {
 
   @override
   Future<AppSettings> load() async {
-    final theme = await _preferences.getString(_themeKey);
-    final locale = await _preferences.getString(_localeKey);
-    final reduceMotion = await _preferences.getBool(_reduceMotionKey);
-    final useArabicDigits = await _preferences.getBool(_arabicDigitsKey);
-    final crashReportsEnabled = await _preferences.getBool(_crashReportsKey);
-    final startup = await _preferences.getString(_startupKey);
+    final (
+      theme,
+      locale,
+      reduceMotion,
+      useArabicDigits,
+      crashReports,
+      startup,
+    ) = await (
+      _preferences.getString(_themeKey),
+      _preferences.getString(_localeKey),
+      _preferences.getBool(_reduceMotionKey),
+      _preferences.getBool(_arabicDigitsKey),
+      _preferences.getBool(_crashReportsKey),
+      _preferences.getString(_startupKey),
+    ).wait;
     return AppSettings(
       theme: AppThemePreference.values.firstWhere(
         (item) => item.name == theme,
@@ -36,7 +45,7 @@ class LocalSettingsRepository implements SettingsRepository {
       localeCode: locale == 'en' ? 'en' : 'ar',
       reduceMotion: reduceMotion ?? false,
       useArabicDigits: useArabicDigits ?? true,
-      crashReportsEnabled: crashReportsEnabled ?? false,
+      crashReportsEnabled: crashReports ?? false,
       startupBehavior: StartupBehavior.values.firstWhere(
         (item) => item.name == startup,
         orElse: () => StartupBehavior.lastTab,

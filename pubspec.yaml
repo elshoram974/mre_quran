@@ -13,6 +13,7 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  crypto: ^3.0.7
   device_preview: ^3.0.0
   firebase_core: ^4.15.0
   firebase_crashlytics: ^5.4.0
@@ -26,9 +27,14 @@ dependencies:
   liquid_glass_widgets: ^1.9.0
   mre_fields: ^0.3.3
   shared_preferences: ^2.5.3
+  xml: ^7.1.0
 
 dev_dependencies:
+  flutter_driver:
+    sdk: flutter
   flutter_test:
+    sdk: flutter
+  integration_test:
     sdk: flutter
   flutter_lints: ^6.0.0
   build_runner: ^2.16.1
@@ -37,3 +43,5 @@ dev_dependencies:
 flutter:
   generate: true
   uses-material-design: true
+  assets:
+    - assets/quran/quran-data.xml

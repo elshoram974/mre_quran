@@ -4,6 +4,7 @@ import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import '../../core/layout/adaptive_layout.dart';
 import '../../core/theme/app_tokens.dart';
 import '../../core/widgets/app_card.dart';
+import '../../core/widgets/app_page_scaffold.dart';
 import 'shell_destination.dart';
 
 /// iOS chrome: liquid glass app bar and floating glass tab bar or rail.
@@ -61,7 +62,7 @@ class GlassShell extends StatelessWidget {
                 ],
               )
             : null,
-        body: _InsetBody(
+        body: GlassInsetBody(
           compact: compact,
           child: compact
               ? ContentContainer(child: child)
@@ -98,28 +99,6 @@ class GlassShell extends StatelessWidget {
                 ),
         ),
       ),
-    );
-  }
-}
-
-/// Publishes the floating glass bar heights so pages can pad their content.
-class _InsetBody extends StatelessWidget {
-  const _InsetBody({required this.compact, required this.child});
-
-  final bool compact;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    final media = MediaQuery.of(context);
-    return MediaQuery(
-      data: media.copyWith(
-        padding: media.padding.copyWith(
-          top: media.padding.top + AppTokens.appBarHeight,
-          bottom: media.padding.bottom + (compact ? AppTokens.barClearance : 0),
-        ),
-      ),
-      child: child,
     );
   }
 }

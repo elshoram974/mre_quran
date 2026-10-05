@@ -23,6 +23,11 @@
   platform sync, launch setting (last tab / Mushaf), Duas tab placeholder.
 - Wrote `docs/UI_RULES.md`, `docs/UI_UX_PLAN.md`, and `docs/QURAN_SOURCES.md`.
 
+- Quran index: Tanzil metadata bundled with a checked SHA-256, surah and juz index with search,
+  reached from the Mushaf tab, with a saved reading position.
+- Faster start-up and a repeatable performance scenario (`docs/PERFORMANCE.md`).
+- Drafted font and layout permission requests (`docs/PERMISSION_REQUESTS.md`).
+
 ## In progress
 
 - Foundation migration: localization, typed routing, Riverpod, adaptive shell,

@@ -1,6 +1,7 @@
-# Quran content sources (research, not yet approved)
+# Quran content sources
 
-Nothing here is downloaded or bundled. Each source needs the owner's approval, a recorded
+Only the Tanzil metadata file (section 6) is bundled. Everything else here is research and
+stays out of the repo. Each source needs the owner's approval, a recorded
 licence, and a SHA-256 before it enters the repo (see `AGENTS.md`, "Quran content").
 
 ## 1. Quran text
@@ -49,3 +50,19 @@ Decisions needed from the project owner:
 
 No source chosen. Candidates need their own licence check (Hisn al-Muslim text, translations, audio). The Duas tab
 exists as an empty state until a licensed source is approved.
+
+## 6. Data files: what we have and what is missing
+
+| Data | Source | Status |
+|---|---|---|
+| Surah names, ayah counts, revelation place, ruku counts | [Tanzil `quran-data.xml`](https://tanzil.net/res/text/metadata/quran-data.xml), licence `cc-by` declared in the file | **Bundled**, unmodified, SHA-256 `8867c1d8…c5c7a`, verified at load and in tests |
+| Juz, hizb, manzil, sajda starts | same file | **Bundled** (only surahs, juz, and page starts are read so far) |
+| First ayah of each of the 604 Madinah pages | same file | **Bundled**. Page 42 starts at 2:253 and holds Ayat al-Kursi (checked by a test) |
+| Surah start page, juz start page | derived at load from the page starts | Computed, never hand-typed |
+| Ayah text (Uthmani, Hafs) | [Tanzil text](https://tanzil.net/docs/quran_text_types), CC BY 3.0 | Not added yet. Clear licence; added with the reader, with its own checksum |
+| Line-by-line page layout (which words on which line) | QUL or Quran Foundation | Blocked on the permission requests (`docs/PERMISSION_REQUESTS.md`) |
+| Glyph fonts (QCF v4) | KFGQPC via Quran Foundation or direct approval | Blocked on the same requests |
+| Search keys | derived at runtime from names | Computed, kept apart from verbatim text |
+
+Rules that apply to every row: bundle the file unmodified, record its SHA-256 in code, fail a test if it
+changes, and add attribution to the About screen.

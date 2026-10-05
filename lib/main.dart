@@ -17,24 +17,30 @@ import 'features/startup/application/startup_providers.dart';
 import 'features/startup/data/last_tab_repository.dart';
 
 Future<void> main() async {
-  DevicePreview.enable(enabled: kDebugMode);
+  // Device Preview replaces the binding, so it is skipped outside debug.
+  if (kDebugMode) DevicePreview.enable();
   WidgetsFlutterBinding.ensureInitialized();
   syncPreviewPlatform();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  final preferences = SharedPreferencesAsync();
+  // Independent start-up work runs in parallel so the first frame waits only
+  // for the slowest item, not the sum of all of them.
+  final (_, settings, lastTab, _) = await (
+    Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform),
+    LocalSettingsRepository(preferences).load(),
+    LocalLastTabRepository(preferences).load(),
+    LiquidGlassWidgets.initialize(),
+  ).wait;
+  // Crashlytics exists only after Firebase is initialised above.
   final crashReporter = FirebaseCrashReporter();
-  await crashReporter.setCollectionEnabled(false);
+  await crashReporter.setCollectionEnabled(settings.crashReportsEnabled);
   FlutterError.onError = (details) =>
       AppLogger.flutterError(crashReporter, details);
   PlatformDispatcher.instance.onError = (error, stackTrace) {
     return AppLogger.uncaughtPlatformError(crashReporter, error, stackTrace);
   };
-  final preferences = SharedPreferencesAsync();
-  final startupBehavior = (await LocalSettingsRepository(
-    preferences,
-  ).load()).startupBehavior;
   final initialLocation = resolveInitialLocation(
-    startupBehavior,
-    await LocalLastTabRepository(preferences).load(),
+    settings.startupBehavior,
+    lastTab,
   );
   runApp(
     LiquidGlassWidgets.wrap(
@@ -43,6 +49,7 @@ Future<void> main() async {
         overrides: [
           crashReporterProvider.overrideWithValue(crashReporter),
           initialLocationProvider.overrideWithValue(initialLocation),
+          initialSettingsProvider.overrideWithValue((settings: settings)),
         ],
         child: const QuranApp(),
       ),

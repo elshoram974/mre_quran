@@ -18,6 +18,14 @@ final crashReporterProvider = Provider<CrashReporter>(
   (ref) => const NoopCrashReporter(),
 );
 
+/// Settings read at start-up, before the first frame.
+///
+/// `main` overrides it so the first frame already uses the saved theme and
+/// locale instead of defaults. Tests leave it null and load from the store.
+final initialSettingsProvider = Provider<({AppSettings? settings})>(
+  (ref) => (settings: null),
+);
+
 /// Loads and updates persisted [AppSettings].
 final settingsProvider = AsyncNotifierProvider<SettingsNotifier, AppSettings>(
   SettingsNotifier.new,
@@ -29,7 +37,8 @@ class SettingsNotifier extends AsyncNotifier<AppSettings> {
   CrashReporter get _crashReporter => ref.read(crashReporterProvider);
 
   @override
-  FutureOr<AppSettings> build() => _repository.load();
+  FutureOr<AppSettings> build() =>
+      ref.read(initialSettingsProvider).settings ?? _repository.load();
 
   /// Applies [next] immediately and persists it in the background.
   ///

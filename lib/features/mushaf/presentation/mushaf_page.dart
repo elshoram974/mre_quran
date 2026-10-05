@@ -1,118 +1,116 @@
 import 'package:flutter/material.dart';
-import 'package:mre_fields/mre_fields.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../app/router.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/layout/adaptive_layout.dart';
 import '../../../core/widgets/app_card.dart';
+import '../../../core/widgets/app_shimmer.dart';
+import '../../quran_index/application/quran_metadata_provider.dart';
+import '../../settings/application/digits_provider.dart';
+import '../application/reading_position_provider.dart';
 
-/// Reader entry point. Quran content is gated by integrity checks.
-class MushafPage extends StatefulWidget {
+/// Mushaf tab. Shows the reading position and opens the index.
+///
+/// The page renderer arrives once the text, page map, and font are verified.
+class MushafPage extends ConsumerWidget {
   const MushafPage({super.key});
 
   @override
-  State<MushafPage> createState() => _MushafPageState();
-}
-
-class _MushafPageState extends State<MushafPage> {
-  late final TextEditingController _searchController;
-
-  @override
-  void initState() {
-    super.initState();
-    _searchController = TextEditingController();
-  }
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final expanded =
-        WindowSize.fromWidth(MediaQuery.sizeOf(context).width) ==
-        WindowSize.expanded;
     return ListView(
       padding: pagePadding(context),
       children: [
-        Semantics(
-          header: true,
-          child: Text(
-            l10n.readerPreparationTitle,
-            style: Theme.of(context).textTheme.headlineSmall,
+        const _PositionCard(),
+        const SizedBox(height: 12),
+        AppCard(
+          child: ListTile(
+            leading: Icon(
+              Icons.format_list_numbered_rtl,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            title: Text(l10n.quranIndex),
+            subtitle: Text('${l10n.indexSurahs} · ${l10n.indexJuz}'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () async {
+              final page = await context.push<int>(AppRoute.quranIndex.path);
+              if (page != null) {
+                await ref.read(readingPositionProvider.notifier).setPage(page);
+              }
+            },
           ),
         ),
         const SizedBox(height: 12),
-        Text(l10n.readerPreparationBody),
-        const SizedBox(height: 20),
-        MRETextField(
-          controller: _searchController,
-          labelText: l10n.search,
-          hintText: l10n.searchHint,
-          prefixIcon: const Icon(Icons.search),
-          showClearButton: true,
-          textInputAction: TextInputAction.search,
-          onChanged: (_) => setState(() {}),
-        ),
-        const SizedBox(height: 8),
-        Semantics(liveRegion: true, child: Text(l10n.searchUnavailable)),
-        const SizedBox(height: 24),
-        _ReaderGateCard(
-          icon: Icons.verified_user_outlined,
-          title: l10n.dataIntegrity,
-          body: l10n.dataIntegrityBody,
-        ),
-        const SizedBox(height: 16),
-        _ReaderGateCard(
-          icon: expanded
-              ? Icons.auto_stories_outlined
-              : Icons.menu_book_outlined,
-          title: expanded ? l10n.expandedLayout : l10n.compactLayout,
-          body: l10n.adaptiveBody,
-        ),
-        const SizedBox(height: 16),
-        _ReaderGateCard(
-          icon: Icons.source_outlined,
-          title: l10n.reader,
-          body: l10n.readerPreparationSource,
+        AppCard(
+          padding: const EdgeInsets.all(20),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                Icons.verified_user_outlined,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              const SizedBox(width: 16),
+              Expanded(child: Text(l10n.readerInfo)),
+            ],
+          ),
         ),
       ],
     );
   }
 }
 
-class _ReaderGateCard extends StatelessWidget {
-  const _ReaderGateCard({
-    required this.icon,
-    required this.title,
-    required this.body,
-  });
-
-  final IconData icon;
-  final String title;
-  final String body;
+class _PositionCard extends ConsumerWidget {
+  const _PositionCard();
 
   @override
-  Widget build(BuildContext context) => AppCard(
-    padding: const EdgeInsets.all(20),
-    child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(icon, color: Theme.of(context).colorScheme.primary),
-        const SizedBox(width: 16),
-        Expanded(
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final page = ref.watch(readingPositionProvider).value;
+    final metadata = ref.watch(quranMetadataProvider).value;
+    final digits = ref.watch(digitsFormatterProvider);
+    if (page == null || metadata == null) {
+      return const AppCard(
+        padding: EdgeInsets.all(20),
+        child: AppShimmer(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: Theme.of(context).textTheme.titleMedium),
-              const SizedBox(height: 6),
-              Text(body),
+              SkeletonBox(width: 140, height: 18),
+              SizedBox(height: 10),
+              SkeletonBox(width: 200, height: 14),
             ],
           ),
         ),
-      ],
-    ),
-  );
+      );
+    }
+    final surah = metadata.surahAtPage(page);
+    return AppCard(
+      padding: const EdgeInsets.all(20),
+      child: Row(
+        children: [
+          Icon(
+            Icons.bookmark_outline,
+            color: Theme.of(context).colorScheme.primary,
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.currentPosition,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 4),
+                Text(l10n.currentPositionBody(digits(page), surah.arabicName)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

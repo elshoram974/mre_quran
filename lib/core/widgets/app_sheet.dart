@@ -1,6 +1,5 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
 import '../theme/app_platform.dart';
 import '../theme/app_tokens.dart';
@@ -11,7 +10,7 @@ import '../theme/app_tokens.dart';
 /// Long content ([expandable]) gets a draggable sheet that snaps between half
 /// and almost full height and scrolls its body.
 ///
-/// iOS draws a floating, frosted glass panel. Android draws the Material 3
+/// iOS draws a floating liquid glass panel. Android draws the Material 3
 /// container. The body is a plain, non-scrolling widget.
 abstract final class AppSheet {
   /// Shows a sheet and returns the value it is popped with.
@@ -94,37 +93,19 @@ class _SheetSurface extends StatelessWidget {
         child: body,
       );
     }
-    final dark = Theme.of(context).brightness == Brightness.dark;
-    final radius = BorderRadius.circular(AppTokens.radiusSheetFloating);
     return Padding(
       padding: const EdgeInsets.all(AppTokens.sheetInset),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          borderRadius: radius,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.12),
-              blurRadius: 30,
-              offset: const Offset(0, 8),
-            ),
-          ],
+      child: GlassContainer(
+        useOwnLayer: true,
+        quality: GlassQuality.premium,
+        settings: LiquidGlassSettings(
+          blur: 16,
+          glassColor: scheme.surface.withValues(alpha: 0.45),
         ),
-        child: ClipRSuperellipse(
-          borderRadius: radius,
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                borderRadius: radius,
-                color: scheme.surface.withValues(alpha: dark ? 0.72 : 0.78),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: dark ? 0.12 : 0.55),
-                ),
-              ),
-              child: Material(type: MaterialType.transparency, child: body),
-            ),
-          ),
+        shape: const LiquidRoundedSuperellipse(
+          borderRadius: AppTokens.radiusSheetFloating,
         ),
+        child: Material(type: MaterialType.transparency, child: body),
       ),
     );
   }
