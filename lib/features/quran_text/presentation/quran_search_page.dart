@@ -121,7 +121,10 @@ class _Results extends ConsumerWidget {
     }
     final metadata = text.metadata;
     final matches = outcome.text.matches;
-    final goTo = outcome.direct != null || outcome.surahs.isNotEmpty;
+    final goTo =
+        outcome.direct != null ||
+        outcome.surahs.isNotEmpty ||
+        outcome.pages.isNotEmpty;
 
     Widget ayahTile(AyahMatch match) => Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),
@@ -149,6 +152,11 @@ class _Results extends ConsumerWidget {
             children: [
               if (goTo) _Header(l10n.searchGoTo),
               if (outcome.direct != null) ayahTile(outcome.direct!),
+              for (final hit in outcome.pages)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 3),
+                  child: _PageHitTile(hit: hit, text: text, digits: digits),
+                ),
               for (final surah in outcome.surahs)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 3),
@@ -182,6 +190,39 @@ class _Results extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _PageHitTile extends StatelessWidget {
+  const _PageHitTile({
+    required this.hit,
+    required this.text,
+    required this.digits,
+  });
+
+  final PageHit hit;
+  final QuranText text;
+  final String Function(int) digits;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final metadata = text.metadata;
+    final surah = metadata.surahAtPage(hit.page);
+    final juz = metadata.juzOfPage(hit.page);
+    final title = switch (hit.kind) {
+      PageHitKind.page => l10n.pageNumber(digits(hit.number)),
+      PageHitKind.juz => l10n.juzTitle(digits(hit.number)),
+      PageHitKind.hizb => l10n.hizbTitle(digits(hit.number)),
+    };
+    return IndexRow(
+      number: digits(hit.number),
+      title: title,
+      subtitle:
+          '${l10n.surahTitle(surah.arabicName)} · ${l10n.juzTitle(digits(juz.number))}',
+      page: l10n.pageNumber(digits(hit.page)),
+      onTap: () => context.pop(ReaderDestination(page: hit.page)),
     );
   }
 }

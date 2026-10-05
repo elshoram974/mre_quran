@@ -29,7 +29,7 @@ class SurahTile extends StatelessWidget {
     final revelation = surah.revelation == Revelation.meccan
         ? l10n.revelationMeccan
         : l10n.revelationMedinan;
-    return _IndexRow(
+    return IndexRow(
       number: digits(surah.number),
       title: surah.arabicName,
       subtitle:
@@ -66,7 +66,7 @@ class JuzTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return _IndexRow(
+    return IndexRow(
       number: digits(juz.number),
       title: l10n.juzTitle(digits(juz.number)),
       subtitle: l10n.juzStartsAt(surahName, digits(juz.ayah)),
@@ -76,8 +76,11 @@ class JuzTile extends StatelessWidget {
   }
 }
 
-class _IndexRow extends StatelessWidget {
-  const _IndexRow({
+/// A numbered row of the index and of search results.
+class IndexRow extends StatelessWidget {
+  /// Creates a row.
+  const IndexRow({
+    super.key,
     required this.number,
     required this.title,
     required this.subtitle,
@@ -85,10 +88,19 @@ class _IndexRow extends StatelessWidget {
     required this.onTap,
   });
 
+  /// Number in the badge, already formatted.
   final String number;
+
+  /// Main line.
   final String title;
+
+  /// Second line.
   final String subtitle;
+
+  /// Page label at the end.
   final String page;
+
+  /// Called when the row is tapped.
   final VoidCallback onTap;
 
   @override

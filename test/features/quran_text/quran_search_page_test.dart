@@ -103,6 +103,16 @@ void main() {
     expect(find.text('الفاتحة · آية ٢'), findsOneWidget);
   });
 
+  testWidgets('a page number opens that page', (tester) async {
+    final popped = await _pumpSearch(tester);
+    await tester.enterText(find.byType(TextField), 'صفحة 300');
+    await tester.pumpAndSettle();
+    expect(find.text('صفحة ٣٠٠'), findsWidgets);
+    await tester.tap(find.text('صفحة ٣٠٠').first);
+    await tester.pumpAndSettle();
+    expect(popped, [const ReaderDestination(page: 300)]);
+  });
+
   testWidgets('no match shows the empty state', (tester) async {
     await _pumpSearch(tester);
     await tester.enterText(find.byType(TextField), 'zzzzzz');

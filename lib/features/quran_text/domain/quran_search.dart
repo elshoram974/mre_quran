@@ -13,6 +13,56 @@ const Set<String> _fillerWords = {
   'verse',
 };
 
+/// Words that name a page, folded.
+const Set<String> _pageWords = {
+  '\u0635\u0641\u062D\u0647',
+  'page',
+  'pg',
+  '\u0635',
+};
+
+/// Words that name a juz, folded.
+const Set<String> _juzWords = {
+  '\u062C\u0632\u0621',
+  '\u0627\u0644\u062C\u0632\u0621',
+  'juz',
+  'part',
+};
+
+/// Words that name a hizb, folded.
+const Set<String> _hizbWords = {
+  '\u062D\u0632\u0628',
+  '\u0627\u0644\u062D\u0632\u0628',
+  'hizb',
+};
+
+/// What a page, juz, or hizb query points at.
+enum PageHitKind {
+  /// A Mushaf page by number.
+  page,
+
+  /// A juz by number.
+  juz,
+
+  /// A hizb by number.
+  hizb,
+}
+
+/// A page, juz, or hizb the reader asked for, with the page it starts on.
+class PageHit {
+  /// Creates a hit.
+  const PageHit({required this.kind, required this.number, required this.page});
+
+  /// What was asked for.
+  final PageHitKind kind;
+
+  /// Its number: the page, juz, or hizb number.
+  final int number;
+
+  /// The Mushaf page to open.
+  final int page;
+}
+
 /// What a search query asked for.
 class QuranSearchOutcome {
   /// Creates an outcome.
@@ -20,6 +70,7 @@ class QuranSearchOutcome {
     required this.direct,
     required this.surahs,
     required this.text,
+    this.pages = const [],
   });
 
   /// No results at all.
@@ -28,6 +79,9 @@ class QuranSearchOutcome {
     surahs: [],
     text: AyahSearchResult.empty,
   );
+
+  /// Pages, juz, or hizb the query names, such as "صفحة 42" or "جزء 3".
+  final List<PageHit> pages;
 
   /// The one ayah the query points at, such as "البقرة 255" or "2:255".
   final AyahMatch? direct;
@@ -39,7 +93,8 @@ class QuranSearchOutcome {
   final AyahSearchResult text;
 
   /// Whether nothing matched.
-  bool get isEmpty => direct == null && surahs.isEmpty && text.total == 0;
+  bool get isEmpty =>
+      direct == null && surahs.isEmpty && pages.isEmpty && text.total == 0;
 }
 
 /// Searches the Quran by reference (surah and ayah) and by text.
@@ -79,6 +134,19 @@ class QuranSearch {
     final numbers = [for (final token in tokens) int.tryParse(token)];
     final allNumbers = numbers.every((n) => n != null);
 
+    // "صفحة 42", "ص 42", "page 42", "جزء 3", "الحزب 5", or the number first.
+    if (tokens.length == 2) {
+      final hit = _pageHit(tokens, numbers);
+      if (hit != null) {
+        return QuranSearchOutcome(
+          direct: null,
+          surahs: const [],
+          text: AyahSearchResult.empty,
+          pages: [hit],
+        );
+      }
+    }
+
     // "2:255" or "2 255".
     if (allNumbers && tokens.length == 2) {
       final direct = _ayah(numbers[0]!, numbers[1]!);
@@ -87,11 +155,17 @@ class QuranSearch {
     // "36": a surah number.
     if (allNumbers && tokens.length == 1) {
       final number = numbers.single!;
-      if (number >= 1 && number <= _metadata.surahs.length) {
+      final isSurah = number >= 1 && number <= _metadata.surahs.length;
+      final isPage = number >= 1 && number <= _metadata.pageCount;
+      if (isSurah || isPage) {
         return QuranSearchOutcome(
           direct: null,
-          surahs: [_metadata.surah(number)],
+          surahs: [if (isSurah) _metadata.surah(number)],
           text: AyahSearchResult.empty,
+          pages: [
+            if (isPage)
+              PageHit(kind: PageHitKind.page, number: number, page: number),
+          ],
         );
       }
     }
@@ -119,6 +193,38 @@ class QuranSearch {
           ? AyahSearchResult.empty
           : ayahs.search(query, limit: limit),
     );
+  }
+
+  PageHit? _pageHit(List<String> tokens, List<int?> numbers) {
+    final word = numbers[0] == null ? tokens[0] : tokens[1];
+    final number = numbers[0] ?? numbers[1];
+    if (number == null || (numbers[0] != null && numbers[1] != null)) {
+      return null;
+    }
+    if (_pageWords.contains(word) &&
+        number >= 1 &&
+        number <= _metadata.pageCount) {
+      return PageHit(kind: PageHitKind.page, number: number, page: number);
+    }
+    if (_juzWords.contains(word) &&
+        number >= 1 &&
+        number <= _metadata.juzs.length) {
+      return PageHit(
+        kind: PageHitKind.juz,
+        number: number,
+        page: _metadata.juzs[number - 1].startPage,
+      );
+    }
+    final hizbCount = _metadata.rubStarts.length ~/ 4;
+    if (_hizbWords.contains(word) && number >= 1 && number <= hizbCount) {
+      final start = _metadata.rubStarts[(number - 1) * 4];
+      return PageHit(
+        kind: PageHitKind.hizb,
+        number: number,
+        page: _metadata.pageOf(start.surah, start.ayah),
+      );
+    }
+    return null;
   }
 
   QuranSearchOutcome _referenceOnly(AyahMatch direct) => QuranSearchOutcome(

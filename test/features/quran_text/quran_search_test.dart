@@ -89,7 +89,7 @@ void main() {
 
     test('an ayah that does not exist is not guessed', () {
       expect(search.outcome('2:300').isEmpty, isTrue);
-      expect(search.outcome('115').isEmpty, isTrue);
+      expect(search.outcome('2:300').isEmpty, isTrue);
       final tooHigh = search.outcome('البقرة 999');
       expect(tooHigh.direct, isNull);
       expect(tooHigh.surahs.single.number, 2);
@@ -98,6 +98,67 @@ void main() {
     test('first and last ayahs of the Quran', () {
       expectDirect('1:1', const AyahRef(1, 1), 1);
       expectDirect('114:6', const AyahRef(114, 6), 604);
+    });
+  });
+
+  group('pages, juz, and hizb', () {
+    PageHit only(String query) {
+      final outcome = search.outcome(query);
+      expect(outcome.pages, hasLength(1), reason: query);
+      expect(outcome.direct, isNull, reason: query);
+      return outcome.pages.single;
+    }
+
+    test('page by number with a word before or after', () {
+      for (final query in [
+        'صفحة 42',
+        'صفحه ٤٢',
+        'ص 42',
+        'page 42',
+        '42 صفحة',
+      ]) {
+        final hit = only(query);
+        expect(hit.kind, PageHitKind.page, reason: query);
+        expect(hit.page, 42, reason: query);
+      }
+    });
+
+    test('juz by number opens its first page', () {
+      final hit = only('جزء 3');
+      expect(hit.kind, PageHitKind.juz);
+      expect(hit.number, 3);
+      expect(hit.page, metadata.juzs[2].startPage);
+      expect(only('الجزء ٣٠').page, metadata.juzs[29].startPage);
+      expect(only('juz 1').page, 1);
+    });
+
+    test('hizb by number opens the page its first quarter starts on', () {
+      final hit = only('حزب 5');
+      expect(hit.kind, PageHitKind.hizb);
+      final start = metadata.rubStarts[16];
+      expect(hit.page, metadata.pageOf(start.surah, start.ayah));
+      expect(only('الحزب 60').number, 60);
+    });
+
+    test('out-of-range numbers are not guessed', () {
+      expect(search.outcome('صفحة 605').pages, isEmpty);
+      expect(search.outcome('جزء 31').pages, isEmpty);
+      expect(search.outcome('حزب 61').pages, isEmpty);
+      expect(search.outcome('صفحة 0').pages, isEmpty);
+    });
+
+    test('a bare number is both a surah and a page', () {
+      final outcome = search.outcome('36');
+      expect(outcome.surahs.single.number, 36);
+      expect(outcome.pages.single.page, 36);
+    });
+
+    test('a bare number above 114 is only a page', () {
+      final outcome = search.outcome('300');
+      expect(outcome.surahs, isEmpty);
+      expect(outcome.pages.single.page, 300);
+      expect(search.outcome('604').pages.single.page, 604);
+      expect(search.outcome('605').isEmpty, isTrue);
     });
   });
 
