@@ -60,10 +60,6 @@ class FirebaseCrashReporter implements CrashReporter {
     StackTrace stackTrace, {
     String? reason,
     bool fatal = false,
-  }) => _crashlytics.recordError(
-    error,
-    stackTrace,
-    reason: reason,
-    fatal: fatal,
-  );
+  }) =>
+      _crashlytics.recordError(error, stackTrace, reason: reason, fatal: fatal);
 }

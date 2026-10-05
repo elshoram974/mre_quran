@@ -15,8 +15,8 @@ Future<void> main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   final crashReporter = FirebaseCrashReporter();
   await crashReporter.setCollectionEnabled(false);
-  FlutterError.onError =
-      (details) => AppLogger.flutterError(crashReporter, details);
+  FlutterError.onError = (details) =>
+      AppLogger.flutterError(crashReporter, details);
   PlatformDispatcher.instance.onError = (error, stackTrace) {
     return AppLogger.uncaughtPlatformError(crashReporter, error, stackTrace);
   };

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/router.dart';
 import '../../../core/l10n/l10n.dart';
+import '../../../core/widgets/app_select_field.dart';
 import '../../../core/widgets/liquid_glass_surface.dart';
 import '../application/settings_provider.dart';
 import '../domain/app_settings.dart';
@@ -58,50 +59,46 @@ class _SettingsContent extends ConsumerWidget {
         Text(l10n.appearance, style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 12),
         _SettingsCard(
-          child: DropdownButtonFormField<AppThemePreference>(
-            initialValue: settings.theme,
-            isExpanded: true,
-            decoration: InputDecoration(labelText: l10n.theme),
-            items: [
-              DropdownMenuItem(
+          child: AppSelectField<AppThemePreference>(
+            label: l10n.theme,
+            value: settings.theme,
+            options: [
+              AppSelectOption(
                 value: AppThemePreference.system,
-                child: Text(l10n.themeSystem),
+                label: l10n.themeSystem,
+                icon: Icons.brightness_auto_outlined,
               ),
-              DropdownMenuItem(
+              AppSelectOption(
                 value: AppThemePreference.light,
-                child: Text(l10n.themeLight),
+                label: l10n.themeLight,
+                icon: Icons.light_mode_outlined,
               ),
-              DropdownMenuItem(
+              AppSelectOption(
                 value: AppThemePreference.dark,
-                child: Text(l10n.themeDark),
+                label: l10n.themeDark,
+                icon: Icons.dark_mode_outlined,
               ),
-              DropdownMenuItem(
+              AppSelectOption(
                 value: AppThemePreference.sepia,
-                child: Text(l10n.themeSepia),
+                label: l10n.themeSepia,
+                icon: Icons.auto_stories_outlined,
               ),
             ],
-            onChanged: (value) {
-              if (value != null) {
-                notifier.save(settings.copyWith(theme: value));
-              }
-            },
+            onChanged: (value) =>
+                notifier.save(settings.copyWith(theme: value)),
           ),
         ),
         const SizedBox(height: 12),
         _SettingsCard(
-          child: DropdownButtonFormField<String>(
-            initialValue: settings.localeCode,
-            isExpanded: true,
-            decoration: InputDecoration(labelText: l10n.language),
-            items: [
-              DropdownMenuItem(value: 'ar', child: Text(l10n.languageArabic)),
-              DropdownMenuItem(value: 'en', child: Text(l10n.languageEnglish)),
+          child: AppSelectField<String>(
+            label: l10n.language,
+            value: settings.localeCode,
+            options: [
+              AppSelectOption(value: 'ar', label: l10n.languageArabic),
+              AppSelectOption(value: 'en', label: l10n.languageEnglish),
             ],
-            onChanged: (value) {
-              if (value != null) {
-                notifier.save(settings.copyWith(localeCode: value));
-              }
-            },
+            onChanged: (value) =>
+                notifier.save(settings.copyWith(localeCode: value)),
           ),
         ),
         const SizedBox(height: 12),
