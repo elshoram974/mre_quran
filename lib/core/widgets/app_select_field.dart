@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../l10n/l10n.dart';
-import '../theme/app_platform.dart';
 import 'app_sheet.dart';
 
 /// Number of options above which [AppSelectField] shows a search field.
@@ -72,7 +71,7 @@ class AppSelectField<T extends Object> extends StatelessWidget {
     final searchable = options.length > appSelectSearchThreshold;
     final chosen = await AppSheet.show<T>(
       context: context,
-      initialSize: searchable ? 0.62 : 0.5,
+      expandable: searchable,
       builder: (_) => _SelectSheet<T>(
         title: sheetTitle ?? label,
         options: options,
@@ -170,14 +169,8 @@ class _SelectSheetState<T extends Object> extends State<_SelectSheet<T>> {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (!context.isCupertino) const AppSheetHandle(),
         Padding(
-          padding: EdgeInsetsDirectional.fromSTEB(
-            24,
-            context.isCupertino ? 28 : 4,
-            24,
-            8,
-          ),
+          padding: const EdgeInsetsDirectional.fromSTEB(24, 0, 24, 8),
           child: Align(
             alignment: AlignmentDirectional.centerStart,
             child: Semantics(
@@ -209,24 +202,29 @@ class _SelectSheetState<T extends Object> extends State<_SelectSheet<T>> {
           )
         else
           for (final option in visible)
-            ListTile(
-              key: ValueKey<Object>(option.value),
-              minVerticalPadding: 12,
-              selected: option.value == widget.value,
-              leading: option.icon == null
-                  ? null
-                  : Icon(
-                      option.icon,
-                      color: option.value == widget.value
-                          ? theme.colorScheme.primary
-                          : theme.colorScheme.onSurfaceVariant,
-                    ),
-              title: Text(option.label),
-              subtitle: option.subtitle == null ? null : Text(option.subtitle!),
-              trailing: option.value == widget.value
-                  ? const Icon(Icons.check_rounded)
-                  : null,
-              onTap: () => Navigator.of(context).pop(option.value),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: ListTile(
+                key: ValueKey<Object>(option.value),
+                minVerticalPadding: 12,
+                selected: option.value == widget.value,
+                leading: option.icon == null
+                    ? null
+                    : Icon(
+                        option.icon,
+                        color: option.value == widget.value
+                            ? theme.colorScheme.primary
+                            : theme.colorScheme.onSurfaceVariant,
+                      ),
+                title: Text(option.label),
+                subtitle: option.subtitle == null
+                    ? null
+                    : Text(option.subtitle!),
+                trailing: option.value == widget.value
+                    ? const Icon(Icons.check_rounded)
+                    : null,
+                onTap: () => Navigator.of(context).pop(option.value),
+              ),
             ),
         SizedBox(height: MediaQuery.viewInsetsOf(context).bottom + 24),
       ],

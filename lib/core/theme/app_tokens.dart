@@ -12,6 +12,12 @@ abstract final class AppTokens {
   /// Corner radius of bottom sheets.
   static const double radiusSheet = 28;
 
+  /// Corner radius of the floating iOS sheet.
+  static const double radiusSheetFloating = 38;
+
+  /// Gap between a floating iOS sheet and the screen edges.
+  static const double sheetInset = 8;
+
   /// Minimum touch target height.
   static const double minTarget = 48;
 
