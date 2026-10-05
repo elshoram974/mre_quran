@@ -122,3 +122,13 @@
 - **Reason:** Both files have a clear CC BY 3.0 licence and cost about half a megabyte compressed. Folding
   Uthmani alone cannot recover imlaei spellings (dagger alef against full alef), and folding only the plain
   text misses a query copied from the Mushaf. Each file keeps its own checksum and is never edited.
+
+## D-015: Provisional Mushaf with Amiri Quran
+
+- **Decision:** The Mushaf tab shows the pages now, drawn with Amiri Quran (SIL OFL 1.1). Each page holds the
+  ayahs that start on that Madinah page, auto-fits its text to the frame, and shows a surah banner (name,
+  order, ayah count, Meccan or Medinan), the basmala, ayah markers, and a page medallion. Ornaments are
+  drawn in code, not images.
+- **Alternatives:** Wait for the KFGQPC fonts and line layout; bundle per-page fonts without permission.
+- **Reason:** The text and page starts are verified and licensed, and an open Quran font needs no
+  permission. Lines are not yet the printed lines; that waits for the layout data.

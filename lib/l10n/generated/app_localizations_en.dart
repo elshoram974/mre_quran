@@ -256,4 +256,14 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get creditsQuranFont =>
       'Quran font: Amiri Quran by Khaled Hosny and Sebastian Kosch, SIL Open Font License 1.1, https://github.com/aliftype/amiri.';
+
+  @override
+  String surahOrderLabel(String number) {
+    return 'Order $number';
+  }
+
+  @override
+  String surahAyahsLabel(String count) {
+    return 'Ayahs $count';
+  }
 }

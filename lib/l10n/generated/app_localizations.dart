@@ -517,6 +517,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Quran font: Amiri Quran by Khaled Hosny and Sebastian Kosch, SIL Open Font License 1.1, https://github.com/aliftype/amiri.'**
   String get creditsQuranFont;
+
+  /// No description provided for @surahOrderLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Order {number}'**
+  String surahOrderLabel(String number);
+
+  /// No description provided for @surahAyahsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Ayahs {count}'**
+  String surahAyahsLabel(String count);
 }
 
 class _AppLocalizationsDelegate

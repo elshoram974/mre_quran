@@ -259,4 +259,14 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get creditsQuranFont =>
       'خط القرآن: أميري قرآن، تصميم خالد حسني وسباستيان كوش، رخصة SIL المفتوحة للخطوط 1.1، https://github.com/aliftype/amiri.';
+
+  @override
+  String surahOrderLabel(String number) {
+    return 'ترتيبها $number';
+  }
+
+  @override
+  String surahAyahsLabel(String count) {
+    return 'آياتها $count';
+  }
 }

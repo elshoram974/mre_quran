@@ -136,5 +136,21 @@
   "textSize": "Text size",
   "readerLoadError": "The Mushaf could not be loaded.",
   "readerProvisional": "Provisional layout: ayahs follow the Madinah pages, line breaks are not yet exact.",
-  "creditsQuranFont": "Quran font: Amiri Quran by Khaled Hosny and Sebastian Kosch, SIL Open Font License 1.1, https://github.com/aliftype/amiri."
+  "creditsQuranFont": "Quran font: Amiri Quran by Khaled Hosny and Sebastian Kosch, SIL Open Font License 1.1, https://github.com/aliftype/amiri.",
+  "surahOrderLabel": "Order {number}",
+  "@surahOrderLabel": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "surahAyahsLabel": "Ayahs {count}",
+  "@surahAyahsLabel": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  }
 }

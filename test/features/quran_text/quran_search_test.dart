@@ -114,10 +114,19 @@ void main() {
       expect(outcome.text.total, greaterThan(0));
     });
 
+    test('the word "سورة" on its own is searched as text', () {
+      final outcome = search.outcome('سورة');
+      expect(outcome.text.total, greaterThan(0));
+      expect(
+        outcome.text.matches.map((m) => m.ref),
+        contains(const AyahRef(2, 23)),
+      );
+      expect(search.outcome('سور').text.total, greaterThan(0));
+    });
+
     test('empty and junk queries return nothing', () {
       expect(search.outcome('').isEmpty, isTrue);
       expect(search.outcome('   ').isEmpty, isTrue);
-      expect(search.outcome('سورة').isEmpty, isTrue);
       expect(search.outcome('zzzzzz').isEmpty, isTrue);
     });
   });

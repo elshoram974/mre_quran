@@ -80,7 +80,7 @@ work under ~150 ms.
 | Settings | Theme, language, launch behaviour (last tab / Mushaf), motion, digits, crash reports, About | done |
 | Bookmarks | Empty state; list later | placeholder |
 | Duas | Adhkar and duas tab | tab added, content blocked on a licensed source |
-| Reader | Mushaf pages, surah/juz index, search, last position | blocked on sources |
+| Reader | Mushaf pages (provisional font and line breaks), index via the menu, search, display options, last position | provisional; exact lines wait for layout data |
 | Credits | Attribution and licences | basic |
 
 ## 9. Roadmap

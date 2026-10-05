@@ -67,7 +67,14 @@ class QuranSearch {
       for (final token in key.split(RegExp(r'[\s:،,/\-.]+')))
         if (token.isNotEmpty && !_fillerWords.contains(token)) token,
     ];
-    if (tokens.isEmpty) return QuranSearchOutcome.empty;
+    // Only filler words such as "سورة": search them as text.
+    if (tokens.isEmpty) {
+      return QuranSearchOutcome(
+        direct: null,
+        surahs: const [],
+        text: ayahs.search(query, limit: limit),
+      );
+    }
 
     final numbers = [for (final token in tokens) int.tryParse(token)];
     final allNumbers = numbers.every((n) => n != null);

@@ -35,51 +35,55 @@ class _QuranSearchPageState extends ConsumerState<QuranSearchPage> {
 
   @override
   Widget build(BuildContext context) {
+    return AppPageScaffold(
+      title: context.l10n.searchQuran,
+      body: ContentContainer(
+        child: Builder(builder: (context) => _body(context)),
+      ),
+    );
+  }
+
+  Widget _body(BuildContext context) {
     final l10n = context.l10n;
     final padding = pagePadding(context);
     final search = ref.watch(quranSearchProvider);
-    return AppPageScaffold(
-      title: l10n.searchQuran,
-      body: ContentContainer(
-        child: Column(
-          children: [
-            Padding(
-              padding: EdgeInsetsDirectional.fromSTEB(
-                padding.start,
-                padding.top,
-                padding.end,
-                8,
-              ),
-              child: MRETextField(
-                controller: _controller,
-                autofocus: true,
-                hintText: l10n.searchQuranHint,
-                prefixIcon: const Icon(Icons.search),
-                showClearButton: true,
-                textInputAction: TextInputAction.search,
-                onChanged: (_) => setState(() {}),
-              ),
-            ),
-            Expanded(
-              child: search.when(
-                loading: () => const _Skeleton(),
-                error: (_, _) => EmptyState(
-                  icon: Icons.error_outline,
-                  title: l10n.searchLoadError,
-                  message: '',
-                  actionLabel: l10n.retry,
-                  onAction: () => ref.invalidate(quranTextDataProvider),
-                ),
-                data: (data) => _Results(
-                  outcome: data.outcome(_controller.text),
-                  empty: _controller.text.trim().isEmpty,
-                  text: data.ayahs.text,
-                ),
-              ),
-            ),
-          ],
+    return Column(
+      children: [
+        Padding(
+          padding: EdgeInsetsDirectional.fromSTEB(
+            padding.start,
+            padding.top,
+            padding.end,
+            8,
+          ),
+          child: MRETextField(
+            controller: _controller,
+            autofocus: true,
+            hintText: l10n.searchQuranHint,
+            prefixIcon: const Icon(Icons.search),
+            showClearButton: true,
+            textInputAction: TextInputAction.search,
+            onChanged: (_) => setState(() {}),
+          ),
         ),
-      ),
+        Expanded(
+          child: search.when(
+            loading: () => const _Skeleton(),
+            error: (_, _) => EmptyState(
+              icon: Icons.error_outline,
+              title: l10n.searchLoadError,
+              message: '',
+              actionLabel: l10n.retry,
+              onAction: () => ref.invalidate(quranTextDataProvider),
+            ),
+            data: (data) => _Results(
+              outcome: data.outcome(_controller.text),
+              empty: _controller.text.trim().isEmpty,
+              text: data.ayahs.text,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

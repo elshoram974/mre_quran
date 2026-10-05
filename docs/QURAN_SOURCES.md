@@ -149,3 +149,13 @@ computes tajweed rules itself.
 | Tafsir | [spa5k/tafsir_api](https://github.com/spa5k/tafsir_api): repository MIT, data mostly exported from QUL | The MIT licence covers the code, not the tafsir texts. Al-Jami' Al-Wajiz is CC BY-ND 4.0 (unchanged wording only). Others follow their original rights |
 | Ayah and word positions on page images | Must match the exact image set used. A third-party project (`qurancoor`) derives 77,320 word boxes from the quran.com images | Licence not checked. Ask Quran Foundation whether boxes ship with their images |
 | Word positions in font mode | Not needed: the app lays out every word, so it knows where each one is | Needs line layout data (section 2) |
+
+## 11. Bundled Quran font (provisional)
+
+| Font | Source | Licence | Checksum |
+|---|---|---|---|
+| Amiri Quran 1.003 (`AmiriQuran-Regular.ttf`, 137 KB) | [google/fonts `ofl/amiriquran`](https://github.com/google/fonts/tree/main/ofl/amiriquran), built from [aliftype/amiri](https://github.com/aliftype/amiri) release 1.003 | SIL Open Font License 1.1 (`OFL.txt` bundled and shown on the licence page) | SHA-256 `e2a47644762d16bdfb6d33e0d8db8c6ff30beae84150ef5a705316bbd829455c` |
+
+Amiri Quran is a Naskh font made for Quran text and renders the Tanzil Uthmani encoding, including the
+ayah-end sign with its number. It is not the Madinah calligraphy. It stays until the KFGQPC fonts are
+approved (`docs/PERMISSION_REQUESTS.md`).

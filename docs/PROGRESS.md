@@ -37,6 +37,10 @@
 - Quran search by surah name or number, by ayah reference, and by words without tashkeel, with
   an organised results screen.
 
+- Mushaf tab is now the reader: right-to-left page turns, saved position, own bar with index
+  (menu), search, and display options (text size, theme), immersive reading on tap, and golden
+  tests for pages 1, 2, 42, and 604 in light and dark.
+
 ## In progress
 
 - Foundation migration: localization, typed routing, Riverpod, adaptive shell,
