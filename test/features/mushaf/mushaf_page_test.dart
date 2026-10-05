@@ -98,13 +98,16 @@ void main() {
 
   testWidgets('a tap hides the bar and another brings it back', (tester) async {
     final (container, _) = await _pump(tester);
+    final book = tester.getRect(find.byType(BookFlip));
     await tester.tapAt(const Offset(195, 500));
     await tester.pumpAndSettle();
     expect(container.read(readerImmersiveProvider), isTrue);
-    expect(find.byTooltip('الفهرس'), findsNothing);
+    expect(find.byTooltip('الفهرس').hitTestable(), findsNothing);
+    // The bar slides over the page; the page itself keeps its size.
+    expect(tester.getRect(find.byType(BookFlip)), book);
     await tester.tapAt(const Offset(195, 500));
     await tester.pumpAndSettle();
-    expect(find.byTooltip('الفهرس'), findsOneWidget);
+    expect(find.byTooltip('الفهرس').hitTestable(), findsOneWidget);
   });
 
   testWidgets('English, large text, narrow width, and long pages do not '

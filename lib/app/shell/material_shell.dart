@@ -42,6 +42,9 @@ class MaterialShell extends StatelessWidget {
   Widget build(BuildContext context) {
     final compact = size == WindowSize.compact;
     return Scaffold(
+      // The Mushaf tab has no shell app bar; its page runs under the
+      // navigation bar, which floats over it.
+      extendBody: !showAppBar,
       appBar: showAppBar
           ? AppBar(title: Text(destinations[index].label))
           : null,

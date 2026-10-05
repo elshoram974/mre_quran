@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../quran_index/domain/quran_metadata.dart';
 import '../../settings/application/digits_provider.dart';
+import '../application/reader_immersive_provider.dart';
 import 'mushaf_ornaments.dart';
 
 /// The printed-page frame around a Mushaf page: the surah, hizb, and juz at
@@ -20,6 +22,7 @@ class MushafPageFrame extends StatelessWidget {
     required this.page,
     required this.onTap,
     required this.child,
+    this.decorated = true,
   });
 
   /// Quran structure, for the labels.
@@ -33,6 +36,11 @@ class MushafPageFrame extends StatelessWidget {
 
   /// The page body.
   final Widget child;
+
+  /// Whether to draw the ornamental border, label tags, and medallion. Off
+  /// for printed pages, which carry their own ornaments: the labels become
+  /// plain lines of small text so the page gets the room.
+  final bool decorated;
 
   /// Style of the page labels.
   static TextStyle labelStyle(ColorScheme scheme) => TextStyle(
@@ -54,6 +62,54 @@ class MushafPageFrame extends StatelessWidget {
     final hizb = metadata.hizbOf(first);
     final surah = metadata.surahAtPage(page);
 
+    if (!decorated) {
+      final plain = label.copyWith(fontSize: 14, height: 1.2);
+      Widget line(String text, AlignmentGeometry alignment) => Expanded(
+        child: Align(
+          alignment: alignment,
+          child: Text(
+            text,
+            style: plain,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      );
+      return MediaQuery.withClampedTextScaling(
+        maxScaleFactor: 1.2,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+            child: Column(
+              children: [
+                _ShownWithoutBars(
+                  child: Row(
+                    children: [
+                      line(
+                        l10n.surahTitle(surah.arabicName),
+                        AlignmentDirectional.centerStart,
+                      ),
+                      line(l10n.hizbTitle(n(hizb)), Alignment.center),
+                      line(
+                        l10n.juzTitle(n(juz.number)),
+                        AlignmentDirectional.centerEnd,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Expanded(child: child),
+                const SizedBox(height: 4),
+                _ShownWithoutBars(child: Text(n(page), style: plain)),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     // Page labels have fixed room, so system text size is capped for them.
     return MediaQuery.withClampedTextScaling(
       maxScaleFactor: 1.2,
@@ -68,52 +124,56 @@ class MushafPageFrame extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Column(
                 children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Align(
-                          alignment: AlignmentDirectional.centerStart,
-                          child: _Tag(
-                            text: l10n.surahTitle(surah.arabicName),
-                            style: label,
+                  _ShownWithoutBars(
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Align(
+                            alignment: AlignmentDirectional.centerStart,
+                            child: _Tag(
+                              text: l10n.surahTitle(surah.arabicName),
+                              style: label,
+                            ),
                           ),
                         ),
-                      ),
-                      Expanded(
-                        child: Center(
-                          child: _Tag(
-                            text: l10n.hizbTitle(n(hizb)),
-                            style: label,
+                        Expanded(
+                          child: Center(
+                            child: _Tag(
+                              text: l10n.hizbTitle(n(hizb)),
+                              style: label,
+                            ),
                           ),
                         ),
-                      ),
-                      Expanded(
-                        child: Align(
-                          alignment: AlignmentDirectional.centerEnd,
-                          child: _Tag(
-                            text: l10n.juzTitle(n(juz.number)),
-                            style: label,
+                        Expanded(
+                          child: Align(
+                            alignment: AlignmentDirectional.centerEnd,
+                            child: _Tag(
+                              text: l10n.juzTitle(n(juz.number)),
+                              style: label,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 6),
                   Expanded(child: child),
                   const SizedBox(height: 6),
-                  SizedBox.square(
-                    dimension: 40,
-                    child: CustomPaint(
-                      painter: MedallionPainter(
-                        fill: scheme.secondaryContainer,
-                        stroke: ink,
-                      ),
-                      child: Center(
-                        child: Text(
-                          n(page),
-                          style: label.copyWith(
-                            fontSize: 15,
-                            color: scheme.onSecondaryContainer,
+                  _ShownWithoutBars(
+                    child: SizedBox.square(
+                      dimension: 40,
+                      child: CustomPaint(
+                        painter: MedallionPainter(
+                          fill: scheme.secondaryContainer,
+                          stroke: ink,
+                        ),
+                        child: Center(
+                          child: Text(
+                            n(page),
+                            style: label.copyWith(
+                              fontSize: 15,
+                              color: scheme.onSecondaryContainer,
+                            ),
                           ),
                         ),
                       ),
@@ -125,6 +185,27 @@ class MushafPageFrame extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Page labels repeat what the reader bar shows, and the bars float over
+/// them, so they appear only while the bars are hidden. Their room is kept so
+/// the page never moves.
+class _ShownWithoutBars extends ConsumerWidget {
+  const _ShownWithoutBars({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final immersive = ref.watch(readerImmersiveProvider);
+    return AnimatedOpacity(
+      opacity: immersive ? 1 : 0,
+      duration: MediaQuery.disableAnimationsOf(context)
+          ? Duration.zero
+          : const Duration(milliseconds: 220),
+      child: child,
     );
   }
 }

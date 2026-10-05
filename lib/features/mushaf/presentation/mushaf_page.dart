@@ -78,31 +78,44 @@ class MushafPage extends ConsumerWidget {
       ],
     );
 
-    return MediaQuery.removePadding(
-      context: context,
-      removeTop: !immersive,
-      child: ColoredBox(
-        color: Theme.of(context).colorScheme.surface,
-        child: Column(
-          children: [
-            AnimatedSize(
-              duration: MediaQuery.disableAnimationsOf(context)
-                  ? Duration.zero
-                  : const Duration(milliseconds: 220),
-              child: immersive
-                  ? SizedBox(height: media.padding.top)
-                  : MediaQuery(data: media, child: bar),
+    // The page keeps one size: it fills the screen inside the system insets,
+    // and the bars slide over it. Hiding them never re-lays out the page.
+    final safe = media.viewPadding;
+    final duration = MediaQuery.disableAnimationsOf(context)
+        ? Duration.zero
+        : const Duration(milliseconds: 220);
+    return ColoredBox(
+      color: Theme.of(context).colorScheme.surface,
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: Padding(
+              padding: EdgeInsetsDirectional.only(
+                top: safe.top,
+                bottom: safe.bottom,
+              ),
+              child: MushafPager(text: data, initialPage: page),
             ),
-            Expanded(
-              child: Padding(
-                padding: EdgeInsetsDirectional.only(
-                  bottom: media.padding.bottom,
+          ),
+          PositionedDirectional(
+            top: 0,
+            start: 0,
+            end: 0,
+            child: IgnorePointer(
+              ignoring: immersive,
+              child: AnimatedSlide(
+                offset: immersive ? const Offset(0, -1) : Offset.zero,
+                duration: duration,
+                curve: Curves.easeOutCubic,
+                child: AnimatedOpacity(
+                  opacity: immersive ? 0 : 1,
+                  duration: duration,
+                  child: bar,
                 ),
-                child: MushafPager(text: data, initialPage: page),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
