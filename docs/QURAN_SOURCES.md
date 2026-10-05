@@ -69,3 +69,19 @@ exists as an empty state until a licensed source is approved.
 
 Rules that apply to every row: bundle the file unmodified, record its SHA-256 in code, fail a test if it
 changes, and add attribution to the About screen.
+
+## 7. What to get for each need
+
+| Need | Best source | Licence status | Notes |
+|---|---|---|---|
+| Ayahs with full tashkeel, to display | [Tanzil](https://tanzil.net/docs/quran_text_types) **Uthmani**, `txt-2` (`surah\|ayah\|text`) | CC BY 3.0, clear | Checked: 6,236 ayahs, 1.37 MB raw, SHA-256 `bf4f57b968d03f4131c070b1e285da9be0e0a108a21c910e872801ca273312c8`. Ayah 1:1 includes the basmala; the other surahs do not. |
+| Ayahs without tashkeel, for search | Tanzil **Simple Clean**, same format | CC BY 3.0, clear | Tanzil describes it as "without any diacritics or symbols, suitable for easy search". Checked: 6,236 ayahs, 0.78 MB raw, SHA-256 `228df2a717671aeb9d2ff573002bd28d6b3f973f4bc7153554e3a81663d67610`. Kept as its own file, never mixed with the display text. |
+| Which page an ayah is on | Tanzil `quran-data.xml` page starts | CC BY, clear | Already bundled. `QuranMetadata.pageOf(surah, ayah)` answers it. |
+| Where on the page (line and word of each ayah) | QUL Mushaf layouts, or Quran Foundation `verses/by_page` (needs API credentials; returns `page_number`, `line_number`, `position` per word) | Not confirmed for either | Blocked on the permission requests. In font mode no pixel coordinates are needed: we lay out the words ourselves, so we know where each one is. |
+| Page images | Quran Foundation Content API (Uthmani Tajweed and black images) | Same bundling terms as fonts, to be confirmed | Format, resolution, and size per page are unknown; asked in the email. |
+| Tap and highlight areas on images | Needs word boxes that match the exact image set. A third-party project (`qurancoor`) publishes boxes for 77,320 words derived from the quran.com images | Not checked | Only needed for image mode. Ask Quran Foundation whether they publish boxes with the images. |
+| Tafsir | QUL lists 14 Arabic tafsirs as JSON/SQLite: Ibn Kathir, Al-Qurtubi, Al-Tabari, Al-Baghawi, Al-Wasit, Muyassar, Al-Razi, Ibn Juzay, Al-Nasafi, Jalalayn, Al-Kashshaf, Al-Baydawi, Al-Tahrir wa al-Tanwir, and the Mawsoo'at al-Tafsir al-Ma'thoor | **Not stated per tafsir** | Classical works can still carry rights in a given digitised edition. Ask Tarteel which tafsirs are redistributable and under what terms. Ship them as on-demand downloads, never bundled. |
+| Translations | Tanzil translations | Each one has its own licence, listed on tanzil.net | Later, on demand. |
+
+Not verified: the size of each tafsir, whether Quran Foundation's API serves tafsir under bundling terms, and QUL's
+terms of use (the terms page returned 404 and the resource pages state no licence).
