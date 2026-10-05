@@ -31,10 +31,13 @@
 - Respect `MediaQuery.disableAnimations`; do not use blur over reader content.
 - No analytics. Crash reporting must be opt-in and cannot initialise until a Firebase project is configured.
 - Do not request permissions at launch.
+- Use `AppLogger` for diagnostic output and crash reporting. Do not emit PII,
+  do not write errors to Firestore, and do not call `print` directly outside
+  the logger or platform bootstrap.
 
 ## Localization and bidirectionality
 
-- Use the `golden-quran-localization` skill for localized UI work.
+- Use the `mre-quran-localization` skill for localized UI work.
 - Keep UI strings in `lib/l10n/app_en.arb` and `lib/l10n/app_ar.arb`.
 - Use the generated typed `AppLocalizations` API through `context.l10n`.
 - Do not add string-key translation maps or static current-locale state.

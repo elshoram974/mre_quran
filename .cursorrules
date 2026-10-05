@@ -3,9 +3,15 @@ Git Commit Message Generation Rules
 When generating a Git commit message using the Source Control (SCM) AI button, you MUST strictly adhere to the following logic and format. No exceptions are allowed.
 
 Context & Scope Analysis (CRITICAL):
-1. Target Staged Changes First: You MUST analyze ONLY the currently `staged changes` in the git diff. Ignore unstaged files if staged files exist.
-2. Fallback Mechanism: If and only if there are NO `staged changes`, you may analyze all pending `changes`.
-3. Deep Diff Reading: Base your entire message strictly on the actual code diff. Do not hallucinate or guess features. Extract exactly what changed and logically deduce the architectural intent.
+1. Staged Changes Only: Run `git diff --cached --name-status` and read only
+   `git diff --cached`. Never inspect or describe unstaged, untracked, ignored,
+   or already committed files while generating the message.
+2. Empty Stage: If nothing is staged, respond exactly: `No staged changes.` Do
+   not fall back to all pending changes and do not create, add, reset, restore,
+   or otherwise alter the Git index.
+3. Deep Diff Reading: Base the entire message strictly on the actual staged
+   diff. Do not hallucinate or guess features. Extract exactly what changed and
+   logically deduce the architectural intent.
 
 Format Structure:
 - A single line containing a Conventional Commit title (e.g., feat(scope): description, fix(scope): description, chore(scope): description).

@@ -1,9 +1,9 @@
 ---
-name: golden-quran-localization
-description: Maintain Golden Quran ARB localization, Arabic/English locale state, and bidirectional Flutter layouts. Use when adding user-visible strings, locale settings, or directional UI.
+name: mre-quran-localization
+description: Maintain MRE Quran ARB localization, Arabic/English locale state, and bidirectional Flutter layouts. Use when adding user-visible strings, locale settings, or directional UI.
 ---
 
-# Golden Quran localization
+# MRE Quran localization
 
 - Keep all user-visible text in `lib/l10n/app_en.arb` and `app_ar.arb`.
 - Run `fvm flutter gen-l10n` after an ARB change. Import the generated typed API
