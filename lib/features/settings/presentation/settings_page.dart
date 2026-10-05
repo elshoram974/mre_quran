@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:liquidify/liquidify.dart';
 
 import '../../../app/router.dart';
 import '../../../core/l10n/l10n.dart';
+import '../../../core/widgets/liquid_glass_surface.dart';
 import '../application/settings_provider.dart';
 import '../domain/app_settings.dart';
 
@@ -53,7 +53,7 @@ class _SettingsContent extends ConsumerWidget {
     final l10n = context.l10n;
     final notifier = ref.read(settingsProvider.notifier);
     return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 112),
+      padding: const EdgeInsetsDirectional.fromSTEB(20, 24, 20, 112),
       children: [
         Text(l10n.appearance, style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 12),
@@ -82,7 +82,7 @@ class _SettingsContent extends ConsumerWidget {
             ],
             onChanged: (value) {
               if (value != null) {
-                notifier.update(settings.copyWith(theme: value));
+                notifier.save(settings.copyWith(theme: value));
               }
             },
           ),
@@ -99,7 +99,7 @@ class _SettingsContent extends ConsumerWidget {
             ],
             onChanged: (value) {
               if (value != null) {
-                notifier.update(settings.copyWith(localeCode: value));
+                notifier.save(settings.copyWith(localeCode: value));
               }
             },
           ),
@@ -109,7 +109,7 @@ class _SettingsContent extends ConsumerWidget {
           child: SwitchListTile.adaptive(
             value: settings.reduceMotion,
             onChanged: (value) =>
-                notifier.update(settings.copyWith(reduceMotion: value)),
+                notifier.save(settings.copyWith(reduceMotion: value)),
             title: Text(l10n.reduceMotion),
             subtitle: Text(l10n.reduceMotionDescription),
           ),
@@ -119,7 +119,7 @@ class _SettingsContent extends ConsumerWidget {
           child: SwitchListTile.adaptive(
             value: settings.useArabicDigits,
             onChanged: (value) =>
-                notifier.update(settings.copyWith(useArabicDigits: value)),
+                notifier.save(settings.copyWith(useArabicDigits: value)),
             title: Text(l10n.arabicDigits),
             subtitle: Text(l10n.arabicDigitsDescription),
           ),
@@ -128,8 +128,11 @@ class _SettingsContent extends ConsumerWidget {
         Text(l10n.privacy, style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 12),
         _SettingsCard(
-          child: ListTile(
-            leading: const Icon(Icons.shield_outlined),
+          child: SwitchListTile.adaptive(
+            value: settings.crashReportsEnabled,
+            onChanged: (value) =>
+                notifier.save(settings.copyWith(crashReportsEnabled: value)),
+            secondary: const Icon(Icons.shield_outlined),
             title: Text(l10n.crashReports),
             subtitle: Text(l10n.crashReportsDescription),
           ),
@@ -139,7 +142,7 @@ class _SettingsContent extends ConsumerWidget {
           child: ListTile(
             leading: const Icon(Icons.info_outline),
             title: Text(l10n.about),
-            trailing: const Icon(Icons.chevron_left),
+            trailing: const Icon(Icons.arrow_forward_ios),
             onTap: () => context.push(AppRoute.about.path),
           ),
         ),
@@ -153,13 +156,9 @@ class _SettingsCard extends StatelessWidget {
   final Widget child;
 
   @override
-  Widget build(BuildContext context) =>
-      Card(
-        child: Padding(padding: const EdgeInsets.all(8), child: child),
-      ).liquidGlass(
-        options: LiquidGlassOptions.frosted(
-          blur: 10,
-          interactive: !MediaQuery.disableAnimationsOf(context),
-        ),
-      );
+  Widget build(BuildContext context) => LiquidGlassSurface(
+    child: Card(
+      child: Padding(padding: const EdgeInsets.all(8), child: child),
+    ),
+  );
 }

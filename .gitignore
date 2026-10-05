@@ -49,3 +49,23 @@ app.*.map.json
 
 # Local FVM SDK links
 .fvm/
+
+# Local environment and signing material. Firebase app configuration files are
+# intentionally tracked; they identify the public mobile app and are required
+# for reproducible Android/iOS builds.
+.env
+.env.*
+!.env.example
+*.jks
+*.keystore
+**/key.properties
+**/keystore/
+
+# Local tooling and native build caches.
+android/.gradle/
+android/.cxx/
+ios/**/DerivedData/
+ios/**/xcuserdata/
+ios/**/.symlinks/
+ios/**/Pods/
+ios/**/Flutter/ephemeral/

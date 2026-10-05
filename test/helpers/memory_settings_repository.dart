@@ -1,19 +1,19 @@
-import 'package:flutter/material.dart';
 import 'package:mre_quran/features/settings/data/settings_repository.dart';
+import 'package:mre_quran/features/settings/domain/app_settings.dart';
 
 class MemorySettingsRepository implements SettingsRepository {
-  ThemeMode mode = ThemeMode.system;
+  AppSettings settings = const AppSettings();
   bool fail = false;
 
   @override
-  Future<ThemeMode> loadThemeMode() async {
+  Future<AppSettings> load() async {
     if (fail) throw StateError('Storage unavailable');
-    return mode;
+    return settings;
   }
 
   @override
-  Future<void> saveThemeMode(ThemeMode value) async {
+  Future<void> save(AppSettings value) async {
     if (fail) throw StateError('Storage unavailable');
-    mode = value;
+    settings = value;
   }
 }

@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -7,6 +5,7 @@ import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
 import 'app/quran_app.dart';
 import 'core/crash/crash_reporter.dart';
+import 'core/diagnostics/app_logger.dart';
 import 'firebase_options.dart';
 import 'features/settings/application/settings_provider.dart';
 
@@ -15,10 +14,10 @@ Future<void> main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   final crashReporter = FirebaseCrashReporter();
   await crashReporter.setCollectionEnabled(false);
-  FlutterError.onError = crashReporter.recordFlutterFatalError;
+  FlutterError.onError =
+      (details) => AppLogger.flutterError(crashReporter, details);
   PlatformDispatcher.instance.onError = (error, stackTrace) {
-    crashReporter.recordFatalError(error, stackTrace);
-    return true;
+    return AppLogger.uncaughtPlatformError(crashReporter, error, stackTrace);
   };
   runApp(
     LiquidGlassWidgets.wrap(

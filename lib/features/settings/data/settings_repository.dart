@@ -17,6 +17,7 @@ class LocalSettingsRepository implements SettingsRepository {
   static const _localeKey = 'settings.locale';
   static const _reduceMotionKey = 'settings.reduce_motion';
   static const _arabicDigitsKey = 'settings.arabic_digits';
+  static const _crashReportsKey = 'settings.crash_reports';
 
   @override
   Future<AppSettings> load() async {
@@ -24,6 +25,7 @@ class LocalSettingsRepository implements SettingsRepository {
     final locale = await _preferences.getString(_localeKey);
     final reduceMotion = await _preferences.getBool(_reduceMotionKey);
     final useArabicDigits = await _preferences.getBool(_arabicDigitsKey);
+    final crashReportsEnabled = await _preferences.getBool(_crashReportsKey);
     return AppSettings(
       theme: AppThemePreference.values.firstWhere(
         (item) => item.name == theme,
@@ -32,6 +34,7 @@ class LocalSettingsRepository implements SettingsRepository {
       localeCode: locale == 'en' ? 'en' : 'ar',
       reduceMotion: reduceMotion ?? false,
       useArabicDigits: useArabicDigits ?? true,
+      crashReportsEnabled: crashReportsEnabled ?? false,
     );
   }
 
@@ -42,6 +45,7 @@ class LocalSettingsRepository implements SettingsRepository {
       _preferences.setString(_localeKey, settings.localeCode),
       _preferences.setBool(_reduceMotionKey, settings.reduceMotion),
       _preferences.setBool(_arabicDigitsKey, settings.useArabicDigits),
+      _preferences.setBool(_crashReportsKey, settings.crashReportsEnabled),
     ]);
   }
 }

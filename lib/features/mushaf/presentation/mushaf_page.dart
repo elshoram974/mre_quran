@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:liquidify/liquidify.dart';
 import 'package:mre_fields/mre_fields.dart';
 
 import '../../../core/l10n/l10n.dart';
 import '../../../core/layout/adaptive_layout.dart';
+import '../../../core/widgets/liquid_glass_surface.dart';
 
 /// Reader entry point. Quran content is gated by integrity checks.
 class MushafPage extends StatefulWidget {
@@ -35,7 +35,7 @@ class _MushafPageState extends State<MushafPage> {
         WindowSize.fromWidth(MediaQuery.sizeOf(context).width) ==
         WindowSize.expanded;
     return ListView(
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 112),
+      padding: const EdgeInsetsDirectional.fromSTEB(20, 24, 20, 112),
       children: [
         Semantics(
           header: true,
@@ -95,32 +95,28 @@ class _ReaderGateCard extends StatelessWidget {
   final String body;
 
   @override
-  Widget build(BuildContext context) =>
-      Card(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(icon, color: Theme.of(context).colorScheme.primary),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(title, style: Theme.of(context).textTheme.titleMedium),
-                    const SizedBox(height: 6),
-                    Text(body),
-                  ],
-                ),
+  Widget build(BuildContext context) => LiquidGlassSurface(
+    child: Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, color: Theme.of(context).colorScheme.primary),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: Theme.of(context).textTheme.titleMedium),
+                  const SizedBox(height: 6),
+                  Text(body),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
-      ).liquidGlass(
-        options: LiquidGlassOptions.frosted(
-          blur: 10,
-          interactive: !MediaQuery.disableAnimationsOf(context),
-        ),
-      );
+      ),
+    ),
+  );
 }

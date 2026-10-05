@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:liquidify/liquidify.dart';
 
 import '../core/l10n/l10n.dart';
 import '../core/layout/adaptive_layout.dart';
+import '../core/widgets/liquid_glass_surface.dart';
 
 class AppShell extends StatelessWidget {
   const AppShell({super.key, required this.navigationShell});
@@ -17,38 +17,31 @@ class AppShell extends StatelessWidget {
       final destinations = _destinations(context);
       return Scaffold(
         extendBody: compact,
-        appBar:
-            AppBar(
-              title: Text(destinations[navigationShell.currentIndex].label),
-              scrolledUnderElevation: 0,
-            ).liquidGlass(
-              options: LiquidGlassOptions.frosted(
-                blur: 12,
-                interactive: !MediaQuery.disableAnimationsOf(context),
-              ),
-            ),
+        appBar: LiquidGlassAppBar(
+          appBar: AppBar(
+            title: Text(destinations[navigationShell.currentIndex].label),
+            scrolledUnderElevation: 0,
+          ),
+        ),
         body: SafeArea(
           child: Row(
             children: [
               if (!compact) ...[
-                NavigationRail(
-                  extended: size == WindowSize.expanded,
-                  selectedIndex: navigationShell.currentIndex,
-                  onDestinationSelected: _goBranch,
-                  labelType: size == WindowSize.medium
-                      ? NavigationRailLabelType.all
-                      : NavigationRailLabelType.none,
-                  destinations: [
-                    for (final item in destinations)
-                      NavigationRailDestination(
-                        icon: Icon(item.icon),
-                        label: Text(item.label),
-                      ),
-                  ],
-                ).liquidGlass(
-                  options: LiquidGlassOptions.frosted(
-                    blur: 12,
-                    interactive: !MediaQuery.disableAnimationsOf(context),
+                LiquidGlassSurface(
+                  child: NavigationRail(
+                    extended: size == WindowSize.expanded,
+                    selectedIndex: navigationShell.currentIndex,
+                    onDestinationSelected: _goBranch,
+                    labelType: size == WindowSize.medium
+                        ? NavigationRailLabelType.all
+                        : NavigationRailLabelType.none,
+                    destinations: [
+                      for (final item in destinations)
+                        NavigationRailDestination(
+                          icon: Icon(item.icon),
+                          label: Text(item.label),
+                        ),
+                    ],
                   ),
                 ),
                 const VerticalDivider(width: 1),
@@ -58,20 +51,17 @@ class AppShell extends StatelessWidget {
           ),
         ),
         bottomNavigationBar: compact
-            ? NavigationBar(
-                selectedIndex: navigationShell.currentIndex,
-                onDestinationSelected: _goBranch,
-                destinations: [
-                  for (final item in destinations)
-                    NavigationDestination(
-                      icon: Icon(item.icon),
-                      label: item.label,
-                    ),
-                ],
-              ).liquidGlass(
-                options: LiquidGlassOptions.frosted(
-                  blur: 12,
-                  interactive: !MediaQuery.disableAnimationsOf(context),
+            ? LiquidGlassSurface(
+                child: NavigationBar(
+                  selectedIndex: navigationShell.currentIndex,
+                  onDestinationSelected: _goBranch,
+                  destinations: [
+                    for (final item in destinations)
+                      NavigationDestination(
+                        icon: Icon(item.icon),
+                        label: item.label,
+                      ),
+                  ],
                 ),
               )
             : null,
