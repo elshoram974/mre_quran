@@ -30,8 +30,8 @@
 
 ## D-005: Firebase Crashlytics is configured but opt-in
 
-- **Decision:** Use Firebase project `mre-golden-quran-2026` for Android and
-  iOS Crashlytics. Initialise Firebase at startup, disable collection before
+- **Decision:** Use the Firebase project configured for MRE Quran (technical ID
+  `mre-golden-quran-2026`) for Android and iOS Crashlytics. Initialise Firebase at startup, disable collection before
   rendering, and enable it only after the reader switches on the explicit
   Settings control. Do not add Analytics.
 - **Alternatives:** Add a placeholder configuration or collect automatically.
@@ -70,12 +70,12 @@
 - **Alternatives:** Physical `left`, `right`, `fromLTRB`, and `Alignment.*Left`.
 - **Reason:** Arabic RTL and English LTR must mirror without special branches.
 
-## D-010: Do not use Golden Quran as this app's public name yet
+## D-010: MRE Quran is the product identity
 
-- **Decision:** Keep the existing working name until ownership is confirmed.
-- **Alternatives:** Release as `Golden Quran | المصحف الذهبي`.
-- **Reason:** An established app already uses both names in Google Play and the
-  App Store. Reusing it could confuse users or create trademark risk.
+- **Decision:** Keep `MRE Quran` as the only product/app identity.
+- **Alternatives:** Reuse a competitor's product name.
+- **Reason:** Golden Quran is a competitor researched only for public feature
+  planning; it is not this application's name, assets, or branding.
 
 ## D-011: Use `liquid_glass_widgets` for restrained cross-platform glass
 

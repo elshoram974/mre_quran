@@ -13,8 +13,8 @@
   system now covers application chrome on iOS and Android without a native fork.
 - `mre_fields` is used for the search input. Its Android transitive Kotlin
   plugin warning is recorded for dependency monitoring.
-- Created Firebase project `mre-golden-quran-2026`, registered Android and iOS,
-  and generated FlutterFire configuration.
+- Created the Firebase project for MRE Quran, registered Android and iOS, and
+  generated FlutterFire configuration.
 - Integrated Firebase Crashlytics with an explicit, persisted, default-off
   Settings control. Firebase Analytics was not added.
 
