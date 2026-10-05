@@ -3,14 +3,16 @@ import 'package:go_router/go_router.dart';
 
 import '../features/about/presentation/about_page.dart';
 import '../features/bookmarks/presentation/bookmarks_page.dart';
+import '../features/duas/presentation/duas_page.dart';
 import '../features/mushaf/presentation/mushaf_page.dart';
 import '../features/settings/presentation/settings_page.dart';
+import '../features/startup/application/startup_providers.dart';
 import 'app_shell.dart';
 
 /// App-wide declarative routes and persistent navigation branches.
 final routerProvider = Provider<GoRouter>((ref) {
   final router = GoRouter(
-    initialLocation: AppRoute.reader.path,
+    initialLocation: ref.read(initialLocationProvider),
     routes: [
       StatefulShellRoute.indexedStack(
         builder: (context, state, shell) => AppShell(navigationShell: shell),
@@ -20,6 +22,14 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: AppRoute.reader.path,
                 builder: (context, state) => const MushafPage(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoute.duas.path,
+                builder: (context, state) => const DuasPage(),
               ),
             ],
           ),
@@ -54,10 +64,14 @@ final routerProvider = Provider<GoRouter>((ref) {
 /// Stable paths used by navigation and tests.
 enum AppRoute {
   reader('/reader'),
+  duas('/duas'),
   bookmarks('/bookmarks'),
   settings('/settings'),
   about('/about');
 
   const AppRoute(this.path);
   final String path;
+
+  /// Top-level tabs in navigation order. Must match the shell branches.
+  static const List<AppRoute> tabs = [reader, duas, bookmarks, settings];
 }

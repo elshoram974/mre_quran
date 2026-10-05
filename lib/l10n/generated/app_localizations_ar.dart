@@ -152,4 +152,23 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get selectOption => 'اختيار';
+
+  @override
+  String get duas => 'الأدعية';
+
+  @override
+  String get duasEmptyTitle => 'الأدعية والأذكار';
+
+  @override
+  String get duasEmptyBody =>
+      'ستظهر الأدعية والأذكار بعد اعتماد مصدر موثّق ومرخّص.';
+
+  @override
+  String get startup => 'عند فتح التطبيق';
+
+  @override
+  String get startupLastTab => 'آخر تبويب';
+
+  @override
+  String get startupMushaf => 'المصحف';
 }

@@ -43,5 +43,11 @@
   "back": "رجوع",
   "searchOptions": "ابحث في الخيارات",
   "noResults": "لا توجد نتائج",
-  "selectOption": "اختيار"
+  "selectOption": "اختيار",
+  "duas": "الأدعية",
+  "duasEmptyTitle": "الأدعية والأذكار",
+  "duasEmptyBody": "ستظهر الأدعية والأذكار بعد اعتماد مصدر موثّق ومرخّص.",
+  "startup": "عند فتح التطبيق",
+  "startupLastTab": "آخر تبويب",
+  "startupMushaf": "المصحف"
 }

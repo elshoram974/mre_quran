@@ -43,5 +43,11 @@
   "back": "Back",
   "searchOptions": "Search options",
   "noResults": "No results found",
-  "selectOption": "Select"
+  "selectOption": "Select",
+  "duas": "Duas",
+  "duasEmptyTitle": "Duas and adhkar",
+  "duasEmptyBody": "Duas and adhkar will appear once a verified, licensed source is approved.",
+  "startup": "On launch",
+  "startupLastTab": "Last tab",
+  "startupMushaf": "Mushaf"
 }

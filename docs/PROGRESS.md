@@ -18,6 +18,11 @@
 - Integrated Firebase Crashlytics with an explicit, persisted, default-off
   Settings control. Firebase Analytics was not added.
 
+- Shared UI system: tokens, harmonised themes, platform-native shell, draggable `AppSheet`,
+  `AppCard`, `AppSelectField`, `AppSwitchTile`, optimistic settings, Device Preview 3 with
+  platform sync, launch setting (last tab / Mushaf), Duas tab placeholder.
+- Wrote `docs/UI_RULES.md`, `docs/UI_UX_PLAN.md`, and `docs/QURAN_SOURCES.md`.
+
 ## In progress
 
 - Foundation migration: localization, typed routing, Riverpod, adaptive shell,

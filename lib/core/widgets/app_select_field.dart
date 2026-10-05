@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../l10n/l10n.dart';
+import '../theme/app_platform.dart';
 import 'app_sheet.dart';
 
 /// Number of options above which [AppSelectField] shows a search field.
@@ -72,11 +73,10 @@ class AppSelectField<T extends Object> extends StatelessWidget {
     final chosen = await AppSheet.show<T>(
       context: context,
       initialSize: searchable ? 0.62 : 0.5,
-      builder: (_, controller) => _SelectSheet<T>(
+      builder: (_) => _SelectSheet<T>(
         title: sheetTitle ?? label,
         options: options,
         value: value,
-        controller: controller,
       ),
     );
     if (chosen != null && chosen != value) onChanged(chosen);
@@ -133,13 +133,11 @@ class _SelectSheet<T extends Object> extends StatefulWidget {
     required this.title,
     required this.options,
     required this.value,
-    required this.controller,
   });
 
   final String title;
   final List<AppSelectOption<T>> options;
   final T? value;
-  final ScrollController controller;
 
   @override
   State<_SelectSheet<T>> createState() => _SelectSheetState<T>();
@@ -168,82 +166,69 @@ class _SelectSheetState<T extends Object> extends State<_SelectSheet<T>> {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final visible = _visible;
-    return CustomScrollView(
-      controller: widget.controller,
-      slivers: [
-        SliverToBoxAdapter(
-          child: Column(
-            children: [
-              const AppSheetHandle(),
-              Padding(
-                padding: const EdgeInsetsDirectional.fromSTEB(24, 4, 24, 8),
-                child: Align(
-                  alignment: AlignmentDirectional.centerStart,
-                  child: Semantics(
-                    header: true,
-                    child: Text(
-                      widget.title,
-                      style: theme.textTheme.titleLarge,
-                    ),
-                  ),
-                ),
-              ),
-              if (_searchable)
-                Padding(
-                  padding: const EdgeInsetsDirectional.fromSTEB(16, 4, 16, 8),
-                  child: TextField(
-                    textInputAction: TextInputAction.search,
-                    decoration: InputDecoration(
-                      hintText: l10n.searchOptions,
-                      prefixIcon: const Icon(Icons.search),
-                    ),
-                    onChanged: (text) => setState(() => _query = text),
-                  ),
-                ),
-            ],
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (!context.isCupertino) const AppSheetHandle(),
+        Padding(
+          padding: EdgeInsetsDirectional.fromSTEB(
+            24,
+            context.isCupertino ? 28 : 4,
+            24,
+            8,
+          ),
+          child: Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: Semantics(
+              header: true,
+              child: Text(widget.title, style: theme.textTheme.titleLarge),
+            ),
           ),
         ),
-        if (visible.isEmpty)
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(32),
-              child: Text(
-                l10n.noResults,
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodyLarge,
+        if (_searchable)
+          Padding(
+            padding: const EdgeInsetsDirectional.fromSTEB(16, 4, 16, 8),
+            child: TextField(
+              textInputAction: TextInputAction.search,
+              decoration: InputDecoration(
+                hintText: l10n.searchOptions,
+                prefixIcon: const Icon(Icons.search),
               ),
+              onChanged: (text) => setState(() => _query = text),
+            ),
+          ),
+        if (visible.isEmpty)
+          Padding(
+            padding: const EdgeInsets.all(32),
+            child: Text(
+              l10n.noResults,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyLarge,
             ),
           )
         else
-          SliverList.builder(
-            itemCount: visible.length,
-            itemBuilder: (context, index) {
-              final option = visible[index];
-              final selected = option.value == widget.value;
-              return ListTile(
-                key: ValueKey<Object>(option.value),
-                minVerticalPadding: 12,
-                selected: selected,
-                leading: option.icon == null
-                    ? null
-                    : Icon(
-                        option.icon,
-                        color: selected
-                            ? theme.colorScheme.primary
-                            : theme.colorScheme.onSurfaceVariant,
-                      ),
-                title: Text(option.label),
-                subtitle: option.subtitle == null
-                    ? null
-                    : Text(option.subtitle!),
-                trailing: selected ? const Icon(Icons.check_rounded) : null,
-                onTap: () => Navigator.of(context).pop(option.value),
-              );
-            },
-          ),
-        SliverToBoxAdapter(
-          child: SizedBox(height: MediaQuery.viewInsetsOf(context).bottom + 16),
-        ),
+          for (final option in visible)
+            ListTile(
+              key: ValueKey<Object>(option.value),
+              minVerticalPadding: 12,
+              selected: option.value == widget.value,
+              leading: option.icon == null
+                  ? null
+                  : Icon(
+                      option.icon,
+                      color: option.value == widget.value
+                          ? theme.colorScheme.primary
+                          : theme.colorScheme.onSurfaceVariant,
+                    ),
+              title: Text(option.label),
+              subtitle: option.subtitle == null ? null : Text(option.subtitle!),
+              trailing: option.value == widget.value
+                  ? const Icon(Icons.check_rounded)
+                  : null,
+              onTap: () => Navigator.of(context).pop(option.value),
+            ),
+        SizedBox(height: MediaQuery.viewInsetsOf(context).bottom + 24),
       ],
     );
   }

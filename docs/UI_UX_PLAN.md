@@ -58,7 +58,7 @@ Corners are never mixed on one surface. New shapes add a token first.
 |---|---|
 | `AppCard` | Grouped content (glass / Material) |
 | `AppSelectField` | Single choice picker; search above 5 options |
-| `AppSheet` | Draggable bottom sheet; every sheet uses it |
+| `AppSheet` | Draggable bottom sheet (glass on iOS); every sheet uses it |
 | `AppSwitchTile` | On/off row, platform switch with app colours |
 | `EmptyState` | Empty and error blocks with a retry action |
 | `AppShimmer` *(to build)* | Skeleton loading, matches final layout |
@@ -77,8 +77,9 @@ work under ~150 ms.
 | Screen | Content | Status |
 |---|---|---|
 | Shell | App bar, tab bar / rail | done |
-| Settings | Theme, language, motion, digits, crash reports, About | done |
+| Settings | Theme, language, launch behaviour (last tab / Mushaf), motion, digits, crash reports, About | done |
 | Bookmarks | Empty state; list later | placeholder |
+| Duas | Adhkar and duas tab | tab added, content blocked on a licensed source |
 | Reader | Mushaf pages, surah/juz index, search, last position | blocked on sources |
 | Credits | Attribution and licences | basic |
 
@@ -91,3 +92,8 @@ work under ~150 ms.
 3. **Reader UI:** surah/juz index, paged Mushaf with last position, search.
 4. **Bookmarks, font size, goldens** for pages 1, 2, 42, and 604.
 5. Audio, study tools, prayer times, advanced modes follow `IMPLEMENTATION_PLAN.md`.
+
+## 10. Launch and reading position
+
+- Setting "On launch": **last tab** (default) or **Mushaf**. The last tab is stored apart from settings and resolved before the first frame.
+- The Mushaf tab reopens at the last page read. That position belongs to the reader feature and arrives with it.

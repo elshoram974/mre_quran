@@ -18,6 +18,7 @@ class LocalSettingsRepository implements SettingsRepository {
   static const _reduceMotionKey = 'settings.reduce_motion';
   static const _arabicDigitsKey = 'settings.arabic_digits';
   static const _crashReportsKey = 'settings.crash_reports';
+  static const _startupKey = 'settings.startup';
 
   @override
   Future<AppSettings> load() async {
@@ -26,6 +27,7 @@ class LocalSettingsRepository implements SettingsRepository {
     final reduceMotion = await _preferences.getBool(_reduceMotionKey);
     final useArabicDigits = await _preferences.getBool(_arabicDigitsKey);
     final crashReportsEnabled = await _preferences.getBool(_crashReportsKey);
+    final startup = await _preferences.getString(_startupKey);
     return AppSettings(
       theme: AppThemePreference.values.firstWhere(
         (item) => item.name == theme,
@@ -35,6 +37,10 @@ class LocalSettingsRepository implements SettingsRepository {
       reduceMotion: reduceMotion ?? false,
       useArabicDigits: useArabicDigits ?? true,
       crashReportsEnabled: crashReportsEnabled ?? false,
+      startupBehavior: StartupBehavior.values.firstWhere(
+        (item) => item.name == startup,
+        orElse: () => StartupBehavior.lastTab,
+      ),
     );
   }
 
@@ -46,6 +52,7 @@ class LocalSettingsRepository implements SettingsRepository {
       _preferences.setBool(_reduceMotionKey, settings.reduceMotion),
       _preferences.setBool(_arabicDigitsKey, settings.useArabicDigits),
       _preferences.setBool(_crashReportsKey, settings.crashReportsEnabled),
+      _preferences.setString(_startupKey, settings.startupBehavior.name),
     ]);
   }
 }

@@ -6,7 +6,9 @@ import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:mre_quran/app/quran_app.dart';
 import 'package:mre_quran/features/settings/application/settings_provider.dart';
 import 'package:mre_quran/features/settings/domain/app_settings.dart';
+import 'package:mre_quran/features/startup/application/startup_providers.dart';
 
+import 'helpers/memory_last_tab_repository.dart';
 import 'helpers/memory_settings_repository.dart';
 
 void main() {
@@ -18,7 +20,12 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
       final repository = MemorySettingsRepository();
       final container = ProviderContainer(
-        overrides: [settingsRepositoryProvider.overrideWithValue(repository)],
+        overrides: [
+          settingsRepositoryProvider.overrideWithValue(repository),
+          lastTabRepositoryProvider.overrideWithValue(
+            MemoryLastTabRepository(),
+          ),
+        ],
       );
       addTearDown(container.dispose);
 
@@ -58,7 +65,10 @@ void main() {
     final repository = MemorySettingsRepository()
       ..settings = const AppSettings(localeCode: 'en');
     final container = ProviderContainer(
-      overrides: [settingsRepositoryProvider.overrideWithValue(repository)],
+      overrides: [
+        settingsRepositoryProvider.overrideWithValue(repository),
+        lastTabRepositoryProvider.overrideWithValue(MemoryLastTabRepository()),
+      ],
     );
     addTearDown(container.dispose);
 
@@ -86,6 +96,7 @@ void main() {
         settingsRepositoryProvider.overrideWithValue(
           MemorySettingsRepository(),
         ),
+        lastTabRepositoryProvider.overrideWithValue(MemoryLastTabRepository()),
       ],
     );
     addTearDown(container.dispose);
@@ -110,6 +121,7 @@ void main() {
         settingsRepositoryProvider.overrideWithValue(
           MemorySettingsRepository(),
         ),
+        lastTabRepositoryProvider.overrideWithValue(MemoryLastTabRepository()),
       ],
     );
     addTearDown(container.dispose);

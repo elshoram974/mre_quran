@@ -100,6 +100,25 @@ class _SettingsContent extends ConsumerWidget {
               notifier.save(settings.copyWith(localeCode: value)),
         ),
         const SizedBox(height: 12),
+        AppSelectField<StartupBehavior>(
+          label: l10n.startup,
+          value: settings.startupBehavior,
+          options: [
+            AppSelectOption(
+              value: StartupBehavior.lastTab,
+              label: l10n.startupLastTab,
+              icon: Icons.history,
+            ),
+            AppSelectOption(
+              value: StartupBehavior.reader,
+              label: l10n.startupMushaf,
+              icon: Icons.menu_book_outlined,
+            ),
+          ],
+          onChanged: (value) =>
+              notifier.save(settings.copyWith(startupBehavior: value)),
+        ),
+        const SizedBox(height: 12),
         _SettingsCard(
           child: AppSwitchTile(
             value: settings.reduceMotion,

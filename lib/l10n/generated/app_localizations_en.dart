@@ -154,4 +154,23 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get selectOption => 'Select';
+
+  @override
+  String get duas => 'Duas';
+
+  @override
+  String get duasEmptyTitle => 'Duas and adhkar';
+
+  @override
+  String get duasEmptyBody =>
+      'Duas and adhkar will appear once a verified, licensed source is approved.';
+
+  @override
+  String get startup => 'On launch';
+
+  @override
+  String get startupLastTab => 'Last tab';
+
+  @override
+  String get startupMushaf => 'Mushaf';
 }

@@ -22,6 +22,11 @@ class ShellDestination {
     final l10n = context.l10n;
     return [
       ShellDestination(l10n.reader, Icons.menu_book_outlined, Icons.menu_book),
+      ShellDestination(
+        l10n.duas,
+        Icons.volunteer_activism_outlined,
+        Icons.volunteer_activism,
+      ),
       ShellDestination(l10n.bookmarks, Icons.bookmark_border, Icons.bookmark),
       ShellDestination(l10n.settings, Icons.settings_outlined, Icons.settings),
     ];

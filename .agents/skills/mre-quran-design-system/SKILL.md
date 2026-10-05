@@ -12,7 +12,7 @@ description: Build or change MRE Quran UI with the shared theme, tokens, glass c
 - Fields: Material 3 filled style (container `surfaceContainerHighest`, no outline at rest, `primary` 2 px indicator on focus), set once in `InputDecorationTheme`.
 - Text inputs: `MRETextField` / `MRETextFormField` from `mre_fields`. `MREFieldsTheme` is wired to `AppTokens`, so do not pass per-field radius or padding.
 - Pickers: `AppSelectField` (search appears above 5 options). Sheets: `AppSheet` (draggable). Switches: `AppSwitchTile`.
-- Plan and screen list: `docs/UI_UX_PLAN.md`.
+- Rules: `docs/UI_RULES.md`. Plan and screen list: `docs/UI_UX_PLAN.md`.
 - Cards: `AppCard` (glass). Do not nest a `Card` or glass control inside it.
 
 ## Native per platform

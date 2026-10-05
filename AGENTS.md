@@ -43,53 +43,13 @@
   do not write errors to Firestore, and do not call `print` directly outside
   the logger or platform bootstrap.
 
-## UI/UX quality bar
+## UI/UX
 
-- Build every screen to feel polished and intentional. Pick the best UX, not the quickest.
-- Never rebuild or reload a whole page for a small change. Scope rebuilds:
-  - Use `ref.watch(provider.select(...))` and split widgets so only the part that changed rebuilds.
-  - Use `const` constructors, stable keys, and `RepaintBoundary` around heavy or animated parts.
-  - Keep scroll position, selection, and focus across state changes and locale/theme switches.
-- Never show a full-screen spinner that replaces existing content.
-  - On refresh or background update, keep the current data visible and update it in place.
-  - Use `AsyncValue` with `skipLoadingOnRefresh`/`skipLoadingOnReload` (or the equivalent) so stale data stays on screen.
-- Use shimmer skeletons for the first load of any async content.
-  - Use one shared shimmer in `lib/core/widgets`. Do not add a per-feature copy.
-  - Make skeletons match the final layout (same size, spacing, and corner radius) so nothing jumps when data arrives.
-  - Shimmer must respect `MediaQuery.disableAnimations` and fall back to a static placeholder.
-  - Shimmer must work in light and dark themes and in RTL, using directional gradients.
-  - Use shimmer only for loading. Never use it to hide errors or empty states.
-- Build reusable widgets once in `lib/core/widgets` and reuse them everywhere.
-  - Before writing a widget, check `lib/core/widgets` for an existing one. Extend it instead of copying.
-  - If a pattern appears in a second place, extract it to a shared widget.
-  - Use `AppSelectField` for every single-choice picker. Never use `DropdownButton`,
-    `DropdownButtonFormField`, or `DropdownMenu` directly.
-  - A picker with more than 5 options must show a search field.
-- Every async screen handles four states explicitly: loading (shimmer), data, empty, and error with a retry action. Strings come from ARB files.
-- Prefer optimistic updates for small user actions (bookmark, favourite, setting toggle). Roll back with a clear message on failure.
-- Do not show a loading indicator for work shorter than about 150 ms. Avoid flicker.
-- Animate transitions (`AnimatedSwitcher`, `AnimatedSize`, hero) with short, purposeful durations that respect `disableAnimations`.
-- Keep touch targets at least 48dp, give visible pressed and focus states, and meet contrast in both themes.
-- Never block the UI thread. Move heavy parsing or search work off the main isolate.
-- Before finishing UI work, check it on a compact and an expanded width, in dark mode, with large text, and in Arabic RTL.
-
-## Design system
-
-- Use the `mre-quran-design-system` skill for any UI work.
-- Take colours only from the `ColorScheme`. Never hard-code colours in feature code.
-- Take radius, spacing, and sizes from `AppTokens`. Add a token instead of repeating a number.
-- Use the Material 3 filled field style defined once in `AppTheme`. Do not restyle a field per screen.
-- Use `MRETextField`/`MRETextFormField` (`mre_fields`) for every text input and keep `MREFieldsTheme` wired to `AppTokens`.
-- Make every platform feel native. Read the platform from `Theme.of(context).platform` (via `context.isCupertino`), never from `defaultTargetPlatform`, so Device Preview and tests can switch it.
-  - iOS/macOS: liquid glass (`liquid_glass_widgets`) for app chrome: app bar, tab bar, rail, sheets, and cards. Keep it readable in light, dark, and sepia.
-  - Android and other platforms: stock Material 3 (`AppBar`, `NavigationBar`, `NavigationRail`, `Card`, `showModalBottomSheet`). No glass.
-  - Put platform branching in shared widgets (`AppShell`, `AppCard`, `AppSelectField`), not in feature screens.
-- Pad content with `pagePadding(context)` and never place glass over Quran text.
-- Follow `docs/UI_UX_PLAN.md` for shapes, colour, layout, motion, and screens.
-- Use `AppCard` for grouped content, `AppSheet` for every bottom sheet (draggable), and `AppSwitchTile` for switches. Do not use bare `Card`, `GlassCard`, `GlassModalSheet`, `showModalBottomSheet`, or `SwitchListTile` in app screens.
-- Apply user settings optimistically: update state first, persist after, roll back on failure. Never put a settings screen into a loading state when saving.
-- Pick the bottom tab bar on compact widths and the rail on medium and expanded widths.
-- Device Preview (`device_preview` 3.x) is enabled in debug builds only and is controlled from Flutter DevTools. `syncPreviewPlatform()` switches the app to the chosen device's iOS or Android chrome. Check UI on at least one iPhone and one Android preset.
+- Read `docs/UI_RULES.md` before any UI work. It is the single rule file for UI/UX, and `docs/UI_UX_PLAN.md` holds the design plan.
+- Use the `mre-quran-design-system` skill for UI work.
+- Never hard-code colours, radii, or spacing. Use `ColorScheme` and `AppTokens`.
+- Make each platform native: liquid glass on iOS, Material 3 on Android, chosen by `context.isCupertino`.
+- Reuse `lib/core/widgets` components; never restyle per screen.
 
 ## Localization and bidirectionality
 

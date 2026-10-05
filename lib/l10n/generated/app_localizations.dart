@@ -367,6 +367,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Select'**
   String get selectOption;
+
+  /// No description provided for @duas.
+  ///
+  /// In en, this message translates to:
+  /// **'Duas'**
+  String get duas;
+
+  /// No description provided for @duasEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Duas and adhkar'**
+  String get duasEmptyTitle;
+
+  /// No description provided for @duasEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Duas and adhkar will appear once a verified, licensed source is approved.'**
+  String get duasEmptyBody;
+
+  /// No description provided for @startup.
+  ///
+  /// In en, this message translates to:
+  /// **'On launch'**
+  String get startup;
+
+  /// No description provided for @startupLastTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Last tab'**
+  String get startupLastTab;
+
+  /// No description provided for @startupMushaf.
+  ///
+  /// In en, this message translates to:
+  /// **'Mushaf'**
+  String get startupMushaf;
 }
 
 class _AppLocalizationsDelegate
