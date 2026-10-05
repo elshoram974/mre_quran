@@ -8,6 +8,7 @@ import '../../../core/layout/adaptive_layout.dart';
 import '../../../core/widgets/app_page_scaffold.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/widgets/empty_state.dart';
+import '../../quran_index/domain/reader_destination.dart';
 import '../../quran_index/presentation/index_tiles.dart';
 import '../../settings/application/digits_provider.dart';
 import '../application/quran_text_providers.dart';
@@ -129,7 +130,8 @@ class _Results extends ConsumerWidget {
         ayahNumber: digits(match.ref.ayah),
         page: digits(match.page),
         text: text.uthmani(match.ref),
-        onTap: () => context.pop(match.page),
+        onTap: () =>
+            context.pop(ReaderDestination(page: match.page, ayah: match.ref)),
       ),
     );
 
@@ -153,7 +155,8 @@ class _Results extends ConsumerWidget {
                   child: SurahTile(
                     surah: surah,
                     digits: digits,
-                    onTap: () => context.pop(surah.startPage),
+                    onTap: () =>
+                        context.pop(ReaderDestination(page: surah.startPage)),
                   ),
                 ),
               if (matches.isNotEmpty) ...[

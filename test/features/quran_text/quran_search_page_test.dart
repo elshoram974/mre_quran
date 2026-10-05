@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mre_quran/features/quran_index/application/quran_metadata_provider.dart';
+import 'package:mre_quran/features/quran_index/domain/quran_metadata.dart';
+import 'package:mre_quran/features/quran_index/domain/reader_destination.dart';
 import 'package:mre_quran/features/quran_text/application/quran_text_providers.dart';
 import 'package:mre_quran/features/quran_text/presentation/quran_search_page.dart';
 import 'package:mre_quran/features/settings/application/settings_provider.dart';
@@ -13,7 +15,7 @@ import '../../helpers/fake_quran_metadata_source.dart';
 import '../../helpers/fake_quran_text_source.dart';
 import '../../helpers/memory_settings_repository.dart';
 
-Future<List<int?>> _pumpSearch(
+Future<List<ReaderDestination?>> _pumpSearch(
   WidgetTester tester, {
   String locale = 'ar',
   double width = 390,
@@ -23,7 +25,7 @@ Future<List<int?>> _pumpSearch(
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
-  final popped = <int?>[];
+  final popped = <ReaderDestination?>[];
   final router = GoRouter(
     routes: [
       GoRoute(
@@ -31,7 +33,7 @@ Future<List<int?>> _pumpSearch(
         builder: (context, state) => Scaffold(
           body: TextButton(
             onPressed: () async =>
-                popped.add(await context.push<int>('/search')),
+                popped.add(await context.push<ReaderDestination>('/search')),
             child: const Text('open'),
           ),
         ),
@@ -88,7 +90,7 @@ void main() {
     expect(find.text('البقرة · آية ٢٥٥'), findsOneWidget);
     await tester.tap(find.text('البقرة · آية ٢٥٥'));
     await tester.pumpAndSettle();
-    expect(popped, [42]);
+    expect(popped, [const ReaderDestination(page: 42, ayah: AyahRef(2, 255))]);
   });
 
   testWidgets('words without tashkeel list text results with a count', (

@@ -295,4 +295,10 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get undo => 'تراجع';
+
+  @override
+  String get nextPage => 'الصفحة التالية';
+
+  @override
+  String get previousPage => 'الصفحة السابقة';
 }

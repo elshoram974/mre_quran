@@ -292,4 +292,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get undo => 'Undo';
+
+  @override
+  String get nextPage => 'Next page';
+
+  @override
+  String get previousPage => 'Previous page';
 }

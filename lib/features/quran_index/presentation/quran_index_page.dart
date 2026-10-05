@@ -12,6 +12,7 @@ import '../../settings/application/digits_provider.dart';
 import '../application/quran_metadata_provider.dart';
 import '../domain/index_search.dart';
 import '../domain/quran_metadata.dart';
+import '../domain/reader_destination.dart';
 import 'index_skeleton.dart';
 import 'index_tiles.dart';
 
@@ -95,7 +96,7 @@ class _Loaded extends ConsumerWidget {
         : const <Juz>[];
     final count = tab == _IndexTab.surahs ? surahs.length : juzs.length;
 
-    void open(int page) => context.pop(page);
+    void open(int page) => context.pop(ReaderDestination(page: page));
 
     return CustomScrollView(
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,

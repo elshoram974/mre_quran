@@ -7,18 +7,21 @@ import '../../quran_text/domain/quran_text.dart';
 import '../../settings/application/settings_provider.dart';
 import '../application/reader_immersive_provider.dart';
 import '../application/reading_position_provider.dart';
+import '../../../core/l10n/l10n.dart';
+import '../application/highlighted_ayah_provider.dart';
 import 'ayah_actions_sheet.dart';
+import 'flip/book_flip.dart';
 import 'mushaf_page_view.dart';
 
 /// Window width from which two pages are shown side by side.
 const double mushafSpreadMinWidth = 700;
 
-/// Swipeable Mushaf pages, right to left like a printed Mushaf.
+/// The Mushaf as a book that turns its pages (see [BookFlip]).
 ///
-/// Wide windows show a two-page spread like an open book: an odd page on the
-/// right and the even page on its left, page 1 alone on the right. Narrow
-/// windows show one page. The pager opens at the saved page, saves every turn,
-/// and follows page changes made elsewhere (index, search, bookmarks).
+/// Wide windows show a two-page spread: an odd page on the right and the even
+/// page on its left, so the first spread is pages 1 and 2. Narrow windows show
+/// one page. The pager saves every turn and follows page changes made
+/// elsewhere (index, search, bookmarks).
 class MushafPager extends StatelessWidget {
   /// Creates the pager over [text], opening at [initialPage].
   const MushafPager({super.key, required this.text, required this.initialPage});
@@ -60,26 +63,9 @@ class _PagerBody extends ConsumerStatefulWidget {
 }
 
 class _PagerBodyState extends ConsumerState<_PagerBody> {
-  late final PageController _controller = PageController(
-    initialPage: _indexOfPage(widget.initialPage),
-  );
   AyahRef? _selected;
 
   int get _pageCount => widget.text.metadata.pageCount;
-
-  /// Pager index of [page]. Spreads pair an odd page on the right with the
-  /// even page before it, so page 1 is spread 0 and pages 2 and 3 are spread 1.
-  int _indexOfPage(int page) => widget.spread ? page ~/ 2 : page - 1;
-
-  /// The page saved when the pager rests on [index]: the right-hand page.
-  int _pageOfIndex(int index) =>
-      widget.spread ? (2 * index + 1).clamp(1, _pageCount) : index + 1;
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
 
   Future<void> _showActions(AyahRef ayah) async {
     setState(() => _selected = ayah);
@@ -89,62 +75,37 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
 
   @override
   Widget build(BuildContext context) {
-    ref.listen(readingPositionProvider, (_, next) {
-      final page = next.value;
-      if (page == null || !_controller.hasClients) return;
-      final target = _indexOfPage(page);
-      if ((_controller.page?.round() ?? -1) != target) {
-        _controller.jumpToPage(target);
-      }
-    });
+    final l10n = context.l10n;
+    final page = ref.watch(readingPositionProvider).value ?? widget.initialPage;
     final fontScale = ref.watch(
       settingsProvider.select((s) => s.value?.readerFontScale ?? 1),
     );
     final bookmarked = ref.watch(bookmarkedRefsProvider);
+    final highlighted = ref.watch(highlightedAyahProvider);
 
-    Widget pageView(int page) => MushafPageView(
-      key: ValueKey<int>(page),
-      text: widget.text,
-      page: page,
-      fontScale: fontScale,
-      bookmarked: bookmarked,
-      selected: _selected,
-      onAyahLongPress: _showActions,
-      onTap: () => ref.read(readerImmersiveProvider.notifier).toggle(),
-    );
-
-    final count = widget.spread ? _pageCount ~/ 2 + 1 : _pageCount;
     return Directionality(
       // The Mushaf turns right to left in every app language.
       textDirection: TextDirection.rtl,
-      child: PageView.builder(
-        controller: _controller,
-        allowImplicitScrolling: true,
-        itemCount: count,
-        onPageChanged: (index) => ref
-            .read(readingPositionProvider.notifier)
-            .setPage(_pageOfIndex(index)),
-        itemBuilder: (context, index) {
-          if (!widget.spread) {
-            return RepaintBoundary(child: pageView(index + 1));
-          }
-          final right = 2 * index + 1;
-          final left = 2 * index;
-          return RepaintBoundary(
-            child: Row(
-              children: [
-                Expanded(
-                  child: right <= _pageCount
-                      ? pageView(right)
-                      : const SizedBox.shrink(),
-                ),
-                Expanded(
-                  child: left >= 1 ? pageView(left) : const SizedBox.shrink(),
-                ),
-              ],
-            ),
-          );
-        },
+      child: BookFlip(
+        pageCount: _pageCount,
+        spread: widget.spread,
+        page: page,
+        nextLabel: l10n.nextPage,
+        previousLabel: l10n.previousPage,
+        onPageChanged: (turned) =>
+            ref.read(readingPositionProvider.notifier).setPage(turned),
+        pageBuilder: (context, number) => MushafPageView(
+          text: widget.text,
+          page: number,
+          fontScale: fontScale,
+          bookmarked: bookmarked,
+          selected: _selected ?? highlighted,
+          onAyahLongPress: _showActions,
+          onTap: () {
+            ref.read(highlightedAyahProvider.notifier).clear();
+            ref.read(readerImmersiveProvider.notifier).toggle();
+          },
+        ),
       ),
     );
   }

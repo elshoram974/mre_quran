@@ -7,6 +7,7 @@ import '../../../core/l10n/l10n.dart';
 import '../../../core/layout/adaptive_layout.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/widgets/empty_state.dart';
+import '../../mushaf/application/highlighted_ayah_provider.dart';
 import '../../mushaf/application/reading_position_provider.dart';
 import '../../quran_text/application/quran_text_providers.dart';
 import '../../quran_text/presentation/ayah_result_tile.dart';
@@ -87,6 +88,7 @@ class BookmarksPage extends ConsumerWidget {
               page: digits(page),
               text: quran.uthmani(ref0),
               onTap: () async {
+                ref.read(highlightedAyahProvider.notifier).show(ref0);
                 await ref.read(readingPositionProvider.notifier).setPage(page);
                 if (context.mounted) context.go(AppRoute.reader.path);
               },

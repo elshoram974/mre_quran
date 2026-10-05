@@ -8,6 +8,8 @@ import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../quran_text/application/quran_text_providers.dart';
 import '../../settings/application/digits_provider.dart';
+import '../../quran_index/domain/reader_destination.dart';
+import '../application/highlighted_ayah_provider.dart';
 import '../application/reader_immersive_provider.dart';
 import '../application/reading_position_provider.dart';
 import 'display_options_sheet.dart';
@@ -28,9 +30,15 @@ class MushafPage extends ConsumerWidget {
     final media = MediaQuery.of(context);
 
     Future<void> open(AppRoute route) async {
-      final chosen = await context.push<int>(route.path);
+      final chosen = await context.push<ReaderDestination>(route.path);
       if (chosen != null) {
-        await ref.read(readingPositionProvider.notifier).setPage(chosen);
+        final highlight = ref.read(highlightedAyahProvider.notifier);
+        if (chosen.ayah == null) {
+          highlight.clear();
+        } else {
+          highlight.show(chosen.ayah!);
+        }
+        await ref.read(readingPositionProvider.notifier).setPage(chosen.page);
       }
     }
 

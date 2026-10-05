@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mre_quran/features/mushaf/application/reader_immersive_provider.dart';
 import 'package:mre_quran/features/mushaf/application/reading_position_provider.dart';
+import 'package:mre_quran/features/mushaf/presentation/flip/book_flip.dart';
 import 'package:mre_quran/features/mushaf/presentation/mushaf_page.dart';
 import 'package:mre_quran/features/quran_index/application/quran_metadata_provider.dart';
 import 'package:mre_quran/features/bookmarks/application/bookmarks_provider.dart';
@@ -82,7 +83,7 @@ void main() {
   ) async {
     final (_, positions) = await _pump(tester);
     // In a right-to-left Mushaf the next page comes from the left.
-    await tester.fling(find.byType(PageView), const Offset(400, 0), 1500);
+    await tester.fling(find.byType(BookFlip), const Offset(400, 0), 1500);
     await tester.pumpAndSettle();
     expect(positions.page, 2);
     expect(find.text('سورة البقرة'), findsWidgets);
@@ -114,31 +115,57 @@ void main() {
 
   testWidgets('a wide window shows two pages side by side', (tester) async {
     await _pump(tester, width: 1000, savedPage: 3);
-    // Pages 2 and 3 face each other; the right-hand page is odd.
+    // Pages 3 and 4 face each other; the right-hand page is odd.
     expect(find.byKey(const ValueKey<int>(3)), findsOneWidget);
-    expect(find.byKey(const ValueKey<int>(2)), findsOneWidget);
+    expect(find.byKey(const ValueKey<int>(4)), findsOneWidget);
     final right = tester.getCenter(find.byKey(const ValueKey<int>(3))).dx;
+    final left = tester.getCenter(find.byKey(const ValueKey<int>(4))).dx;
+    expect(right, greaterThan(left));
+  });
+
+  testWidgets('the first spread is pages 1 on the right and 2 on the left', (
+    tester,
+  ) async {
+    await _pump(tester, width: 1000);
+    final right = tester.getCenter(find.byKey(const ValueKey<int>(1))).dx;
     final left = tester.getCenter(find.byKey(const ValueKey<int>(2))).dx;
     expect(right, greaterThan(left));
   });
 
-  testWidgets('page 1 stands alone on the right of the first spread', (
-    tester,
-  ) async {
-    await _pump(tester, width: 1000);
-    expect(find.byKey(const ValueKey<int>(1)), findsOneWidget);
-    expect(find.byKey(const ValueKey<int>(0)), findsNothing);
-    expect(
-      tester.getCenter(find.byKey(const ValueKey<int>(1))).dx,
-      greaterThan(500),
-    );
-  });
-
   testWidgets('turning a spread saves its right-hand page', (tester) async {
     final (_, positions) = await _pump(tester, width: 1000);
-    await tester.fling(find.byType(PageView), const Offset(600, 0), 2000);
+    await tester.fling(find.byType(BookFlip), const Offset(500, 0), 1500);
     await tester.pumpAndSettle();
     expect(positions.page, 3);
+  });
+
+  testWidgets('one gesture turns one page at most', (tester) async {
+    final (_, positions) = await _pump(tester);
+    await tester.fling(find.byType(BookFlip), const Offset(600, 0), 4000);
+    await tester.pumpAndSettle();
+    expect(positions.page, 2);
+  });
+
+  testWidgets('dragging back to the left turns to the previous page', (
+    tester,
+  ) async {
+    final (_, positions) = await _pump(tester, savedPage: 5);
+    await tester.fling(find.byType(BookFlip), const Offset(-400, 0), 1500);
+    await tester.pumpAndSettle();
+    expect(positions.page, 4);
+  });
+
+  testWidgets('a short slow drag springs back and keeps the page', (
+    tester,
+  ) async {
+    final (_, positions) = await _pump(tester, savedPage: 5);
+    final gesture = await tester.startGesture(const Offset(200, 400));
+    await gesture.moveBy(const Offset(40, 0));
+    await tester.pump();
+    await gesture.up();
+    await tester.pumpAndSettle();
+    expect(positions.page, anyOf(isNull, 5));
+    expect(find.byKey(const ValueKey<int>(5)), findsOneWidget);
   });
 
   testWidgets('a narrow window shows one page', (tester) async {

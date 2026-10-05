@@ -167,5 +167,7 @@
   "removeBookmark": "Remove bookmark",
   "bookmarkAdded": "Bookmark added",
   "bookmarkRemoved": "Bookmark removed",
-  "undo": "Undo"
+  "undo": "Undo",
+  "nextPage": "Next page",
+  "previousPage": "Previous page"
 }
