@@ -157,6 +157,10 @@ class QuranMetadata {
   /// Page that contains ayah [ayah] of [surah].
   int pageOf(int surah, int ayah) => pageOfAyah(pageStarts, surah, ayah);
 
+  /// The juz that [page] belongs to: the last juz starting on or before it.
+  Juz juzOfPage(int page) =>
+      juzs.lastWhere((juz) => juz.startPage <= page, orElse: () => juzs.first);
+
   /// The surah whose ayahs begin on or before [page], preferring the surah
   /// that starts on that page.
   Surah surahAtPage(int page) {

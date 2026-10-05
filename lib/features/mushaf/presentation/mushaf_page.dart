@@ -4,129 +4,121 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/router.dart';
 import '../../../core/l10n/l10n.dart';
-import '../../../core/layout/adaptive_layout.dart';
-import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_shimmer.dart';
-import '../../quran_index/application/quran_metadata_provider.dart';
+import '../../../core/widgets/empty_state.dart';
+import '../../quran_text/application/quran_text_providers.dart';
 import '../../settings/application/digits_provider.dart';
+import '../application/reader_immersive_provider.dart';
 import '../application/reading_position_provider.dart';
+import 'display_options_sheet.dart';
+import 'mushaf_pager.dart';
+import 'reader_bar.dart';
 
-/// Mushaf tab. Shows the reading position and opens the index.
-///
-/// The page renderer arrives once the text, page map, and font are verified.
+/// The Mushaf tab: the pages themselves, with a bar for the index, search,
+/// and display options. A tap on the page hides or shows the bars.
 class MushafPage extends ConsumerWidget {
   const MushafPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    return ListView(
-      padding: pagePadding(context),
-      children: [
-        AppCard(
-          child: ListTile(
-            leading: Icon(
-              Icons.search,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            title: Text(l10n.searchQuran),
-            subtitle: Text(l10n.searchQuranHint),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => _open(context, ref, AppRoute.quranSearch),
-          ),
+    final text = ref.watch(quranTextProvider);
+    final page = ref.watch(readingPositionProvider).value;
+    final immersive = ref.watch(readerImmersiveProvider);
+    final media = MediaQuery.of(context);
+
+    Future<void> open(AppRoute route) async {
+      final chosen = await context.push<int>(route.path);
+      if (chosen != null) {
+        await ref.read(readingPositionProvider.notifier).setPage(chosen);
+      }
+    }
+
+    if (text.hasError) {
+      return EmptyState(
+        icon: Icons.error_outline,
+        title: l10n.readerLoadError,
+        message: '',
+        actionLabel: l10n.retry,
+        onAction: () => ref.invalidate(quranTextDataProvider),
+      );
+    }
+    final data = text.value;
+    if (data == null || page == null) return const _ReaderSkeleton();
+
+    final metadata = data.metadata;
+    final digits = ref.watch(digitsFormatterProvider);
+    final surah = metadata.surahAtPage(page);
+    final juz = metadata.juzOfPage(page);
+    final bar = ReaderBar(
+      title: l10n.surahTitle(surah.arabicName),
+      subtitle:
+          '${l10n.juzTitle(digits(juz.number))} · ${l10n.pageNumber(digits(page))}',
+      menuTooltip: l10n.readerMenu,
+      onMenu: () => open(AppRoute.quranIndex),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.search),
+          tooltip: l10n.searchQuran,
+          onPressed: () => open(AppRoute.quranSearch),
         ),
-        const SizedBox(height: 12),
-        const _PositionCard(),
-        const SizedBox(height: 12),
-        AppCard(
-          child: ListTile(
-            leading: Icon(
-              Icons.format_list_numbered_rtl,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            title: Text(l10n.quranIndex),
-            subtitle: Text('${l10n.indexSurahs} · ${l10n.indexJuz}'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => _open(context, ref, AppRoute.quranIndex),
-          ),
-        ),
-        const SizedBox(height: 12),
-        AppCard(
-          padding: const EdgeInsets.all(20),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(
-                Icons.verified_user_outlined,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              const SizedBox(width: 16),
-              Expanded(child: Text(l10n.readerInfo)),
-            ],
-          ),
+        IconButton(
+          icon: const Icon(Icons.text_format),
+          tooltip: l10n.displayOptions,
+          onPressed: () => showDisplayOptions(context),
         ),
       ],
     );
-  }
-}
 
-/// Opens [route] and saves the page it returns as the reading position.
-Future<void> _open(BuildContext context, WidgetRef ref, AppRoute route) async {
-  final page = await context.push<int>(route.path);
-  if (page != null) {
-    await ref.read(readingPositionProvider.notifier).setPage(page);
-  }
-}
-
-class _PositionCard extends ConsumerWidget {
-  const _PositionCard();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = context.l10n;
-    final page = ref.watch(readingPositionProvider).value;
-    final metadata = ref.watch(quranMetadataProvider).value;
-    final digits = ref.watch(digitsFormatterProvider);
-    if (page == null || metadata == null) {
-      return const AppCard(
-        padding: EdgeInsets.all(20),
-        child: AppShimmer(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SkeletonBox(width: 140, height: 18),
-              SizedBox(height: 10),
-              SkeletonBox(width: 200, height: 14),
-            ],
-          ),
-        ),
-      );
-    }
-    final surah = metadata.surahAtPage(page);
-    return AppCard(
-      padding: const EdgeInsets.all(20),
-      child: Row(
-        children: [
-          Icon(
-            Icons.bookmark_outline,
-            color: Theme.of(context).colorScheme.primary,
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.currentPosition,
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 4),
-                Text(l10n.currentPositionBody(digits(page), surah.arabicName)),
-              ],
+    return MediaQuery.removePadding(
+      context: context,
+      removeTop: !immersive,
+      child: ColoredBox(
+        color: Theme.of(context).colorScheme.surface,
+        child: Column(
+          children: [
+            AnimatedSize(
+              duration: MediaQuery.disableAnimationsOf(context)
+                  ? Duration.zero
+                  : const Duration(milliseconds: 220),
+              child: immersive
+                  ? SizedBox(height: media.padding.top)
+                  : MediaQuery(data: media, child: bar),
             ),
-          ),
-        ],
+            Expanded(
+              child: Padding(
+                padding: EdgeInsetsDirectional.only(
+                  bottom: media.padding.bottom,
+                ),
+                child: MushafPager(text: data, initialPage: page),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
+}
+
+class _ReaderSkeleton extends StatelessWidget {
+  const _ReaderSkeleton();
+
+  @override
+  Widget build(BuildContext context) => SafeArea(
+    child: Padding(
+      padding: const EdgeInsets.all(20),
+      child: AppShimmer(
+        child: Column(
+          children: [
+            const SkeletonBox(height: 48),
+            const SizedBox(height: 24),
+            for (var i = 0; i < 9; i++) ...[
+              const SkeletonBox(height: 22),
+              const SizedBox(height: 18),
+            ],
+          ],
+        ),
+      ),
+    ),
+  );
 }

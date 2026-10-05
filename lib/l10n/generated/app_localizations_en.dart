@@ -181,19 +181,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get currentPosition => 'Current position';
-
-  @override
-  String currentPositionBody(String page, String surah) {
-    return 'Page $page · $surah';
-  }
-
-  @override
   String get indexLoadError => 'The index could not be loaded.';
-
-  @override
-  String get readerInfo =>
-      'The Mushaf pages will appear once their text, page map, and font are verified together. The index below already works.';
 
   @override
   String get searchQuran => 'Search the Quran';
@@ -243,4 +231,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String ayahNumber(String number) {
     return 'Ayah $number';
   }
+
+  @override
+  String surahTitle(String name) {
+    return 'Surah $name';
+  }
+
+  @override
+  String get readerMenu => 'Index';
+
+  @override
+  String get displayOptions => 'Display';
+
+  @override
+  String get textSize => 'Text size';
+
+  @override
+  String get readerLoadError => 'The Mushaf could not be loaded.';
+
+  @override
+  String get readerProvisional =>
+      'Provisional layout: ayahs follow the Madinah pages, line breaks are not yet exact.';
+
+  @override
+  String get creditsQuranFont =>
+      'Quran font: Amiri Quran by Khaled Hosny and Sebastian Kosch, SIL Open Font License 1.1, https://github.com/aliftype/amiri.';
 }

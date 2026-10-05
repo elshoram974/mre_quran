@@ -17,6 +17,8 @@ class GlassShell extends StatelessWidget {
     required this.index,
     required this.onSelected,
     required this.child,
+    this.showAppBar = true,
+    this.showNavigation = true,
   });
 
   /// Current window size class.
@@ -34,6 +36,12 @@ class GlassShell extends StatelessWidget {
   /// Page content.
   final Widget child;
 
+  /// Whether the shell draws its own app bar. The Mushaf tab draws its own.
+  final bool showAppBar;
+
+  /// Whether the tab bar or rail is shown. False in immersive reading.
+  final bool showNavigation;
+
   @override
   Widget build(BuildContext context) {
     final compact = size == WindowSize.compact;
@@ -42,8 +50,10 @@ class GlassShell extends StatelessWidget {
       type: MaterialType.transparency,
       child: GlassScaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        appBar: GlassAppBar(title: Text(destinations[index].label)),
-        bottomBar: compact
+        appBar: showAppBar
+            ? GlassAppBar(title: Text(destinations[index].label))
+            : null,
+        bottomBar: compact && showNavigation
             ? GlassTabBar.bottom(
                 selectedIndex: index,
                 onTabSelected: onSelected,
@@ -63,8 +73,9 @@ class GlassShell extends StatelessWidget {
               )
             : null,
         body: GlassInsetBody(
-          compact: compact,
-          child: compact
+          compact: compact && showNavigation,
+          hasAppBar: showAppBar,
+          child: compact || !showNavigation
               ? ContentContainer(child: child)
               : Row(
                   children: [

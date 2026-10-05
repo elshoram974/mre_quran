@@ -49,10 +49,7 @@
   "pageNumber": "صفحة {page}",
   "juzTitle": "الجزء {number}",
   "juzStartsAt": "يبدأ من {surah}، الآية {ayah}",
-  "currentPosition": "الموضع الحالي",
-  "currentPositionBody": "صفحة {page} · {surah}",
   "indexLoadError": "تعذّر تحميل الفهرس.",
-  "readerInfo": "ستظهر صفحات المصحف بعد التحقق معًا من نصها وخريطة صفحاتها وخطها. الفهرس يعمل من الآن.",
   "searchQuran": "ابحث في القرآن",
   "searchQuranHint": "سورة أو آية أو كلمات",
   "searchGoTo": "انتقال مباشر",
@@ -64,5 +61,12 @@
   "searchNoResultsTitle": "لا توجد نتائج",
   "searchNoResultsBody": "تحقق من الكتابة أو جرّب كلمات أقل.",
   "searchLoadError": "تعذّر تحميل نص القرآن.",
-  "ayahNumber": "آية {number}"
+  "ayahNumber": "آية {number}",
+  "surahTitle": "سورة {name}",
+  "readerMenu": "الفهرس",
+  "displayOptions": "العرض",
+  "textSize": "حجم الخط",
+  "readerLoadError": "تعذّر تحميل المصحف.",
+  "readerProvisional": "تخطيط مؤقت: الآيات موزعة على صفحات مصحف المدينة، وتقسيم الأسطر ليس مطابقًا بعد.",
+  "creditsQuranFont": "خط القرآن: أميري قرآن، تصميم خالد حسني وسباستيان كوش، رخصة SIL المفتوحة للخطوط 1.1، https://github.com/aliftype/amiri."
 }

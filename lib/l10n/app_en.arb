@@ -83,20 +83,7 @@
       }
     }
   },
-  "currentPosition": "Current position",
-  "currentPositionBody": "Page {page} · {surah}",
-  "@currentPositionBody": {
-    "placeholders": {
-      "page": {
-        "type": "String"
-      },
-      "surah": {
-        "type": "String"
-      }
-    }
-  },
   "indexLoadError": "The index could not be loaded.",
-  "readerInfo": "The Mushaf pages will appear once their text, page map, and font are verified together. The index below already works.",
   "searchQuran": "Search the Quran",
   "searchQuranHint": "Surah, ayah, or words",
   "searchGoTo": "Go to",
@@ -135,5 +122,19 @@
         "type": "String"
       }
     }
-  }
+  },
+  "surahTitle": "Surah {name}",
+  "@surahTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "readerMenu": "Index",
+  "displayOptions": "Display",
+  "textSize": "Text size",
+  "readerLoadError": "The Mushaf could not be loaded.",
+  "readerProvisional": "Provisional layout: ayahs follow the Madinah pages, line breaks are not yet exact.",
+  "creditsQuranFont": "Quran font: Amiri Quran by Khaled Hosny and Sebastian Kosch, SIL Open Font License 1.1, https://github.com/aliftype/amiri."
 }

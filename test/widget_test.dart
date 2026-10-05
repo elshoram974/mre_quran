@@ -6,11 +6,13 @@ import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:mre_quran/app/quran_app.dart';
 import 'package:mre_quran/features/mushaf/application/reading_position_provider.dart';
 import 'package:mre_quran/features/quran_index/application/quran_metadata_provider.dart';
+import 'package:mre_quran/features/quran_text/application/quran_text_providers.dart';
 import 'package:mre_quran/features/settings/application/settings_provider.dart';
 import 'package:mre_quran/features/settings/domain/app_settings.dart';
 import 'package:mre_quran/features/startup/application/startup_providers.dart';
 
 import 'helpers/fake_quran_metadata_source.dart';
+import 'helpers/fake_quran_text_source.dart';
 import 'helpers/memory_last_tab_repository.dart';
 import 'helpers/memory_reading_position_repository.dart';
 import 'helpers/memory_settings_repository.dart';
@@ -35,6 +37,7 @@ void main() {
           readingPositionRepositoryProvider.overrideWithValue(
             MemoryReadingPositionRepository(),
           ),
+          quranTextSourceProvider.overrideWithValue(FakeQuranTextSource()),
         ],
       );
       addTearDown(container.dispose);
@@ -84,6 +87,7 @@ void main() {
         readingPositionRepositoryProvider.overrideWithValue(
           MemoryReadingPositionRepository(),
         ),
+        quranTextSourceProvider.overrideWithValue(FakeQuranTextSource()),
       ],
     );
     addTearDown(container.dispose);
@@ -97,7 +101,7 @@ void main() {
       Directionality.of(tester.element(find.byType(Scaffold).first)),
       TextDirection.ltr,
     );
-    expect(find.text('Index'), findsOneWidget);
+    expect(find.byTooltip('Index'), findsOneWidget);
   });
 
   testWidgets('Large Arabic text has no layout exception', (tester) async {
@@ -119,6 +123,7 @@ void main() {
         readingPositionRepositoryProvider.overrideWithValue(
           MemoryReadingPositionRepository(),
         ),
+        quranTextSourceProvider.overrideWithValue(FakeQuranTextSource()),
       ],
     );
     addTearDown(container.dispose);
@@ -150,6 +155,7 @@ void main() {
         readingPositionRepositoryProvider.overrideWithValue(
           MemoryReadingPositionRepository(),
         ),
+        quranTextSourceProvider.overrideWithValue(FakeQuranTextSource()),
       ],
     );
     addTearDown(container.dispose);

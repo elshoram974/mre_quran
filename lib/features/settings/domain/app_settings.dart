@@ -10,6 +10,7 @@ class AppSettings {
     this.useArabicDigits = true,
     this.crashReportsEnabled = false,
     this.startupBehavior = StartupBehavior.lastTab,
+    this.readerFontScale = 1,
   });
 
   final AppThemePreference theme;
@@ -20,6 +21,9 @@ class AppSettings {
 
   /// Which tab the app opens on.
   final StartupBehavior startupBehavior;
+
+  /// Size of Mushaf text relative to the default, 0.8 to 1.6.
+  final double readerFontScale;
 
   Locale get locale => Locale(localeCode);
 
@@ -36,6 +40,7 @@ class AppSettings {
     bool? useArabicDigits,
     bool? crashReportsEnabled,
     StartupBehavior? startupBehavior,
+    double? readerFontScale,
   }) => AppSettings(
     theme: theme ?? this.theme,
     localeCode: localeCode ?? this.localeCode,
@@ -43,6 +48,7 @@ class AppSettings {
     useArabicDigits: useArabicDigits ?? this.useArabicDigits,
     crashReportsEnabled: crashReportsEnabled ?? this.crashReportsEnabled,
     startupBehavior: startupBehavior ?? this.startupBehavior,
+    readerFontScale: readerFontScale ?? this.readerFontScale,
   );
 }
 

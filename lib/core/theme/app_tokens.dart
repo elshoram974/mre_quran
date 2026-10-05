@@ -3,6 +3,10 @@ import 'package:flutter/widgets.dart';
 /// Shared design tokens. Every themed surface, field, and sheet reads these so
 /// the whole app keeps one radius, spacing, and size rhythm.
 abstract final class AppTokens {
+  /// Font family for Quran text: Amiri Quran (SIL OFL 1.1), bundled in
+  /// `assets/fonts/amiri_quran`. See `docs/QURAN_SOURCES.md`.
+  static const String quranFontFamily = 'AmiriQuran';
+
   /// Corner radius of fields, buttons, and list rows.
   static const double radiusField = 16;
 

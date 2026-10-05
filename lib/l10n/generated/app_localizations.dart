@@ -398,29 +398,11 @@ abstract class AppLocalizations {
   /// **'Starts at {surah}, ayah {ayah}'**
   String juzStartsAt(String surah, String ayah);
 
-  /// No description provided for @currentPosition.
-  ///
-  /// In en, this message translates to:
-  /// **'Current position'**
-  String get currentPosition;
-
-  /// No description provided for @currentPositionBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Page {page} · {surah}'**
-  String currentPositionBody(String page, String surah);
-
   /// No description provided for @indexLoadError.
   ///
   /// In en, this message translates to:
   /// **'The index could not be loaded.'**
   String get indexLoadError;
-
-  /// No description provided for @readerInfo.
-  ///
-  /// In en, this message translates to:
-  /// **'The Mushaf pages will appear once their text, page map, and font are verified together. The index below already works.'**
-  String get readerInfo;
 
   /// No description provided for @searchQuran.
   ///
@@ -493,6 +475,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Ayah {number}'**
   String ayahNumber(String number);
+
+  /// No description provided for @surahTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Surah {name}'**
+  String surahTitle(String name);
+
+  /// No description provided for @readerMenu.
+  ///
+  /// In en, this message translates to:
+  /// **'Index'**
+  String get readerMenu;
+
+  /// No description provided for @displayOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Display'**
+  String get displayOptions;
+
+  /// No description provided for @textSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Text size'**
+  String get textSize;
+
+  /// No description provided for @readerLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'The Mushaf could not be loaded.'**
+  String get readerLoadError;
+
+  /// No description provided for @readerProvisional.
+  ///
+  /// In en, this message translates to:
+  /// **'Provisional layout: ayahs follow the Madinah pages, line breaks are not yet exact.'**
+  String get readerProvisional;
+
+  /// No description provided for @creditsQuranFont.
+  ///
+  /// In en, this message translates to:
+  /// **'Quran font: Amiri Quran by Khaled Hosny and Sebastian Kosch, SIL Open Font License 1.1, https://github.com/aliftype/amiri.'**
+  String get creditsQuranFont;
 }
 
 class _AppLocalizationsDelegate

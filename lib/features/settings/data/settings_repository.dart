@@ -19,6 +19,7 @@ class LocalSettingsRepository implements SettingsRepository {
   static const _arabicDigitsKey = 'settings.arabic_digits';
   static const _crashReportsKey = 'settings.crash_reports';
   static const _startupKey = 'settings.startup';
+  static const _readerFontScaleKey = 'settings.reader_font_scale';
 
   @override
   Future<AppSettings> load() async {
@@ -29,6 +30,7 @@ class LocalSettingsRepository implements SettingsRepository {
       useArabicDigits,
       crashReports,
       startup,
+      fontScale,
     ) = await (
       _preferences.getString(_themeKey),
       _preferences.getString(_localeKey),
@@ -36,6 +38,7 @@ class LocalSettingsRepository implements SettingsRepository {
       _preferences.getBool(_arabicDigitsKey),
       _preferences.getBool(_crashReportsKey),
       _preferences.getString(_startupKey),
+      _preferences.getDouble(_readerFontScaleKey),
     ).wait;
     return AppSettings(
       theme: AppThemePreference.values.firstWhere(
@@ -50,6 +53,7 @@ class LocalSettingsRepository implements SettingsRepository {
         (item) => item.name == startup,
         orElse: () => StartupBehavior.lastTab,
       ),
+      readerFontScale: (fontScale ?? 1).clamp(0.8, 1.6).toDouble(),
     );
   }
 
@@ -62,6 +66,7 @@ class LocalSettingsRepository implements SettingsRepository {
       _preferences.setBool(_arabicDigitsKey, settings.useArabicDigits),
       _preferences.setBool(_crashReportsKey, settings.crashReportsEnabled),
       _preferences.setString(_startupKey, settings.startupBehavior.name),
+      _preferences.setDouble(_readerFontScaleKey, settings.readerFontScale),
     ]);
   }
 }

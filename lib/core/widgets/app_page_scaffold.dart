@@ -40,7 +40,7 @@ class AppPageScaffold extends StatelessWidget {
             onTap: () => Navigator.of(context).maybePop(),
           ),
         ),
-        body: GlassInsetBody(compact: false, child: body),
+        body: GlassInsetBody(compact: false, hasAppBar: true, child: body),
       ),
     );
   }
@@ -50,10 +50,18 @@ class AppPageScaffold extends StatelessWidget {
 /// pages can pad their content with `pagePadding`.
 class GlassInsetBody extends StatelessWidget {
   /// Creates the wrapper. [compact] also reserves room for the tab bar.
-  const GlassInsetBody({super.key, required this.compact, required this.child});
+  const GlassInsetBody({
+    super.key,
+    required this.compact,
+    required this.hasAppBar,
+    required this.child,
+  });
 
   /// Whether a floating bottom tab bar is shown.
   final bool compact;
+
+  /// Whether a floating glass app bar is shown.
+  final bool hasAppBar;
 
   /// Page content.
   final Widget child;
@@ -64,7 +72,7 @@ class GlassInsetBody extends StatelessWidget {
     return MediaQuery(
       data: media.copyWith(
         padding: media.padding.copyWith(
-          top: media.padding.top + AppTokens.appBarHeight,
+          top: media.padding.top + (hasAppBar ? AppTokens.appBarHeight : 0),
           bottom: media.padding.bottom + (compact ? AppTokens.barClearance : 0),
         ),
       ),

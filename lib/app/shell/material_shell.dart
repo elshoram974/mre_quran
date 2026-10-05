@@ -13,6 +13,8 @@ class MaterialShell extends StatelessWidget {
     required this.index,
     required this.onSelected,
     required this.child,
+    this.showAppBar = true,
+    this.showNavigation = true,
   });
 
   /// Current window size class.
@@ -30,12 +32,20 @@ class MaterialShell extends StatelessWidget {
   /// Page content.
   final Widget child;
 
+  /// Whether the shell draws its own app bar. The Mushaf tab draws its own.
+  final bool showAppBar;
+
+  /// Whether the tab bar or rail is shown. False in immersive reading.
+  final bool showNavigation;
+
   @override
   Widget build(BuildContext context) {
     final compact = size == WindowSize.compact;
     return Scaffold(
-      appBar: AppBar(title: Text(destinations[index].label)),
-      body: compact
+      appBar: showAppBar
+          ? AppBar(title: Text(destinations[index].label))
+          : null,
+      body: compact || !showNavigation
           ? ContentContainer(child: child)
           : Row(
               children: [
@@ -58,7 +68,7 @@ class MaterialShell extends StatelessWidget {
                 Expanded(child: ContentContainer(child: child)),
               ],
             ),
-      bottomNavigationBar: compact
+      bottomNavigationBar: compact && showNavigation
           ? NavigationBar(
               selectedIndex: index,
               onDestinationSelected: onSelected,

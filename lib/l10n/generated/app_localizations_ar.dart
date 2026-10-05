@@ -182,19 +182,7 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get currentPosition => 'الموضع الحالي';
-
-  @override
-  String currentPositionBody(String page, String surah) {
-    return 'صفحة $page · $surah';
-  }
-
-  @override
   String get indexLoadError => 'تعذّر تحميل الفهرس.';
-
-  @override
-  String get readerInfo =>
-      'ستظهر صفحات المصحف بعد التحقق معًا من نصها وخريطة صفحاتها وخطها. الفهرس يعمل من الآن.';
 
   @override
   String get searchQuran => 'ابحث في القرآن';
@@ -246,4 +234,29 @@ class AppLocalizationsAr extends AppLocalizations {
   String ayahNumber(String number) {
     return 'آية $number';
   }
+
+  @override
+  String surahTitle(String name) {
+    return 'سورة $name';
+  }
+
+  @override
+  String get readerMenu => 'الفهرس';
+
+  @override
+  String get displayOptions => 'العرض';
+
+  @override
+  String get textSize => 'حجم الخط';
+
+  @override
+  String get readerLoadError => 'تعذّر تحميل المصحف.';
+
+  @override
+  String get readerProvisional =>
+      'تخطيط مؤقت: الآيات موزعة على صفحات مصحف المدينة، وتقسيم الأسطر ليس مطابقًا بعد.';
+
+  @override
+  String get creditsQuranFont =>
+      'خط القرآن: أميري قرآن، تصميم خالد حسني وسباستيان كوش، رخصة SIL المفتوحة للخطوط 1.1، https://github.com/aliftype/amiri.';
 }

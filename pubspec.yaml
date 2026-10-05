@@ -47,3 +47,8 @@ flutter:
     - assets/quran/quran-data.xml
     - assets/quran/quran-uthmani.txt
     - assets/quran/quran-simple-clean.txt
+    - assets/fonts/amiri_quran/OFL.txt
+  fonts:
+    - family: AmiriQuran
+      fonts:
+        - asset: assets/fonts/amiri_quran/AmiriQuran-Regular.ttf
