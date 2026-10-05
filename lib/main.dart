@@ -7,6 +7,7 @@ import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
 import 'app/quran_app.dart';
 import 'core/crash/crash_reporter.dart';
+import 'core/dev/preview_devices.dart';
 import 'core/diagnostics/app_logger.dart';
 import 'firebase_options.dart';
 import 'features/settings/application/settings_provider.dart';
@@ -24,6 +25,7 @@ Future<void> main() async {
   runApp(
     DevicePreview(
       enabled: kDebugMode,
+      devices: PreviewDevices.all,
       tools: DevicePreview.defaultTools,
       builder: (_) => LiquidGlassWidgets.wrap(
         brightnessResolver: Theme.maybeBrightnessOf,

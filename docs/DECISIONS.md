@@ -100,3 +100,14 @@
   `DevicePreview(enabled, tools, builder)` API and sets the theme platform through
   `DevicePreview.appBuilder`. Its default tools already include screenshots, so no
   custom screenshot tool or saver is added.
+
+## D-013: Extend Device Preview with current generic devices
+
+- **Decision:** `lib/core/dev/preview_devices.dart` adds iPhone 15–17, iPad, Pixel,
+  Galaxy, foldable, and tablet presets as generic frames, listed before the bundled
+  `device_frame_plus` catalog.
+- **Alternatives:** Wait for a newer `device_frame_plus` (1.5.0 stops at iPhone 14 Pro
+  and six Android phones); hand-drawn frame artwork.
+- **Reason:** Layout checks need current screen sizes and safe areas. Sizes and
+  insets are approximate, so they validate layout, not pixel-exact appearance.
+  The list is only passed to `DevicePreview`, which is enabled in debug builds only.
