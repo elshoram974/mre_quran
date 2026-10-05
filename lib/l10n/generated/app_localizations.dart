@@ -349,6 +349,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Back'**
   String get back;
+
+  /// No description provided for @searchOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Search options'**
+  String get searchOptions;
+
+  /// No description provided for @noResults.
+  ///
+  /// In en, this message translates to:
+  /// **'No results found'**
+  String get noResults;
+
+  /// No description provided for @selectOption.
+  ///
+  /// In en, this message translates to:
+  /// **'Select'**
+  String get selectOption;
 }
 
 class _AppLocalizationsDelegate

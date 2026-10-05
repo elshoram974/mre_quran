@@ -40,5 +40,8 @@
   "creditsTanzil": "Quran text: Tanzil Project, CC BY 3.0. The app will include attribution and a Tanzil link with every bundled copy.",
   "creditsFonts": "Mushaf fonts and page layout: pending verified KFGQPC source and redistribution terms.",
   "creditsImages": "Images mode: not enabled. No page image has been downloaded or bundled.",
-  "back": "Back"
+  "back": "Back",
+  "searchOptions": "Search options",
+  "noResults": "No results found",
+  "selectOption": "Select"
 }

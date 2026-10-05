@@ -145,4 +145,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get back => 'Back';
+
+  @override
+  String get searchOptions => 'Search options';
+
+  @override
+  String get noResults => 'No results found';
+
+  @override
+  String get selectOption => 'Select';
 }

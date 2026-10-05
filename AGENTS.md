@@ -24,6 +24,14 @@
 - Keep derived search keys separate from verbatim Quran text.
 - Do not add images, page scans, fonts, audio, tafsir, or translations without recording source, licence, checksum, and attribution.
 
+## Housekeeping
+
+- Delete any file you create only to extract or inspect something (scripts, dumps,
+  screenshots, logs, scratch copies) as soon as you have what you need.
+- Never leave unused files, dead code, or unreferenced assets in the repo.
+  Remove a file when its last use is removed.
+- Put throwaway files in the session scratchpad, never inside the repository.
+
 ## Product and privacy
 
 - Arabic is the default locale; every user-facing string belongs in ARB files.
@@ -51,6 +59,12 @@
   - Shimmer must respect `MediaQuery.disableAnimations` and fall back to a static placeholder.
   - Shimmer must work in light and dark themes and in RTL, using directional gradients.
   - Use shimmer only for loading. Never use it to hide errors or empty states.
+- Build reusable widgets once in `lib/core/widgets` and reuse them everywhere.
+  - Before writing a widget, check `lib/core/widgets` for an existing one. Extend it instead of copying.
+  - If a pattern appears in a second place, extract it to a shared widget.
+  - Use `AppSelectField` for every single-choice picker. Never use `DropdownButton`,
+    `DropdownButtonFormField`, or `DropdownMenu` directly.
+  - A picker with more than 5 options must show a search field.
 - Every async screen handles four states explicitly: loading (shimmer), data, empty, and error with a retry action. Strings come from ARB files.
 - Prefer optimistic updates for small user actions (bookmark, favourite, setting toggle). Roll back with a clear message on failure.
 - Do not show a loading indicator for work shorter than about 150 ms. Avoid flicker.

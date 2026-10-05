@@ -143,4 +143,13 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get back => 'رجوع';
+
+  @override
+  String get searchOptions => 'ابحث في الخيارات';
+
+  @override
+  String get noResults => 'لا توجد نتائج';
+
+  @override
+  String get selectOption => 'اختيار';
 }
