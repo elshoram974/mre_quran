@@ -25,7 +25,9 @@ dependencies:
   go_router: ^18.0.2
   intl: ^0.20.3
   liquid_glass_widgets: ^1.9.0
+  meta: ^1.19.0
   mre_fields: ^0.3.3
+  path_provider: ^2.1.6
   shared_preferences: ^2.5.3
   xml: ^7.1.0
 
