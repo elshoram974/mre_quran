@@ -1,5 +1,6 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/l10n/l10n.dart';
@@ -14,8 +15,17 @@ class QuranApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final settings =
-        ref.watch(settingsProvider).valueOrNull ?? const AppSettings();
+    final AppSettings settings =
+        ref.watch(settingsProvider).value ?? const AppSettings();
+    ref.listen(settingsProvider, (_, next) {
+      next.whenData((value) {
+        unawaited(
+          ref
+              .read(crashReporterProvider)
+              .setCollectionEnabled(value.crashReportsEnabled),
+        );
+      });
+    });
     return MediaQuery(
       data: MediaQuery.of(context).copyWith(
         disableAnimations:

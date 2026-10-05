@@ -1,9 +1,32 @@
-import 'package:flutter/widgets.dart';
+import 'dart:ui';
+
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
 import 'app/quran_app.dart';
+import 'core/crash/crash_reporter.dart';
+import 'firebase_options.dart';
+import 'features/settings/application/settings_provider.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const ProviderScope(child: QuranApp()));
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  final crashReporter = FirebaseCrashReporter();
+  await crashReporter.setCollectionEnabled(false);
+  FlutterError.onError = crashReporter.recordFlutterFatalError;
+  PlatformDispatcher.instance.onError = (error, stackTrace) {
+    crashReporter.recordFatalError(error, stackTrace);
+    return true;
+  };
+  runApp(
+    LiquidGlassWidgets.wrap(
+      brightnessResolver: Theme.maybeBrightnessOf,
+      child: ProviderScope(
+        overrides: [crashReporterProvider.overrideWithValue(crashReporter)],
+        child: const QuranApp(),
+      ),
+    ),
+  );
 }

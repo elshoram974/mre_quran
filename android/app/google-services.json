@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "552147690746",
+    "project_id": "mre-golden-quran-2026",
+    "storage_bucket": "mre-golden-quran-2026.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:552147690746:android:8ba361d14d3edc98695543",
+        "android_client_info": {
+          "package_name": "net.mrecode.mre_quran"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCVHNINTAmiHx7VF264RdG9rs_jc3C3Op8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

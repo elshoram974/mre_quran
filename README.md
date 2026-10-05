@@ -8,8 +8,8 @@ Use Flutter 3.47.5 / Dart 3.13.4, pinned in `.fvmrc`. With FVM, run
 `fvm install` and prefix Flutter commands with `fvm`.
 
 ```sh
-flutter pub get
-flutter run
+fvm flutter pub get
+fvm flutter run
 ```
 
 ## Structure
@@ -18,7 +18,7 @@ flutter run
 - `lib/core`: themes, width breakpoints, constrained content and shared empty states.
 - `lib/features/<feature>/presentation`: views and controllers.
 - `lib/features/settings/data`: repository contract and local preference storage.
-- `lib/main.dart`: dependency composition and initial settings loading.
+- `lib/main.dart`: dependency composition and zero-blocking startup.
 
 Dependencies are passed through constructors. Controllers own application state;
 views own layout and navigation selection. Add data repositories to features when
@@ -27,12 +27,13 @@ real data sources exist. Keep Quran data access out of widgets.
 ## Current behavior
 
 - Arabic locale and RTL, with Flutter's localized Material controls.
-- System, light and dark themes, saved locally with `SharedPreferencesAsync`.
+- System, light, dark, and sepia themes, saved locally with `SharedPreferencesAsync`.
 - Storage errors are visible in Settings and can be retried.
 - Bottom navigation below 600 logical pixels, labeled rail from 600 to 839,
   extended rail from 840. Content is capped at 960 logical pixels.
 - Navigation selection survives resizing; tab widgets remain mounted.
-- Mushaf and bookmarks currently show explicit empty states.
+- Reader content is intentionally gated until verified Quran data and a matching
+  font/page-map licence are approved.
 
 ## Quran data boundary
 
@@ -46,17 +47,17 @@ corpus before shipping. Choose a licensed Quran font matching that source.
 
 Reviewed https://pub.dev/packages/mre_fields and the adjacent package README.
 The package provides automatic text direction, text/form fields, phone input and
-image paste. It fits future surah search and personal notes. This foundation has
-no free-text fields, so it does not add the dependency yet. When adding search,
-verify the published version and wrap only the app-specific field configuration.
+image paste. It currently powers the reader search field; it is not a Quran
+rendering or Quran data package. Monitor its Android Kotlin-plugin warning on
+Flutter upgrades.
 It is not a Quran rendering or Quran data package.
 
 ## Validation
 
 ```sh
 dart format --output=none --set-exit-if-changed lib test
-flutter analyze
-flutter test
+fvm flutter analyze
+fvm flutter test
 ```
 
 Widget coverage checks Arabic RTL, navigation, theme interaction, resizing,
