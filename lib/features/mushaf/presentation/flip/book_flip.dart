@@ -252,12 +252,14 @@ class _BookFlipState extends State<BookFlip>
         final rest = _position.round().clamp(0, lastStep);
 
         // Pages that must stay built so a snapshot is always ready: the
-        // current step and the steps on either side.
+        // current step and the steps on either side. Single mode also keeps
+        // the page that faces the turning sheet.
         final needed = <int>{
-          for (var s = rest - 1; s <= rest + (spread ? 1 : 2); s++) ...[
-            ?_geometry.rightPage(s),
-            ?_geometry.leftPage(s),
-          ],
+          for (
+            var s = rest - (spread ? 1 : 2);
+            s <= rest + (spread ? 1 : 2);
+            s++
+          ) ...[?_geometry.rightPage(s), ?_geometry.leftPage(s)],
         };
 
         // Pages that are visible now. While a sheet turns, the pages under it
@@ -278,9 +280,14 @@ class _BookFlipState extends State<BookFlip>
           visible.addAll([?_geometry.rightPage(rest)]);
         }
 
+        // In single mode the sheet swings past the spine onto the facing page,
+        // the one before it, which slides into view with the sheet.
+        final facing = turning && !spread ? _geometry.rightPage(k - 1) : null;
+
         // Each page sits in the slot its number says: odd on the right half,
         // even on the left half in spread mode, the whole area in single mode.
         Widget slot(int pageNumber, {required bool hidden}) {
+          final isFacing = pageNumber == facing;
           final right = pageNumber.isOdd;
           final child = RepaintBoundary(
             key: _keyFor(pageNumber),
@@ -292,7 +299,21 @@ class _BookFlipState extends State<BookFlip>
               ),
             ),
           );
-          final content = IgnorePointer(ignoring: hidden, child: child);
+          final content = IgnorePointer(
+            ignoring: hidden || isFacing,
+            child: child,
+          );
+          if (isFacing) {
+            // Beyond the spine: one page width past the reading start.
+            return PositionedDirectional(
+              key: ValueKey<String>('slot-$pageNumber'),
+              start: -width,
+              width: width,
+              top: 0,
+              bottom: 0,
+              child: content,
+            );
+          }
           return spread
               ? PositionedDirectional(
                   key: ValueKey<String>('slot-$pageNumber'),
@@ -313,7 +334,9 @@ class _BookFlipState extends State<BookFlip>
             ? const <Widget>[]
             : <Widget>[
                 for (final n in ordered)
-                  if (!visible.contains(n)) slot(n, hidden: true),
+                  if (!visible.contains(n) && n != facing)
+                    slot(n, hidden: true),
+                ?facing == null ? null : slot(facing, hidden: false),
                 for (final n in ordered)
                   if (visible.contains(n)) slot(n, hidden: false),
               ];
@@ -356,7 +379,12 @@ class _BookFlipState extends State<BookFlip>
         final Widget content = widget.realistic
             ? Transform.translate(
                 offset: Offset(-shift, 0),
-                child: Stack(fit: StackFit.expand, children: children),
+                // The facing page and the landing sheet lie past the edge.
+                child: Stack(
+                  fit: StackFit.expand,
+                  clipBehavior: Clip.none,
+                  children: children,
+                ),
               )
             : _slide(context, paper: paper, k: k, f: f, width: width);
 

@@ -75,6 +75,24 @@ void main() {
     });
   }
 
+  testWidgets('single: the facing page slides in beside the turning sheet', (
+    tester,
+  ) async {
+    await _pump(tester, realistic: true, spread: false);
+    final gesture = await tester.startGesture(const Offset(100, 350));
+    for (var i = 0; i < 30; i++) {
+      await gesture.moveBy(const Offset(7, 0));
+      await tester.pump(const Duration(milliseconds: 8));
+    }
+    // Mid-turn the page before (the facing page) has come in from the right.
+    final facing = tester.getRect(find.text('page 4'));
+    expect(facing.center.dx, inExclusiveRange(200, 400));
+    await gesture.up();
+    await tester.pumpAndSettle();
+    expect(find.text('page 6').hitTestable(), findsOneWidget);
+    expect(find.text('page 4').hitTestable(), findsNothing);
+  });
+
   testWidgets('cannot turn before the first page or past the last', (
     tester,
   ) async {
