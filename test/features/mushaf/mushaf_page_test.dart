@@ -116,10 +116,14 @@ void main() {
   testWidgets('a wide window shows two pages side by side', (tester) async {
     await _pump(tester, width: 1000, savedPage: 3);
     // Pages 3 and 4 face each other; the right-hand page is odd.
-    expect(find.byKey(const ValueKey<int>(3)), findsOneWidget);
-    expect(find.byKey(const ValueKey<int>(4)), findsOneWidget);
-    final right = tester.getCenter(find.byKey(const ValueKey<int>(3))).dx;
-    final left = tester.getCenter(find.byKey(const ValueKey<int>(4))).dx;
+    expect(find.byKey(const ValueKey<int>(3)).hitTestable(), findsOneWidget);
+    expect(find.byKey(const ValueKey<int>(4)).hitTestable(), findsOneWidget);
+    final right = tester
+        .getCenter(find.byKey(const ValueKey<int>(3)).hitTestable())
+        .dx;
+    final left = tester
+        .getCenter(find.byKey(const ValueKey<int>(4)).hitTestable())
+        .dx;
     expect(right, greaterThan(left));
   });
 
@@ -127,8 +131,12 @@ void main() {
     tester,
   ) async {
     await _pump(tester, width: 1000);
-    final right = tester.getCenter(find.byKey(const ValueKey<int>(1))).dx;
-    final left = tester.getCenter(find.byKey(const ValueKey<int>(2))).dx;
+    final right = tester
+        .getCenter(find.byKey(const ValueKey<int>(1)).hitTestable())
+        .dx;
+    final left = tester
+        .getCenter(find.byKey(const ValueKey<int>(2)).hitTestable())
+        .dx;
     expect(right, greaterThan(left));
   });
 
@@ -165,13 +173,13 @@ void main() {
     await gesture.up();
     await tester.pumpAndSettle();
     expect(positions.page, anyOf(isNull, 5));
-    expect(find.byKey(const ValueKey<int>(5)), findsOneWidget);
+    expect(find.byKey(const ValueKey<int>(5)).hitTestable(), findsOneWidget);
   });
 
   testWidgets('a narrow window shows one page', (tester) async {
     await _pump(tester, width: 400, savedPage: 3);
-    expect(find.byKey(const ValueKey<int>(3)), findsOneWidget);
-    expect(find.byKey(const ValueKey<int>(2)), findsNothing);
+    expect(find.byKey(const ValueKey<int>(3)).hitTestable(), findsOneWidget);
+    expect(find.byKey(const ValueKey<int>(2)).hitTestable(), findsNothing);
   });
 
   testWidgets('pressing and holding an ayah opens its actions', (tester) async {

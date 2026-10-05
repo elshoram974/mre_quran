@@ -1,22 +1,28 @@
-import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/physics.dart';
-import 'package:flutter/semantics.dart';
+import 'package:flutter/rendering.dart';
 
 import 'book_geometry.dart';
+import 'page_curl_painter.dart';
 
 /// Builds one page of the book.
 typedef BookPageBuilder = Widget Function(BuildContext context, int page);
 
 /// A book that turns its pages like paper.
 ///
-/// The book opens right to left. A drag to the right turns forward: in spread
-/// mode the left-hand page lifts from its outer edge, swings over the spine,
-/// and lands on the right with its back showing the next page; in single mode
-/// the page swings away around the spine on its right edge. A drag to the left
-/// turns back the same way in reverse. Letting go finishes or undoes the turn
-/// with a spring, so the page keeps the speed of the hand.
+/// The book opens right to left. A drag to the right turns forward. In spread
+/// mode the left-hand page lifts from its outer edge, bends as it rises, swings
+/// over the spine, and lands on the right with its back showing the next page.
+/// In single mode the page bends and swings away around the spine. A drag to
+/// the left turns back the same way in reverse. Letting go finishes or undoes
+/// the turn with a spring that keeps the speed of the hand. One gesture turns
+/// at most one step: one page, or one pair of facing pages.
+///
+/// The sheet is drawn from snapshots of the pages, so any widget can be a page.
+/// The neighbouring pages stay built underneath the visible ones so a snapshot
+/// is ready the moment a drag starts.
 ///
 /// [page] is the page the book should rest on. [onPageChanged] reports the
 /// right-hand page whenever a turn settles.
@@ -49,8 +55,7 @@ class BookFlip extends StatefulWidget {
   /// Called with the right-hand page after a turn settles.
   final ValueChanged<int> onPageChanged;
 
-  /// Colour of the back of a sheet and of shadows' base. Defaults to the theme
-  /// surface.
+  /// Colour of the paper behind every page. Defaults to the theme surface.
   final Color? paper;
 
   /// Screen reader label of the "next page" action.
@@ -69,11 +74,17 @@ class _BookFlipState extends State<BookFlip>
     vsync: this,
   )..addListener(_onTick);
 
+  final Map<int, GlobalKey> _keys = {};
   late BookGeometry _geometry = _makeGeometry();
   late double _position = _geometry.stepOfPage(widget.page).toDouble();
   bool _dragging = false;
   int _dragStartStep = 0;
-  int _reportedStep = -1;
+  int _reportedStep = 0;
+
+  ui.Image? _front;
+  ui.Image? _back;
+  int? _textureStep;
+  double _pixelRatio = 1;
 
   BookGeometry _makeGeometry() =>
       BookGeometry(pageCount: widget.pageCount, spread: widget.spread);
@@ -96,6 +107,7 @@ class _BookFlipState extends State<BookFlip>
     if (changedMode ||
         (!_dragging && !_settle.isAnimating && target != _reportedStep)) {
       _settle.stop();
+      _disposeTextures();
       _position = target.toDouble();
       _reportedStep = target;
     }
@@ -104,11 +116,46 @@ class _BookFlipState extends State<BookFlip>
   @override
   void dispose() {
     _settle.dispose();
+    _disposeTextures();
     super.dispose();
   }
 
+  GlobalKey _keyFor(int page) => _keys.putIfAbsent(page, GlobalKey.new);
+
+  void _disposeTextures() {
+    _front?.dispose();
+    _back?.dispose();
+    _front = null;
+    _back = null;
+    _textureStep = null;
+  }
+
+  ui.Image? _snapshot(int? page) {
+    if (page == null) return null;
+    final render = _keys[page]?.currentContext?.findRenderObject();
+    if (render is! RenderRepaintBoundary || !render.hasSize) return null;
+    if (render.debugNeedsPaint) return null;
+    return render.toImageSync(pixelRatio: _pixelRatio);
+  }
+
+  /// Takes the snapshots a turn between [step] and [step] + 1 needs.
+  void _ensureTextures(int step) {
+    if (_textureStep == step && _front != null) return;
+    _disposeTextures();
+    final front = _snapshot(
+      _geometry.spread ? _geometry.leftPage(step) : _geometry.rightPage(step),
+    );
+    if (front == null) return;
+    _front = front;
+    _back = _geometry.spread ? _snapshot(_geometry.rightPage(step + 1)) : null;
+    _textureStep = step;
+  }
+
   void _onTick() {
-    setState(() => _position = _geometry.clampPosition(_settle.value));
+    final next = _geometry.clampPosition(_settle.value);
+    final step = next.floor();
+    if (next - step > 0.0005) _ensureTextures(step);
+    setState(() => _position = next);
   }
 
   void _report() {
@@ -127,13 +174,12 @@ class _BookFlipState extends State<BookFlip>
   void _dragUpdate(DragUpdateDetails details, double width) {
     // A drag to the right turns forward. A full width of travel is a bit less
     // than a full turn so the page feels light under the finger.
-    // One gesture turns at most one step.
-    setState(() {
-      _position = _position + details.delta.dx / (width * 0.7);
-      _position = _geometry.clampPosition(
-        _position.clamp(_dragStartStep - 1.0, _dragStartStep + 1.0),
-      );
-    });
+    var next = _position + details.delta.dx / (width * 0.7);
+    next = next.clamp(_dragStartStep - 1.0, _dragStartStep + 1.0);
+    next = _geometry.clampPosition(next);
+    final step = next.floor();
+    if (next - step > 0.0005) _ensureTextures(step);
+    setState(() => _position = next);
   }
 
   void _dragEnd(DragEndDetails details, double width) {
@@ -153,12 +199,13 @@ class _BookFlipState extends State<BookFlip>
     if (MediaQuery.disableAnimationsOf(context)) {
       _settle.stop();
       setState(() => _position = target);
-      _report();
+      _finish();
       return;
     }
     _settle.value = _position;
     final spring = SpringSimulation(
-      const SpringDescription(mass: 1, stiffness: 180, damping: 22),
+      // Slightly under-damped: the sheet settles with a little life.
+      const SpringDescription(mass: 1, stiffness: 190, damping: 24),
       _position,
       target,
       velocity,
@@ -166,59 +213,125 @@ class _BookFlipState extends State<BookFlip>
     _settle.animateWith(spring).whenComplete(() {
       if (!mounted || _dragging) return;
       setState(() => _position = target);
-      _report();
+      _finish();
     });
+  }
+
+  void _finish() {
+    _disposeTextures();
+    _report();
   }
 
   void _turn(int by) {
     final base = _position.round();
-    _animateTo(_geometry.clampPosition((base + by).toDouble()));
+    _dragStartStep = base;
+    final target = _geometry.clampPosition((base + by).toDouble());
+    _animateTo(target);
   }
 
   @override
   Widget build(BuildContext context) {
     final paper = widget.paper ?? Theme.of(context).colorScheme.surface;
+    _pixelRatio = MediaQuery.devicePixelRatioOf(context).clamp(1.0, 2.0);
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth;
+        final height = constraints.maxHeight;
+        final spread = _geometry.spread;
+        final half = width / 2;
         final lastStep = _geometry.stepCount - 1;
-        final a = _position.floor().clamp(0, lastStep);
-        final f = a >= lastStep ? 0.0 : (_position - a).clamp(0.0, 1.0);
+        final k = _position.floor().clamp(0, lastStep);
+        final f = k >= lastStep ? 0.0 : (_position - k).clamp(0.0, 1.0);
+        final turning = f > 0.0005 && _front != null && _textureStep == k;
+        final rest = _position.round().clamp(0, lastStep);
 
-        Widget page(int? number) => number == null
-            ? const SizedBox.shrink()
-            : RepaintBoundary(
-                child: KeyedSubtree(
-                  key: ValueKey<int>(number),
-                  child: widget.pageBuilder(context, number),
-                ),
-              );
+        // Pages that must stay built so a snapshot is always ready: the
+        // current step and the steps on either side.
+        final needed = <int>{
+          for (var s = rest - 1; s <= rest + 1; s++) ...[
+            ?_geometry.rightPage(s),
+            ?_geometry.leftPage(s),
+          ],
+        };
 
-        final Widget body;
-        if (f < 0.0005) {
-          body = _geometry.spread
-              ? Row(
-                  children: [
-                    Expanded(child: page(_geometry.rightPage(a))),
-                    Expanded(child: page(_geometry.leftPage(a))),
-                  ],
-                )
-              : page(_geometry.rightPage(a));
-        } else if (_geometry.spread) {
-          body = _SpreadTurn(
-            progress: f,
-            paper: paper,
-            baseRight: page(_geometry.rightPage(a)),
-            baseLeft: page(_geometry.leftPage(a + 1)),
-            front: page(_geometry.leftPage(a)),
-            back: page(_geometry.rightPage(a + 1)),
-          );
+        // Pages that are visible now. While a sheet turns, the pages under it
+        // are the next step's left page and this step's right page (spread),
+        // or just the next page (single).
+        final visible = <int>{};
+        if (turning && spread) {
+          visible.addAll([?_geometry.rightPage(k), ?_geometry.leftPage(k + 1)]);
+        } else if (turning) {
+          visible.addAll([?_geometry.rightPage(k + 1)]);
+        } else if (spread) {
+          visible.addAll([
+            ?_geometry.rightPage(rest),
+            ?_geometry.leftPage(rest),
+          ]);
         } else {
-          body = _SingleTurn(
-            progress: f,
-            paper: paper,
-            base: page(_geometry.rightPage(a + 1)),
-            sheet: page(_geometry.rightPage(a)),
+          visible.addAll([?_geometry.rightPage(rest)]);
+        }
+
+        // Each page sits in the slot its number says: odd on the right half,
+        // even on the left half in spread mode, the whole area in single mode.
+        Widget slot(int pageNumber, {required bool hidden}) {
+          final right = pageNumber.isOdd;
+          final child = RepaintBoundary(
+            key: _keyFor(pageNumber),
+            child: ColoredBox(
+              color: paper,
+              child: KeyedSubtree(
+                key: ValueKey<int>(pageNumber),
+                child: widget.pageBuilder(context, pageNumber),
+              ),
+            ),
+          );
+          final content = IgnorePointer(ignoring: hidden, child: child);
+          return spread
+              ? PositionedDirectional(
+                  key: ValueKey<String>('slot-$pageNumber'),
+                  start: right ? 0 : half,
+                  width: half,
+                  top: 0,
+                  bottom: 0,
+                  child: content,
+                )
+              : Positioned.fill(
+                  key: ValueKey<String>('slot-$pageNumber'),
+                  child: content,
+                );
+        }
+
+        final ordered = needed.toList()..sort();
+        final children = <Widget>[
+          for (final n in ordered)
+            if (!visible.contains(n)) slot(n, hidden: true),
+          for (final n in ordered)
+            if (visible.contains(n)) slot(n, hidden: false),
+        ];
+
+        if (turning) {
+          children.add(
+            PositionedDirectional(
+              // The turning sheet is the left half in spread mode and the
+              // whole area in single mode, hinged on the spine.
+              start: spread ? half : 0,
+              width: spread ? half : width,
+              top: 0,
+              bottom: 0,
+              child: IgnorePointer(
+                child: CustomPaint(
+                  painter: PageCurlPainter(
+                    progress: f,
+                    front: _front!,
+                    back: _back,
+                    vanishX: spread ? half : width / 2,
+                    pixelRatio: _pixelRatio,
+                    paper: paper,
+                  ),
+                  size: Size(spread ? half : width, height),
+                ),
+              ),
+            ),
           );
         }
 
@@ -238,166 +351,16 @@ class _BookFlipState extends State<BookFlip>
             // The book opens right to left in every app language.
             child: Directionality(
               textDirection: TextDirection.rtl,
-              child: ColoredBox(color: paper, child: body),
+              child: ClipRect(
+                child: ColoredBox(
+                  color: paper,
+                  child: Stack(fit: StackFit.expand, children: children),
+                ),
+              ),
             ),
           ),
         );
       },
     );
   }
-}
-
-const double _perspective = 0.00035;
-
-Matrix4 _rotation(double angle) => Matrix4.identity()
-  ..setEntry(3, 2, _perspective)
-  ..rotateY(angle);
-
-/// Two facing pages with the left one turning over the spine onto the right.
-class _SpreadTurn extends StatelessWidget {
-  const _SpreadTurn({
-    required this.progress,
-    required this.paper,
-    required this.baseRight,
-    required this.baseLeft,
-    required this.front,
-    required this.back,
-  });
-
-  final double progress;
-  final Color paper;
-  final Widget baseRight;
-  final Widget baseLeft;
-  final Widget front;
-  final Widget back;
-
-  @override
-  Widget build(BuildContext context) {
-    final angle = progress * math.pi;
-    final showBack = angle > math.pi / 2;
-    final lift = math.sin(angle);
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        Row(
-          children: [
-            Expanded(child: baseRight),
-            Expanded(child: baseLeft),
-          ],
-        ),
-        // Shadow the sheet casts on the right-hand page below it, darkest at
-        // the spine.
-        Row(
-          children: [
-            Expanded(
-              child: IgnorePointer(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: AlignmentDirectional.centerEnd,
-                      end: AlignmentDirectional.centerStart,
-                      colors: [
-                        Colors.black.withValues(alpha: 0.22 * lift),
-                        Colors.transparent,
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            const Expanded(child: SizedBox.shrink()),
-          ],
-        ),
-        // The turning sheet occupies the left half and pivots on the spine.
-        Row(
-          children: [
-            const Expanded(child: SizedBox.shrink()),
-            Expanded(
-              child: Transform(
-                alignment: AlignmentDirectional.centerStart,
-                transform: _rotation(-angle),
-                child: _Face(
-                  paper: paper,
-                  shade: showBack ? 0.18 * (1 - lift) : 0.2 * lift,
-                  child: showBack
-                      ? Transform(
-                          alignment: Alignment.center,
-                          transform: Matrix4.rotationY(math.pi),
-                          child: back,
-                        )
-                      : front,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-/// One page swinging away around the spine on its right edge.
-class _SingleTurn extends StatelessWidget {
-  const _SingleTurn({
-    required this.progress,
-    required this.paper,
-    required this.base,
-    required this.sheet,
-  });
-
-  final double progress;
-  final Color paper;
-  final Widget base;
-  final Widget sheet;
-
-  @override
-  Widget build(BuildContext context) {
-    final angle = progress * math.pi / 2;
-    final lift = math.sin(angle);
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        base,
-        IgnorePointer(
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: AlignmentDirectional.centerStart,
-                end: AlignmentDirectional.centerEnd,
-                colors: [
-                  Colors.transparent,
-                  Colors.black.withValues(alpha: 0.18 * lift),
-                ],
-              ),
-            ),
-          ),
-        ),
-        Transform(
-          alignment: AlignmentDirectional.centerStart,
-          transform: _rotation(-angle),
-          child: _Face(paper: paper, shade: 0.22 * lift, child: sheet),
-        ),
-      ],
-    );
-  }
-}
-
-/// A sheet face: paper under the page, with a shading overlay for depth.
-class _Face extends StatelessWidget {
-  const _Face({required this.paper, required this.shade, required this.child});
-
-  final Color paper;
-  final double shade;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) => Stack(
-    fit: StackFit.expand,
-    children: [
-      ColoredBox(color: paper, child: child),
-      IgnorePointer(
-        child: ColoredBox(color: Colors.black.withValues(alpha: shade)),
-      ),
-    ],
-  );
 }
