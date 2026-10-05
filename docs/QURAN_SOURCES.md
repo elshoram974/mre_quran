@@ -159,3 +159,19 @@ computes tajweed rules itself.
 Amiri Quran is a Naskh font made for Quran text and renders the Tanzil Uthmani encoding, including the
 ayah-end sign with its number. It is not the Madinah calligraphy. It stays until the KFGQPC fonts are
 approved (`docs/PERMISSION_REQUESTS.md`).
+
+## 12. Page images and exact layout: links only (nothing downloaded)
+
+Checked with HEAD requests on 2026-10-05. **No WebP source was found**; every image source below is PNG.
+None of the repositories declares a licence (GitHub reports none), and the images are rendered from the
+KFGQPC fonts, so they carry the same permission question as the fonts.
+
+| What | URL pattern | Format | Notes |
+|---|---|---|---|
+| Madinah pages, plain (KFGQPC V4 rendering) | `https://cdn.jsdelivr.net/gh/SakinaDevGroup/mushaf-madani-cdn@main/{light\|dark}/p{1..604}.png` | PNG, 1080×2160, about 76–160 KB | [repo](https://github.com/SakinaDevGroup/mushaf-madani-cdn). No licence file |
+| Madinah pages, tajweed colours | `https://raw.githubusercontent.com/SakinaDevGroup/mushaf-tajweed-cdn/main/{light\|dark}/p{1..604}.png` | PNG, 1080×2160, about 190 KB | [repo](https://github.com/SakinaDevGroup/mushaf-tajweed-cdn). The jsDelivr mirror did not answer the check |
+| Exact line and word layout (604 JSON files, QPC glyph codes) | `https://raw.githubusercontent.com/zonetecde/mushaf-layout/refs/heads/main/mushaf/page-{001..604}.json` | JSON, about 25 KB per page | [repo](https://github.com/zonetecde/mushaf-layout). Source and licence not stated |
+| Official images | Quran Foundation Content API, Mushaf 10 (Uthmani Tajweed images) and 12 (black images) | Not documented publicly | Needs a developer account; bundling terms in `docs/PERMISSION_REQUESTS.md` |
+
+WebP can be produced from the PNGs once permission is granted; the app should then download pages on
+demand and never bundle them.

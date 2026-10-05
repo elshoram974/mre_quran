@@ -69,3 +69,6 @@ ios/**/xcuserdata/
 ios/**/.symlinks/
 ios/**/Pods/
 ios/**/Flutter/ephemeral/
+
+# Golden test failure artifacts
+**/failures/
