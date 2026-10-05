@@ -160,12 +160,20 @@ class MushafPageView extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      _Tag(
-                        text: l10n.surahTitle(surah.arabicName),
-                        style: label,
+                      Flexible(
+                        child: _Tag(
+                          text: l10n.surahTitle(surah.arabicName),
+                          style: label,
+                        ),
                       ),
+                      const SizedBox(width: 12),
                       const Spacer(),
-                      _Tag(text: l10n.juzTitle(_n(juz.number)), style: label),
+                      Flexible(
+                        child: _Tag(
+                          text: l10n.juzTitle(_n(juz.number)),
+                          style: label,
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 6),
@@ -282,7 +290,12 @@ class _Tag extends StatelessWidget {
       color: Theme.of(context).colorScheme.secondaryContainer,
       borderRadius: BorderRadius.circular(20),
     ),
-    child: Text(text, style: style),
+    child: Text(
+      text,
+      style: style,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+    ),
   );
 }
 
@@ -325,20 +338,30 @@ class _SurahBanner extends StatelessWidget {
                   child: Text(
                     l10n.surahOrderLabel(number(surah.number)),
                     style: side,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.start,
                   ),
                 ),
-                Text(
-                  l10n.surahTitle(surah.arabicName),
-                  style: label.copyWith(
-                    fontSize: 22,
-                    color: scheme.onSecondaryContainer,
+                Flexible(
+                  flex: 2,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      l10n.surahTitle(surah.arabicName),
+                      style: label.copyWith(
+                        fontSize: 22,
+                        color: scheme.onSecondaryContainer,
+                      ),
+                    ),
                   ),
                 ),
                 Expanded(
                   child: Text(
                     '${l10n.surahAyahsLabel(number(surah.ayahCount))}\n$revelation',
                     style: side,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.end,
                   ),
                 ),
