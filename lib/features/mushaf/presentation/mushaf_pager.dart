@@ -80,6 +80,9 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
     final fontScale = ref.watch(
       settingsProvider.select((s) => s.value?.readerFontScale ?? 1),
     );
+    final realistic = ref.watch(
+      settingsProvider.select((s) => s.value?.realisticPageTurn ?? true),
+    );
     final bookmarked = ref.watch(bookmarkedRefsProvider);
     final highlighted = ref.watch(highlightedAyahProvider);
 
@@ -89,6 +92,7 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
       child: BookFlip(
         pageCount: _pageCount,
         spread: widget.spread,
+        realistic: realistic,
         page: page,
         nextLabel: l10n.nextPage,
         previousLabel: l10n.previousPage,

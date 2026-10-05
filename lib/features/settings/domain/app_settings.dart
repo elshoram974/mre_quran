@@ -11,6 +11,7 @@ class AppSettings {
     this.crashReportsEnabled = false,
     this.startupBehavior = StartupBehavior.lastTab,
     this.readerFontScale = 1,
+    this.realisticPageTurn = true,
   });
 
   final AppThemePreference theme;
@@ -24,6 +25,9 @@ class AppSettings {
 
   /// Size of Mushaf text relative to the default, 0.8 to 1.6.
   final double readerFontScale;
+
+  /// Whether Mushaf pages bend and turn like paper instead of sliding.
+  final bool realisticPageTurn;
 
   Locale get locale => Locale(localeCode);
 
@@ -41,6 +45,7 @@ class AppSettings {
     bool? crashReportsEnabled,
     StartupBehavior? startupBehavior,
     double? readerFontScale,
+    bool? realisticPageTurn,
   }) => AppSettings(
     theme: theme ?? this.theme,
     localeCode: localeCode ?? this.localeCode,
@@ -49,6 +54,7 @@ class AppSettings {
     crashReportsEnabled: crashReportsEnabled ?? this.crashReportsEnabled,
     startupBehavior: startupBehavior ?? this.startupBehavior,
     readerFontScale: readerFontScale ?? this.readerFontScale,
+    realisticPageTurn: realisticPageTurn ?? this.realisticPageTurn,
   );
 }
 

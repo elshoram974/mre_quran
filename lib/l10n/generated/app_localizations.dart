@@ -589,6 +589,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Previous page'**
   String get previousPage;
+
+  /// No description provided for @realisticPageTurn.
+  ///
+  /// In en, this message translates to:
+  /// **'Realistic page turning'**
+  String get realisticPageTurn;
+
+  /// No description provided for @realisticPageTurnDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Pages bend and turn like paper. Turn it off for a simple slide.'**
+  String get realisticPageTurnDescription;
 }
 
 class _AppLocalizationsDelegate

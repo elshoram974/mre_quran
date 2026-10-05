@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/widgets/app_segmented_control.dart';
 import '../../../core/widgets/app_sheet.dart';
+import '../../../core/widgets/app_switch_tile.dart';
 import '../../settings/application/settings_provider.dart';
 import '../../settings/domain/app_settings.dart';
 
@@ -49,6 +50,14 @@ class _DisplayOptions extends ConsumerWidget {
               ),
               const Icon(Icons.text_increase, size: 20),
             ],
+          ),
+          const SizedBox(height: 4),
+          AppSwitchTile(
+            value: settings.realisticPageTurn,
+            onChanged: (value) =>
+                notifier.save(settings.copyWith(realisticPageTurn: value)),
+            title: l10n.realisticPageTurn,
+            subtitle: l10n.realisticPageTurnDescription,
           ),
           const SizedBox(height: 12),
           Text(l10n.theme, style: Theme.of(context).textTheme.titleSmall),

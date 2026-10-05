@@ -121,6 +121,17 @@ class _SettingsContent extends ConsumerWidget {
         const SizedBox(height: 12),
         _SettingsCard(
           child: AppSwitchTile(
+            value: settings.realisticPageTurn,
+            onChanged: (value) =>
+                notifier.save(settings.copyWith(realisticPageTurn: value)),
+            icon: Icons.auto_stories_outlined,
+            title: l10n.realisticPageTurn,
+            subtitle: l10n.realisticPageTurnDescription,
+          ),
+        ),
+        const SizedBox(height: 12),
+        _SettingsCard(
+          child: AppSwitchTile(
             value: settings.reduceMotion,
             onChanged: (value) =>
                 notifier.save(settings.copyWith(reduceMotion: value)),

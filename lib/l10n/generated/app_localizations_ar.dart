@@ -301,4 +301,11 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get previousPage => 'الصفحة السابقة';
+
+  @override
+  String get realisticPageTurn => 'تقليب واقعي للصفحات';
+
+  @override
+  String get realisticPageTurnDescription =>
+      'تنثني الصفحة وتنقلب كالورق. أوقفه لتنزلق الصفحات ببساطة.';
 }

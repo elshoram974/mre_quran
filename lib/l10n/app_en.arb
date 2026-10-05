@@ -169,5 +169,7 @@
   "bookmarkRemoved": "Bookmark removed",
   "undo": "Undo",
   "nextPage": "Next page",
-  "previousPage": "Previous page"
+  "previousPage": "Previous page",
+  "realisticPageTurn": "Realistic page turning",
+  "realisticPageTurnDescription": "Pages bend and turn like paper. Turn it off for a simple slide."
 }

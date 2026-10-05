@@ -80,5 +80,7 @@
   "bookmarkRemoved": "تمت إزالة العلامة",
   "undo": "تراجع",
   "nextPage": "الصفحة التالية",
-  "previousPage": "الصفحة السابقة"
+  "previousPage": "الصفحة السابقة",
+  "realisticPageTurn": "تقليب واقعي للصفحات",
+  "realisticPageTurnDescription": "تنثني الصفحة وتنقلب كالورق. أوقفه لتنزلق الصفحات ببساطة."
 }

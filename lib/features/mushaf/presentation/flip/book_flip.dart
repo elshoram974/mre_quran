@@ -36,6 +36,7 @@ class BookFlip extends StatefulWidget {
     required this.pageBuilder,
     required this.onPageChanged,
     this.paper,
+    this.realistic = true,
     this.nextLabel,
     this.previousLabel,
   });
@@ -57,6 +58,9 @@ class BookFlip extends StatefulWidget {
 
   /// Colour of the paper behind every page. Defaults to the theme surface.
   final Color? paper;
+
+  /// Whether pages bend and turn like paper. When false, pages slide.
+  final bool realistic;
 
   /// Screen reader label of the "next page" action.
   final String? nextLabel;
@@ -140,6 +144,7 @@ class _BookFlipState extends State<BookFlip>
 
   /// Takes the snapshots a turn between [step] and [step] + 1 needs.
   void _ensureTextures(int step) {
+    if (!widget.realistic) return;
     if (_textureStep == step && _front != null) return;
     _disposeTextures();
     final front = _snapshot(
@@ -147,7 +152,8 @@ class _BookFlipState extends State<BookFlip>
     );
     if (front == null) return;
     _front = front;
-    _back = _geometry.spread ? _snapshot(_geometry.rightPage(step + 1)) : null;
+    // The back of the sheet shows the page that follows it.
+    _back = _snapshot(_geometry.rightPage(step + 1));
     _textureStep = step;
   }
 
@@ -248,7 +254,7 @@ class _BookFlipState extends State<BookFlip>
         // Pages that must stay built so a snapshot is always ready: the
         // current step and the steps on either side.
         final needed = <int>{
-          for (var s = rest - 1; s <= rest + 1; s++) ...[
+          for (var s = rest - 1; s <= rest + (spread ? 1 : 2); s++) ...[
             ?_geometry.rightPage(s),
             ?_geometry.leftPage(s),
           ],
@@ -261,7 +267,8 @@ class _BookFlipState extends State<BookFlip>
         if (turning && spread) {
           visible.addAll([?_geometry.rightPage(k), ?_geometry.leftPage(k + 1)]);
         } else if (turning) {
-          visible.addAll([?_geometry.rightPage(k + 1)]);
+          // The sheet's back shows the next page; under it lies the page after.
+          visible.addAll([?_geometry.rightPage(k + 2)]);
         } else if (spread) {
           visible.addAll([
             ?_geometry.rightPage(rest),
@@ -302,14 +309,16 @@ class _BookFlipState extends State<BookFlip>
         }
 
         final ordered = needed.toList()..sort();
-        final children = <Widget>[
-          for (final n in ordered)
-            if (!visible.contains(n)) slot(n, hidden: true),
-          for (final n in ordered)
-            if (visible.contains(n)) slot(n, hidden: false),
-        ];
+        final children = !widget.realistic
+            ? const <Widget>[]
+            : <Widget>[
+                for (final n in ordered)
+                  if (!visible.contains(n)) slot(n, hidden: true),
+                for (final n in ordered)
+                  if (visible.contains(n)) slot(n, hidden: false),
+              ];
 
-        if (turning) {
+        if (turning && widget.realistic) {
           children.add(
             PositionedDirectional(
               // The turning sheet is the left half in spread mode and the
@@ -324,7 +333,7 @@ class _BookFlipState extends State<BookFlip>
                     progress: f,
                     front: _front!,
                     back: _back,
-                    vanishX: spread ? half : width / 2,
+                    vanishX: half * (spread ? 1 : 2),
                     pixelRatio: _pixelRatio,
                     paper: paper,
                   ),
@@ -334,6 +343,22 @@ class _BookFlipState extends State<BookFlip>
             ),
           );
         }
+
+        // In single mode the view follows the sheet as it lands, so the page
+        // on its back ends up in front of the reader.
+        final shift = turning && !spread
+            ? width *
+                  Curves.easeInOutCubic.transform(
+                    ((f - 0.25) / 0.75).clamp(0.0, 1.0),
+                  )
+            : 0.0;
+
+        final Widget content = widget.realistic
+            ? Transform.translate(
+                offset: Offset(-shift, 0),
+                child: Stack(fit: StackFit.expand, children: children),
+              )
+            : _slide(context, paper: paper, k: k, f: f, width: width);
 
         return Semantics(
           customSemanticsActions: {
@@ -352,15 +377,54 @@ class _BookFlipState extends State<BookFlip>
             child: Directionality(
               textDirection: TextDirection.rtl,
               child: ClipRect(
-                child: ColoredBox(
-                  color: paper,
-                  child: Stack(fit: StackFit.expand, children: children),
-                ),
+                child: ColoredBox(color: paper, child: content),
               ),
             ),
           ),
         );
       },
+    );
+  }
+
+  /// Plain sliding pages, used when realistic turning is off.
+  Widget _slide(
+    BuildContext context, {
+    required Color paper,
+    required int k,
+    required double f,
+    required double width,
+  }) {
+    Widget page(int? number) => number == null
+        ? const SizedBox.shrink()
+        : ColoredBox(
+            color: paper,
+            child: KeyedSubtree(
+              key: ValueKey<int>(number),
+              child: widget.pageBuilder(context, number),
+            ),
+          );
+
+    Widget step(int s) => _geometry.spread
+        ? Row(
+            children: [
+              Expanded(child: page(_geometry.rightPage(s))),
+              Expanded(child: page(_geometry.leftPage(s))),
+            ],
+          )
+        : page(_geometry.rightPage(s));
+
+    if (f < 0.0005) return step(_position.round());
+    // Right to left: the next step comes in from the left as the current one
+    // moves out to the right.
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Transform.translate(offset: Offset(f * width, 0), child: step(k)),
+        Transform.translate(
+          offset: Offset((f - 1) * width, 0),
+          child: step(k + 1),
+        ),
+      ],
     );
   }
 }

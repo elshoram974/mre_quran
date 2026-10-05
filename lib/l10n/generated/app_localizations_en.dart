@@ -298,4 +298,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get previousPage => 'Previous page';
+
+  @override
+  String get realisticPageTurn => 'Realistic page turning';
+
+  @override
+  String get realisticPageTurnDescription =>
+      'Pages bend and turn like paper. Turn it off for a simple slide.';
 }
