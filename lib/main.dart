@@ -1,15 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app/quran_app.dart';
-import 'features/settings/data/settings_repository.dart';
-import 'features/settings/presentation/settings_controller.dart';
 
-Future<void> main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  final settings = SettingsController(
-    LocalSettingsRepository(SharedPreferencesAsync()),
-  );
-  await settings.load();
-  runApp(QuranApp(settings: settings));
+  runApp(const ProviderScope(child: QuranApp()));
 }
