@@ -96,5 +96,44 @@
     }
   },
   "indexLoadError": "The index could not be loaded.",
-  "readerInfo": "The Mushaf pages will appear once their text, page map, and font are verified together. The index below already works."
+  "readerInfo": "The Mushaf pages will appear once their text, page map, and font are verified together. The index below already works.",
+  "searchQuran": "Search the Quran",
+  "searchQuranHint": "Surah, ayah, or words",
+  "searchGoTo": "Go to",
+  "searchTextResults": "Results in the text",
+  "searchTextCount": "{count, plural, =1{1 result} other{{formatted} results}}",
+  "@searchTextCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "formatted": {
+        "type": "String"
+      }
+    }
+  },
+  "searchShowingFirst": "Showing the first {shown} of {total}",
+  "@searchShowingFirst": {
+    "placeholders": {
+      "shown": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "searchPromptTitle": "Find a surah, an ayah, or words",
+  "searchPromptBody": "Try “2:255”, “Al-Baqara 255”, or words without tashkeel such as “الحمد لله”.",
+  "searchNoResultsTitle": "Nothing matched",
+  "searchNoResultsBody": "Check the spelling, or try fewer words.",
+  "searchLoadError": "The Quran text could not be loaded.",
+  "ayahNumber": "Ayah {number}",
+  "@ayahNumber": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  }
 }

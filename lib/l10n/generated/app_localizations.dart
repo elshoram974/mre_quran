@@ -421,6 +421,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The Mushaf pages will appear once their text, page map, and font are verified together. The index below already works.'**
   String get readerInfo;
+
+  /// No description provided for @searchQuran.
+  ///
+  /// In en, this message translates to:
+  /// **'Search the Quran'**
+  String get searchQuran;
+
+  /// No description provided for @searchQuranHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Surah, ayah, or words'**
+  String get searchQuranHint;
+
+  /// No description provided for @searchGoTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to'**
+  String get searchGoTo;
+
+  /// No description provided for @searchTextResults.
+  ///
+  /// In en, this message translates to:
+  /// **'Results in the text'**
+  String get searchTextResults;
+
+  /// No description provided for @searchTextCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 result} other{{formatted} results}}'**
+  String searchTextCount(int count, String formatted);
+
+  /// No description provided for @searchShowingFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Showing the first {shown} of {total}'**
+  String searchShowingFirst(String shown, String total);
+
+  /// No description provided for @searchPromptTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Find a surah, an ayah, or words'**
+  String get searchPromptTitle;
+
+  /// No description provided for @searchPromptBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Try “2:255”, “Al-Baqara 255”, or words without tashkeel such as “الحمد لله”.'**
+  String get searchPromptBody;
+
+  /// No description provided for @searchNoResultsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing matched'**
+  String get searchNoResultsTitle;
+
+  /// No description provided for @searchNoResultsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Check the spelling, or try fewer words.'**
+  String get searchNoResultsBody;
+
+  /// No description provided for @searchLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'The Quran text could not be loaded.'**
+  String get searchLoadError;
+
+  /// No description provided for @ayahNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Ayah {number}'**
+  String ayahNumber(String number);
 }
 
 class _AppLocalizationsDelegate

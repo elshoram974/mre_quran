@@ -64,8 +64,14 @@ only as part of the app. Before I rely on that, could you confirm:
    Library) covered too, and under what licence?
 4. Are the Mushaf page images (Uthmani and Tajweed) covered by the same terms? What
    are the CDN pattern, format, resolution, and size per page?
-5. What attribution text and placement do you require?
-6. Do the terms require a Developer Console account for apps that only bundle or
+5. May the tajweed markup (`text_uthmani_tajweed`) be bundled or cached, and which
+   font is it meant to be rendered with? Are the QCF V4 Tajweed page fonts covered?
+6. Do the page images come with ayah and word boxes for highlighting? Under what
+   terms?
+7. Are the tafsirs served by your API redistributable inside an app (cached for
+   offline use), and which ones?
+8. What attribution text and placement do you require?
+9. Do the terms require a Developer Console account for apps that only bundle or
    cache the files and never call the API at runtime?
 
 The Quran text itself comes from Tanzil (CC BY 3.0), unmodified, with attribution.
@@ -129,8 +135,24 @@ Jazakum Allahu khairan,
   `docs/QURAN_SOURCES.md` next to the source it approves.
 - Nothing is bundled until a reply says yes. The Mushaf stays blocked until then.
 
-## Quranic Universal Library (QUL)
+## Email 3: Tarteel / QUL (English)
 
-Layout data is also available from QUL. Its resource pages link terms of use but
-state no licence. Read those terms, record them in `docs/QURAN_SOURCES.md`, and ask
-Tarteel if anything is unclear.
+**To:** [Tarteel contact or QUL Discord, from qul.tarteel.ai]
+**Subject:** Licences of QUL Mushaf layouts and tafsirs for a free Quran app
+
+Assalamu alaikum,
+
+I am building [APP NAME], a free Quran app with no ads, analytics, or accounts. I would
+like to use these QUL resources, unmodified and with attribution:
+
+1. The Madinah Mushaf line layout (KFGQPC V1 or V2, 15 lines): which words sit on which
+   line of each page.
+2. Arabic tafsirs: [list, for example Tafsir Muyassar, Tafsir Ibn Kathir, Tafsir
+   Al-Saadi, Tafsir Jalalayn], downloaded on demand and cached for offline reading.
+
+For each item, could you tell me the licence, whether bundling or caching inside an app
+is allowed, and the attribution you require? The resource pages link terms of use, but
+I could not find a licence per resource (the terms page returned an error).
+
+Jazakum Allahu khairan,
+[YOUR NAME] · [APP NAME] · [LINK] · [EMAIL]

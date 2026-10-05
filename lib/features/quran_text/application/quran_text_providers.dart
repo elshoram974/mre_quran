@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../quran_index/application/quran_metadata_provider.dart';
+import '../domain/quran_search.dart';
 import '../data/quran_text_source.dart';
 import '../domain/ayah_search.dart';
 import '../domain/quran_text.dart';
@@ -26,6 +27,8 @@ final quranTextProvider = FutureProvider<QuranText>((ref) async {
     metadata: metadata,
     uthmani: data.uthmani,
     clean: data.clean,
+    basmala: data.basmala,
+    prefixed: data.prefixed,
   );
 });
 
@@ -38,4 +41,11 @@ final ayahSearchIndexProvider = FutureProvider<AyahSearchIndex>((ref) async {
     keys: data.keys,
     uthmaniKeys: data.uthmaniKeys,
   );
+});
+
+/// Search by reference and by text, ready once the text has loaded.
+final quranSearchProvider = FutureProvider<QuranSearch>((ref) async {
+  final surahs = await ref.watch(indexSearcherProvider.future);
+  final ayahs = await ref.watch(ayahSearchIndexProvider.future);
+  return QuranSearch(surahs: surahs, ayahs: ayahs);
 });

@@ -32,6 +32,11 @@
   structure validation, verified loader off the main isolate, lookup by surah/ayah/page, and
   diacritic-free ayah search with ranking.
 
+- Text re-downloaded with Tanzil's default options (pause marks, sajdah signs), basmala prefix
+  separated without editing, and cross-checked against Quran.com: 6,236 of 6,236 identical.
+- Quran search by surah name or number, by ayah reference, and by words without tashkeel, with
+  an organised results screen.
+
 ## In progress
 
 - Foundation migration: localization, typed routing, Riverpod, adaptive shell,

@@ -23,6 +23,19 @@ class MushafPage extends ConsumerWidget {
     return ListView(
       padding: pagePadding(context),
       children: [
+        AppCard(
+          child: ListTile(
+            leading: Icon(
+              Icons.search,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            title: Text(l10n.searchQuran),
+            subtitle: Text(l10n.searchQuranHint),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => _open(context, ref, AppRoute.quranSearch),
+          ),
+        ),
+        const SizedBox(height: 12),
         const _PositionCard(),
         const SizedBox(height: 12),
         AppCard(
@@ -34,12 +47,7 @@ class MushafPage extends ConsumerWidget {
             title: Text(l10n.quranIndex),
             subtitle: Text('${l10n.indexSurahs} · ${l10n.indexJuz}'),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () async {
-              final page = await context.push<int>(AppRoute.quranIndex.path);
-              if (page != null) {
-                await ref.read(readingPositionProvider.notifier).setPage(page);
-              }
-            },
+            onTap: () => _open(context, ref, AppRoute.quranIndex),
           ),
         ),
         const SizedBox(height: 12),
@@ -59,6 +67,14 @@ class MushafPage extends ConsumerWidget {
         ),
       ],
     );
+  }
+}
+
+/// Opens [route] and saves the page it returns as the reading position.
+Future<void> _open(BuildContext context, WidgetRef ref, AppRoute route) async {
+  final page = await context.push<int>(route.path);
+  if (page != null) {
+    await ref.read(readingPositionProvider.notifier).setPage(page);
   }
 }
 

@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 import '../domain/ayah_search.dart';
+import '../domain/basmala_split.dart';
 import 'quran_text_parser.dart';
 
 /// Raised when a bundled text file does not match its recorded checksum.
@@ -31,12 +32,21 @@ class QuranTextData {
     required this.clean,
     required this.keys,
     required this.uthmaniKeys,
+    required this.basmala,
+    required this.prefixed,
   });
 
-  /// Display text, one entry per ayah, with tashkeel.
+  /// The basmala as written in ayah 1:1.
+  final String basmala;
+
+  /// Per surah (index 0 is surah 1): whether the source prefixed the basmala to
+  /// its first ayah. The prefix is already removed from [uthmani] and [clean].
+  final List<bool> prefixed;
+
+  /// Display text, one entry per ayah, with tashkeel and no basmala prefix.
   final List<String> uthmani;
 
-  /// Text without diacritics, one entry per ayah.
+  /// Text without diacritics, one entry per ayah, no basmala prefix.
   final List<String> clean;
 
   /// Folded search keys built from [clean].
@@ -64,7 +74,7 @@ class QuranTextSource {
 
   /// SHA-256 of [uthmaniAsset].
   static const String uthmaniSha256 =
-      'bf4f57b968d03f4131c070b1e285da9be0e0a108a21c910e872801ca273312c8';
+      '6933e133dd56db778c801bf738848454e43648105a151e8d84d86a7cae39ec5f';
 
   /// SHA-256 of [cleanAsset].
   static const String cleanSha256 =
@@ -104,11 +114,18 @@ class QuranTextSource {
       input.counts,
     );
     final clean = QuranTextParser.parse(utf8.decode(input.clean), input.counts);
-    return QuranTextData(
+    final split = splitBasmala(
+      surahAyahCounts: input.counts,
       uthmani: uthmani,
       clean: clean,
-      keys: AyahSearchIndex.buildKeys(clean),
-      uthmaniKeys: AyahSearchIndex.buildKeys(uthmani),
+    );
+    return QuranTextData(
+      uthmani: split.uthmani,
+      clean: split.clean,
+      keys: AyahSearchIndex.buildKeys(split.clean),
+      uthmaniKeys: AyahSearchIndex.buildKeys(split.uthmani),
+      basmala: split.basmala,
+      prefixed: split.prefixed,
     );
   }
 }

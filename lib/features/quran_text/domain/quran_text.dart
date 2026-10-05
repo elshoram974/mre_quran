@@ -4,9 +4,10 @@ import '../../quran_index/domain/quran_metadata.dart';
 
 /// The verified Quran text, indexed by surah and ayah.
 ///
-/// [uthmani] is the verbatim display text with full tashkeel. [clean] is the
-/// source's own text without diacritics, kept apart for searching. Neither is
-/// ever edited.
+/// The display text keeps full tashkeel. The clean text is the source's own
+/// text without diacritics, kept apart for searching. Neither is edited. The
+/// basmala that the source prefixes to most first ayahs is separated out; see
+/// `splitBasmala`.
 @immutable
 class QuranText {
   /// Builds the index. Throws [ArgumentError] unless both lists hold exactly
@@ -15,7 +16,10 @@ class QuranText {
     required this.metadata,
     required List<String> uthmani,
     required List<String> clean,
-  }) : _uthmani = List.unmodifiable(uthmani),
+    required this.basmala,
+    required List<bool> prefixed,
+  }) : _prefixed = List.unmodifiable(prefixed),
+       _uthmani = List.unmodifiable(uthmani),
        _clean = List.unmodifiable(clean),
        _offsets = _offsetsOf(metadata) {
     final total = metadata.totalAyahs;
@@ -29,6 +33,10 @@ class QuranText {
   /// Surah and page data the text is indexed against.
   final QuranMetadata metadata;
 
+  /// The basmala as written in ayah 1:1, for surah headings.
+  final String basmala;
+
+  final List<bool> _prefixed;
   final List<String> _uthmani;
   final List<String> _clean;
   final List<int> _offsets;
@@ -42,6 +50,11 @@ class QuranText {
     }
     return offsets;
   }
+
+  /// Whether [surah] opens with a basmala that is not itself an ayah.
+  ///
+  /// False for Al-Fatiha, where the basmala is ayah 1, and for At-Tawba.
+  bool hasBasmala(int surah) => _prefixed[surah - 1];
 
   /// Number of ayahs.
   int get length => _uthmani.length;

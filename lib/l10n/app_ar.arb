@@ -52,5 +52,17 @@
   "currentPosition": "الموضع الحالي",
   "currentPositionBody": "صفحة {page} · {surah}",
   "indexLoadError": "تعذّر تحميل الفهرس.",
-  "readerInfo": "ستظهر صفحات المصحف بعد التحقق معًا من نصها وخريطة صفحاتها وخطها. الفهرس يعمل من الآن."
+  "readerInfo": "ستظهر صفحات المصحف بعد التحقق معًا من نصها وخريطة صفحاتها وخطها. الفهرس يعمل من الآن.",
+  "searchQuran": "ابحث في القرآن",
+  "searchQuranHint": "سورة أو آية أو كلمات",
+  "searchGoTo": "انتقال مباشر",
+  "searchTextResults": "نتائج النص",
+  "searchTextCount": "{count, plural, =1{نتيجة واحدة} =2{نتيجتان} few{{formatted} نتائج} other{{formatted} نتيجة}}",
+  "searchShowingFirst": "عرض أول {shown} من {total}",
+  "searchPromptTitle": "ابحث عن سورة أو آية أو كلمات",
+  "searchPromptBody": "جرّب «٢:٢٥٥» أو «البقرة ٢٥٥» أو كلمات بدون تشكيل مثل «الحمد لله».",
+  "searchNoResultsTitle": "لا توجد نتائج",
+  "searchNoResultsBody": "تحقق من الكتابة أو جرّب كلمات أقل.",
+  "searchLoadError": "تعذّر تحميل نص القرآن.",
+  "ayahNumber": "آية {number}"
 }

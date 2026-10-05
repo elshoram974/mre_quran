@@ -194,4 +194,53 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get readerInfo =>
       'The Mushaf pages will appear once their text, page map, and font are verified together. The index below already works.';
+
+  @override
+  String get searchQuran => 'Search the Quran';
+
+  @override
+  String get searchQuranHint => 'Surah, ayah, or words';
+
+  @override
+  String get searchGoTo => 'Go to';
+
+  @override
+  String get searchTextResults => 'Results in the text';
+
+  @override
+  String searchTextCount(int count, String formatted) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$formatted results',
+      one: '1 result',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String searchShowingFirst(String shown, String total) {
+    return 'Showing the first $shown of $total';
+  }
+
+  @override
+  String get searchPromptTitle => 'Find a surah, an ayah, or words';
+
+  @override
+  String get searchPromptBody =>
+      'Try “2:255”, “Al-Baqara 255”, or words without tashkeel such as “الحمد لله”.';
+
+  @override
+  String get searchNoResultsTitle => 'Nothing matched';
+
+  @override
+  String get searchNoResultsBody => 'Check the spelling, or try fewer words.';
+
+  @override
+  String get searchLoadError => 'The Quran text could not be loaded.';
+
+  @override
+  String ayahNumber(String number) {
+    return 'Ayah $number';
+  }
 }

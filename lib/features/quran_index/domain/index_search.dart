@@ -25,6 +25,14 @@ String normalizeSearchKey(String input) {
   return buffer.toString().trim();
 }
 
+/// Folds a surah name or query: [normalizeSearchKey] plus hyphens and
+/// apostrophes as spaces, so "Al-Baqara" and "al baqara" are the same.
+String _nameKey(String input) =>
+    normalizeSearchKey(input)
+        .replaceAll(RegExp(r"[-']+"), ' ')
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
+
 /// Matches index entries against a query using search keys computed once.
 ///
 /// Folding every name on every keystroke allocates heavily; building the keys
@@ -35,9 +43,9 @@ class IndexSearcher {
     : _surahKeys = [
         for (final surah in metadata.surahs)
           [
-            normalizeSearchKey(surah.arabicName),
-            normalizeSearchKey(surah.transliteration),
-            normalizeSearchKey(surah.englishName),
+            _nameKey(surah.arabicName),
+            _nameKey(surah.transliteration),
+            _nameKey(surah.englishName),
           ],
       ];
 
@@ -46,10 +54,36 @@ class IndexSearcher {
 
   final List<List<String>> _surahKeys;
 
+  /// Names of each surah as folded keys, plus the Arabic name without the
+  /// leading "ال", for exact matching.
+  late final List<Set<String>> _exactKeys = [
+    for (final keys in _surahKeys)
+      {
+        ...keys,
+        if (keys.first.startsWith('ال') && keys.first.length > 2)
+          keys.first.substring(2),
+      },
+  ];
+
+  /// The surah named exactly [name] (Arabic with or without "ال", transliteration,
+  /// or English), or null when no surah, or more than one, fits.
+  Surah? resolveSurah(String name) {
+    final key = _nameKey(name);
+    if (key.isEmpty) return null;
+    final exact = [
+      for (var i = 0; i < _exactKeys.length; i++)
+        if (_exactKeys[i].contains(key)) metadata.surahs[i],
+    ];
+    if (exact.length == 1) return exact.single;
+    if (exact.length > 1) return null;
+    final partial = surahs(key);
+    return partial.length == 1 ? partial.single : null;
+  }
+
   /// Surahs matching [query] by Arabic name, transliteration, English name, or
   /// number. An empty query returns every surah.
   List<Surah> surahs(String query) {
-    final key = normalizeSearchKey(query);
+    final key = _nameKey(query);
     if (key.isEmpty) return metadata.surahs;
     return [
       for (var i = 0; i < metadata.surahs.length; i++)

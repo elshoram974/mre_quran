@@ -6,6 +6,7 @@ import '../features/bookmarks/presentation/bookmarks_page.dart';
 import '../features/duas/presentation/duas_page.dart';
 import '../features/mushaf/presentation/mushaf_page.dart';
 import '../features/quran_index/presentation/quran_index_page.dart';
+import '../features/quran_text/presentation/quran_search_page.dart';
 import '../features/settings/presentation/settings_page.dart';
 import '../features/startup/application/startup_providers.dart';
 import 'app_shell.dart';
@@ -53,6 +54,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         ],
       ),
       GoRoute(
+        path: AppRoute.quranSearch.path,
+        builder: (context, state) => const QuranSearchPage(),
+      ),
+      GoRoute(
         path: AppRoute.quranIndex.path,
         builder: (context, state) => const QuranIndexPage(),
       ),
@@ -73,7 +78,8 @@ enum AppRoute {
   bookmarks('/bookmarks'),
   settings('/settings'),
   about('/about'),
-  quranIndex('/quran-index');
+  quranIndex('/quran-index'),
+  quranSearch('/quran-search');
 
   const AppRoute(this.path);
   final String path;

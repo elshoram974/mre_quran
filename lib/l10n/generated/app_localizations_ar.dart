@@ -195,4 +195,55 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get readerInfo =>
       'ستظهر صفحات المصحف بعد التحقق معًا من نصها وخريطة صفحاتها وخطها. الفهرس يعمل من الآن.';
+
+  @override
+  String get searchQuran => 'ابحث في القرآن';
+
+  @override
+  String get searchQuranHint => 'سورة أو آية أو كلمات';
+
+  @override
+  String get searchGoTo => 'انتقال مباشر';
+
+  @override
+  String get searchTextResults => 'نتائج النص';
+
+  @override
+  String searchTextCount(int count, String formatted) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$formatted نتيجة',
+      few: '$formatted نتائج',
+      two: 'نتيجتان',
+      one: 'نتيجة واحدة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String searchShowingFirst(String shown, String total) {
+    return 'عرض أول $shown من $total';
+  }
+
+  @override
+  String get searchPromptTitle => 'ابحث عن سورة أو آية أو كلمات';
+
+  @override
+  String get searchPromptBody =>
+      'جرّب «٢:٢٥٥» أو «البقرة ٢٥٥» أو كلمات بدون تشكيل مثل «الحمد لله».';
+
+  @override
+  String get searchNoResultsTitle => 'لا توجد نتائج';
+
+  @override
+  String get searchNoResultsBody => 'تحقق من الكتابة أو جرّب كلمات أقل.';
+
+  @override
+  String get searchLoadError => 'تعذّر تحميل نص القرآن.';
+
+  @override
+  String ayahNumber(String number) {
+    return 'آية $number';
+  }
 }

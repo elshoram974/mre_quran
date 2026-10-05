@@ -9,6 +9,7 @@ import 'package:mre_quran/features/quran_index/domain/quran_metadata.dart';
 import 'package:mre_quran/features/quran_text/data/quran_text_parser.dart';
 import 'package:mre_quran/features/quran_text/data/quran_text_source.dart';
 import 'package:mre_quran/features/quran_text/domain/ayah_search.dart';
+import 'package:mre_quran/features/quran_text/domain/basmala_split.dart';
 import 'package:mre_quran/features/quran_text/domain/quran_text.dart';
 
 void main() {
@@ -17,22 +18,33 @@ void main() {
   late QuranMetadata metadata;
   late QuranText text;
   late AyahSearchIndex search;
+  late List<String> rawUthmani;
+  late List<String> rawClean;
+  late BasmalaSplit split;
 
   setUpAll(() {
     metadata = QuranMetadataParser.parse(
       File(QuranMetadataSource.assetPath).readAsStringSync(),
     );
     final counts = [for (final s in metadata.surahs) s.ayahCount];
-    final uthmani = QuranTextParser.parse(
-      uthmaniFile.readAsStringSync(),
-      counts,
+    rawUthmani = QuranTextParser.parse(uthmaniFile.readAsStringSync(), counts);
+    rawClean = QuranTextParser.parse(cleanFile.readAsStringSync(), counts);
+    split = splitBasmala(
+      surahAyahCounts: counts,
+      uthmani: rawUthmani,
+      clean: rawClean,
     );
-    final clean = QuranTextParser.parse(cleanFile.readAsStringSync(), counts);
-    text = QuranText(metadata: metadata, uthmani: uthmani, clean: clean);
+    text = QuranText(
+      metadata: metadata,
+      uthmani: split.uthmani,
+      clean: split.clean,
+      basmala: split.basmala,
+      prefixed: split.prefixed,
+    );
     search = AyahSearchIndex(
       text: text,
-      keys: AyahSearchIndex.buildKeys(clean),
-      uthmaniKeys: AyahSearchIndex.buildKeys(uthmani),
+      keys: AyahSearchIndex.buildKeys(split.clean),
+      uthmaniKeys: AyahSearchIndex.buildKeys(split.uthmani),
     );
   });
 
@@ -85,6 +97,77 @@ void main() {
         );
       }
       expect(withMarks, greaterThan(6000));
+    });
+  });
+
+  group('source options', () {
+    test('keeps the pause marks and sajdah signs of the Mushaf', () {
+      final shown = rawUthmani.join(' ');
+      final pauseMarks = RegExp('[\u06D6-\u06DC]').allMatches(shown).length;
+      final sajdahSigns = '\u06E9'.allMatches(shown).length;
+      expect(pauseMarks, greaterThan(1000));
+      expect(sajdahSigns, 15, reason: 'the Quran has 15 sajdah places');
+    });
+  });
+
+  group('basmala', () {
+    test('112 surahs carry the basmala in front of their first ayah', () {
+      final surahs = [
+        for (final s in metadata.surahs)
+          if (text.hasBasmala(s.number)) s.number,
+      ];
+      expect(surahs, hasLength(112));
+      expect(surahs, isNot(contains(1)));
+      expect(surahs, isNot(contains(9)));
+    });
+
+    test('the first ayah of those surahs no longer starts with it', () {
+      for (final s in metadata.surahs.where((s) => text.hasBasmala(s.number))) {
+        final first = AyahRef(s.number, 1);
+        expect(
+          text.uthmani(first),
+          isNot(startsWith(text.basmala)),
+          reason: 'surah ${s.number}',
+        );
+        expect(rawUthmani[text.indexOf(first)], contains(' '));
+        expect(
+          rawUthmani[text.indexOf(first)],
+          endsWith(text.uthmani(first)),
+          reason: 'the remainder must be a verbatim tail of the source line',
+        );
+      }
+    });
+
+    test('ayah 1:1 is the basmala itself and At-Tawba has none', () {
+      expect(text.uthmani(const AyahRef(1, 1)), text.basmala);
+      expect(text.hasBasmala(1), isFalse);
+      expect(text.hasBasmala(9), isFalse);
+    });
+
+    test('searching the basmala finds only the ayahs that really hold it', () {
+      final result = search.search('بسم الله الرحمن الرحيم', limit: 500);
+      final refs = result.matches.map((m) => m.ref).toList();
+      expect(refs, contains(const AyahRef(1, 1)));
+      expect(
+        refs,
+        contains(const AyahRef(27, 30)),
+        reason: 'An-Naml 27:30 quotes it',
+      );
+      expect(result.total, 2);
+    });
+
+    test('splitting is rejected when the two files disagree', () {
+      final counts = [for (final s in metadata.surahs) s.ayahCount];
+      final brokenClean = List<String>.of(rawClean)
+        ..[text.indexOf(const AyahRef(2, 1))] = 'الم';
+      expect(
+        () => splitBasmala(
+          surahAyahCounts: counts,
+          uthmani: rawUthmani,
+          clean: brokenClean,
+        ),
+        throwsFormatException,
+      );
     });
   });
 
