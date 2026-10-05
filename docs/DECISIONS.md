@@ -87,3 +87,16 @@
   package is pure Flutter/shader based, works on both target platforms, and its
   standard-quality mode honors accessibility settings. Quran page content stays
   opaque for legibility, reverence, and predictable performance.
+
+## D-012: Native chrome per platform and Device Preview in debug
+
+- **Decision:** iOS/macOS use liquid glass chrome. Android uses stock Material 3.
+  The platform comes from `Theme.of(context).platform`. `device_preview_plus` wraps
+  the app in debug builds only, to switch the simulated platform.
+- **Alternatives:** Glass on every platform (supersedes the scope of D-011);
+  `device_preview` 3.x (DevTools-driven, no `DevicePreview(builder:)` widget);
+  `device_preview_screenshot` (requires Dart < 3).
+- **Reason:** Each platform should feel native. `device_preview_plus` keeps the
+  `DevicePreview(enabled, tools, builder)` API and sets the theme platform through
+  `DevicePreview.appBuilder`. Its default tools already include screenshots, so no
+  custom screenshot tool or saver is added.

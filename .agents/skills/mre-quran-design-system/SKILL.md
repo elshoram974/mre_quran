@@ -14,17 +14,18 @@ description: Build or change MRE Quran UI with the shared theme, tokens, glass c
 - Pickers: `AppSelectField` (search appears above 5 options).
 - Cards: `AppCard` (glass). Do not nest a `Card` or glass control inside it.
 
-## Liquid glass
+## Native per platform
 
-- Glass belongs to chrome: app bar, tab bar, rail, sheets, floating cards. Never over Quran text.
-- Screens render inside `GlassScaffold` (see `lib/app/app_shell.dart`). It needs a `Material` ancestor, which the shell supplies.
-- Pad scrolling content with `pagePadding(context)`; the shell publishes the bar insets through `MediaQuery.padding`.
-- Sheets use `GlassModalSheet.show(useRootNavigator: true)` with a surface-tinted `LiquidGlassSettings` so text stays readable.
-- Glass must stay readable: keep text on a tinted surface, check contrast in light, dark, and sepia.
+- Decide with `context.isCupertino` (reads `Theme.of(context).platform`). Never use `defaultTargetPlatform` directly.
+- iOS/macOS: liquid glass chrome (`GlassScaffold`, `GlassAppBar`, `GlassTabBar`, `GlassModalSheet`, `GlassCard`). Never over Quran text. Keep text on a tinted surface and check contrast in light, dark, and sepia.
+- Android: stock Material 3 (`Scaffold`, `AppBar`, `NavigationBar`, `Card`, `showModalBottomSheet`). No glass.
+- Keep branching inside shared widgets: `AppShell` (`lib/app/shell/`), `AppCard`, `AppSelectField`.
+- Glass screens pad content with `pagePadding(context)`; the glass shell publishes bar insets through `MediaQuery.padding`.
+- Preview both platforms with Device Preview (debug only) by choosing an iOS or Android device.
 
 ## Responsive
 
-- Branch with `WindowSize.fromWidth` on `LayoutBuilder` or `MediaQuery.sizeOf`. Compact uses the glass tab bar, medium and expanded use a glass rail.
+- Branch with `WindowSize.fromWidth` on `LayoutBuilder` or `MediaQuery.sizeOf`. Compact uses a bottom tab bar, medium and expanded use a rail (glass on iOS, Material on Android).
 - Gutter: `AppTokens.gutterCompact` / `gutterWide`. Content max width via `ContentContainer`.
 
 ## Checklist before finishing
