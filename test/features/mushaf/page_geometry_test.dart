@@ -94,8 +94,10 @@ void main() {
     ]);
     final geometry = measurePageGeometry(layout, image);
 
-    test('finds a box for every word', () {
+    test('finds a box for every word and the ink extent', () {
       expect(geometry.words, hasLength(3));
+      expect(geometry.inkTop, 0.1);
+      expect(geometry.inkBottom, 0.9);
     });
 
     test('splits the line at the ink gap, first word on the right', () {

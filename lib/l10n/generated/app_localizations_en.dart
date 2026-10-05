@@ -305,4 +305,26 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get realisticPageTurnDescription =>
       'Pages bend and turn like paper. Turn it off for a simple slide.';
+
+  @override
+  String get readerMode => 'Display';
+
+  @override
+  String get readerModeText => 'Typeset text';
+
+  @override
+  String get readerModePrinted => 'Printed Mushaf';
+
+  @override
+  String get readerModeDescription =>
+      'The printed Mushaf downloads page by page and is kept on the device.';
+
+  @override
+  String get printedPageError =>
+      'Couldn\'t load this page. Check your internet connection.';
+
+  @override
+  String printedPageLabel(String number) {
+    return 'Page $number of the printed Mushaf';
+  }
 }

@@ -82,5 +82,11 @@
   "nextPage": "الصفحة التالية",
   "previousPage": "الصفحة السابقة",
   "realisticPageTurn": "تقليب واقعي للصفحات",
-  "realisticPageTurnDescription": "تنثني الصفحة وتنقلب كالورق. أوقفه لتنزلق الصفحات ببساطة."
+  "realisticPageTurnDescription": "تنثني الصفحة وتنقلب كالورق. أوقفه لتنزلق الصفحات ببساطة.",
+  "readerMode": "طريقة العرض",
+  "readerModeText": "نص مكتوب",
+  "readerModePrinted": "المصحف المطبوع",
+  "readerModeDescription": "المصحف المطبوع يُنزَّل صفحة صفحة ويُحفظ على الجهاز.",
+  "printedPageError": "تعذّر تحميل الصفحة. تأكد من الاتصال بالإنترنت.",
+  "printedPageLabel": "الصفحة {number} من المصحف المطبوع"
 }

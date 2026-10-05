@@ -601,6 +601,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Pages bend and turn like paper. Turn it off for a simple slide.'**
   String get realisticPageTurnDescription;
+
+  /// No description provided for @readerMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Display'**
+  String get readerMode;
+
+  /// No description provided for @readerModeText.
+  ///
+  /// In en, this message translates to:
+  /// **'Typeset text'**
+  String get readerModeText;
+
+  /// No description provided for @readerModePrinted.
+  ///
+  /// In en, this message translates to:
+  /// **'Printed Mushaf'**
+  String get readerModePrinted;
+
+  /// No description provided for @readerModeDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'The printed Mushaf downloads page by page and is kept on the device.'**
+  String get readerModeDescription;
+
+  /// No description provided for @printedPageError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load this page. Check your internet connection.'**
+  String get printedPageError;
+
+  /// No description provided for @printedPageLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Page {number} of the printed Mushaf'**
+  String printedPageLabel(String number);
 }
 
 class _AppLocalizationsDelegate

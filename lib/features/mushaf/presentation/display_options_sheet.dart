@@ -33,23 +33,29 @@ class _DisplayOptions extends ConsumerWidget {
             style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(height: 16),
-          Text(l10n.textSize, style: Theme.of(context).textTheme.titleSmall),
-          Row(
-            children: [
-              const Icon(Icons.text_decrease, size: 20),
-              Expanded(
-                child: Slider.adaptive(
-                  value: settings.readerFontScale,
-                  min: 0.8,
-                  max: 1.6,
-                  divisions: 8,
-                  label: '${(settings.readerFontScale * 100).round()}%',
-                  onChanged: (value) =>
-                      notifier.save(settings.copyWith(readerFontScale: value)),
-                ),
-              ),
-              const Icon(Icons.text_increase, size: 20),
-            ],
+          Text(l10n.readerMode, style: Theme.of(context).textTheme.titleSmall),
+          const SizedBox(height: 8),
+          AppSegmentedControl<ReaderMode>(
+            value: settings.readerMode,
+            onChanged: (value) =>
+                notifier.save(settings.copyWith(readerMode: value)),
+            segments: {
+              ReaderMode.text: l10n.readerModeText,
+              ReaderMode.printed: l10n.readerModePrinted,
+            },
+          ),
+          const SizedBox(height: 4),
+          Text(
+            l10n.readerModeDescription,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          AnimatedSize(
+            duration: MediaQuery.disableAnimationsOf(context)
+                ? Duration.zero
+                : const Duration(milliseconds: 200),
+            child: settings.readerMode == ReaderMode.printed
+                ? const SizedBox(width: double.infinity, height: 12)
+                : _TextSize(settings: settings),
           ),
           const SizedBox(height: 4),
           AppSwitchTile(
@@ -72,6 +78,47 @@ class _DisplayOptions extends ConsumerWidget {
               AppThemePreference.dark: l10n.themeDark,
               AppThemePreference.system: l10n.themeSystem,
             },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Text size slider; only the typeset reader has a text size.
+class _TextSize extends ConsumerWidget {
+  const _TextSize({required this.settings});
+
+  final AppSettings settings;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final notifier = ref.read(settingsProvider.notifier);
+    return Padding(
+      padding: const EdgeInsetsDirectional.only(top: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            context.l10n.textSize,
+            style: Theme.of(context).textTheme.titleSmall,
+          ),
+          Row(
+            children: [
+              const Icon(Icons.text_decrease, size: 20),
+              Expanded(
+                child: Slider.adaptive(
+                  value: settings.readerFontScale,
+                  min: 0.8,
+                  max: 1.6,
+                  divisions: 8,
+                  label: '${(settings.readerFontScale * 100).round()}%',
+                  onChanged: (value) =>
+                      notifier.save(settings.copyWith(readerFontScale: value)),
+                ),
+              ),
+              const Icon(Icons.text_increase, size: 20),
+            ],
           ),
         ],
       ),

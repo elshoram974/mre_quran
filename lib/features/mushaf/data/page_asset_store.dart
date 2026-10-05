@@ -38,26 +38,54 @@ class PageAssetStore {
   Future<File> image(int page, {required bool dark}) => _file(
     'images/${dark ? 'dark' : 'light'}/p$page.png',
     MushafImageSource.pageImage(page, dark: dark),
+    _isPng,
   );
 
   /// The layout JSON of [page].
   Future<String> layout(int page) async => (await _file(
     'layouts/page-$page.json',
     MushafImageSource.pageLayout(page),
+    _isJsonObject,
   )).readAsString();
 
-  /// Joins concurrent requests for the same file; a failed one can be retried.
-  Future<File> _file(String relative, Uri uri) =>
-      _inFlight[relative] ??= _load(relative, uri).whenComplete(() {
-        _inFlight.remove(relative);
-      });
+  static bool _isPng(Uint8List bytes) =>
+      bytes.length > 8 &&
+      bytes[0] == 0x89 &&
+      bytes[1] == 0x50 &&
+      bytes[2] == 0x4E &&
+      bytes[3] == 0x47;
 
-  Future<File> _load(String relative, Uri uri) async {
+  static bool _isJsonObject(Uint8List bytes) {
+    for (final byte in bytes) {
+      // Skip leading whitespace.
+      if (byte == 0x20 || byte == 0x0A || byte == 0x0D || byte == 0x09) {
+        continue;
+      }
+      return byte == 0x7B; // {
+    }
+    return false;
+  }
+
+  /// Joins concurrent requests for the same file; a failed one can be retried.
+  Future<File> _file(
+    String relative,
+    Uri uri,
+    bool Function(Uint8List) valid,
+  ) => _inFlight[relative] ??= _load(relative, uri, valid).whenComplete(() {
+    _inFlight.remove(relative);
+  });
+
+  Future<File> _load(
+    String relative,
+    Uri uri,
+    bool Function(Uint8List) valid,
+  ) async {
     final root = await _root();
     final file = File('${root.path}/mushaf/$relative');
     if (await file.exists() && await file.length() > 0) return file;
     final bytes = await _fetch(uri);
-    if (bytes.isEmpty) throw PageDownloadException(uri, 'empty response');
+    // A CDN can answer 200 with an error page; never cache that.
+    if (!valid(bytes)) throw PageDownloadException(uri, 'unexpected content');
     await file.parent.create(recursive: true);
     final temp = File('${file.path}.part');
     await temp.writeAsBytes(bytes, flush: true);

@@ -72,11 +72,21 @@ typedef FractionRect = ({double left, double top, double right, double bottom});
 /// Word positions on one page image.
 @immutable
 class PageGeometry {
-  /// Creates geometry from [words].
-  const PageGeometry({required this.words});
+  /// Creates geometry from [words] and the page's ink extent.
+  const PageGeometry({
+    required this.words,
+    this.inkTop = 0,
+    this.inkBottom = 1,
+  });
 
   /// Every word on the page.
   final List<WordBox> words;
+
+  /// Top of the topmost ink on the page, 0–1.
+  final double inkTop;
+
+  /// Bottom of the lowest ink on the page, 0–1.
+  final double inkBottom;
 
   /// The area of [ayah] on the page: one rectangle per line it covers.
   List<FractionRect> rectsOf(AyahRef ayah) {
@@ -196,7 +206,11 @@ PageGeometry measurePageGeometry(PageLayout layout, InkImage image) {
       );
     }
   }
-  return PageGeometry(words: List.unmodifiable(boxes));
+  return PageGeometry(
+    words: List.unmodifiable(boxes),
+    inkTop: top / h,
+    inkBottom: (bottom + 1) / h,
+  );
 }
 
 /// Row positions cutting the ink between [top] and [bottom] into [count] lines.

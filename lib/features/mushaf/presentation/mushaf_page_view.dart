@@ -7,6 +7,7 @@ import '../../quran_index/domain/quran_metadata.dart';
 import '../../quran_text/domain/quran_text.dart';
 import '../../settings/application/digits_provider.dart';
 import 'mushaf_ornaments.dart';
+import 'mushaf_page_frame.dart';
 
 /// One Mushaf page drawn like a printed copy: a framed page, the surah and
 /// juz at the top, a banner at each surah opening (name, order, ayah count,
@@ -197,143 +198,59 @@ class _MushafPageViewState extends State<MushafPageView> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final l10n = context.l10n;
-    final metadata = text.metadata;
-    final ink = scheme.primary.withValues(alpha: 0.55);
-    final label = TextStyle(
-      fontFamily: AppTokens.quranFontFamily,
-      fontSize: 16,
-      height: 1.4,
-      color: scheme.onSurfaceVariant,
-    );
-    final segments = _segments(scheme, l10n.ayahNumber);
-    final first = text.metadata.ayahsOnPage(widget.page).first;
-    final juz = metadata.juzOfPage(widget.page);
-    final hizb = metadata.hizbOf(first);
-    final surah = metadata.surahAtPage(widget.page);
+    final label = MushafPageFrame.labelStyle(scheme);
+    final segments = _segments(scheme, context.l10n.ayahNumber);
 
-    // Page labels and banners have fixed room, so system text size is capped
-    // for them. Quran text size follows the reader's own setting.
-    return MediaQuery.withClampedTextScaling(
-      maxScaleFactor: 1.2,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: widget.onTap,
-        child: Padding(
-          padding: const EdgeInsetsDirectional.fromSTEB(10, 6, 10, 8),
-          child: CustomPaint(
-            painter: PageFramePainter(color: ink),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+    return MushafPageFrame(
+      metadata: text.metadata,
+      page: widget.page,
+      onTap: widget.onTap,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final fitted = _fittedSize(segments, constraints.biggest);
+          final quran = TextStyle(
+            fontFamily: AppTokens.quranFontFamily,
+            fontSize: fitted * widget.fontScale,
+            height: MushafPageView._lineHeight,
+            color: scheme.onSurface,
+          );
+          // Quran text size follows the reader's own setting, so it is not
+          // scaled again by the system. Larger text scrolls in the frame.
+          return SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
               child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Align(
-                          alignment: AlignmentDirectional.centerStart,
-                          child: _Tag(
-                            text: l10n.surahTitle(surah.arabicName),
-                            style: label,
-                          ),
-                        ),
+                  for (final segment in segments)
+                    switch (segment) {
+                      _Banner(:final surah) => _SurahBanner(
+                        surah: surah,
+                        label: label,
+                        number: _n,
                       ),
-                      Expanded(
-                        child: Center(
-                          child: _Tag(
-                            text: l10n.hizbTitle(_n(hizb)),
-                            style: label,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: Align(
-                          alignment: AlignmentDirectional.centerEnd,
-                          child: _Tag(
-                            text: l10n.juzTitle(_n(juz.number)),
-                            style: label,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  Expanded(
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        final fitted = _fittedSize(
-                          segments,
-                          constraints.biggest,
-                        );
-                        final quran = TextStyle(
-                          fontFamily: AppTokens.quranFontFamily,
-                          fontSize: fitted * widget.fontScale,
-                          height: MushafPageView._lineHeight,
-                          color: scheme.onSurface,
-                        );
-                        return SingleChildScrollView(
-                          child: ConstrainedBox(
-                            constraints: BoxConstraints(
-                              minHeight: constraints.maxHeight,
-                            ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                for (final segment in segments)
-                                  switch (segment) {
-                                    _Banner(:final surah) => _SurahBanner(
-                                      surah: surah,
-                                      label: label,
-                                      number: _n,
-                                    ),
-                                    _Basmala(:final text) => Padding(
-                                      padding: const EdgeInsets.only(bottom: 4),
-                                      child: Text(
-                                        text,
-                                        textAlign: TextAlign.center,
-                                        textScaler: TextScaler.noScaling,
-                                        style: quran,
-                                      ),
-                                    ),
-                                    _Paragraph(:final spans) => Text.rich(
-                                      TextSpan(children: spans),
-                                      textAlign: TextAlign.justify,
-                                      textScaler: TextScaler.noScaling,
-                                      style: quran,
-                                    ),
-                                  },
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  SizedBox.square(
-                    dimension: 40,
-                    child: CustomPaint(
-                      painter: MedallionPainter(
-                        fill: scheme.secondaryContainer,
-                        stroke: ink,
-                      ),
-                      child: Center(
+                      _Basmala(:final text) => Padding(
+                        padding: const EdgeInsets.only(bottom: 4),
                         child: Text(
-                          _n(widget.page),
-                          style: label.copyWith(
-                            fontSize: 15,
-                            color: scheme.onSecondaryContainer,
-                          ),
+                          text,
+                          textAlign: TextAlign.center,
+                          textScaler: TextScaler.noScaling,
+                          style: quran,
                         ),
                       ),
-                    ),
-                  ),
+                      _Paragraph(:final spans) => Text.rich(
+                        TextSpan(children: spans),
+                        textAlign: TextAlign.justify,
+                        textScaler: TextScaler.noScaling,
+                        style: quran,
+                      ),
+                    },
                 ],
               ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }
@@ -356,28 +273,6 @@ class _Basmala extends _Segment {
 class _Paragraph extends _Segment {
   const _Paragraph(this.spans);
   final List<InlineSpan> spans;
-}
-
-class _Tag extends StatelessWidget {
-  const _Tag({required this.text, required this.style});
-
-  final String text;
-  final TextStyle style;
-
-  @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-    decoration: BoxDecoration(
-      color: Theme.of(context).colorScheme.secondaryContainer,
-      borderRadius: BorderRadius.circular(20),
-    ),
-    child: Text(
-      text,
-      style: style,
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-    ),
-  );
 }
 
 class _SurahBanner extends StatelessWidget {

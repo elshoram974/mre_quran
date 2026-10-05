@@ -21,6 +21,7 @@ class LocalSettingsRepository implements SettingsRepository {
   static const _startupKey = 'settings.startup';
   static const _readerFontScaleKey = 'settings.reader_font_scale';
   static const _realisticTurnKey = 'settings.realistic_page_turn';
+  static const _readerModeKey = 'settings.reader_mode';
 
   @override
   Future<AppSettings> load() async {
@@ -33,6 +34,7 @@ class LocalSettingsRepository implements SettingsRepository {
       startup,
       fontScale,
       realisticTurn,
+      readerMode,
     ) = await (
       _preferences.getString(_themeKey),
       _preferences.getString(_localeKey),
@@ -42,6 +44,7 @@ class LocalSettingsRepository implements SettingsRepository {
       _preferences.getString(_startupKey),
       _preferences.getDouble(_readerFontScaleKey),
       _preferences.getBool(_realisticTurnKey),
+      _preferences.getString(_readerModeKey),
     ).wait;
     return AppSettings(
       theme: AppThemePreference.values.firstWhere(
@@ -58,6 +61,10 @@ class LocalSettingsRepository implements SettingsRepository {
       ),
       readerFontScale: (fontScale ?? 1).clamp(0.8, 1.6).toDouble(),
       realisticPageTurn: realisticTurn ?? true,
+      readerMode: ReaderMode.values.firstWhere(
+        (item) => item.name == readerMode,
+        orElse: () => ReaderMode.text,
+      ),
     );
   }
 
@@ -72,6 +79,7 @@ class LocalSettingsRepository implements SettingsRepository {
       _preferences.setString(_startupKey, settings.startupBehavior.name),
       _preferences.setDouble(_readerFontScaleKey, settings.readerFontScale),
       _preferences.setBool(_realisticTurnKey, settings.realisticPageTurn),
+      _preferences.setString(_readerModeKey, settings.readerMode.name),
     ]);
   }
 }

@@ -119,6 +119,25 @@ class _SettingsContent extends ConsumerWidget {
               notifier.save(settings.copyWith(startupBehavior: value)),
         ),
         const SizedBox(height: 12),
+        AppSelectField<ReaderMode>(
+          label: l10n.readerMode,
+          value: settings.readerMode,
+          options: [
+            AppSelectOption(
+              value: ReaderMode.text,
+              label: l10n.readerModeText,
+              icon: Icons.text_fields,
+            ),
+            AppSelectOption(
+              value: ReaderMode.printed,
+              label: l10n.readerModePrinted,
+              icon: Icons.menu_book_outlined,
+            ),
+          ],
+          onChanged: (value) =>
+              notifier.save(settings.copyWith(readerMode: value)),
+        ),
+        const SizedBox(height: 12),
         _SettingsCard(
           child: AppSwitchTile(
             value: settings.realisticPageTurn,

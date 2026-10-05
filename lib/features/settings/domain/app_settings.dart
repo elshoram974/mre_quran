@@ -12,6 +12,7 @@ class AppSettings {
     this.startupBehavior = StartupBehavior.lastTab,
     this.readerFontScale = 1,
     this.realisticPageTurn = true,
+    this.readerMode = ReaderMode.text,
   });
 
   final AppThemePreference theme;
@@ -28,6 +29,9 @@ class AppSettings {
 
   /// Whether Mushaf pages bend and turn like paper instead of sliding.
   final bool realisticPageTurn;
+
+  /// Whether the Mushaf shows typeset text or printed page images.
+  final ReaderMode readerMode;
 
   Locale get locale => Locale(localeCode);
 
@@ -46,6 +50,7 @@ class AppSettings {
     StartupBehavior? startupBehavior,
     double? readerFontScale,
     bool? realisticPageTurn,
+    ReaderMode? readerMode,
   }) => AppSettings(
     theme: theme ?? this.theme,
     localeCode: localeCode ?? this.localeCode,
@@ -55,6 +60,7 @@ class AppSettings {
     startupBehavior: startupBehavior ?? this.startupBehavior,
     readerFontScale: readerFontScale ?? this.readerFontScale,
     realisticPageTurn: realisticPageTurn ?? this.realisticPageTurn,
+    readerMode: readerMode ?? this.readerMode,
   );
 }
 
@@ -68,4 +74,13 @@ enum StartupBehavior {
 
   /// Always open the Mushaf tab.
   reader,
+}
+
+/// How the Mushaf pages are shown.
+enum ReaderMode {
+  /// Verified text typeset on the device; works offline from the start.
+  text,
+
+  /// Images of the printed Madinah Mushaf, downloaded page by page.
+  printed,
 }

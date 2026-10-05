@@ -308,4 +308,26 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get realisticPageTurnDescription =>
       'تنثني الصفحة وتنقلب كالورق. أوقفه لتنزلق الصفحات ببساطة.';
+
+  @override
+  String get readerMode => 'طريقة العرض';
+
+  @override
+  String get readerModeText => 'نص مكتوب';
+
+  @override
+  String get readerModePrinted => 'المصحف المطبوع';
+
+  @override
+  String get readerModeDescription =>
+      'المصحف المطبوع يُنزَّل صفحة صفحة ويُحفظ على الجهاز.';
+
+  @override
+  String get printedPageError =>
+      'تعذّر تحميل الصفحة. تأكد من الاتصال بالإنترنت.';
+
+  @override
+  String printedPageLabel(String number) {
+    return 'الصفحة $number من المصحف المطبوع';
+  }
 }

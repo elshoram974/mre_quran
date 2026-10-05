@@ -5,6 +5,7 @@ import '../../bookmarks/application/bookmarks_provider.dart';
 import '../../quran_index/domain/quran_metadata.dart';
 import '../../quran_text/domain/quran_text.dart';
 import '../../settings/application/settings_provider.dart';
+import '../../settings/domain/app_settings.dart';
 import '../application/reader_immersive_provider.dart';
 import '../application/reading_position_provider.dart';
 import '../../../core/l10n/l10n.dart';
@@ -12,6 +13,7 @@ import '../application/highlighted_ayah_provider.dart';
 import 'ayah_actions_sheet.dart';
 import 'flip/book_flip.dart';
 import 'mushaf_page_view.dart';
+import 'printed_page_view.dart';
 
 /// Window width from which two pages are shown side by side.
 const double mushafSpreadMinWidth = 700;
@@ -73,6 +75,11 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
     if (mounted) setState(() => _selected = null);
   }
 
+  void _onTap() {
+    ref.read(highlightedAyahProvider.notifier).clear();
+    ref.read(readerImmersiveProvider.notifier).toggle();
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -82,6 +89,9 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
     );
     final realistic = ref.watch(
       settingsProvider.select((s) => s.value?.realisticPageTurn ?? true),
+    );
+    final mode = ref.watch(
+      settingsProvider.select((s) => s.value?.readerMode ?? ReaderMode.text),
     );
     final bookmarked = ref.watch(bookmarkedRefsProvider);
     final highlighted = ref.watch(highlightedAyahProvider);
@@ -98,18 +108,25 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
         previousLabel: l10n.previousPage,
         onPageChanged: (turned) =>
             ref.read(readingPositionProvider.notifier).setPage(turned),
-        pageBuilder: (context, number) => MushafPageView(
-          text: widget.text,
-          page: number,
-          fontScale: fontScale,
-          bookmarked: bookmarked,
-          selected: _selected ?? highlighted,
-          onAyahLongPress: _showActions,
-          onTap: () {
-            ref.read(highlightedAyahProvider.notifier).clear();
-            ref.read(readerImmersiveProvider.notifier).toggle();
-          },
-        ),
+        pageBuilder: (context, number) => switch (mode) {
+          ReaderMode.text => MushafPageView(
+            text: widget.text,
+            page: number,
+            fontScale: fontScale,
+            bookmarked: bookmarked,
+            selected: _selected ?? highlighted,
+            onAyahLongPress: _showActions,
+            onTap: _onTap,
+          ),
+          ReaderMode.printed => PrintedPageView(
+            metadata: widget.text.metadata,
+            page: number,
+            bookmarked: bookmarked,
+            selected: _selected ?? highlighted,
+            onAyahLongPress: _showActions,
+            onTap: _onTap,
+          ),
+        },
       ),
     );
   }

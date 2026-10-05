@@ -171,5 +171,12 @@
   "nextPage": "Next page",
   "previousPage": "Previous page",
   "realisticPageTurn": "Realistic page turning",
-  "realisticPageTurnDescription": "Pages bend and turn like paper. Turn it off for a simple slide."
+  "realisticPageTurnDescription": "Pages bend and turn like paper. Turn it off for a simple slide.",
+  "readerMode": "Display",
+  "readerModeText": "Typeset text",
+  "readerModePrinted": "Printed Mushaf",
+  "readerModeDescription": "The printed Mushaf downloads page by page and is kept on the device.",
+  "printedPageError": "Couldn't load this page. Check your internet connection.",
+  "printedPageLabel": "Page {number} of the printed Mushaf",
+  "@printedPageLabel": {"placeholders": {"number": {"type": "String"}}}
 }

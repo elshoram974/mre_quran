@@ -4,6 +4,8 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mre_quran/features/mushaf/data/page_asset_store.dart';
 
+const png = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0];
+
 void main() {
   late Directory root;
   late List<Uri> requests;
@@ -23,18 +25,18 @@ void main() {
   );
 
   test('downloads once, then reads from disk', () async {
-    final s = store((_) async => Uint8List.fromList([1, 2, 3]));
+    final s = store((_) async => Uint8List.fromList(png));
     final first = await s.image(5, dark: false);
     final again = await s.image(5, dark: false);
     expect(first.path, again.path);
-    expect(await again.readAsBytes(), [1, 2, 3]);
+    expect(await again.readAsBytes(), png);
     expect(requests, hasLength(1));
     expect(requests.single.path, endsWith('/light/p5.png'));
     expect(File('${first.path}.part').existsSync(), isFalse);
   });
 
   test('light and dark are kept apart', () async {
-    final s = store((_) async => Uint8List.fromList([9]));
+    final s = store((_) async => Uint8List.fromList(png));
     final light = await s.image(5, dark: false);
     final dark = await s.image(5, dark: true);
     expect(light.path, isNot(dark.path));
@@ -51,7 +53,7 @@ void main() {
     var fail = true;
     final s = store((uri) async {
       if (fail) throw PageDownloadException(uri, 'offline');
-      return Uint8List.fromList([4]);
+      return Uint8List.fromList(png);
     });
     await expectLater(
       s.image(3, dark: false),
@@ -59,14 +61,19 @@ void main() {
     );
     expect(root.listSync(recursive: true).whereType<File>(), isEmpty);
     fail = false;
-    expect(await (await s.image(3, dark: false)).readAsBytes(), [4]);
+    expect(await (await s.image(3, dark: false)).readAsBytes(), png);
   });
 
-  test('an empty response is an error', () async {
-    final s = store((_) async => Uint8List(0));
-    await expectLater(
-      s.image(1, dark: false),
-      throwsA(isA<PageDownloadException>()),
-    );
+  test('an empty response or an error page is not cached', () async {
+    final html = Uint8List.fromList('<html>503</html>'.codeUnits);
+    for (final body in [Uint8List(0), html]) {
+      final s = store((_) async => body);
+      await expectLater(
+        s.image(1, dark: false),
+        throwsA(isA<PageDownloadException>()),
+      );
+      await expectLater(s.layout(1), throwsA(isA<PageDownloadException>()));
+    }
+    expect(root.listSync(recursive: true).whereType<File>(), isEmpty);
   });
 }

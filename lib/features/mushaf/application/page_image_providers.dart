@@ -59,3 +59,22 @@ Future<InkImage> _decode(Uint8List bytes, {required int width}) async {
   codec.dispose();
   return result;
 }
+
+/// A page image decoded for display at a pixel width.
+typedef PageDisplayKey = ({int page, bool dark, int width});
+
+/// The decoded page image to paint, sized for the screen.
+final pageDisplayImageProvider = FutureProvider.autoDispose
+    .family<ui.Image, PageDisplayKey>((ref, key) async {
+      final file = await ref.watch(
+        pageImageFileProvider((page: key.page, dark: key.dark)).future,
+      );
+      final codec = await ui.instantiateImageCodec(
+        await file.readAsBytes(),
+        targetWidth: key.width,
+      );
+      final image = (await codec.getNextFrame()).image;
+      codec.dispose();
+      ref.onDispose(image.dispose);
+      return image;
+    });
