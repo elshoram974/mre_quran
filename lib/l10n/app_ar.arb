@@ -5,7 +5,7 @@
   "settings": "الإعدادات",
   "search": "بحث",
   "noBookmarksTitle": "لا توجد علامات بعد",
-  "noBookmarksBody": "العلامات ستتاح بعد تثبيت بيانات القارئ الموثّقة.",
+  "noBookmarksBody": "اضغط مطولًا على أي آية في المصحف لإضافة علامة.",
   "appearance": "المظهر",
   "theme": "السمة",
   "themeSystem": "حسب الجهاز",
@@ -70,5 +70,13 @@
   "readerProvisional": "تخطيط مؤقت: الآيات موزعة على صفحات مصحف المدينة، وتقسيم الأسطر ليس مطابقًا بعد.",
   "creditsQuranFont": "خط القرآن: أميري قرآن، تصميم خالد حسني وسباستيان كوش، رخصة SIL المفتوحة للخطوط 1.1، https://github.com/aliftype/amiri.",
   "surahOrderLabel": "ترتيبها {number}",
-  "surahAyahsLabel": "آياتها {count}"
+  "surahAyahsLabel": "آياتها {count}",
+  "hizbTitle": "الحزب {number}",
+  "copyAyah": "نسخ الآية",
+  "ayahCopied": "تم نسخ الآية",
+  "addBookmark": "إضافة علامة",
+  "removeBookmark": "إزالة العلامة",
+  "bookmarkAdded": "تمت إضافة العلامة",
+  "bookmarkRemoved": "تمت إزالة العلامة",
+  "undo": "تراجع"
 }

@@ -5,7 +5,7 @@
   "settings": "Settings",
   "search": "Search",
   "noBookmarksTitle": "No bookmarks yet",
-  "noBookmarksBody": "Bookmarks will be available after verified reader data is installed.",
+  "noBookmarksBody": "Press and hold an ayah in the Mushaf to bookmark it.",
   "appearance": "Appearance",
   "theme": "Theme",
   "themeSystem": "System",
@@ -152,5 +152,20 @@
         "type": "String"
       }
     }
-  }
+  },
+  "hizbTitle": "Hizb {number}",
+  "@hizbTitle": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "copyAyah": "Copy ayah",
+  "ayahCopied": "Ayah copied",
+  "addBookmark": "Add bookmark",
+  "removeBookmark": "Remove bookmark",
+  "bookmarkAdded": "Bookmark added",
+  "bookmarkRemoved": "Bookmark removed",
+  "undo": "Undo"
 }

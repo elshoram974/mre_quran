@@ -107,10 +107,11 @@ class PageStart {
 @immutable
 class QuranMetadata {
   /// Creates metadata. [pageStarts] has one entry per page, page 1 first.
-  const QuranMetadata({
+  QuranMetadata({
     required this.surahs,
     required this.juzs,
     required this.pageStarts,
+    required this.rubStarts,
   });
 
   /// All surahs in order.
@@ -121,6 +122,35 @@ class QuranMetadata {
 
   /// First ayah of every page; index 0 is page 1.
   final List<PageStart> pageStarts;
+
+  /// First ayah of each rub' al-hizb (quarter of a hizb); index 0 is rub' 1.
+  /// There are 240, so 60 hizb of four quarters each.
+  final List<AyahRef> rubStarts;
+
+  late final Map<AyahRef, int> _rubByStart = {
+    for (var i = 0; i < rubStarts.length; i++) rubStarts[i]: i + 1,
+  };
+
+  /// The rub' (1–240) that begins exactly at [ref], or null.
+  int? rubStartingAt(AyahRef ref) => _rubByStart[ref];
+
+  /// The rub' (1–240) that contains [ref].
+  int rubOf(AyahRef ref) {
+    var low = 0;
+    var high = rubStarts.length - 1;
+    while (low < high) {
+      final mid = (low + high + 1) ~/ 2;
+      if (rubStarts[mid].compareTo(ref) <= 0) {
+        low = mid;
+      } else {
+        high = mid - 1;
+      }
+    }
+    return low + 1;
+  }
+
+  /// The hizb (1–60) that contains [ref].
+  int hizbOf(AyahRef ref) => (rubOf(ref) - 1) ~/ 4 + 1;
 
   /// Number of Mushaf pages.
   int get pageCount => pageStarts.length;

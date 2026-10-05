@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/l10n/l10n.dart';
@@ -14,7 +15,7 @@ import 'mushaf_ornaments.dart';
 ///
 /// The ayahs on a page follow the Madinah page starts. Line breaks come from
 /// the text layout, not the printed Mushaf, until layout data is approved.
-class MushafPageView extends StatelessWidget {
+class MushafPageView extends StatefulWidget {
   /// Creates page [page] of [text].
   const MushafPageView({
     super.key,
@@ -22,6 +23,9 @@ class MushafPageView extends StatelessWidget {
     required this.page,
     required this.fontScale,
     required this.onTap,
+    this.onAyahLongPress,
+    this.bookmarked = const {},
+    this.selected,
   });
 
   /// The verified text.
@@ -36,15 +40,49 @@ class MushafPageView extends StatelessWidget {
   /// Called when the page is tapped.
   final VoidCallback onTap;
 
+  /// Called with the ayah that was pressed and held.
+  final ValueChanged<AyahRef>? onAyahLongPress;
+
+  /// Ayahs the reader bookmarked. Their markers are coloured differently.
+  final Set<AyahRef> bookmarked;
+
+  /// The ayah whose actions are open, highlighted on the page.
+  final AyahRef? selected;
+
   static const double _minSize = 15;
   static const double _maxSize = 34;
   static const double _bannerExtent = 74;
   static const double _lineHeight = 2.05;
 
+  @override
+  State<MushafPageView> createState() => _MushafPageViewState();
+}
+
+class _MushafPageViewState extends State<MushafPageView> {
+  final Map<AyahRef, LongPressGestureRecognizer> _recognizers = {};
+
+  QuranText get text => widget.text;
+
   String _n(int value) => formatDigits(value, arabic: true);
 
+  @override
+  void dispose() {
+    for (final recognizer in _recognizers.values) {
+      recognizer.dispose();
+    }
+    super.dispose();
+  }
+
+  LongPressGestureRecognizer _recognizerFor(AyahRef ref) =>
+      _recognizers.putIfAbsent(
+        ref,
+        () =>
+            LongPressGestureRecognizer()
+              ..onLongPress = () => widget.onAyahLongPress?.call(ref),
+      );
+
   /// The page's content in reading order.
-  List<_Segment> _segments(Color markerColor, String Function(String) label) {
+  List<_Segment> _segments(ColorScheme scheme, String Function(String) label) {
     final metadata = text.metadata;
     final segments = <_Segment>[];
     var spans = <InlineSpan>[];
@@ -54,7 +92,7 @@ class MushafPageView extends StatelessWidget {
       spans = <InlineSpan>[];
     }
 
-    for (final ayah in text.pageAyahs(page)) {
+    for (final ayah in text.pageAyahs(widget.page)) {
       if (ayah.ref.ayah == 1) {
         flush();
         segments.add(_Banner(metadata.surah(ayah.ref.surah)));
@@ -62,12 +100,41 @@ class MushafPageView extends StatelessWidget {
           segments.add(_Basmala(text.basmala));
         }
       }
+      final highlight = ayah.ref == widget.selected
+          ? scheme.primary.withValues(alpha: 0.16)
+          : null;
+      final recognizer = widget.onAyahLongPress == null
+          ? null
+          : _recognizerFor(ayah.ref);
+      if (metadata.rubStartingAt(ayah.ref) != null) {
+        spans.add(
+          TextSpan(
+            text: '\u06DE ',
+            style: TextStyle(color: scheme.primary),
+          ),
+        );
+      }
       spans
-        ..add(TextSpan(text: '${ayah.text} '))
+        ..add(
+          TextSpan(
+            text: '${ayah.text} ',
+            recognizer: recognizer,
+            style: TextStyle(backgroundColor: highlight),
+          ),
+        )
         ..add(
           TextSpan(
             text: '\u06DD${_n(ayah.ref.ayah)} ',
-            style: TextStyle(color: markerColor),
+            recognizer: recognizer,
+            style: TextStyle(
+              color: widget.bookmarked.contains(ayah.ref)
+                  ? scheme.tertiary
+                  : scheme.primary,
+              fontWeight: widget.bookmarked.contains(ayah.ref)
+                  ? FontWeight.bold
+                  : null,
+              backgroundColor: highlight,
+            ),
             semanticsLabel: label('${ayah.ref.ayah}'),
           ),
         );
@@ -82,13 +149,13 @@ class MushafPageView extends StatelessWidget {
       final style = TextStyle(
         fontFamily: AppTokens.quranFontFamily,
         fontSize: fontSize,
-        height: _lineHeight,
+        height: MushafPageView._lineHeight,
       );
       var total = 0.0;
       for (final segment in segments) {
         switch (segment) {
           case _Banner():
-            total += _bannerExtent;
+            total += MushafPageView._bannerExtent;
           case _Basmala(:final text):
             total +=
                 _measure(TextSpan(text: text, style: style), size.width) + 4;
@@ -102,8 +169,8 @@ class MushafPageView extends StatelessWidget {
       return total;
     }
 
-    var low = _minSize;
-    var high = _maxSize;
+    var low = MushafPageView._minSize;
+    var high = MushafPageView._maxSize;
     if (heightAt(low) > size.height) return low;
     for (var i = 0; i < 9; i++) {
       final mid = (low + high) / 2;
@@ -139,9 +206,11 @@ class MushafPageView extends StatelessWidget {
       height: 1.4,
       color: scheme.onSurfaceVariant,
     );
-    final segments = _segments(scheme.primary, l10n.ayahNumber);
-    final juz = metadata.juzOfPage(page);
-    final surah = metadata.surahAtPage(page);
+    final segments = _segments(scheme, l10n.ayahNumber);
+    final first = text.metadata.ayahsOnPage(widget.page).first;
+    final juz = metadata.juzOfPage(widget.page);
+    final hizb = metadata.hizbOf(first);
+    final surah = metadata.surahAtPage(widget.page);
 
     // Page labels and banners have fixed room, so system text size is capped
     // for them. Quran text size follows the reader's own setting.
@@ -149,7 +218,7 @@ class MushafPageView extends StatelessWidget {
       maxScaleFactor: 1.2,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTap: onTap,
+        onTap: widget.onTap,
         child: Padding(
           padding: const EdgeInsetsDirectional.fromSTEB(10, 6, 10, 8),
           child: CustomPaint(
@@ -160,18 +229,30 @@ class MushafPageView extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Flexible(
-                        child: _Tag(
-                          text: l10n.surahTitle(surah.arabicName),
-                          style: label,
+                      Expanded(
+                        child: Align(
+                          alignment: AlignmentDirectional.centerStart,
+                          child: _Tag(
+                            text: l10n.surahTitle(surah.arabicName),
+                            style: label,
+                          ),
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      const Spacer(),
-                      Flexible(
-                        child: _Tag(
-                          text: l10n.juzTitle(_n(juz.number)),
-                          style: label,
+                      Expanded(
+                        child: Center(
+                          child: _Tag(
+                            text: l10n.hizbTitle(_n(hizb)),
+                            style: label,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Align(
+                          alignment: AlignmentDirectional.centerEnd,
+                          child: _Tag(
+                            text: l10n.juzTitle(_n(juz.number)),
+                            style: label,
+                          ),
                         ),
                       ),
                     ],
@@ -186,8 +267,8 @@ class MushafPageView extends StatelessWidget {
                         );
                         final quran = TextStyle(
                           fontFamily: AppTokens.quranFontFamily,
-                          fontSize: fitted * fontScale,
-                          height: _lineHeight,
+                          fontSize: fitted * widget.fontScale,
+                          height: MushafPageView._lineHeight,
                           color: scheme.onSurface,
                         );
                         return SingleChildScrollView(
@@ -239,7 +320,7 @@ class MushafPageView extends StatelessWidget {
                       ),
                       child: Center(
                         child: Text(
-                          _n(page),
+                          _n(widget.page),
                           style: label.copyWith(
                             fontSize: 15,
                             color: scheme.onSecondaryContainer,

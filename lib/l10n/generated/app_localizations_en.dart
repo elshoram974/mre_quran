@@ -29,7 +29,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noBookmarksBody =>
-      'Bookmarks will be available after verified reader data is installed.';
+      'Press and hold an ayah in the Mushaf to bookmark it.';
 
   @override
   String get appearance => 'Appearance';
@@ -266,4 +266,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String surahAyahsLabel(String count) {
     return 'Ayahs $count';
   }
+
+  @override
+  String hizbTitle(String number) {
+    return 'Hizb $number';
+  }
+
+  @override
+  String get copyAyah => 'Copy ayah';
+
+  @override
+  String get ayahCopied => 'Ayah copied';
+
+  @override
+  String get addBookmark => 'Add bookmark';
+
+  @override
+  String get removeBookmark => 'Remove bookmark';
+
+  @override
+  String get bookmarkAdded => 'Bookmark added';
+
+  @override
+  String get bookmarkRemoved => 'Bookmark removed';
+
+  @override
+  String get undo => 'Undo';
 }

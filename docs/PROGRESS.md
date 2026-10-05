@@ -41,6 +41,9 @@
   (menu), search, and display options (text size, theme), immersive reading on tap, and golden
   tests for pages 1, 2, 42, and 604 in light and dark.
 
+- Hizb and rub' shown on pages; ayah long-press actions (copy with reference, bookmark); bookmarks
+  list; two-page spread on wide windows.
+
 ## In progress
 
 - Foundation migration: localization, typed routing, Riverpod, adaptive shell,

@@ -27,7 +27,7 @@ permission or data source).
 | Ayah-end markers with the ayah number | **done** |
 | Waqf (pause) signs | **done** (kept in the text) |
 | Sajdah signs at the 15 sajdah places | **done** (in the text; tested) |
-| Rub' al-hizb sign (۞) at each quarter, hizb and juz shown in the margin or header | **partial**: juz shown; hizb and rub' are in the metadata but not shown yet |
+| Rub' al-hizb sign (۞) at each quarter, hizb and juz shown at the top of the page | **done** (240 quarters from the metadata; each juz starts a hizb, tested) |
 | Page number on each page | **done** |
 
 ## 3. Structure the app must agree with
@@ -38,7 +38,7 @@ permission or data source).
 | Ayahs (Kufic) | 6,236 | yes |
 | Pages | 604 | yes |
 | Juz | 30 | yes |
-| Hizb / rub' | 60 / 240 | not yet (parse the `hizbs` block) |
+| Hizb / rub' | 60 / 240 | yes |
 | Sajdah places | 15 | yes |
 | Surahs opened by a basmala heading | 112 | yes |
 
@@ -53,10 +53,10 @@ words) depending on how words are counted.
 | Index by surah and juz, search by surah, ayah reference, and words without tashkeel | **done** |
 | Night and sepia themes, text size | **done** |
 | Immersive reading (tap to hide bars) | **done** |
-| Two-page spread on tablets and foldables | **missing** |
+| Two-page spread on wide windows (odd page on the right, page 1 alone) | **done** |
 | Go to page, juz, hizb | **partial** (surah and juz from the index) |
-| Bookmarks with notes | **missing** |
-| Long-press on an ayah: copy with reference, share, bookmark, tafsir, listen | **missing** (needs exact layout to hit the right ayah) |
+| Bookmarks, listed newest first, swipe to remove, marked on the page | **done**; notes are **missing** |
+| Long-press on an ayah: copy with reference, bookmark | **done**; share, tafsir, and listen are **blocked or missing** (share needs a plugin; tafsir and audio need licensed sources) |
 | Tajweed colours | **blocked** (licensed data or fonts) |
 | Tafsir, translations, recitations, downloaded on demand | **blocked** (licences per source) |
 
@@ -73,10 +73,9 @@ words) depending on how words are counted.
 ## Priority to call it a good Mushaf
 
 1. Exact pages: get permission for the KFGQPC fonts or page images and the line layout, then render them.
-2. Show hizb and rub' marks from the metadata already bundled.
-3. Ayah long-press actions and bookmarks.
-4. Two-page spread on wide screens.
-5. Apply for the King Fahd Complex review before publishing.
+2. Share, tafsir, and listen in the ayah actions, once their sources are approved.
+3. Bookmark notes, go to page, juz, or hizb.
+4. Apply for the King Fahd Complex review before publishing.
 
 ## Sources
 

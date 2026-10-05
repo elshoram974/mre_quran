@@ -29,7 +29,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get noBookmarksBody =>
-      'العلامات ستتاح بعد تثبيت بيانات القارئ الموثّقة.';
+      'اضغط مطولًا على أي آية في المصحف لإضافة علامة.';
 
   @override
   String get appearance => 'المظهر';
@@ -269,4 +269,30 @@ class AppLocalizationsAr extends AppLocalizations {
   String surahAyahsLabel(String count) {
     return 'آياتها $count';
   }
+
+  @override
+  String hizbTitle(String number) {
+    return 'الحزب $number';
+  }
+
+  @override
+  String get copyAyah => 'نسخ الآية';
+
+  @override
+  String get ayahCopied => 'تم نسخ الآية';
+
+  @override
+  String get addBookmark => 'إضافة علامة';
+
+  @override
+  String get removeBookmark => 'إزالة العلامة';
+
+  @override
+  String get bookmarkAdded => 'تمت إضافة العلامة';
+
+  @override
+  String get bookmarkRemoved => 'تمت إزالة العلامة';
+
+  @override
+  String get undo => 'تراجع';
 }

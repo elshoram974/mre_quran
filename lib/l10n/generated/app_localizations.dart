@@ -137,7 +137,7 @@ abstract class AppLocalizations {
   /// No description provided for @noBookmarksBody.
   ///
   /// In en, this message translates to:
-  /// **'Bookmarks will be available after verified reader data is installed.'**
+  /// **'Press and hold an ayah in the Mushaf to bookmark it.'**
   String get noBookmarksBody;
 
   /// No description provided for @appearance.
@@ -529,6 +529,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Ayahs {count}'**
   String surahAyahsLabel(String count);
+
+  /// No description provided for @hizbTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hizb {number}'**
+  String hizbTitle(String number);
+
+  /// No description provided for @copyAyah.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy ayah'**
+  String get copyAyah;
+
+  /// No description provided for @ayahCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Ayah copied'**
+  String get ayahCopied;
+
+  /// No description provided for @addBookmark.
+  ///
+  /// In en, this message translates to:
+  /// **'Add bookmark'**
+  String get addBookmark;
+
+  /// No description provided for @removeBookmark.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove bookmark'**
+  String get removeBookmark;
+
+  /// No description provided for @bookmarkAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Bookmark added'**
+  String get bookmarkAdded;
+
+  /// No description provided for @bookmarkRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Bookmark removed'**
+  String get bookmarkRemoved;
+
+  /// No description provided for @undo.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get undo;
 }
 
 class _AppLocalizationsDelegate

@@ -5,6 +5,7 @@ import 'package:mre_quran/features/mushaf/application/reader_immersive_provider.
 import 'package:mre_quran/features/mushaf/application/reading_position_provider.dart';
 import 'package:mre_quran/features/mushaf/presentation/mushaf_page.dart';
 import 'package:mre_quran/features/quran_index/application/quran_metadata_provider.dart';
+import 'package:mre_quran/features/bookmarks/application/bookmarks_provider.dart';
 import 'package:mre_quran/features/quran_text/application/quran_text_providers.dart';
 import 'package:mre_quran/features/settings/application/settings_provider.dart';
 import 'package:mre_quran/features/settings/domain/app_settings.dart';
@@ -12,6 +13,7 @@ import 'package:mre_quran/l10n/generated/app_localizations.dart';
 
 import '../../helpers/fake_quran_metadata_source.dart';
 import '../../helpers/fake_quran_text_source.dart';
+import '../../helpers/memory_bookmarks_repository.dart';
 import '../../helpers/memory_reading_position_repository.dart';
 import '../../helpers/memory_settings_repository.dart';
 
@@ -31,6 +33,9 @@ Future<(ProviderContainer, MemoryReadingPositionRepository)> _pump(
     overrides: [
       quranMetadataSourceProvider.overrideWithValue(FakeQuranMetadataSource()),
       quranTextSourceProvider.overrideWithValue(FakeQuranTextSource()),
+      bookmarksRepositoryProvider.overrideWithValue(
+        MemoryBookmarksRepository(),
+      ),
       readingPositionRepositoryProvider.overrideWithValue(positions),
       settingsRepositoryProvider.overrideWithValue(
         MemorySettingsRepository()..settings = AppSettings(localeCode: locale),
@@ -105,5 +110,58 @@ void main() {
       'overflow', (tester) async {
     await _pump(tester, locale: 'en', width: 320, textScale: 2, savedPage: 50);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('a wide window shows two pages side by side', (tester) async {
+    await _pump(tester, width: 1000, savedPage: 3);
+    // Pages 2 and 3 face each other; the right-hand page is odd.
+    expect(find.byKey(const ValueKey<int>(3)), findsOneWidget);
+    expect(find.byKey(const ValueKey<int>(2)), findsOneWidget);
+    final right = tester.getCenter(find.byKey(const ValueKey<int>(3))).dx;
+    final left = tester.getCenter(find.byKey(const ValueKey<int>(2))).dx;
+    expect(right, greaterThan(left));
+  });
+
+  testWidgets('page 1 stands alone on the right of the first spread', (
+    tester,
+  ) async {
+    await _pump(tester, width: 1000);
+    expect(find.byKey(const ValueKey<int>(1)), findsOneWidget);
+    expect(find.byKey(const ValueKey<int>(0)), findsNothing);
+    expect(
+      tester.getCenter(find.byKey(const ValueKey<int>(1))).dx,
+      greaterThan(500),
+    );
+  });
+
+  testWidgets('turning a spread saves its right-hand page', (tester) async {
+    final (_, positions) = await _pump(tester, width: 1000);
+    await tester.fling(find.byType(PageView), const Offset(600, 0), 2000);
+    await tester.pumpAndSettle();
+    expect(positions.page, 3);
+  });
+
+  testWidgets('a narrow window shows one page', (tester) async {
+    await _pump(tester, width: 400, savedPage: 3);
+    expect(find.byKey(const ValueKey<int>(3)), findsOneWidget);
+    expect(find.byKey(const ValueKey<int>(2)), findsNothing);
+  });
+
+  testWidgets('pressing and holding an ayah opens its actions', (tester) async {
+    await _pump(tester);
+    final paragraph = find.byWidgetPredicate(
+      (w) => w is RichText && w.text.toPlainText().contains('ٱلْحَمْدُ'),
+    );
+    expect(paragraph, findsOneWidget);
+    // Press along the first column of the paragraph until a line of text is
+    // under the finger, so the test does not depend on exact line positions.
+    final topRight = tester.getTopRight(paragraph);
+    for (var dy = 20.0; dy < 400; dy += 18) {
+      await tester.longPressAt(topRight + Offset(-90, dy));
+      await tester.pumpAndSettle();
+      if (find.text('نسخ الآية').evaluate().isNotEmpty) break;
+    }
+    expect(find.text('نسخ الآية'), findsOneWidget);
+    expect(find.text('إضافة علامة'), findsOneWidget);
   });
 }
