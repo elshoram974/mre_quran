@@ -132,7 +132,11 @@ class AppSelectField<T extends Object> extends StatelessWidget {
             child: Row(
               children: [
                 if (selected?.icon != null) ...[
-                  Icon(selected!.icon, size: 20),
+                  Icon(
+                    selected!.icon,
+                    size: 20,
+                    color: theme.colorScheme.primary,
+                  ),
                   const SizedBox(width: 8),
                 ],
                 Expanded(

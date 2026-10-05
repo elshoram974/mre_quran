@@ -7,6 +7,7 @@ import '../../../core/l10n/l10n.dart';
 import '../../../core/layout/adaptive_layout.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_select_field.dart';
+import '../../../core/widgets/app_switch_tile.dart';
 
 import '../application/settings_provider.dart';
 import '../domain/app_settings.dart';
@@ -100,35 +101,35 @@ class _SettingsContent extends ConsumerWidget {
         ),
         const SizedBox(height: 12),
         _SettingsCard(
-          child: SwitchListTile.adaptive(
+          child: AppSwitchTile(
             value: settings.reduceMotion,
             onChanged: (value) =>
                 notifier.save(settings.copyWith(reduceMotion: value)),
-            title: Text(l10n.reduceMotion),
-            subtitle: Text(l10n.reduceMotionDescription),
+            title: l10n.reduceMotion,
+            subtitle: l10n.reduceMotionDescription,
           ),
         ),
         const SizedBox(height: 12),
         _SettingsCard(
-          child: SwitchListTile.adaptive(
+          child: AppSwitchTile(
             value: settings.useArabicDigits,
             onChanged: (value) =>
                 notifier.save(settings.copyWith(useArabicDigits: value)),
-            title: Text(l10n.arabicDigits),
-            subtitle: Text(l10n.arabicDigitsDescription),
+            title: l10n.arabicDigits,
+            subtitle: l10n.arabicDigitsDescription,
           ),
         ),
         const SizedBox(height: 28),
         Text(l10n.privacy, style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 12),
         _SettingsCard(
-          child: SwitchListTile.adaptive(
+          child: AppSwitchTile(
             value: settings.crashReportsEnabled,
             onChanged: (value) =>
                 notifier.save(settings.copyWith(crashReportsEnabled: value)),
-            secondary: const Icon(Icons.shield_outlined),
-            title: Text(l10n.crashReports),
-            subtitle: Text(l10n.crashReportsDescription),
+            icon: Icons.shield_outlined,
+            title: l10n.crashReports,
+            subtitle: l10n.crashReportsDescription,
           ),
         ),
         const SizedBox(height: 12),

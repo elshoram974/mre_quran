@@ -46,6 +46,7 @@ class GlassShell extends StatelessWidget {
             ? GlassTabBar.bottom(
                 selectedIndex: index,
                 onTabSelected: onSelected,
+                quality: GlassQuality.premium,
                 selectedIconColor: scheme.primary,
                 selectedLabelColor: scheme.primary,
                 unselectedIconColor: scheme.onSurfaceVariant,

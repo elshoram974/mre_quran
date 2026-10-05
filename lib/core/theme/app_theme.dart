@@ -28,9 +28,20 @@ abstract final class AppTheme {
     required Color seed,
     required Color canvas,
   }) {
-    final scheme = ColorScheme.fromSeed(
-      seedColor: seed,
-      brightness: brightness,
+    final scheme = _harmonize(
+      ColorScheme.fromSeed(seedColor: seed, brightness: brightness),
+      canvas,
+    );
+    WidgetStateProperty<Color?> byState({
+      required Color selected,
+      required Color unselected,
+      Color? disabled,
+    }) => WidgetStateProperty.resolveWith(
+      (states) => states.contains(WidgetState.disabled)
+          ? disabled ?? scheme.onSurface.withValues(alpha: 0.12)
+          : states.contains(WidgetState.selected)
+          ? selected
+          : unselected,
     );
     final fieldRadius = BorderRadius.circular(AppTokens.radiusField);
     UnderlineInputBorder border(Color color, [double width = 0]) =>
@@ -104,6 +115,64 @@ abstract final class AppTheme {
           ),
         ),
       ),
+      switchTheme: SwitchThemeData(
+        thumbColor: byState(
+          selected: scheme.onPrimary,
+          unselected: scheme.outline,
+        ),
+        trackColor: byState(
+          selected: scheme.primary,
+          unselected: scheme.surfaceContainerHighest,
+        ),
+        trackOutlineColor: byState(
+          selected: Colors.transparent,
+          unselected: scheme.outline,
+        ),
+      ),
+      checkboxTheme: CheckboxThemeData(
+        fillColor: byState(
+          selected: scheme.primary,
+          unselected: Colors.transparent,
+        ),
+        checkColor: WidgetStatePropertyAll(scheme.onPrimary),
+        side: BorderSide(color: scheme.outline, width: 2),
+      ),
+      radioTheme: RadioThemeData(
+        fillColor: byState(
+          selected: scheme.primary,
+          unselected: scheme.outline,
+        ),
+      ),
+      sliderTheme: SliderThemeData(
+        activeTrackColor: scheme.primary,
+        inactiveTrackColor: scheme.surfaceContainerHighest,
+        thumbColor: scheme.primary,
+      ),
+      progressIndicatorTheme: ProgressIndicatorThemeData(
+        color: scheme.primary,
+        linearTrackColor: scheme.surfaceContainerHighest,
+        circularTrackColor: scheme.surfaceContainerHighest,
+      ),
+      chipTheme: ChipThemeData(
+        backgroundColor: scheme.surfaceContainerLow,
+        selectedColor: scheme.secondaryContainer,
+        side: BorderSide(color: scheme.outlineVariant),
+        shape: RoundedRectangleBorder(borderRadius: fieldRadius),
+      ),
+      segmentedButtonTheme: SegmentedButtonThemeData(
+        style: SegmentedButton.styleFrom(
+          selectedBackgroundColor: scheme.secondaryContainer,
+          selectedForegroundColor: scheme.onSecondaryContainer,
+          side: BorderSide(color: scheme.outlineVariant),
+        ),
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: scheme.surfaceContainerHigh,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppTokens.radiusSheet),
+        ),
+      ),
       extensions: const [
         MREFieldsTheme(
           fieldBorderRadius: AppTokens.radiusField,
@@ -111,6 +180,26 @@ abstract final class AppTheme {
           expandedContentPadding: AppTokens.fieldPadding,
         ),
       ],
+    );
+  }
+
+  /// Rebuilds the surface roles around [canvas] so cards, fields, and the page
+  /// share one hue instead of the seed's default tonal surfaces.
+  static ColorScheme _harmonize(ColorScheme base, Color canvas) {
+    final dark = base.brightness == Brightness.dark;
+    Color tint(double alpha) =>
+        Color.alphaBlend(base.primary.withValues(alpha: alpha), canvas);
+    return base.copyWith(
+      surface: canvas,
+      surfaceContainerLowest: dark
+          ? Color.alphaBlend(Colors.black.withValues(alpha: 0.25), canvas)
+          : Color.alphaBlend(Colors.white.withValues(alpha: 0.6), canvas),
+      surfaceContainerLow: tint(0.04),
+      surfaceContainer: tint(0.07),
+      surfaceContainerHigh: tint(0.10),
+      surfaceContainerHighest: tint(0.14),
+      secondaryContainer: tint(0.20),
+      onSecondaryContainer: base.onSurface,
     );
   }
 }
