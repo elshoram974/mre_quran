@@ -27,16 +27,19 @@ Exact Madinah layout needs line-by-line data. Tanzil text alone cannot give it.
 | Option | Terms found | Verdict |
 |---|---|---|
 | KFGQPC fonts from [fonts.qurancomplex.gov.sa](https://fonts.qurancomplex.gov.sa/wp02/en/?p=19) (Uthmanic Hafs, QCF v1/v2/v4) | [Licence text](https://scancode-licensedb.aboutcode.org/kfgqpc-uthmanic-script-hafs.LICENSE): property of King Fahd Glorious Quran Printing Complex, "may not be reproduced, modified without the express written approval". | **Bundling is not clearly allowed.** Needs written approval from KFGQPC. |
-| QCF v4 | Madinah Mushaf (1441 H), one font per glyph group, about 47 files instead of 604 ([quran-qcf4](https://cdn.jsdelivr.net/npm/quran-qcf4@1.1.0/README.md)) | Lightest exact option, same licence question as above. |
+| QCF v4 (third-party package) | Madinah Mushaf (1441 H), grouped into about 47 files ([quran-qcf4](https://cdn.jsdelivr.net/npm/quran-qcf4@1.1.0/README.md)). Quran Foundation's own V4 Tajweed is per-page (604 fonts), not 47. | Same licence question as above. Not the same thing as Quran Foundation's V4. |
+| QCF V1 / V2 per-page fonts | One TTF per page. Sample sizes from HEAD requests: V1 about 90 KB per page (about 55 MB total), V2 about 370 KB per page (about 220 MB total) | Too heavy to bundle. Possible on-demand download pack. |
+| QPC Hafs / Uthmani (Unicode) | One font for the whole Quran, [recommended by Quran Foundation for mobile](https://api-docs.quran.foundation/docs/tutorials/fonts/font-rendering/) | **Default light mode.** Needs bundling permission. |
 | Fonts via Quran Foundation | [Developer terms](https://api-docs.quran.foundation/legal/mushaf-fonts-and-images/) allow bundling fonts and Mushaf images obtained through its APIs or documented CDN URLs if: you keep an active Developer Console account, credit Quran Foundation in the app, and ship them only as part of the app (no separate download or API). | Terms do not name QCF v1/v2/v4. Confirm with developers@quran.com. |
 
 ## 4. Recommended path
 
 1. **Text:** Tanzil Uthmani, unmodified, with the required attribution.
-2. **Layout and glyph fonts (QCF v4):** get written confirmation for one channel, in this order:
+2. **Layout and fonts:** get written confirmation for one channel, in this order:
    Quran Foundation (they publish bundling terms), then written approval from KFGQPC.
-3. **Light mode first:** font-rendered pages only. No images.
-4. **Images later, one pack at a time:** same Quran Foundation terms, downloaded on demand, never bundled.
+3. **Light mode first:** one bundled Unicode font (QPC Hafs) with line breaks from the layout data. No images.
+4. **Optional pack:** QCF V1 page fonts (about 90 KB per page) downloaded on demand, never bundled.
+5. **Images later, one pack at a time:** same Quran Foundation terms, downloaded on demand, never bundled.
 5. **Fallback if neither approves:** render Tanzil text with a single KFGQPC Hafs font and our own pagination.
    This is not the exact Madinah page layout, and it still needs KFGQPC's permission to bundle.
 
@@ -61,7 +64,7 @@ exists as an empty state until a licensed source is approved.
 | Surah start page, juz start page | derived at load from the page starts | Computed, never hand-typed |
 | Ayah text (Uthmani, Hafs) | [Tanzil text](https://tanzil.net/docs/quran_text_types), CC BY 3.0 | Not added yet. Clear licence; added with the reader, with its own checksum |
 | Line-by-line page layout (which words on which line) | QUL or Quran Foundation | Blocked on the permission requests (`docs/PERMISSION_REQUESTS.md`) |
-| Glyph fonts (QCF v4) | KFGQPC via Quran Foundation or direct approval | Blocked on the same requests |
+| Fonts: QPC Hafs (default), QCF V1 pack (optional) | KFGQPC via Quran Foundation or direct approval | Blocked on the same requests |
 | Search keys | derived at runtime from names | Computed, kept apart from verbatim text |
 
 Rules that apply to every row: bundle the file unmodified, record its SHA-256 in code, fail a test if it
