@@ -45,8 +45,9 @@ The reader itself remains visually quiet and never places blur over Quran text.
 
 ## Phase 2 — reliability and platform fit
 
-1. Add an opt-in crash reporting abstraction. Activate Firebase Crashlytics
-   only after `flutterfire configure` has generated real app configuration.
+1. Maintain the opt-in Crashlytics abstraction. Firebase project
+   `mre-golden-quran-2026` is configured for Android and iOS; collection stays
+   disabled until the reader enables it in Settings.
 2. Verify compact, medium, expanded, iPad, and iPhone Duo pose changes.
 3. Run profile-mode reader performance checks and document measurements.
 

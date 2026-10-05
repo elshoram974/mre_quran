@@ -28,8 +28,8 @@ Sources:
    spread on large windows, split view, iPhone Duo, and Android foldables.
 5. Accessibility: semantic ayah actions, 200% text scaling, motion reduction,
    and full RTL/LTR directional layouts.
-6. Native Apple Liquid Glass for controls and navigation on supported iOS;
-   restrained Material fallback elsewhere. Quran content stays high-contrast.
+6. Restrained shader-based Liquid Glass for controls and navigation on iOS and
+   Android. Quran content stays high-contrast.
 
 ## Delivery order
 
@@ -41,3 +41,12 @@ Sources:
 | P2 | Khatma, wird, athkar, memorization planner | Notification consent |
 | P2 | Prayer times, Qibla, Hijri, widget | Location/notification/sensor permissions |
 | P3 | Tajweed, word-by-word, multiple riwayat, images mode | Verified matching data and asset terms |
+
+## Update tracks
+
+| Update | Feature set | Product edge |
+| --- | --- | --- |
+| 1.1 Study | Ayah sheet, bookmarks, tafsir/translation downloads | Provenance and offline asset management |
+| 1.2 Listen | Reciters, repeat ranges, background player, resumable downloads | Per-surah storage limits and no bundled audio |
+| 1.3 Worship | Khatma, wird, athkar, reminders, prayer, Qibla, Hijri | Local-first plans and permission only at point of use |
+| 1.4 Mastery | Tajweed, memorization, word-by-word, other riwayat, images mode | Verified source matching and foldable-optimized study layouts |

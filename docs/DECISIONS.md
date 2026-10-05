@@ -28,13 +28,15 @@
 - **Alternatives:** Blur the Mushaf page or use a full-screen glass effect.
 - **Reason:** The reader needs stable contrast, lower GPU cost, and reverence.
 
-## D-005: Firebase Crashlytics stays disabled until consent and configuration
+## D-005: Firebase Crashlytics is configured but opt-in
 
-- **Decision:** Do not initialise Crashlytics or analytics without a real
-  Firebase configuration and explicit user consent.
+- **Decision:** Use Firebase project `mre-golden-quran-2026` for Android and
+  iOS Crashlytics. Initialise Firebase at startup, disable collection before
+  rendering, and enable it only after the reader switches on the explicit
+  Settings control. Do not add Analytics.
 - **Alternatives:** Add a placeholder configuration or collect automatically.
-- **Reason:** This preserves the offline/private product promise and avoids
-  invalid Firebase setup.
+- **Reason:** This preserves the offline/private product promise while keeping
+  a real, verified crash-reporting integration ready for consent.
 
 ## D-006: Do not bundle QCF assets yet
 

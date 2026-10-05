@@ -8,6 +8,6 @@
 | Exact 604-page Lite reader | pending verified QCF assets | pending integrity/golden tests | Blocked |
 | Tanzil attribution and checksum | pending approved import | pending checksum tests | Blocked |
 | Images mode | deferred by asset approval rule | pending | Blocked |
-| Firebase Crashlytics | pending Firebase configuration and consent | pending platform test | Blocked |
+| Firebase Crashlytics | `firebase_options.dart`, crash boundary, Settings | unit consent test; iOS/Android debug builds | Partial |
 | Audio, study, prayer, Qibla, Hijri | later phases | pending | Not done |
 | Accessibility, performance, release | pending implementation | pending device and release runs | Not done |
