@@ -35,6 +35,30 @@
   do not write errors to Firestore, and do not call `print` directly outside
   the logger or platform bootstrap.
 
+## UI/UX quality bar
+
+- Build every screen to feel polished and intentional. Pick the best UX, not the quickest.
+- Never rebuild or reload a whole page for a small change. Scope rebuilds:
+  - Use `ref.watch(provider.select(...))` and split widgets so only the part that changed rebuilds.
+  - Use `const` constructors, stable keys, and `RepaintBoundary` around heavy or animated parts.
+  - Keep scroll position, selection, and focus across state changes and locale/theme switches.
+- Never show a full-screen spinner that replaces existing content.
+  - On refresh or background update, keep the current data visible and update it in place.
+  - Use `AsyncValue` with `skipLoadingOnRefresh`/`skipLoadingOnReload` (or the equivalent) so stale data stays on screen.
+- Use shimmer skeletons for the first load of any async content.
+  - Use one shared shimmer in `lib/core/widgets`. Do not add a per-feature copy.
+  - Make skeletons match the final layout (same size, spacing, and corner radius) so nothing jumps when data arrives.
+  - Shimmer must respect `MediaQuery.disableAnimations` and fall back to a static placeholder.
+  - Shimmer must work in light and dark themes and in RTL, using directional gradients.
+  - Use shimmer only for loading. Never use it to hide errors or empty states.
+- Every async screen handles four states explicitly: loading (shimmer), data, empty, and error with a retry action. Strings come from ARB files.
+- Prefer optimistic updates for small user actions (bookmark, favourite, setting toggle). Roll back with a clear message on failure.
+- Do not show a loading indicator for work shorter than about 150 ms. Avoid flicker.
+- Animate transitions (`AnimatedSwitcher`, `AnimatedSize`, hero) with short, purposeful durations that respect `disableAnimations`.
+- Keep touch targets at least 48dp, give visible pressed and focus states, and meet contrast in both themes.
+- Never block the UI thread. Move heavy parsing or search work off the main isolate.
+- Before finishing UI work, check it on a compact and an expanded width, in dark mode, with large text, and in Arabic RTL.
+
 ## Localization and bidirectionality
 
 - Use the `mre-quran-localization` skill for localized UI work.
