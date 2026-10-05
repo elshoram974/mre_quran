@@ -10,6 +10,7 @@ import '../../../core/widgets/app_select_field.dart';
 import '../../../core/widgets/app_switch_tile.dart';
 
 import '../application/settings_provider.dart';
+import '../../mushaf/presentation/mushaf_style_field.dart';
 import '../domain/app_settings.dart';
 
 /// Allows readers to choose visual and language preferences.
@@ -137,6 +138,8 @@ class _SettingsContent extends ConsumerWidget {
           onChanged: (value) =>
               notifier.save(settings.copyWith(readerMode: value)),
         ),
+        const SizedBox(height: 12),
+        const MushafStyleField(),
         const SizedBox(height: 12),
         _SettingsCard(
           child: AppSwitchTile(

@@ -10,66 +10,55 @@ import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../quran_index/domain/quran_metadata.dart';
 import '../../settings/application/digits_provider.dart';
+import '../../settings/domain/app_settings.dart';
 import '../application/page_image_providers.dart';
+import '../domain/mushaf_edition.dart';
 import '../domain/page_geometry.dart';
 import 'mushaf_page_frame.dart';
 
-/// Width-to-height ratio of a full page image (1080 × 2160).
-const double _imageAspect = 0.5;
-
-/// Horizontal part of the page image shown: the same on every page, so the
-/// script keeps one size from page to page.
-const double _cropLeft = 0.035;
-const double _cropRight = 0.97;
-
-/// Part of the page image shown while its ink extent is unknown. Every
-/// page's ink, the busy last page included, lies inside it.
-const FractionRect printedPageCrop = (
-  left: _cropLeft,
-  top: 0.04,
-  right: _cropRight,
-  bottom: 0.97,
-);
-
-/// Part of a page image to show in [area], given where its ink starts and
-/// ends (fractions of the image height).
+/// Part of a page image of [edition] to show in [area], given where the
+/// page's ink starts and ends (fractions of the image height).
 ///
-/// The page images leave different blank margins above and below the text.
-/// The crop fills the width when the ink fits at that scale, centred on the
-/// ink; a taller page is shown whole and scaled down to fit.
+/// The sides always come from the edition, so the script keeps one size from
+/// page to page. Vertically the crop fills the area at that scale, centred on
+/// the ink; a page whose ink is taller is shown whole and scaled down.
 @visibleForTesting
-FractionRect printedCropFor({
+FractionRect printedCropFor(
+  MushafEdition edition, {
   required double inkTop,
   required double inkBottom,
   required Size area,
 }) {
-  const width = _cropRight - _cropLeft;
+  final side = edition.crop;
+  final width = side.right - side.left;
+  final aspect = edition.width / edition.height;
   // Fraction of the image height that fits when the crop fills the width.
-  final fits = area.height / (area.width / width / _imageAspect);
+  final fits = area.height / (area.width / width / aspect);
   if (fits >= 1) {
-    return (left: _cropLeft, top: 0, right: _cropRight, bottom: 1);
+    return (left: side.left, top: 0, right: side.right, bottom: 1);
   }
   const margin = 0.008;
   final top = math.max(0.0, inkTop - margin);
   final bottom = math.min(1.0, inkBottom + margin);
   if (bottom - top > fits) {
-    return (left: _cropLeft, top: top, right: _cropRight, bottom: bottom);
+    return (left: side.left, top: top, right: side.right, bottom: bottom);
   }
   final start = ((top + bottom - fits) / 2).clamp(0.0, 1 - fits);
-  return (left: _cropLeft, top: start, right: _cropRight, bottom: start + fits);
+  return (left: side.left, top: start, right: side.right, bottom: start + fits);
 }
 
-/// One page of the printed Madinah Mushaf, as an image inside the page frame.
+/// One page of a printed Mushaf edition, as an image inside the page frame.
 ///
-/// The image is tinted onto the page colour, so it follows the light, sepia,
-/// and dark themes. The selected ayah is highlighted under the ink, and a
-/// long press finds the ayah under the finger from the measured word
-/// positions.
+/// The script follows the light, sepia, and dark themes: transparent pages
+/// are tinted to the text colour, paper pages are blended onto the page
+/// colour. The selected ayah is highlighted under the ink, and a long press
+/// selects the ayah under the finger.
 class PrintedPageView extends StatelessWidget {
-  /// Creates printed page [page].
+  /// Creates printed page [page] of [style].
   const PrintedPageView({
     super.key,
     required this.metadata,
+    required this.style,
     required this.page,
     required this.onTap,
     this.onAyahLongPress,
@@ -79,6 +68,9 @@ class PrintedPageView extends StatelessWidget {
 
   /// Quran structure, for the frame labels.
   final QuranMetadata metadata;
+
+  /// Which edition.
+  final MushafStyle style;
 
   /// Page number, 1–604.
   final int page;
@@ -100,18 +92,21 @@ class PrintedPageView extends StatelessWidget {
     metadata: metadata,
     page: page,
     onTap: onTap,
+    decorated: false,
     child: LayoutBuilder(
       builder: (context, constraints) {
+        final edition = MushafEdition.of(style);
         // Decode only as many pixels as the screen shows, in steps so a small
         // resize reuses the decoded image.
         final pixels =
             constraints.maxWidth /
-            (_cropRight - _cropLeft) *
+            (edition.crop.right - edition.crop.left) *
             MediaQuery.devicePixelRatioOf(context);
         return _PrintedBody(
+          edition: edition,
           page: page,
           area: constraints.biggest,
-          width: ((pixels / 180).ceil() * 180).clamp(360, 1080),
+          width: ((pixels / 180).ceil() * 180).clamp(360, edition.width),
           onAyahLongPress: onAyahLongPress,
           bookmarked: bookmarked,
           selected: selected,
@@ -123,6 +118,7 @@ class PrintedPageView extends StatelessWidget {
 
 class _PrintedBody extends ConsumerWidget {
   const _PrintedBody({
+    required this.edition,
     required this.page,
     required this.area,
     required this.width,
@@ -131,6 +127,7 @@ class _PrintedBody extends ConsumerWidget {
     required this.selected,
   });
 
+  final MushafEdition edition;
   final int page;
   final Size area;
   final int width;
@@ -140,46 +137,63 @@ class _PrintedBody extends ConsumerWidget {
 
   void _retry(WidgetRef ref, bool dark) {
     ref
-      ..invalidate(pageImageFileProvider((page: page, dark: dark)))
-      ..invalidate(pageLayoutProvider(page));
+      ..invalidate(
+        pageImageFileProvider((style: edition.style, page: page, dark: dark)),
+      )
+      ..invalidate(
+        pageImageFileProvider((style: edition.style, page: page, dark: false)),
+      )
+      ..invalidate(pageLayoutProvider(page))
+      ..invalidate(ayahInfoDatabaseProvider);
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
-    final dark = theme.brightness == Brightness.dark;
+    final dark = Theme.of(context).brightness == Brightness.dark;
     final image = ref.watch(
-      pageDisplayImageProvider((page: page, dark: dark, width: width)),
+      pageDisplayImageProvider((
+        style: edition.style,
+        page: page,
+        dark: dark,
+        width: width,
+      )),
     );
-    // Word positions also give the ink extent that sets the crop, so the
-    // page waits for them. Without them (layout unavailable) it still shows,
-    // with a safe crop and no ayah selection.
-    final measured = ref.watch(pageGeometryProvider((page: page, dark: false)));
+    final measured = ref.watch(
+      pageGeometryProvider((style: edition.style, page: page)),
+    );
     final geometry = measured.value;
+    // Paper pages are cropped to their ink, so they wait for the positions.
+    // Without them (layout unavailable) a page still shows, with a safe crop
+    // and no ayah selection.
+    final ready =
+        edition.ink == PageInk.transparent ||
+        geometry != null ||
+        measured.hasError;
     final still = MediaQuery.disableAnimationsOf(context);
     final l10n = context.l10n;
 
     final Widget child = switch (image) {
-      AsyncValue(:final value?) when geometry != null || measured.hasError =>
-        _placed(
-          _PrintedImage(
-            key: const ValueKey('image'),
-            image: value,
-            crop: geometry == null
-                ? printedPageCrop
-                : printedCropFor(
-                    inkTop: geometry.inkTop,
-                    inkBottom: geometry.inkBottom,
-                    area: area,
-                  ),
-            dark: dark,
-            geometry: geometry,
-            bookmarked: bookmarked,
-            selected: selected,
-            onAyahLongPress: onAyahLongPress,
-            label: l10n.printedPageLabel(formatDigits(page, arabic: true)),
-          ),
+      AsyncValue(:final value?) when ready => _placed(
+        _PrintedImage(
+          key: const ValueKey('image'),
+          edition: edition,
+          image: value,
+          crop: edition.ink == PageInk.onPaper && geometry != null
+              ? printedCropFor(
+                  edition,
+                  inkTop: geometry.inkTop,
+                  inkBottom: geometry.inkBottom,
+                  area: area,
+                )
+              : edition.crop,
+          dark: dark,
+          geometry: geometry,
+          bookmarked: bookmarked,
+          selected: selected,
+          onAyahLongPress: onAyahLongPress,
+          label: l10n.printedPageLabel(formatDigits(page, arabic: true)),
         ),
+      ),
       AsyncValue(hasError: true) => EmptyState(
         key: const ValueKey('error'),
         icon: Icons.cloud_off_outlined,
@@ -200,7 +214,9 @@ class _PrintedBody extends ConsumerWidget {
   Widget _placed(_PrintedImage image) {
     final crop = image.crop;
     final aspect =
-        (crop.right - crop.left) * _imageAspect / (crop.bottom - crop.top);
+        (crop.right - crop.left) *
+        edition.width /
+        ((crop.bottom - crop.top) * edition.height);
     final size = applyBoxFit(BoxFit.contain, Size(aspect, 1), area).destination;
     return Center(
       key: image.key,
@@ -212,6 +228,7 @@ class _PrintedBody extends ConsumerWidget {
 class _PrintedImage extends StatelessWidget {
   const _PrintedImage({
     super.key,
+    required this.edition,
     required this.image,
     required this.crop,
     required this.dark,
@@ -222,6 +239,7 @@ class _PrintedImage extends StatelessWidget {
     required this.label,
   });
 
+  final MushafEdition edition;
   final ui.Image image;
   final FractionRect crop;
   final bool dark;
@@ -242,6 +260,42 @@ class _PrintedImage extends StatelessWidget {
     if (ayah == null) return;
     HapticFeedback.selectionClick();
     callback(ayah);
+  }
+
+  /// How the image is laid onto the page colour.
+  Paint _imagePaint(ColorScheme scheme) {
+    final paint = Paint()..filterQuality = FilterQuality.medium;
+    switch (edition.ink) {
+      case PageInk.transparent:
+        // Ink takes the text colour; its strength follows how dark it was,
+        // so grey ornaments stay light.
+        final ink = scheme.onSurface;
+        paint.colorFilter = ColorFilter.matrix([
+          0, 0, 0, 0, ink.r * 255, //
+          0, 0, 0, 0, ink.g * 255, //
+          0, 0, 0, 0, ink.b * 255, //
+          -0.299, -0.587, -0.114, 1, 0, //
+        ]);
+      case PageInk.onPaper when dark:
+        // The dark images' paper is stretched to black, then screened onto
+        // the page colour, leaving no visible sheet.
+        final paper = edition.darkPaper ?? 0;
+        final r = (paper >> 16) & 0xFF;
+        final g = (paper >> 8) & 0xFF;
+        final b = paper & 0xFF;
+        paint
+          ..blendMode = BlendMode.screen
+          ..colorFilter = ColorFilter.matrix([
+            255 / (255 - r), 0, 0, 0, -r * 255 / (255 - r), //
+            0, 255 / (255 - g), 0, 0, -g * 255 / (255 - g), //
+            0, 0, 255 / (255 - b), 0, -b * 255 / (255 - b), //
+            0, 0, 0, 1, 0, //
+          ]);
+      case PageInk.onPaper:
+        // White paper multiplied onto the page colour.
+        paint.blendMode = BlendMode.multiply;
+    }
+    return paint;
   }
 
   @override
@@ -277,9 +331,7 @@ class _PrintedImage extends StatelessWidget {
               image: image,
               crop: crop,
               paper: scheme.surface,
-              // White paper multiplied onto the page colour; the dark image's
-              // black paper screened onto it.
-              blend: dark ? BlendMode.screen : BlendMode.multiply,
+              imagePaint: _imagePaint(scheme),
               marks: marks,
             ),
           ),
@@ -289,28 +341,19 @@ class _PrintedImage extends StatelessWidget {
   }
 }
 
-/// Stretches the dark images' paper colour (13, 15, 18) down to black, so
-/// screening the page onto the theme colour leaves no visible sheet.
-const _darkPaperToBlack = ColorFilter.matrix([
-  255 / 242, 0, 0, 0, -13 * 255 / 242, //
-  0, 255 / 240, 0, 0, -15 * 255 / 240, //
-  0, 0, 255 / 237, 0, -18 * 255 / 237, //
-  0, 0, 0, 1, 0, //
-]);
-
 class _PrintedPagePainter extends CustomPainter {
   _PrintedPagePainter({
     required this.image,
     required this.crop,
     required this.paper,
-    required this.blend,
+    required this.imagePaint,
     required this.marks,
   });
 
   final ui.Image image;
   final FractionRect crop;
   final Color paper;
-  final BlendMode blend;
+  final Paint imagePaint;
   final List<({List<FractionRect> rects, Color color})> marks;
 
   @override
@@ -328,10 +371,10 @@ class _PrintedPagePainter extends CustomPainter {
       for (final rect in mark.rects) {
         canvas.drawRRect(
           RRect.fromLTRBR(
-            (rect.left - crop.left) / cropWidth * size.width - 2,
-            (rect.top - crop.top) / cropHeight * size.height,
-            (rect.right - crop.left) / cropWidth * size.width + 2,
-            (rect.bottom - crop.top) / cropHeight * size.height,
+            (rect.left - crop.left) / cropWidth * size.width - 3,
+            (rect.top - crop.top) / cropHeight * size.height - 2,
+            (rect.right - crop.left) / cropWidth * size.width + 3,
+            (rect.bottom - crop.top) / cropHeight * size.height + 2,
             const Radius.circular(6),
           ),
           paint,
@@ -350,10 +393,7 @@ class _PrintedPagePainter extends CustomPainter {
           crop.bottom * ih,
         ),
         bounds,
-        Paint()
-          ..blendMode = blend
-          ..colorFilter = blend == BlendMode.screen ? _darkPaperToBlack : null
-          ..filterQuality = FilterQuality.medium,
+        imagePaint,
       )
       ..restore();
   }
@@ -363,7 +403,8 @@ class _PrintedPagePainter extends CustomPainter {
       old.image != image ||
       old.crop != crop ||
       old.paper != paper ||
-      old.blend != blend ||
+      old.imagePaint.colorFilter != imagePaint.colorFilter ||
+      old.imagePaint.blendMode != imagePaint.blendMode ||
       !_sameMarks(old.marks, marks);
 
   static bool _sameMarks(

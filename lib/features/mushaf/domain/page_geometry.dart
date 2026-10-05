@@ -108,12 +108,108 @@ class PageGeometry {
   }
 
   /// The ayah under the fractional point, or null.
+  ///
+  /// Fingers are wider than the gaps in the script: a press between two
+  /// lines picks the nearer line, and a press between words, or beside the
+  /// end of a line, picks the nearest word on that line. A press far from
+  /// any word finds nothing.
   AyahRef? ayahAt(double x, double y) {
+    int? line;
+    var lineDistance = double.infinity;
     for (final box in words) {
-      if (box.contains(x, y)) return box.ayah;
+      final dy = y < box.top
+          ? box.top - y
+          : y > box.bottom
+          ? y - box.bottom
+          : 0.0;
+      if (dy < lineDistance) {
+        lineDistance = dy;
+        line = box.line;
+      }
     }
-    return null;
+    if (line == null || lineDistance > _lineReach) return null;
+    WordBox? nearest;
+    var distance = double.infinity;
+    for (final box in words) {
+      if (box.line != line) continue;
+      final dx = x < box.left
+          ? box.left - x
+          : x > box.right
+          ? x - box.right
+          : 0.0;
+      if (dx < distance) {
+        distance = dx;
+        nearest = box;
+      }
+    }
+    return distance <= _wordReach ? nearest?.ayah : null;
   }
+
+  /// How far above or below a line a press still selects it, as a fraction
+  /// of the page height.
+  static const double _lineReach = 0.025;
+
+  /// How far beside a word a press still selects it, as a fraction of the
+  /// page width.
+  static const double _wordReach = 0.04;
+}
+
+/// A glyph's box from a page's glyph database, in image pixels.
+typedef GlyphBox = ({
+  AyahRef ayah,
+  int position,
+  int line,
+  int minX,
+  int maxX,
+  int minY,
+  int maxY,
+});
+
+/// Geometry of a page from its glyph database, for an image of [width] by
+/// [height] pixels.
+///
+/// Every glyph on a line gets the line's full height, so a press anywhere in
+/// the line's band finds a word. Some rows have their edges swapped; they are
+/// read either way round.
+PageGeometry glyphGeometry(
+  List<GlyphBox> glyphs, {
+  required int width,
+  required int height,
+}) {
+  if (glyphs.isEmpty) return const PageGeometry(words: []);
+  final bands = <int, (int, int)>{};
+  for (final glyph in glyphs) {
+    final top = math.min(glyph.minY, glyph.maxY);
+    final bottom = math.max(glyph.minY, glyph.maxY);
+    final band = bands[glyph.line];
+    bands[glyph.line] = band == null
+        ? (top, bottom)
+        : (math.min(band.$1, top), math.max(band.$2, bottom));
+  }
+  var inkTop = height;
+  var inkBottom = 0;
+  final boxes = <WordBox>[];
+  for (final glyph in glyphs) {
+    final (top, bottom) = bands[glyph.line]!;
+    inkTop = math.min(inkTop, top);
+    inkBottom = math.max(inkBottom, bottom);
+    boxes.add(
+      WordBox(
+        ayah: glyph.ayah,
+        word: glyph.position,
+        line: glyph.line,
+        left: math.min(glyph.minX, glyph.maxX) / width,
+        right: math.max(glyph.minX, glyph.maxX) / width,
+        top: top / height,
+        bottom: bottom / height,
+      ),
+    );
+  }
+  return PageGeometry(
+    words: List.unmodifiable(boxes),
+    inkTop: inkTop / height,
+    inkBottom: inkBottom / height,
+  );
 }
 
 /// Finds where each word of [layout] sits on [image].

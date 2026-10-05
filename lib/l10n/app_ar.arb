@@ -88,5 +88,9 @@
   "readerModePrinted": "المصحف المطبوع",
   "readerModeDescription": "المصحف المطبوع يُنزَّل صفحة صفحة ويُحفظ على الجهاز.",
   "printedPageError": "تعذّر تحميل الصفحة. تأكد من الاتصال بالإنترنت.",
-  "printedPageLabel": "الصفحة {number} من المصحف المطبوع"
+  "printedPageLabel": "الصفحة {number} من المصحف المطبوع",
+  "mushafStyle": "شكل المصحف",
+  "mushafStyleMadinah": "مصحف المدينة",
+  "mushafStyleTajweed": "مصحف التجويد",
+  "mushafStyleMadinahHd": "مصحف المدينة عالي الدقة"
 }

@@ -637,6 +637,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Page {number} of the printed Mushaf'**
   String printedPageLabel(String number);
+
+  /// No description provided for @mushafStyle.
+  ///
+  /// In en, this message translates to:
+  /// **'Mushaf style'**
+  String get mushafStyle;
+
+  /// No description provided for @mushafStyleMadinah.
+  ///
+  /// In en, this message translates to:
+  /// **'Madinah Mushaf'**
+  String get mushafStyleMadinah;
+
+  /// No description provided for @mushafStyleTajweed.
+  ///
+  /// In en, this message translates to:
+  /// **'Tajweed Mushaf'**
+  String get mushafStyleTajweed;
+
+  /// No description provided for @mushafStyleMadinahHd.
+  ///
+  /// In en, this message translates to:
+  /// **'Madinah Mushaf, high resolution'**
+  String get mushafStyleMadinahHd;
 }
 
 class _AppLocalizationsDelegate

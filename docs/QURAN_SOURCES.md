@@ -168,6 +168,8 @@ KFGQPC fonts, so they carry the same permission question as the fonts.
 
 | What | URL pattern | Format | Notes |
 |---|---|---|---|
+| Madinah pages, Quran.com (default edition) | `https://files.quran.app/hafs/madani/width_{480\|800\|1024\|1260\|1280\|1920}/page{001..604}.png` (`android.quran.com/data/width_N/` redirects here) | PNG, ink on a transparent sheet, 1260×2038 about 120 KB | Data set of the open-source Quran for Android app. No licence stated for the images |
+| Glyph positions for the Quran.com pages | `https://files.quran.app/hafs/madani/width_1024/ayahinfo_1024.zip` | Zip with SQLite `ayahinfo_1024.db`, table `glyphs` (page, line, sura, ayah, position, min/max x/y in 1024×1656 pixels), 88,246 rows | Zip SHA-256 `b36fce9dab5275a0324b9cf78f67e6b6167cb68661ee53c64861217135b8eaa1`, database SHA-256 `30fa152370e19097ad1b4ddac2ea59a05f7ad0a4aa932b427ed87047c75cef69`, both checked by the app. 2,190 rows have their x or y edges swapped; the app reads them either way round |
 | Madinah pages, plain (KFGQPC V4 rendering) | `https://cdn.jsdelivr.net/gh/SakinaDevGroup/mushaf-madani-cdn@main/{light\|dark}/p{1..604}.png` | PNG, 1080×2160, about 76–160 KB | [repo](https://github.com/SakinaDevGroup/mushaf-madani-cdn). No licence file |
 | Madinah pages, tajweed colours | `https://raw.githubusercontent.com/SakinaDevGroup/mushaf-tajweed-cdn/main/{light\|dark}/p{1..604}.png` | PNG, 1080×2160, about 190 KB | [repo](https://github.com/SakinaDevGroup/mushaf-tajweed-cdn). The jsDelivr mirror did not answer the check |
 | Exact line and word layout (604 JSON files, QPC glyph codes) | `https://raw.githubusercontent.com/zonetecde/mushaf-layout/refs/heads/main/mushaf/page-{001..604}.json` | JSON, about 25 KB per page | [repo](https://github.com/zonetecde/mushaf-layout). Source and licence not stated |
@@ -175,12 +177,17 @@ KFGQPC fonts, so they carry the same permission question as the fonts.
 
 ### How the app uses them
 
-The printed-Mushaf reader (`ReaderMode.printed`) downloads the plain page image (light or dark, by theme)
-and the layout JSON of a page the first time it is opened, checks that the body is really a PNG or a JSON
+The printed-Mushaf reader (`ReaderMode.printed`) offers three editions (`MushafStyle`, defined in
+`lib/features/mushaf/domain/mushaf_edition.dart`): Quran.com Madinah pages (default), Sakina tajweed pages,
+and Sakina plain pages. Quran.com pages take their ayah positions from the glyph database above; the
+Sakina pages are measured as described below. The reader downloads the page image (light or dark, by
+theme, for the Sakina pages) and, for the Sakina pages, the layout JSON of a page the first time it is
+opened, checks that the body is really a PNG or a JSON
 object (the CDN sometimes answers 200 with an error page), and keeps the file in the app support
-directory. Nothing is bundled. Sources: `lib/features/mushaf/data/mushaf_image_source.dart`.
+directory. Nothing is bundled. It also downloads the next 8 and previous 2 pages in the background so
+turning never waits on the network.
 
-Ayah positions are not taken from any data set: the app measures them on the light image. It splits the
+For the Sakina pages, ayah positions are measured on the light image. It splits the
 page ink into as many bands as the layout has lines, then places word boundaries at ink gaps near where
 the words' letter counts predict them (`lib/features/mushaf/domain/page_geometry.dart`). Checked by
 overlay on pages 1, 2, 42, 187, and 604: every line and ayah boundary matched.

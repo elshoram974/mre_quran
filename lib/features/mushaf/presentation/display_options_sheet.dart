@@ -7,6 +7,7 @@ import '../../../core/widgets/app_sheet.dart';
 import '../../../core/widgets/app_switch_tile.dart';
 import '../../settings/application/settings_provider.dart';
 import '../../settings/domain/app_settings.dart';
+import 'mushaf_style_field.dart';
 
 /// Opens the reading display options: text size and theme.
 Future<void> showDisplayOptions(BuildContext context) => AppSheet.show<void>(
@@ -54,7 +55,10 @@ class _DisplayOptions extends ConsumerWidget {
                 ? Duration.zero
                 : const Duration(milliseconds: 200),
             child: settings.readerMode == ReaderMode.printed
-                ? const SizedBox(width: double.infinity, height: 12)
+                ? const Padding(
+                    padding: EdgeInsetsDirectional.only(top: 16, bottom: 4),
+                    child: MushafStyleField(),
+                  )
                 : _TextSize(settings: settings),
           ),
           const SizedBox(height: 4),

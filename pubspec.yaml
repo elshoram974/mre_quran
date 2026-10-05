@@ -13,6 +13,7 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  archive: ^4.3.0
   crypto: ^3.0.7
   device_preview: ^3.0.0
   firebase_core: ^4.15.0
@@ -29,6 +30,7 @@ dependencies:
   mre_fields: ^0.3.3
   path_provider: ^2.1.6
   shared_preferences: ^2.5.3
+  sqlite3: ^3.7.0
   xml: ^7.1.0
 
 dev_dependencies:

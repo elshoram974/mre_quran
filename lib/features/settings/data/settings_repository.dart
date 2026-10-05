@@ -22,6 +22,7 @@ class LocalSettingsRepository implements SettingsRepository {
   static const _readerFontScaleKey = 'settings.reader_font_scale';
   static const _realisticTurnKey = 'settings.realistic_page_turn';
   static const _readerModeKey = 'settings.reader_mode';
+  static const _mushafStyleKey = 'settings.mushaf_style';
 
   @override
   Future<AppSettings> load() async {
@@ -46,6 +47,7 @@ class LocalSettingsRepository implements SettingsRepository {
       _preferences.getBool(_realisticTurnKey),
       _preferences.getString(_readerModeKey),
     ).wait;
+    final mushafStyle = await _preferences.getString(_mushafStyleKey);
     return AppSettings(
       theme: AppThemePreference.values.firstWhere(
         (item) => item.name == theme,
@@ -65,6 +67,10 @@ class LocalSettingsRepository implements SettingsRepository {
         (item) => item.name == readerMode,
         orElse: () => ReaderMode.text,
       ),
+      mushafStyle: MushafStyle.values.firstWhere(
+        (item) => item.name == mushafStyle,
+        orElse: () => MushafStyle.madinah,
+      ),
     );
   }
 
@@ -80,6 +86,7 @@ class LocalSettingsRepository implements SettingsRepository {
       _preferences.setDouble(_readerFontScaleKey, settings.readerFontScale),
       _preferences.setBool(_realisticTurnKey, settings.realisticPageTurn),
       _preferences.setString(_readerModeKey, settings.readerMode.name),
+      _preferences.setString(_mushafStyleKey, settings.mushafStyle.name),
     ]);
   }
 }

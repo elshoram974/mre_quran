@@ -10,6 +10,7 @@ import '../application/reader_immersive_provider.dart';
 import '../application/reading_position_provider.dart';
 import '../../../core/l10n/l10n.dart';
 import '../application/highlighted_ayah_provider.dart';
+import '../application/page_prefetcher.dart';
 import 'ayah_actions_sheet.dart';
 import 'flip/book_flip.dart';
 import 'mushaf_page_view.dart';
@@ -66,6 +67,20 @@ class _PagerBody extends ConsumerStatefulWidget {
 
 class _PagerBodyState extends ConsumerState<_PagerBody> {
   AyahRef? _selected;
+  ({MushafStyle style, int page, bool dark})? _prefetched;
+
+  /// Starts downloading the printed pages around [page] once per change.
+  void _prefetch(MushafStyle style, int page, bool dark) {
+    final key = (style: style, page: page, dark: dark);
+    if (key == _prefetched) return;
+    _prefetched = key;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ref
+          .read(pagePrefetcherProvider)
+          .around(style: style, page: page, dark: dark, pageCount: _pageCount);
+    });
+  }
 
   int get _pageCount => widget.text.metadata.pageCount;
 
@@ -93,6 +108,14 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
     final mode = ref.watch(
       settingsProvider.select((s) => s.value?.readerMode ?? ReaderMode.text),
     );
+    final style = ref.watch(
+      settingsProvider.select(
+        (s) => s.value?.mushafStyle ?? MushafStyle.madinah,
+      ),
+    );
+    if (mode == ReaderMode.printed) {
+      _prefetch(style, page, Theme.of(context).brightness == Brightness.dark);
+    }
     final bookmarked = ref.watch(bookmarkedRefsProvider);
     final highlighted = ref.watch(highlightedAyahProvider);
 
@@ -120,6 +143,7 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
           ),
           ReaderMode.printed => PrintedPageView(
             metadata: widget.text.metadata,
+            style: style,
             page: number,
             bookmarked: bookmarked,
             selected: _selected ?? highlighted,

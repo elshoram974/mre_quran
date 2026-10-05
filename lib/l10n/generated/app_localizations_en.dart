@@ -327,4 +327,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String printedPageLabel(String number) {
     return 'Page $number of the printed Mushaf';
   }
+
+  @override
+  String get mushafStyle => 'Mushaf style';
+
+  @override
+  String get mushafStyleMadinah => 'Madinah Mushaf';
+
+  @override
+  String get mushafStyleTajweed => 'Tajweed Mushaf';
+
+  @override
+  String get mushafStyleMadinahHd => 'Madinah Mushaf, high resolution';
 }

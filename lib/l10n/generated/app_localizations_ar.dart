@@ -330,4 +330,16 @@ class AppLocalizationsAr extends AppLocalizations {
   String printedPageLabel(String number) {
     return 'الصفحة $number من المصحف المطبوع';
   }
+
+  @override
+  String get mushafStyle => 'شكل المصحف';
+
+  @override
+  String get mushafStyleMadinah => 'مصحف المدينة';
+
+  @override
+  String get mushafStyleTajweed => 'مصحف التجويد';
+
+  @override
+  String get mushafStyleMadinahHd => 'مصحف المدينة عالي الدقة';
 }

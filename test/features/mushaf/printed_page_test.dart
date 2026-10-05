@@ -5,24 +5,33 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mre_quran/core/widgets/app_shimmer.dart';
 import 'package:mre_quran/features/mushaf/application/page_image_providers.dart';
+import 'package:mre_quran/features/mushaf/data/ayah_info_database.dart';
 import 'package:mre_quran/features/mushaf/data/page_asset_store.dart';
+import 'package:mre_quran/features/mushaf/domain/mushaf_edition.dart';
 import 'package:mre_quran/features/mushaf/presentation/printed_page_view.dart';
 import 'package:mre_quran/features/quran_index/data/quran_metadata_parser.dart';
 import 'package:mre_quran/features/quran_index/data/quran_metadata_source.dart';
 import 'package:mre_quran/features/quran_index/domain/quran_metadata.dart';
+import 'package:mre_quran/features/settings/domain/app_settings.dart';
 import 'package:mre_quran/l10n/generated/app_localizations.dart';
 
-/// A 200 × 400 page: white paper, two black lines of one word each.
-Future<Uint8List> _pagePng() async {
+import '../../helpers/ayah_info_fixture.dart';
+
+/// A 200 × 400 page with two black lines of one word each, on white paper
+/// or on a transparent sheet.
+Future<Uint8List> _pagePng({bool transparent = false}) async {
   final recorder = ui.PictureRecorder();
-  final canvas = Canvas(recorder)
-    ..drawRect(
+  final canvas = Canvas(recorder);
+  if (!transparent) {
+    canvas.drawRect(
       const Rect.fromLTWH(0, 0, 200, 400),
       Paint()..color = Colors.white,
     );
+  }
   final ink = Paint()..color = Colors.black;
   canvas
     ..drawRect(const Rect.fromLTRB(40, 60, 170, 120), ink)
@@ -85,8 +94,12 @@ void main() {
     WidgetTester tester, {
     required bool Function() online,
     Brightness brightness = Brightness.light,
+    MushafStyle style = MushafStyle.madinahHd,
+    List<Override> extra = const [],
   }) async {
-    png = (await tester.runAsync(_pagePng))!;
+    png = (await tester.runAsync(
+      () => _pagePng(transparent: style == MushafStyle.madinah),
+    ))!;
     final pressed = <AyahRef>[];
     final container = ProviderContainer(
       retry: (_, _) => null,
@@ -100,6 +113,7 @@ void main() {
             },
           ),
         ),
+        ...extra,
       ],
     );
     addTearDown(container.dispose);
@@ -118,6 +132,7 @@ void main() {
           home: Scaffold(
             body: PrintedPageView(
               metadata: metadata,
+              style: style,
               page: 1,
               onTap: () {},
               onAyahLongPress: pressed.add,
@@ -151,7 +166,12 @@ void main() {
       find.ancestor(of: label, matching: find.byType(Center)).first,
     );
     // The test page's ink runs from 60 to 320 of 400 pixels.
-    final crop = printedCropFor(inkTop: 0.15, inkBottom: 0.8, area: area);
+    final crop = printedCropFor(
+      MushafEdition.madinahHd,
+      inkTop: 0.15,
+      inkBottom: 0.8,
+      area: area,
+    );
     // Map an image point to the screen through the shown crop.
     Offset at(double x, double y) {
       return Offset(
@@ -170,6 +190,7 @@ void main() {
   group('printedCropFor', () {
     test('fills the width and centres on the ink when it fits', () {
       final crop = printedCropFor(
+        MushafEdition.madinahHd,
         inkTop: 0.12,
         inkBottom: 0.88,
         area: const Size(340, 700),
@@ -183,6 +204,7 @@ void main() {
 
     test('shows a tall page whole, scaled down', () {
       final crop = printedCropFor(
+        MushafEdition.madinahHd,
         inkTop: 0.04,
         inkBottom: 0.97,
         area: const Size(340, 600),
@@ -194,6 +216,7 @@ void main() {
     test('never reads outside the image', () {
       for (final inkTop in [0.0, 0.3, 0.6]) {
         final crop = printedCropFor(
+          MushafEdition.madinahHd,
           inkTop: inkTop,
           inkBottom: inkTop + 0.3,
           area: const Size(340, 500),
@@ -202,12 +225,46 @@ void main() {
         expect(crop.bottom, lessThanOrEqualTo(1));
       }
       final wide = printedCropFor(
+        MushafEdition.madinahHd,
         inkTop: 0.2,
         inkBottom: 0.8,
         area: const Size(300, 2000),
       );
       expect((wide.top, wide.bottom), (0, 1));
     });
+  });
+
+  testWidgets('Quran.com pages show at once and select from the database', (
+    tester,
+  ) async {
+    // Two lines in the database's 1024 × 1656 space: ayah 1:1 on top, 1:2
+    // lower down.
+    final file = writeAyahInfo(root, [
+      [1, 1, 1, 1, 1, 100, 900, 250, 500],
+      [1, 2, 1, 2, 1, 200, 800, 1100, 1300],
+    ]);
+    final database = AyahInfoDatabase.open(file);
+    addTearDown(database.close);
+    final pressed = await pump(
+      tester,
+      online: () => true,
+      style: MushafStyle.madinah,
+      extra: [ayahInfoDatabaseProvider.overrideWith((ref) async => database)],
+    );
+    await settle(tester);
+    final page = tester.getRect(
+      find.bySemanticsLabel('الصفحة ١ من المصحف المطبوع'),
+    );
+    // The whole image is shown.
+    expect(page.width / page.height, closeTo(1260 / 2038, 0.01));
+    Offset at(double x, double y) => Offset(
+      page.left + x / 1024 * page.width,
+      page.top + y / 1656 * page.height,
+    );
+    await tester.longPressAt(at(500, 400));
+    await tester.longPressAt(at(500, 1200));
+    await tester.longPressAt(at(500, 800));
+    expect(pressed, [const AyahRef(1, 1), const AyahRef(1, 2)]);
   });
 
   testWidgets('offline shows an error with retry that recovers', (

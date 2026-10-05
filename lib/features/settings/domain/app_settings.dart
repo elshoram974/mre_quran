@@ -13,6 +13,7 @@ class AppSettings {
     this.readerFontScale = 1,
     this.realisticPageTurn = true,
     this.readerMode = ReaderMode.text,
+    this.mushafStyle = MushafStyle.madinah,
   });
 
   final AppThemePreference theme;
@@ -33,6 +34,9 @@ class AppSettings {
   /// Whether the Mushaf shows typeset text or printed page images.
   final ReaderMode readerMode;
 
+  /// Which printed edition the printed reader shows.
+  final MushafStyle mushafStyle;
+
   Locale get locale => Locale(localeCode);
 
   ThemeMode get materialThemeMode => switch (theme) {
@@ -51,6 +55,7 @@ class AppSettings {
     double? readerFontScale,
     bool? realisticPageTurn,
     ReaderMode? readerMode,
+    MushafStyle? mushafStyle,
   }) => AppSettings(
     theme: theme ?? this.theme,
     localeCode: localeCode ?? this.localeCode,
@@ -61,6 +66,7 @@ class AppSettings {
     readerFontScale: readerFontScale ?? this.readerFontScale,
     realisticPageTurn: realisticPageTurn ?? this.realisticPageTurn,
     readerMode: readerMode ?? this.readerMode,
+    mushafStyle: mushafStyle ?? this.mushafStyle,
   );
 }
 
@@ -83,4 +89,17 @@ enum ReaderMode {
 
   /// Images of the printed Madinah Mushaf, downloaded page by page.
   printed,
+}
+
+/// Printed Mushaf editions the printed reader can show.
+enum MushafStyle {
+  /// Madinah Mushaf pages as used by the Quran.com apps, with exact ayah
+  /// positions.
+  madinah,
+
+  /// Madinah Mushaf with tajweed colours.
+  tajweed,
+
+  /// Madinah Mushaf rendered from the KFGQPC V4 fonts at high resolution.
+  madinahHd,
 }

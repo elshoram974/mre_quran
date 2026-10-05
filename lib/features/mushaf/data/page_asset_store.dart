@@ -1,7 +1,12 @@
 import 'dart:io';
+import 'dart:isolate';
 import 'dart:typed_data';
 
-import 'mushaf_image_source.dart';
+import 'package:archive/archive.dart';
+import 'package:crypto/crypto.dart';
+
+import '../domain/mushaf_edition.dart';
+import 'mushaf_sources.dart';
 
 /// Downloads a URL. Injected so tests run offline.
 typedef Fetch = Future<Uint8List> Function(Uri uri);
@@ -21,7 +26,8 @@ class PageDownloadException implements Exception {
   String toString() => 'PageDownloadException($uri): $reason';
 }
 
-/// Keeps printed-Mushaf page images and layouts on the device.
+/// Keeps printed-Mushaf page images, layouts, and the glyph database on the
+/// device.
 ///
 /// A file is downloaded the first time it is needed, written atomically, and
 /// read from disk after that, so pages work offline once seen.
@@ -34,19 +40,60 @@ class PageAssetStore {
   final Fetch _fetch;
   final Map<String, Future<File>> _inFlight = {};
 
-  /// The image file of [page], light or [dark].
-  Future<File> image(int page, {required bool dark}) => _file(
-    'images/${dark ? 'dark' : 'light'}/p$page.png',
-    MushafImageSource.pageImage(page, dark: dark),
-    _isPng,
-  );
+  /// The image file of [page] in [edition], light or [dark].
+  Future<File> image(MushafEdition edition, int page, {required bool dark}) {
+    final variant = dark && edition.hasDarkImages ? 'dark' : 'light';
+    return _file(
+      'images/${edition.style.name}/$variant/p$page.png',
+      edition.image(page, dark: dark),
+      _isPng,
+    );
+  }
 
   /// The layout JSON of [page].
   Future<String> layout(int page) async => (await _file(
     'layouts/page-$page.json',
-    MushafImageSource.pageLayout(page),
+    MushafSources.pageLayout(page),
     _isJsonObject,
   )).readAsString();
+
+  /// The glyph database of the Quran.com pages, checked against its
+  /// recorded SHA-256 values.
+  Future<File> ayahInfoDatabase() =>
+      _inFlight['ayahinfo'] ??= _loadAyahInfo().whenComplete(() {
+        _inFlight.remove('ayahinfo');
+      });
+
+  Future<File> _loadAyahInfo() async {
+    final root = await _root();
+    final file = File('${root.path}/mushaf/${MushafSources.ayahInfoEntry}');
+    if (await file.exists()) return file;
+    final zip = await _fetch(MushafSources.ayahInfo);
+    final database = await Isolate.run(() => _extractAyahInfo(zip));
+    if (database == null) {
+      throw PageDownloadException(MushafSources.ayahInfo, 'checksum mismatch');
+    }
+    await file.parent.create(recursive: true);
+    final temp = File('${file.path}.part');
+    await temp.writeAsBytes(database, flush: true);
+    return temp.rename(file.path);
+  }
+
+  /// The database inside [zip], or null when either checksum is wrong.
+  static Uint8List? _extractAyahInfo(Uint8List zip) {
+    if (sha256.convert(zip).toString() != MushafSources.ayahInfoSha256) {
+      return null;
+    }
+    final entry = ZipDecoder()
+        .decodeBytes(zip)
+        .findFile(MushafSources.ayahInfoEntry);
+    final bytes = entry?.readBytes();
+    if (bytes == null ||
+        sha256.convert(bytes).toString() != MushafSources.ayahInfoDbSha256) {
+      return null;
+    }
+    return bytes;
+  }
 
   static bool _isPng(Uint8List bytes) =>
       bytes.length > 8 &&
