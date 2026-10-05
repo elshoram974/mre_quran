@@ -94,7 +94,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get creditsTanzil =>
-      'بيانات فهرس القرآن (السور والأجزاء وبدايات الصفحات): مشروع تنزيل، رخصة CC BY 3.0، https://tanzil.net. الملف مضمَّن دون تعديل ويُتحقق منه بالبصمة. وسيحمل نص القرآن الإسناد نفسه.';
+      'نص القرآن وبيانات الفهرس (السور والأجزاء وبدايات الصفحات): مشروع تنزيل، رخصة CC BY 3.0، https://tanzil.net. الملفات مضمَّنة دون تعديل ومعها إشعار حقوقها، ويُتحقق منها بالبصمة.';
 
   @override
   String get creditsFonts =>

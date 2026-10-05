@@ -263,7 +263,7 @@ abstract class AppLocalizations {
   /// No description provided for @creditsTanzil.
   ///
   /// In en, this message translates to:
-  /// **'Quran index data (surahs, juz, and page starts): Tanzil Project, CC BY 3.0, https://tanzil.net. The file is bundled unmodified and verified by checksum. The Quran text will carry the same attribution.'**
+  /// **'Quran text and index data (surahs, juz, page starts): Tanzil Project, CC BY 3.0, https://tanzil.net. The files are bundled unmodified, with their copyright notice, and verified by checksum.'**
   String get creditsTanzil;
 
   /// No description provided for @creditsFonts.

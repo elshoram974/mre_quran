@@ -95,7 +95,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get creditsTanzil =>
-      'Quran index data (surahs, juz, and page starts): Tanzil Project, CC BY 3.0, https://tanzil.net. The file is bundled unmodified and verified by checksum. The Quran text will carry the same attribution.';
+      'Quran text and index data (surahs, juz, page starts): Tanzil Project, CC BY 3.0, https://tanzil.net. The files are bundled unmodified, with their copyright notice, and verified by checksum.';
 
   @override
   String get creditsFonts =>

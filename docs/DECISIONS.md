@@ -113,3 +113,12 @@
   theme changes and flashed a spinner).
 - **Reason:** One predictable, draggable sheet on both platforms; theme and locale
   switches feel instant.
+
+## D-014: Bundle Tanzil text and keep two search keys per ayah
+
+- **Decision:** Bundle Tanzil Uthmani and Simple Clean (`txt-2`, v1.1) unmodified. Display uses Uthmani. Search
+  folds both texts and matches either spelling.
+- **Alternatives:** Derive the plain text from Uthmani in code; search only the Simple Clean text.
+- **Reason:** Both files have a clear CC BY 3.0 licence and cost about half a megabyte compressed. Folding
+  Uthmani alone cannot recover imlaei spellings (dagger alef against full alef), and folding only the plain
+  text misses a query copied from the Mushaf. Each file keeps its own checksum and is never edited.

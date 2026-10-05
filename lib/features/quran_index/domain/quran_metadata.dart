@@ -1,5 +1,32 @@
 import 'package:flutter/foundation.dart';
 
+/// An ayah, identified by surah and ayah number.
+@immutable
+class AyahRef implements Comparable<AyahRef> {
+  /// Creates a reference. Both numbers are 1-based.
+  const AyahRef(this.surah, this.ayah);
+
+  /// Surah number, 1–114.
+  final int surah;
+
+  /// Ayah number within [surah].
+  final int ayah;
+
+  @override
+  int compareTo(AyahRef other) =>
+      surah != other.surah ? surah - other.surah : ayah - other.ayah;
+
+  @override
+  bool operator ==(Object other) =>
+      other is AyahRef && other.surah == surah && other.ayah == ayah;
+
+  @override
+  int get hashCode => Object.hash(surah, ayah);
+
+  @override
+  String toString() => '$surah:$ayah';
+}
+
 /// Where a surah was revealed, as recorded by the source file.
 enum Revelation { meccan, medinan }
 
@@ -97,6 +124,32 @@ class QuranMetadata {
 
   /// Number of Mushaf pages.
   int get pageCount => pageStarts.length;
+
+  /// Number of ayahs in the whole Quran.
+  int get totalAyahs => surahs.fold(0, (sum, surah) => sum + surah.ayahCount);
+
+  /// The ayahs that start on [page], in reading order.
+  ///
+  /// An ayah that begins on an earlier page and runs over is listed on the
+  /// page where it begins, matching the page starts in the source file.
+  List<AyahRef> ayahsOnPage(int page) {
+    final start = pageStarts[page - 1];
+    final end = page < pageStarts.length ? pageStarts[page] : null;
+    final refs = <AyahRef>[];
+    var surah = start.surah;
+    var ayah = start.ayah;
+    while (surah <= surahs.length) {
+      if (end != null && surah == end.surah && ayah == end.ayah) break;
+      refs.add(AyahRef(surah, ayah));
+      if (ayah == this.surah(surah).ayahCount) {
+        surah++;
+        ayah = 1;
+      } else {
+        ayah++;
+      }
+    }
+    return refs;
+  }
 
   /// Surah by 1-based [number].
   Surah surah(int number) => surahs[number - 1];

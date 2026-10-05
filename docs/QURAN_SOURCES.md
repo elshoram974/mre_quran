@@ -1,6 +1,6 @@
 # Quran content sources
 
-Only the Tanzil metadata file (section 6) is bundled. Everything else here is research and
+Only the Tanzil files in section 6 are bundled. Everything else here is research and
 stays out of the repo. Each source needs the owner's approval, a recorded
 licence, and a SHA-256 before it enters the repo (see `AGENTS.md`, "Quran content").
 
@@ -62,10 +62,11 @@ exists as an empty state until a licensed source is approved.
 | Juz, hizb, manzil, sajda starts | same file | **Bundled** (only surahs, juz, and page starts are read so far) |
 | First ayah of each of the 604 Madinah pages | same file | **Bundled**. Page 42 starts at 2:253 and holds Ayat al-Kursi (checked by a test) |
 | Surah start page, juz start page | derived at load from the page starts | Computed, never hand-typed |
-| Ayah text (Uthmani, Hafs) | [Tanzil text](https://tanzil.net/docs/quran_text_types), CC BY 3.0 | Not added yet. Clear licence; added with the reader, with its own checksum |
+| Ayah text with tashkeel (Uthmani, Hafs) | [Tanzil text](https://tanzil.net/docs/quran_text_types) v1.1, CC BY 3.0 | **Bundled**, unmodified with its copyright block, SHA-256 `bf4f57b9…12c8`, verified at load and in tests |
+| Ayah text without tashkeel | Tanzil Simple Clean v1.1, CC BY 3.0 | **Bundled**, unmodified, SHA-256 `228df2a7…7610`. Used only for search |
 | Line-by-line page layout (which words on which line) | QUL or Quran Foundation | Blocked on the permission requests (`docs/PERMISSION_REQUESTS.md`) |
 | Fonts: QPC Hafs (default), QCF V1 pack (optional) | KFGQPC via Quran Foundation or direct approval | Blocked on the same requests |
-| Search keys | derived at runtime from names | Computed, kept apart from verbatim text |
+| Search keys | derived at runtime from the two texts and the surah names | Computed off the main isolate, kept apart from verbatim text |
 
 Rules that apply to every row: bundle the file unmodified, record its SHA-256 in code, fail a test if it
 changes, and add attribution to the About screen.
@@ -85,3 +86,18 @@ changes, and add attribution to the About screen.
 
 Not verified: the size of each tafsir, whether Quran Foundation's API serves tafsir under bundling terms, and QUL's
 terms of use (the terms page returned 404 and the resource pages state no licence).
+
+### Bundled text: size and cost
+
+| File | Raw | Gzip estimate |
+|---|---|---|
+| `quran-uthmani.txt` | 1.37 MB | about 280 KB |
+| `quran-simple-clean.txt` | 0.78 MB | about 206 KB |
+| `quran-data.xml` | 77 KB | about 13 KB |
+
+About half a megabyte added to the install. Parsing both files plus building the search keys took 33 ms and
+83 ms in a desktop test run; the app does this in a background isolate.
+
+The Uthmani and Simple Clean spellings differ beyond diacritics: Uthmani writes some alefs as dagger alefs
+(for example "العٰلمين" against "العالمين"), so the two files do not fold to the same string. Search keeps one
+folded key per spelling, and a query typed either way matches.

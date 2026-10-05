@@ -28,6 +28,10 @@
 - Faster start-up and a repeatable performance scenario (`docs/PERFORMANCE.md`).
 - Drafted font and layout permission requests (`docs/PERMISSION_REQUESTS.md`).
 
+- Quran text logic: Tanzil Uthmani and Simple Clean bundled with checked SHA-256, parser with
+  structure validation, verified loader off the main isolate, lookup by surah/ayah/page, and
+  diacritic-free ayah search with ranking.
+
 ## In progress
 
 - Foundation migration: localization, typed routing, Riverpod, adaptive shell,

@@ -26,7 +26,7 @@
   "retry": "Retry",
   "settingsLoadError": "Could not load settings. Try again.",
   "creditsTitle": "Credits",
-  "creditsTanzil": "Quran index data (surahs, juz, and page starts): Tanzil Project, CC BY 3.0, https://tanzil.net. The file is bundled unmodified and verified by checksum. The Quran text will carry the same attribution.",
+  "creditsTanzil": "Quran text and index data (surahs, juz, page starts): Tanzil Project, CC BY 3.0, https://tanzil.net. The files are bundled unmodified, with their copyright notice, and verified by checksum.",
   "creditsFonts": "Mushaf fonts and page layout: pending verified KFGQPC source and redistribution terms.",
   "creditsImages": "Images mode: not enabled. No page image has been downloaded or bundled.",
   "back": "Back",
