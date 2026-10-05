@@ -21,8 +21,8 @@ permission or data source).
 | Requirement | Status |
 |---|---|
 | 604 pages, the same page breaks; every page starts at the start of an ayah | **done** (page starts from Tanzil metadata; tested) |
-| 15 lines per page (pages 1 and 2 are decorated and shorter), the same line breaks | **blocked**: needs line layout data |
-| Uthman Taha's calligraphy (KFGQPC fonts or page images) | **blocked**: needs permission; Amiri Quran is a provisional font |
+| 15 lines per page (pages 1 and 2 are decorated and shorter), the same line breaks | **done** in the printed reader (page images); **partial** in the typeset reader (page breaks only) |
+| Uthman Taha's calligraphy (KFGQPC fonts or page images) | **partial**: printed reader shows page images rendered from the KFGQPC fonts (licence not declared, owner handling permission); typeset reader uses Amiri Quran |
 | Surah headings and the basmala | **done** (drawn heading with name, order, ayah count, Meccan or Medinan) |
 | Ayah-end markers with the ayah number | **done** |
 | Waqf (pause) signs | **done** (kept in the text) |
@@ -54,7 +54,7 @@ words) depending on how words are counted.
 | Night and sepia themes, text size | **done** |
 | Immersive reading (tap to hide bars) | **done** |
 | Two-page spread on wide windows (odd page on the right, page 1 alone) | **done** |
-| Go to page, juz, hizb | **partial** (surah and juz from the index) |
+| Go to page, juz, hizb | **done** (search by number) |
 | Bookmarks, listed newest first, swipe to remove, marked on the page | **done**; notes are **missing** |
 | Long-press on an ayah: copy with reference, bookmark | **done**; share, tafsir, and listen are **blocked or missing** (share needs a plugin; tafsir and audio need licensed sources) |
 | Tajweed colours | **blocked** (licensed data or fonts) |
@@ -64,7 +64,7 @@ words) depending on how words are counted.
 
 | Requirement | Status |
 |---|---|
-| Works fully offline | **done** for text, index, search |
+| Works fully offline | **done** for text, index, search; printed pages work offline once opened |
 | Small install | **done** (text, metadata, and font add about 0.6 MB compressed) |
 | Fast start and smooth page turns | **partial**: start-up improved and measured on an emulator; re-measure on a real phone |
 | No ads, no tracking, crash reports only with consent | **done** |

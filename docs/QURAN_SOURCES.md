@@ -160,7 +160,7 @@ Amiri Quran is a Naskh font made for Quran text and renders the Tanzil Uthmani e
 ayah-end sign with its number. It is not the Madinah calligraphy. It stays until the KFGQPC fonts are
 approved (`docs/PERMISSION_REQUESTS.md`).
 
-## 12. Page images and exact layout: links only (nothing downloaded)
+## 12. Page images and exact layout: downloaded on demand, never bundled
 
 Checked with HEAD requests on 2026-10-05. **No WebP source was found**; every image source below is PNG.
 None of the repositories declares a licence (GitHub reports none), and the images are rendered from the
@@ -173,5 +173,22 @@ KFGQPC fonts, so they carry the same permission question as the fonts.
 | Exact line and word layout (604 JSON files, QPC glyph codes) | `https://raw.githubusercontent.com/zonetecde/mushaf-layout/refs/heads/main/mushaf/page-{001..604}.json` | JSON, about 25 KB per page | [repo](https://github.com/zonetecde/mushaf-layout). Source and licence not stated |
 | Official images | Quran Foundation Content API, Mushaf 10 (Uthmani Tajweed images) and 12 (black images) | Not documented publicly | Needs a developer account; bundling terms in `docs/PERMISSION_REQUESTS.md` |
 
-WebP can be produced from the PNGs once permission is granted; the app should then download pages on
-demand and never bundle them.
+### How the app uses them
+
+The printed-Mushaf reader (`ReaderMode.printed`) downloads the plain page image (light or dark, by theme)
+and the layout JSON of a page the first time it is opened, checks that the body is really a PNG or a JSON
+object (the CDN sometimes answers 200 with an error page), and keeps the file in the app support
+directory. Nothing is bundled. Sources: `lib/features/mushaf/data/mushaf_image_source.dart`.
+
+Ayah positions are not taken from any data set: the app measures them on the light image. It splits the
+page ink into as many bands as the layout has lines, then places word boundaries at ink gaps near where
+the words' letter counts predict them (`lib/features/mushaf/domain/page_geometry.dart`). Checked by
+overlay on pages 1, 2, 42, 187, and 604: every line and ayah boundary matched.
+
+### WebP
+
+`tool/mushaf_pages_to_webp.sh OUT_DIR [light|dark|both] [FIRST] [LAST]` downloads the PNGs, converts them
+with `cwebp -lossless -z 9`, and writes `SHA256SUMS`, for hosting the pages yourself. Measured on page 42:
+PNG 209 KB, lossless WebP 185 KB (−12%), lossy WebP q80 193 KB and q90 239 KB. Lossy WebP is larger
+than the PNG and blurs the script, so only lossless is offered. To serve WebP, host the output and change
+`MushafImageSource.pageImage`; Flutter decodes WebP on Android and iOS. Settle the licence first.
