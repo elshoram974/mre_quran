@@ -73,6 +73,18 @@
 - Never block the UI thread. Move heavy parsing or search work off the main isolate.
 - Before finishing UI work, check it on a compact and an expanded width, in dark mode, with large text, and in Arabic RTL.
 
+## Design system
+
+- Use the `mre-quran-design-system` skill for any UI work.
+- Take colours only from the `ColorScheme`. Never hard-code colours in feature code.
+- Take radius, spacing, and sizes from `AppTokens`. Add a token instead of repeating a number.
+- Use the Material 3 filled field style defined once in `AppTheme`. Do not restyle a field per screen.
+- Use `MRETextField`/`MRETextFormField` (`mre_fields`) for every text input and keep `MREFieldsTheme` wired to `AppTokens`.
+- Use liquid glass (`liquid_glass_widgets`) for app chrome: app bar, tab bar, rail, sheets, and floating cards. Keep it native-looking and readable in light, dark, and sepia.
+- Build screens inside the shell's `GlassScaffold`, pad content with `pagePadding(context)`, and never place glass over Quran text.
+- Use `AppCard` for grouped content and `GlassModalSheet` for sheets. Do not use bare `Card` or `showModalBottomSheet` in app screens.
+- Pick the glass tab bar on compact widths and the glass rail on medium and expanded widths.
+
 ## Localization and bidirectionality
 
 - Use the `mre-quran-localization` skill for localized UI work.

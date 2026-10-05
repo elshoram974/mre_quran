@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:mre_quran/app/quran_app.dart';
 import 'package:mre_quran/features/settings/application/settings_provider.dart';
 import 'package:mre_quran/features/settings/domain/app_settings.dart';
@@ -29,11 +30,11 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(
-        Directionality.of(tester.element(find.byType(Scaffold).first)),
+        Directionality.of(tester.element(find.byType(GlassScaffold).first)),
         TextDirection.rtl,
       );
       expect(
-        find.byType(NavigationBar),
+        find.byType(GlassTabBar),
         width < 600 ? findsOneWidget : findsNothing,
       );
       expect(
@@ -66,7 +67,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-      Directionality.of(tester.element(find.byType(Scaffold).first)),
+      Directionality.of(tester.element(find.byType(GlassScaffold).first)),
       TextDirection.ltr,
     );
     expect(find.text('Verified reader preparation'), findsOneWidget);

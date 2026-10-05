@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
 import '../l10n/l10n.dart';
 
@@ -67,18 +68,26 @@ class AppSelectField<T extends Object> extends StatelessWidget {
   }
 
   Future<void> _open(BuildContext context) async {
-    final chosen = await showModalBottomSheet<T>(
+    final searchable = options.length > appSelectSearchThreshold;
+    final chosen = await GlassModalSheet.show<T>(
       context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      showDragHandle: true,
-      sheetAnimationStyle: MediaQuery.disableAnimationsOf(context)
-          ? AnimationStyle.noAnimation
-          : null,
-      builder: (_) => _SelectSheet<T>(
-        title: sheetTitle ?? label,
-        options: options,
-        value: value,
+      useRootNavigator: true,
+      halfSize: searchable ? 0.62 : 0.42,
+      settings: LiquidGlassSettings(
+        blur: 24,
+        glassColor: Theme.of(context).colorScheme.surface
+            .withValues(alpha: 0.78),
+      ),
+      detents: searchable
+          ? const {GlassSheetDetent.medium, GlassSheetDetent.large}
+          : const {GlassSheetDetent.medium},
+      builder: (_) => Material(
+        type: MaterialType.transparency,
+        child: _SelectSheet<T>(
+          title: sheetTitle ?? label,
+          options: options,
+          value: value,
+        ),
       ),
     );
     if (chosen != null && chosen != value) onChanged(chosen);
@@ -164,77 +173,69 @@ class _SelectSheetState<T extends Object> extends State<_SelectSheet<T>> {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final visible = _visible;
-    final maxHeight = MediaQuery.sizeOf(context).height * 0.75;
-    return ConstrainedBox(
-      constraints: BoxConstraints(maxHeight: maxHeight),
-      child: Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.viewInsetsOf(context).bottom,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: const EdgeInsetsDirectional.fromSTEB(24, 32, 24, 8),
+            child: Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: Semantics(
+                header: true,
+                child: Text(widget.title, style: theme.textTheme.titleLarge),
+              ),
+            ),
+          ),
+          if (_searchable)
             Padding(
-              padding: const EdgeInsetsDirectional.fromSTEB(24, 0, 24, 8),
-              child: Align(
-                alignment: AlignmentDirectional.centerStart,
-                child: Semantics(
-                  header: true,
-                  child: Text(widget.title, style: theme.textTheme.titleLarge),
+              padding: const EdgeInsetsDirectional.fromSTEB(16, 4, 16, 8),
+              child: TextField(
+                autofocus: false,
+                textInputAction: TextInputAction.search,
+                decoration: InputDecoration(
+                  hintText: l10n.searchOptions,
+                  prefixIcon: const Icon(Icons.search),
                 ),
+                onChanged: (text) => setState(() => _query = text),
               ),
             ),
-            if (_searchable)
-              Padding(
-                padding: const EdgeInsetsDirectional.fromSTEB(16, 4, 16, 8),
-                child: TextField(
-                  autofocus: false,
-                  textInputAction: TextInputAction.search,
-                  decoration: InputDecoration(
-                    hintText: l10n.searchOptions,
-                    prefixIcon: const Icon(Icons.search),
-                  ),
-                  onChanged: (text) => setState(() => _query = text),
-                ),
-              ),
-            Flexible(
-              child: visible.isEmpty
-                  ? Padding(
-                      padding: const EdgeInsets.all(32),
-                      child: Text(
-                        l10n.noResults,
-                        textAlign: TextAlign.center,
-                        style: theme.textTheme.bodyLarge,
-                      ),
-                    )
-                  : ListView.builder(
-                      shrinkWrap: true,
-                      padding: const EdgeInsetsDirectional.only(bottom: 16),
-                      itemCount: visible.length,
-                      itemBuilder: (context, index) {
-                        final option = visible[index];
-                        final selected = option.value == widget.value;
-                        return ListTile(
-                          key: ValueKey<Object>(option.value),
-                          minVerticalPadding: 12,
-                          selected: selected,
-                          leading: option.icon == null
-                              ? null
-                              : Icon(option.icon),
-                          title: Text(option.label),
-                          subtitle: option.subtitle == null
-                              ? null
-                              : Text(option.subtitle!),
-                          trailing: selected
-                              ? const Icon(Icons.check_rounded)
-                              : null,
-                          onTap: () => Navigator.of(context).pop(option.value),
-                        );
-                      },
+          Flexible(
+            child: visible.isEmpty
+                ? Padding(
+                    padding: const EdgeInsets.all(32),
+                    child: Text(
+                      l10n.noResults,
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodyLarge,
                     ),
-            ),
-          ],
-        ),
+                  )
+                : ListView.builder(
+                    shrinkWrap: true,
+                    padding: const EdgeInsetsDirectional.only(bottom: 16),
+                    itemCount: visible.length,
+                    itemBuilder: (context, index) {
+                      final option = visible[index];
+                      final selected = option.value == widget.value;
+                      return ListTile(
+                        key: ValueKey<Object>(option.value),
+                        minVerticalPadding: 12,
+                        selected: selected,
+                        leading: option.icon == null ? null : Icon(option.icon),
+                        title: Text(option.label),
+                        subtitle: option.subtitle == null
+                            ? null
+                            : Text(option.subtitle!),
+                        trailing: selected
+                            ? const Icon(Icons.check_rounded)
+                            : null,
+                        onTap: () => Navigator.of(context).pop(option.value),
+                      );
+                    },
+                  ),
+          ),
+        ],
       ),
     );
   }

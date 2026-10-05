@@ -4,8 +4,10 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/router.dart';
 import '../../../core/l10n/l10n.dart';
+import '../../../core/layout/adaptive_layout.dart';
+import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_select_field.dart';
-import '../../../core/widgets/liquid_glass_surface.dart';
+
 import '../application/settings_provider.dart';
 import '../domain/app_settings.dart';
 
@@ -54,52 +56,47 @@ class _SettingsContent extends ConsumerWidget {
     final l10n = context.l10n;
     final notifier = ref.read(settingsProvider.notifier);
     return ListView(
-      padding: const EdgeInsetsDirectional.fromSTEB(20, 24, 20, 112),
+      padding: pagePadding(context),
       children: [
         Text(l10n.appearance, style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 12),
-        _SettingsCard(
-          child: AppSelectField<AppThemePreference>(
-            label: l10n.theme,
-            value: settings.theme,
-            options: [
-              AppSelectOption(
-                value: AppThemePreference.system,
-                label: l10n.themeSystem,
-                icon: Icons.brightness_auto_outlined,
-              ),
-              AppSelectOption(
-                value: AppThemePreference.light,
-                label: l10n.themeLight,
-                icon: Icons.light_mode_outlined,
-              ),
-              AppSelectOption(
-                value: AppThemePreference.dark,
-                label: l10n.themeDark,
-                icon: Icons.dark_mode_outlined,
-              ),
-              AppSelectOption(
-                value: AppThemePreference.sepia,
-                label: l10n.themeSepia,
-                icon: Icons.auto_stories_outlined,
-              ),
-            ],
-            onChanged: (value) =>
-                notifier.save(settings.copyWith(theme: value)),
-          ),
+        AppSelectField<AppThemePreference>(
+          label: l10n.theme,
+          value: settings.theme,
+          options: [
+            AppSelectOption(
+              value: AppThemePreference.system,
+              label: l10n.themeSystem,
+              icon: Icons.brightness_auto_outlined,
+            ),
+            AppSelectOption(
+              value: AppThemePreference.light,
+              label: l10n.themeLight,
+              icon: Icons.light_mode_outlined,
+            ),
+            AppSelectOption(
+              value: AppThemePreference.dark,
+              label: l10n.themeDark,
+              icon: Icons.dark_mode_outlined,
+            ),
+            AppSelectOption(
+              value: AppThemePreference.sepia,
+              label: l10n.themeSepia,
+              icon: Icons.auto_stories_outlined,
+            ),
+          ],
+          onChanged: (value) => notifier.save(settings.copyWith(theme: value)),
         ),
         const SizedBox(height: 12),
-        _SettingsCard(
-          child: AppSelectField<String>(
-            label: l10n.language,
-            value: settings.localeCode,
-            options: [
-              AppSelectOption(value: 'ar', label: l10n.languageArabic),
-              AppSelectOption(value: 'en', label: l10n.languageEnglish),
-            ],
-            onChanged: (value) =>
-                notifier.save(settings.copyWith(localeCode: value)),
-          ),
+        AppSelectField<String>(
+          label: l10n.language,
+          value: settings.localeCode,
+          options: [
+            AppSelectOption(value: 'ar', label: l10n.languageArabic),
+            AppSelectOption(value: 'en', label: l10n.languageEnglish),
+          ],
+          onChanged: (value) =>
+              notifier.save(settings.copyWith(localeCode: value)),
         ),
         const SizedBox(height: 12),
         _SettingsCard(
@@ -153,9 +150,5 @@ class _SettingsCard extends StatelessWidget {
   final Widget child;
 
   @override
-  Widget build(BuildContext context) => LiquidGlassSurface(
-    child: Card(
-      child: Padding(padding: const EdgeInsets.all(8), child: child),
-    ),
-  );
+  Widget build(BuildContext context) => AppCard(child: child);
 }
