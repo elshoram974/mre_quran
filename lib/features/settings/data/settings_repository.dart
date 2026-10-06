@@ -51,7 +51,7 @@ class LocalSettingsRepository implements SettingsRepository {
     return AppSettings(
       theme: AppThemePreference.values.firstWhere(
         (item) => item.name == theme,
-        orElse: () => AppThemePreference.system,
+        orElse: () => AppThemePreference.sepia,
       ),
       localeCode: locale == 'en' ? 'en' : 'ar',
       reduceMotion: reduceMotion ?? false,

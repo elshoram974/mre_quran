@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 @immutable
 class AppSettings {
   const AppSettings({
-    this.theme = AppThemePreference.system,
+    this.theme = AppThemePreference.sepia,
     this.localeCode = 'ar',
     this.reduceMotion = false,
     this.useArabicDigits = true,
