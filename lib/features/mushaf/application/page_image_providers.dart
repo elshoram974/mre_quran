@@ -5,13 +5,15 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 
+import '../../quran_index/application/quran_metadata_provider.dart';
+import '../../quran_index/domain/quran_metadata.dart';
 import '../../settings/domain/app_settings.dart';
 import '../data/ayah_info_database.dart';
 import '../data/mushaf_sources.dart';
 import '../data/page_asset_store.dart';
 import '../domain/mushaf_edition.dart';
 import '../domain/page_geometry.dart';
-import '../domain/page_layout.dart';
+import '../domain/sakina_pages.dart';
 
 /// Which rendering of a page: its edition, number, and light or dark.
 typedef PageImageKey = ({MushafStyle style, int page, bool dark});
@@ -32,15 +34,6 @@ final pageImageFileProvider = FutureProvider.autoDispose
           .image(MushafEdition.of(key.style), key.page, dark: key.dark),
     );
 
-/// The line layout of a page, downloaded on first use.
-final pageLayoutProvider = FutureProvider.autoDispose.family<PageLayout, int>((
-  ref,
-  page,
-) async {
-  final source = await ref.watch(pageAssetStoreProvider).layout(page);
-  return PageLayout.parse(source);
-});
-
 /// The Quran.com glyph database, opened once and kept.
 final ayahInfoDatabaseProvider = FutureProvider<AyahInfoDatabase>((ref) async {
   final file = await ref.watch(pageAssetStoreProvider).ayahInfoDatabase();
@@ -52,7 +45,8 @@ final ayahInfoDatabaseProvider = FutureProvider<AyahInfoDatabase>((ref) async {
 /// Where each word sits on a page image.
 ///
 /// From the glyph database when the edition has one; otherwise measured on
-/// the light image off the main isolate.
+/// the light image off the main isolate. A page whose ayah markers cannot be
+/// told apart has no positions, so it shows without ayah selection.
 final pageGeometryProvider = FutureProvider.autoDispose
     .family<PageGeometry, PageGeometryKey>((ref, key) async {
       final edition = MushafEdition.of(key.style);
@@ -63,9 +57,10 @@ final pageGeometryProvider = FutureProvider.autoDispose
             database.page(key.page),
             width: MushafSources.ayahInfoWidth,
             height: MushafSources.ayahInfoHeight,
+            lines: printedLinesOnPage(key.page),
           );
         case PageGeometrySource.measured:
-          final layout = await ref.watch(pageLayoutProvider(key.page).future);
+          final metadata = await ref.watch(quranMetadataProvider.future);
           final file = await ref.watch(
             pageImageFileProvider((
               style: key.style,
@@ -74,12 +69,17 @@ final pageGeometryProvider = FutureProvider.autoDispose
             )).future,
           );
           final image = await _decodeRgba(await file.readAsBytes(), width: 540);
-          return compute(_measure, (layout: layout, image: image));
+          return compute(_measure, (
+            ayahs: sakinaAyahsOnPage(metadata, key.page),
+            lines: printedLinesOnPage(key.page),
+            image: image,
+          ));
       }
     });
 
-PageGeometry _measure(({PageLayout layout, InkImage image}) input) =>
-    measurePageGeometry(input.layout, input.image);
+PageGeometry _measure(
+  ({List<AyahRef> ayahs, int lines, InkImage image}) input,
+) => measurePageGeometry(input.ayahs, input.image, lines: input.lines);
 
 Future<InkImage> _decodeRgba(Uint8List bytes, {required int width}) async {
   final codec = await ui.instantiateImageCodec(bytes, targetWidth: width);

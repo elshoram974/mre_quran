@@ -160,42 +160,65 @@ Amiri Quran is a Naskh font made for Quran text and renders the Tanzil Uthmani e
 ayah-end sign with its number. It is not the Madinah calligraphy. It stays until the KFGQPC fonts are
 approved (`docs/PERMISSION_REQUESTS.md`).
 
-## 12. Page images and exact layout: downloaded on demand, never bundled
+## 12. Page images: downloaded on demand or as an offline pack, never bundled
 
-Checked with HEAD requests on 2026-10-05. **No WebP source was found**; every image source below is PNG.
-None of the repositories declares a licence (GitHub reports none), and the images are rendered from the
-KFGQPC fonts, so they carry the same permission question as the fonts.
+Checked with HEAD requests on 2026-10-05 and again on 2026-10-06. **No WebP source was found**; every image
+source below is PNG. None of the repositories declares a licence (GitHub reports none), and the images are
+rendered from the KFGQPC fonts, so they carry the same permission question as the fonts.
 
 | What | URL pattern | Format | Notes |
 |---|---|---|---|
-| Madinah pages, Quran.com (default edition) | `https://files.quran.app/hafs/madani/width_{480\|800\|1024\|1260\|1280\|1920}/page{001..604}.png` (`android.quran.com/data/width_N/` redirects here) | PNG, ink on a transparent sheet, 1260×2038 about 120 KB | Data set of the open-source Quran for Android app. No licence stated for the images |
+| Madinah pages, Quran.com (default edition) | `https://files.quran.app/hafs/madani/width_{480\|800\|1024\|1260\|1280\|1920}/page{001..604}.png` (`android.quran.com/data/width_N/` redirects here) | PNG, 4-bit palette, ink on a transparent sheet, 1260×2038 about 120 KB | Data set of the open-source Quran for Android app. No licence stated for the images |
 | Glyph positions for the Quran.com pages | `https://files.quran.app/hafs/madani/width_1024/ayahinfo_1024.zip` | Zip with SQLite `ayahinfo_1024.db`, table `glyphs` (page, line, sura, ayah, position, min/max x/y in 1024×1656 pixels), 88,246 rows | Zip SHA-256 `b36fce9dab5275a0324b9cf78f67e6b6167cb68661ee53c64861217135b8eaa1`, database SHA-256 `30fa152370e19097ad1b4ddac2ea59a05f7ad0a4aa932b427ed87047c75cef69`, both checked by the app. 2,190 rows have their x or y edges swapped; the app reads them either way round |
-| Madinah pages, plain (KFGQPC V4 rendering) | `https://cdn.jsdelivr.net/gh/SakinaDevGroup/mushaf-madani-cdn@main/{light\|dark}/p{1..604}.png` | PNG, 1080×2160, about 76–160 KB | [repo](https://github.com/SakinaDevGroup/mushaf-madani-cdn). No licence file |
-| Madinah pages, tajweed colours | `https://raw.githubusercontent.com/SakinaDevGroup/mushaf-tajweed-cdn/main/{light\|dark}/p{1..604}.png` | PNG, 1080×2160, about 190 KB | [repo](https://github.com/SakinaDevGroup/mushaf-tajweed-cdn). The jsDelivr mirror did not answer the check |
-| Exact line and word layout (604 JSON files, QPC glyph codes) | `https://raw.githubusercontent.com/zonetecde/mushaf-layout/refs/heads/main/mushaf/page-{001..604}.json` | JSON, about 25 KB per page | [repo](https://github.com/zonetecde/mushaf-layout). Source and licence not stated |
+| Madinah pages, plain (KFGQPC V4 rendering) | `https://cdn.jsdelivr.net/gh/SakinaDevGroup/mushaf-madani-cdn@main/{light\|dark}/p{1..604}.png` | PNG, 8-bit palette, 1080×2160, about 205 KB | [repo](https://github.com/SakinaDevGroup/mushaf-madani-cdn). No licence file |
+| Madinah pages, tajweed colours | `https://cdn.jsdelivr.net/gh/SakinaDevGroup/mushaf-tajweed-cdn@main/{light\|dark}/p{1..604}.png` | PNG, 1080×2160, about 200 KB | [repo](https://github.com/SakinaDevGroup/mushaf-tajweed-cdn). Same pages, size, and line positions as the plain set |
 | Official images | Quran Foundation Content API, Mushaf 10 (Uthmani Tajweed images) and 12 (black images) | Not documented publicly | Needs a developer account; bundling terms in `docs/PERMISSION_REQUESTS.md` |
 
 ### How the app uses them
 
 The printed-Mushaf reader (`ReaderMode.printed`) offers three editions (`MushafStyle`, defined in
 `lib/features/mushaf/domain/mushaf_edition.dart`): Quran.com Madinah pages (default), Sakina tajweed pages,
-and Sakina plain pages. Quran.com pages take their ayah positions from the glyph database above; the
-Sakina pages are measured as described below. The reader downloads the page image (light or dark, by
-theme, for the Sakina pages) and, for the Sakina pages, the layout JSON of a page the first time it is
-opened, checks that the body is really a PNG or a JSON
-object (the CDN sometimes answers 200 with an error page), and keeps the file in the app support
-directory. Nothing is bundled. It also downloads the next 8 and previous 2 pages in the background so
-turning never waits on the network.
+and Sakina plain pages. A page image (light or dark by theme, for the Sakina pages) is downloaded the first
+time it is opened, checked to be really a PNG or a WebP (a CDN sometimes answers 200 with an error page), and
+kept in the app support directory under `mushaf/images/{edition}/{light|dark}/`. The next 8 and previous 2
+pages are fetched in the background so turning never waits on the network.
 
-For the Sakina pages, ayah positions are measured on the light image. It splits the
-page ink into as many bands as the layout has lines, then places word boundaries at ink gaps near where
-the words' letter counts predict them (`lib/features/mushaf/domain/page_geometry.dart`). Checked by
-overlay on pages 1, 2, 42, 187, and 604: every line and ayah boundary matched.
+**Offline packs.** Settings, "Offline Mushaf", downloads a whole edition: 604 images, light and dark when the
+edition has both (about 80 MB for Quran.com, about 250 MB for each Sakina edition, measured on sample pages),
+plus the glyph database for Quran.com. Several editions can be kept and switched between. The files go to the
+same paths the reader uses, so a downloaded page opens at once. The download is handed to the operating
+system: a background `URLSession` on iOS and WorkManager on Android (package `background_downloader`), so it
+continues when the app is closed, with one progress notification for the whole pack. The notification
+permission is asked for when the person starts a download, never at launch. No foreground service is used.
+
+### Where ayah positions come from
+
+- **Quran.com pages:** the glyph database above, exact.
+- **Sakina pages:** the ayah markers (rosettes filled with the colour `0xD8E9D8`, the same in both sets and
+  both themes) are found on the light image, row by row, right to left. The markers close the ayahs of the
+  page one by one, so each ayah gets its part of each line, cut at the marker that ends it
+  (`measurePageGeometry` in `lib/features/mushaf/domain/page_geometry.dart`). Checked by overlay on pages 1,
+  2, 50, 120, 187, 591, and 602, and by counting the markers on all 604 pages. A page whose markers cannot be
+  counted has no ayah selection.
+- **Which ayahs are on a Sakina page.** The Sakina images follow the 1441 H print, not the 1405 H page map of
+  Tanzil and Quran.com. About 35 pages differ (page 120 ends with ayah 5:77, where the 1405 H page 120 ends
+  with 5:76), and the line breaks differ on most pages. So `sakinaAyahsEndingOnPage`
+  (`lib/features/mushaf/domain/sakina_pages.dart`) holds how many ayahs end on each page, and a page's ayahs
+  follow from the pages before it. The counts were derived on 2026-10-06 by running the marker finder over the
+  604 light images of `mushaf-madani-cdn` (the tajweed set has the same layout). They add up to 6,236, and
+  each page is within one ayah of an independent count taken from the word ids of
+  [KFGQPC_V4_layout](https://github.com/SakinaDevGroup/KFGQPC_V4_tajweed)'s `quran_pages.json`. A test checks
+  the total and that pages follow one another. **Review the table against a printed 1441 H Mushaf before
+  release.** The earlier approach, a line-and-word layout JSON from another project, was removed: its line
+  breaks do not match these images.
 
 ### WebP
 
-`tool/mushaf_pages_to_webp.sh OUT_DIR [light|dark|both] [FIRST] [LAST]` downloads the PNGs, converts them
-with `cwebp -lossless -z 9`, and writes `SHA256SUMS`, for hosting the pages yourself. Measured on page 42:
-PNG 209 KB, lossless WebP 185 KB (−12%), lossy WebP q80 193 KB and q90 239 KB. Lossy WebP is larger
-than the PNG and blurs the script, so only lossless is offered. To serve WebP, host the output and change
-`MushafImageSource.pageImage`; Flutter decodes WebP on Android and iOS. Settle the licence first.
+Lossless WebP is only 2 to 12% smaller than these PNGs, because the PNGs are already palette images, and
+lossy WebP is larger (page 42, Sakina plain: PNG 209 KB; lossless WebP 185 KB; near-lossless 160 KB;
+lossy q80 195 KB, q90 241 KB; Quran.com page 42: PNG 120 KB, lossless 117 KB, lossy q80 301 KB). Converting
+on the device would need a native encoder and cannot be lossless on iOS, so it is not done. The store reads and
+keeps whatever format the source serves (PNG or WebP, by header), so serving WebP needs only a host:
+`tool/mushaf_pages_to_webp.sh OUT_DIR [light|dark|both] [FIRST] [LAST]` downloads the Sakina plain PNGs and
+writes near-lossless WebP (about 23% smaller) with a `SHA256SUMS` file. Upload the output and change the URL
+patterns in `MushafEdition`. Settle the licence first.

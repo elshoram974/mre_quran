@@ -32,6 +32,7 @@ class MushafEdition {
     required this.ink,
     required this.geometry,
     required this.crop,
+    required this.approxBytes,
     required this._path,
     this.darkPaper,
   });
@@ -43,6 +44,14 @@ class MushafEdition {
     MushafStyle.madinahHd => madinahHd,
   };
 
+  static const int _megabyte = 1024 * 1024;
+
+  /// Pages in a printed Mushaf.
+  static const int pageCount = 604;
+
+  /// Every edition, in the order they are offered.
+  static final List<MushafEdition> all = [madinah, tajweed, madinahHd];
+
   /// Quran.com's Madinah pages (the Quran for Android data set).
   static final madinah = MushafEdition._(
     style: MushafStyle.madinah,
@@ -51,6 +60,7 @@ class MushafEdition {
     ink: PageInk.transparent,
     geometry: PageGeometrySource.glyphDatabase,
     crop: (left: 0, top: 0, right: 1, bottom: 1),
+    approxBytes: 80 * _megabyte,
     path: (page, _) =>
         'https://files.quran.app/hafs/madani/width_1260/'
         'page${page.toString().padLeft(3, '0')}.png',
@@ -65,6 +75,7 @@ class MushafEdition {
     geometry: PageGeometrySource.measured,
     crop: _sakinaCrop,
     darkPaper: 0x0D0F12,
+    approxBytes: 250 * _megabyte,
     path: (page, dark) =>
         'https://cdn.jsdelivr.net/gh/SakinaDevGroup/mushaf-tajweed-cdn@main/'
         '${dark ? 'dark' : 'light'}/p$page.png',
@@ -79,6 +90,7 @@ class MushafEdition {
     geometry: PageGeometrySource.measured,
     crop: _sakinaCrop,
     darkPaper: 0x0D0F12,
+    approxBytes: 250 * _megabyte,
     path: (page, dark) =>
         'https://cdn.jsdelivr.net/gh/SakinaDevGroup/mushaf-madani-cdn@main/'
         '${dark ? 'dark' : 'light'}/p$page.png',
@@ -115,6 +127,10 @@ class MushafEdition {
   /// Paper colour (0xRRGGBB) of the dark images, for [PageInk.onPaper].
   final int? darkPaper;
 
+  /// Size of every image of the edition, light and dark, in bytes, measured
+  /// on sample pages. For telling the reader what a download costs.
+  final int approxBytes;
+
   final String Function(int page, bool dark) _path;
 
   /// Whether the edition has its own dark images.
@@ -123,4 +139,23 @@ class MushafEdition {
   /// Address of the image of [page].
   Uri image(int page, {required bool dark}) =>
       Uri.parse(_path(page, dark && hasDarkImages));
+
+  /// Where the image of [page] is kept, under the Mushaf folder of the app
+  /// support directory. The file type follows the source, so a WebP source
+  /// is kept as WebP.
+  String imagePath(int page, {required bool dark}) {
+    final url = image(page, dark: dark);
+    final name = url.pathSegments.last;
+    final extension = name.contains('.') ? name.split('.').last : 'img';
+    final variant = dark && hasDarkImages ? 'dark' : 'light';
+    return 'images/${style.name}/$variant/p$page.$extension';
+  }
+
+  /// The image files that make the edition work without a connection:
+  /// every page, light and dark when the edition has both.
+  List<({Uri url, String path})> get packFiles => [
+    for (final dark in [false, if (hasDarkImages) true])
+      for (var page = 1; page <= pageCount; page++)
+        (url: image(page, dark: dark), path: imagePath(page, dark: dark)),
+  ];
 }

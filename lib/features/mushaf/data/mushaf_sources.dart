@@ -4,13 +4,6 @@
 /// Sources and licences: `docs/QURAN_SOURCES.md`, section 12. Files are
 /// downloaded on demand, cached on the device, and never bundled.
 abstract final class MushafSources {
-  /// Line layout of [page]: which words sit on which line. Used to measure
-  /// ayah positions on editions without a glyph database.
-  static Uri pageLayout(int page) => Uri.parse(
-    'https://raw.githubusercontent.com/zonetecde/mushaf-layout/refs/heads/main/'
-    'mushaf/page-${page.toString().padLeft(3, '0')}.json',
-  );
-
   /// Glyph database of the Quran.com Madinah pages (Quran for Android
   /// `ayahinfo_1024`), zipped. Coordinates are for 1024 × 1656 pixels.
   static final Uri ayahInfo = Uri.parse(

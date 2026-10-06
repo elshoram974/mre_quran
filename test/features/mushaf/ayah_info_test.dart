@@ -49,6 +49,7 @@ void main() {
       ],
       width: 1000,
       height: 1000,
+      lines: 5,
     );
 
     test('gives every glyph its line band and fixes swapped edges', () {
@@ -60,6 +61,12 @@ void main() {
       expect(geometry.words[2].right, 0.29);
       expect(geometry.inkTop, 0.1);
       expect(geometry.inkBottom, 0.38);
+    });
+
+    test('lays equal rows through the text lines, title rows included', () {
+      expect(geometry.lineCuts, hasLength(6));
+      expect(geometry.lineCuts.first, closeTo(0.055, 1e-9));
+      expect(geometry.lineCuts[1] - geometry.lineCuts[0], closeTo(0.19, 1e-9));
     });
 
     test('a press between words picks the nearest one on the line', () {

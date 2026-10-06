@@ -339,4 +339,85 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mushafStyleMadinahHd => 'Madinah Mushaf, high resolution';
+
+  @override
+  String get offlineMushaf => 'Offline Mushaf';
+
+  @override
+  String get offlineMushafIntro =>
+      'Download one or more editions to read without internet, then pick the one you want above. Downloads keep going when you close the app.';
+
+  @override
+  String packNotDownloaded(String size) {
+    return 'Not downloaded · about $size MB';
+  }
+
+  @override
+  String packDownloading(String percent) {
+    return 'Downloading · $percent%';
+  }
+
+  @override
+  String packPartial(String percent) {
+    return 'Partly downloaded · $percent%';
+  }
+
+  @override
+  String get packReady => 'Ready offline';
+
+  @override
+  String get packDownload => 'Download';
+
+  @override
+  String get packResume => 'Resume';
+
+  @override
+  String get packCancel => 'Cancel';
+
+  @override
+  String get packDelete => 'Delete';
+
+  @override
+  String packDownloadTitle(String name) {
+    return 'Download $name?';
+  }
+
+  @override
+  String packDownloadBody(String size) {
+    return 'It takes about $size MB of data and storage. The download continues in the background, even after you close the app.';
+  }
+
+  @override
+  String packDeleteTitle(String name) {
+    return 'Delete $name?';
+  }
+
+  @override
+  String get packDeleteBody =>
+      'You will need an internet connection to read it again.';
+
+  @override
+  String get packStartError =>
+      'Couldn\'t start the download. Check your internet connection and try again.';
+
+  @override
+  String packNotifyRunningTitle(String name) {
+    return 'Downloading $name';
+  }
+
+  @override
+  String packNotifyCompleteTitle(String name) {
+    return '$name downloaded';
+  }
+
+  @override
+  String get packNotifyCompleteBody => 'It now works without internet.';
+
+  @override
+  String packNotifyErrorTitle(String name) {
+    return 'Couldn\'t finish $name';
+  }
+
+  @override
+  String get packNotifyErrorBody => 'Open settings to continue the download.';
 }

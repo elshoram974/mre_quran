@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Downloads the printed Mushaf page PNGs and converts them to lossless WebP,
+# Downloads the printed Mushaf page PNGs and converts them to near-lossless WebP,
 # for hosting the pages yourself. Nothing here is bundled into the app.
 #
 # Usage: tool/mushaf_pages_to_webp.sh OUT_DIR [light|dark|both] [FIRST] [LAST]
@@ -39,7 +39,7 @@ for theme in "${themes[@]}"; do
       [[ $attempt == 3 ]] && { echo "failed: $theme p$page" >&2; exit 1; }
       sleep 2
     done
-    cwebp -quiet -lossless -z 9 "$png" -o "$target"
+    cwebp -quiet -near_lossless 60 -z 9 "$png" -o "$target"
     echo "$theme p$page"
   done
 done

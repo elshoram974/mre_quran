@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mre_quran/features/mushaf/data/page_asset_store.dart';
 import 'package:mre_quran/features/mushaf/domain/mushaf_edition.dart';
 
-const png = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0];
+const png = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0, 0, 0, 0];
 
 void main() {
   final hd = MushafEdition.madinahHd;
@@ -45,12 +45,6 @@ void main() {
     expect(requests.last.path, endsWith('/dark/p5.png'));
   });
 
-  test('reads a layout as text', () async {
-    final s = store((_) async => Uint8List.fromList('{"page":7}'.codeUnits));
-    expect(await s.layout(7), '{"page":7}');
-    expect(requests.single.path, endsWith('/page-007.json'));
-  });
-
   test('a failed download leaves nothing behind and can be retried', () async {
     var fail = true;
     final s = store((uri) async {
@@ -74,7 +68,6 @@ void main() {
         s.image(hd, 1, dark: false),
         throwsA(isA<PageDownloadException>()),
       );
-      await expectLater(s.layout(1), throwsA(isA<PageDownloadException>()));
     }
     expect(root.listSync(recursive: true).whereType<File>(), isEmpty);
   });

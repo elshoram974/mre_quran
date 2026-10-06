@@ -58,10 +58,9 @@ class PagePrefetcher {
       for (final page in pages) {
         if (generation != _generation) return;
         await _store.image(edition, page, dark: dark);
-        if (edition.geometry == PageGeometrySource.measured) {
-          await _store.layout(page);
-          // Ayah positions are measured on the light image.
-          if (dark) await _store.image(edition, page, dark: false);
+        // Ayah positions are measured on the light image.
+        if (edition.geometry == PageGeometrySource.measured && dark) {
+          await _store.image(edition, page, dark: false);
         }
       }
     } on Exception catch (error) {

@@ -1,4 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Pages and packs download from the network. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- The download notification. Asked for only when a download starts. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <application
         android:label="mre_quran"
         android:name="${applicationName}"

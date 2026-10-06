@@ -11,6 +11,7 @@ import '../../../core/widgets/app_switch_tile.dart';
 
 import '../application/settings_provider.dart';
 import '../../mushaf/presentation/mushaf_style_field.dart';
+import '../../mushaf/presentation/offline_packs_section.dart';
 import '../domain/app_settings.dart';
 
 /// Allows readers to choose visual and language preferences.
@@ -140,7 +141,9 @@ class _SettingsContent extends ConsumerWidget {
         ),
         const SizedBox(height: 12),
         const MushafStyleField(),
-        const SizedBox(height: 12),
+        const SizedBox(height: 28),
+        const OfflinePacksSection(),
+        const SizedBox(height: 28),
         _SettingsCard(
           child: AppSwitchTile(
             value: settings.realisticPageTurn,

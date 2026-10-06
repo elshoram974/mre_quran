@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math' as math;
 import 'dart:isolate';
 import 'dart:typed_data';
 
@@ -26,8 +27,7 @@ class PageDownloadException implements Exception {
   String toString() => 'PageDownloadException($uri): $reason';
 }
 
-/// Keeps printed-Mushaf page images, layouts, and the glyph database on the
-/// device.
+/// Keeps printed-Mushaf page images and the glyph database on the device.
 ///
 /// A file is downloaded the first time it is needed, written atomically, and
 /// read from disk after that, so pages work offline once seen.
@@ -40,22 +40,59 @@ class PageAssetStore {
   final Fetch _fetch;
   final Map<String, Future<File>> _inFlight = {};
 
-  /// The image file of [page] in [edition], light or [dark].
-  Future<File> image(MushafEdition edition, int page, {required bool dark}) {
-    final variant = dark && edition.hasDarkImages ? 'dark' : 'light';
-    return _file(
-      'images/${edition.style.name}/$variant/p$page.png',
-      edition.image(page, dark: dark),
-      _isPng,
-    );
+  /// The image file of [page] in [edition], light or [dark], downloaded if
+  /// the device does not have it yet.
+  Future<File> image(MushafEdition edition, int page, {required bool dark}) =>
+      _file(
+        edition.imagePath(page, dark: dark),
+        edition.image(page, dark: dark),
+      );
+
+  /// The folder everything is kept in.
+  Future<Directory> directory() async =>
+      Directory('${(await _root()).path}/mushaf');
+
+  /// The pack images of [edition] the device does not have yet, or has only
+  /// as a broken file.
+  Future<List<({Uri url, String path})>> missingImages(
+    MushafEdition edition,
+  ) async {
+    final base = (await directory()).path;
+    final files = edition.packFiles;
+    final missing = <({Uri url, String path})>[];
+    // Checked in batches: one file at a time is slow, all at once opens too
+    // many files together.
+    const batch = 64;
+    for (var i = 0; i < files.length; i += batch) {
+      final part = files.sublist(i, math.min(i + batch, files.length));
+      final found = await Future.wait([
+        for (final file in part) isImageFile(File('$base/${file.path}')),
+      ]);
+      for (var j = 0; j < part.length; j++) {
+        if (!found[j]) missing.add(part[j]);
+      }
+    }
+    return missing;
   }
 
-  /// The layout JSON of [page].
-  Future<String> layout(int page) async => (await _file(
-    'layouts/page-$page.json',
-    MushafSources.pageLayout(page),
-    _isJsonObject,
-  )).readAsString();
+  /// Whether [file] exists and starts like a PNG or a WebP.
+  Future<bool> isImageFile(File file) async {
+    if (!await file.exists()) return false;
+    final handle = await file.open();
+    try {
+      return _isImage(await handle.read(12));
+    } finally {
+      await handle.close();
+    }
+  }
+
+  /// Deletes every image of [edition].
+  Future<void> deleteImages(MushafEdition edition) async {
+    final folder = Directory(
+      '${(await directory()).path}/images/${edition.style.name}',
+    );
+    if (await folder.exists()) await folder.delete(recursive: true);
+  }
 
   /// The glyph database of the Quran.com pages, checked against its
   /// recorded SHA-256 values.
@@ -95,44 +132,36 @@ class PageAssetStore {
     return bytes;
   }
 
-  static bool _isPng(Uint8List bytes) =>
-      bytes.length > 8 &&
-      bytes[0] == 0x89 &&
-      bytes[1] == 0x50 &&
-      bytes[2] == 0x4E &&
-      bytes[3] == 0x47;
-
-  static bool _isJsonObject(Uint8List bytes) {
-    for (final byte in bytes) {
-      // Skip leading whitespace.
-      if (byte == 0x20 || byte == 0x0A || byte == 0x0D || byte == 0x09) {
-        continue;
-      }
-      return byte == 0x7B; // {
-    }
-    return false;
-  }
+  /// A PNG (`\x89PNG`) or a WebP (`RIFF....WEBP`) header.
+  static bool _isImage(Uint8List bytes) =>
+      bytes.length >= 12 &&
+      ((bytes[0] == 0x89 &&
+              bytes[1] == 0x50 &&
+              bytes[2] == 0x4E &&
+              bytes[3] == 0x47) ||
+          (bytes[0] == 0x52 &&
+              bytes[1] == 0x49 &&
+              bytes[2] == 0x46 &&
+              bytes[3] == 0x46 &&
+              bytes[8] == 0x57 &&
+              bytes[9] == 0x45 &&
+              bytes[10] == 0x42 &&
+              bytes[11] == 0x50));
 
   /// Joins concurrent requests for the same file; a failed one can be retried.
-  Future<File> _file(
-    String relative,
-    Uri uri,
-    bool Function(Uint8List) valid,
-  ) => _inFlight[relative] ??= _load(relative, uri, valid).whenComplete(() {
-    _inFlight.remove(relative);
-  });
+  Future<File> _file(String relative, Uri uri) =>
+      _inFlight[relative] ??= _load(relative, uri).whenComplete(() {
+        _inFlight.remove(relative);
+      });
 
-  Future<File> _load(
-    String relative,
-    Uri uri,
-    bool Function(Uint8List) valid,
-  ) async {
-    final root = await _root();
-    final file = File('${root.path}/mushaf/$relative');
-    if (await file.exists() && await file.length() > 0) return file;
+  Future<File> _load(String relative, Uri uri) async {
+    final file = File('${(await directory()).path}/$relative');
+    if (await isImageFile(file)) return file;
     final bytes = await _fetch(uri);
     // A CDN can answer 200 with an error page; never cache that.
-    if (!valid(bytes)) throw PageDownloadException(uri, 'unexpected content');
+    if (!_isImage(bytes)) {
+      throw PageDownloadException(uri, 'unexpected content');
+    }
     await file.parent.create(recursive: true);
     final temp = File('${file.path}.part');
     await temp.writeAsBytes(bytes, flush: true);

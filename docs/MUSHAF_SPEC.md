@@ -64,7 +64,7 @@ words) depending on how words are counted.
 
 | Requirement | Status |
 |---|---|
-| Works fully offline | **done** for text, index, search; printed pages work offline once opened |
+| Works fully offline | **done** for text, index, search; printed pages work offline once opened, and whole editions can be downloaded in the background from settings |
 | Small install | **done** (text, metadata, and font add about 0.6 MB compressed) |
 | Fast start and smooth page turns | **partial**: start-up improved and measured on an emulator; re-measure on a real phone |
 | No ads, no tracking, crash reports only with consent | **done** |

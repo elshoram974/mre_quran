@@ -44,6 +44,10 @@
 - Hizb and rub' shown on pages; ayah long-press actions (copy with reference, bookmark); bookmarks
   list; two-page spread on wide windows.
 
+- Printed Mushaf: exact ayah selection on every edition (ayah markers on the Sakina pages, glyph database on
+  Quran.com), a splash on the tapped ayah, pages spread over the screen, and offline packs downloaded in the
+  background with a notification (`docs/QURAN_SOURCES.md`, section 12).
+
 ## In progress
 
 - Foundation migration: localization, typed routing, Riverpod, adaptive shell,

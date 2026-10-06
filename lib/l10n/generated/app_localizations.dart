@@ -661,6 +661,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Madinah Mushaf, high resolution'**
   String get mushafStyleMadinahHd;
+
+  /// No description provided for @offlineMushaf.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline Mushaf'**
+  String get offlineMushaf;
+
+  /// No description provided for @offlineMushafIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Download one or more editions to read without internet, then pick the one you want above. Downloads keep going when you close the app.'**
+  String get offlineMushafIntro;
+
+  /// No description provided for @packNotDownloaded.
+  ///
+  /// In en, this message translates to:
+  /// **'Not downloaded · about {size} MB'**
+  String packNotDownloaded(String size);
+
+  /// No description provided for @packDownloading.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading · {percent}%'**
+  String packDownloading(String percent);
+
+  /// No description provided for @packPartial.
+  ///
+  /// In en, this message translates to:
+  /// **'Partly downloaded · {percent}%'**
+  String packPartial(String percent);
+
+  /// No description provided for @packReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready offline'**
+  String get packReady;
+
+  /// No description provided for @packDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Download'**
+  String get packDownload;
+
+  /// No description provided for @packResume.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume'**
+  String get packResume;
+
+  /// No description provided for @packCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get packCancel;
+
+  /// No description provided for @packDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get packDelete;
+
+  /// No description provided for @packDownloadTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Download {name}?'**
+  String packDownloadTitle(String name);
+
+  /// No description provided for @packDownloadBody.
+  ///
+  /// In en, this message translates to:
+  /// **'It takes about {size} MB of data and storage. The download continues in the background, even after you close the app.'**
+  String packDownloadBody(String size);
+
+  /// No description provided for @packDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete {name}?'**
+  String packDeleteTitle(String name);
+
+  /// No description provided for @packDeleteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You will need an internet connection to read it again.'**
+  String get packDeleteBody;
+
+  /// No description provided for @packStartError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t start the download. Check your internet connection and try again.'**
+  String get packStartError;
+
+  /// No description provided for @packNotifyRunningTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading {name}'**
+  String packNotifyRunningTitle(String name);
+
+  /// No description provided for @packNotifyCompleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} downloaded'**
+  String packNotifyCompleteTitle(String name);
+
+  /// No description provided for @packNotifyCompleteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'It now works without internet.'**
+  String get packNotifyCompleteBody;
+
+  /// No description provided for @packNotifyErrorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t finish {name}'**
+  String packNotifyErrorTitle(String name);
+
+  /// No description provided for @packNotifyErrorBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Open settings to continue the download.'**
+  String get packNotifyErrorBody;
 }
 
 class _AppLocalizationsDelegate

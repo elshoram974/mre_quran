@@ -342,4 +342,84 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get mushafStyleMadinahHd => 'مصحف المدينة عالي الدقة';
+
+  @override
+  String get offlineMushaf => 'المصحف دون اتصال';
+
+  @override
+  String get offlineMushafIntro =>
+      'نزّل نسخة أو أكثر لتقرأ بلا إنترنت، ثم اختر النسخة التي تريدها من الأعلى. يستمر التحميل حتى لو أغلقت التطبيق.';
+
+  @override
+  String packNotDownloaded(String size) {
+    return 'غير محمّل · نحو $size ميجابايت';
+  }
+
+  @override
+  String packDownloading(String percent) {
+    return 'جارٍ التحميل · $percent٪';
+  }
+
+  @override
+  String packPartial(String percent) {
+    return 'تحميل جزئي · $percent٪';
+  }
+
+  @override
+  String get packReady => 'جاهز دون اتصال';
+
+  @override
+  String get packDownload => 'تحميل';
+
+  @override
+  String get packResume => 'متابعة';
+
+  @override
+  String get packCancel => 'إلغاء';
+
+  @override
+  String get packDelete => 'حذف';
+
+  @override
+  String packDownloadTitle(String name) {
+    return 'تحميل $name؟';
+  }
+
+  @override
+  String packDownloadBody(String size) {
+    return 'يستهلك نحو $size ميجابايت من البيانات والتخزين. يكمل التحميل في الخلفية حتى بعد إغلاق التطبيق.';
+  }
+
+  @override
+  String packDeleteTitle(String name) {
+    return 'حذف $name؟';
+  }
+
+  @override
+  String get packDeleteBody => 'ستحتاج إلى اتصال بالإنترنت لقراءته مرة أخرى.';
+
+  @override
+  String get packStartError =>
+      'تعذّر بدء التحميل. تحقق من الاتصال وحاول مرة أخرى.';
+
+  @override
+  String packNotifyRunningTitle(String name) {
+    return 'جارٍ تحميل $name';
+  }
+
+  @override
+  String packNotifyCompleteTitle(String name) {
+    return 'تم تحميل $name';
+  }
+
+  @override
+  String get packNotifyCompleteBody => 'يعمل الآن دون اتصال.';
+
+  @override
+  String packNotifyErrorTitle(String name) {
+    return 'تعذّر إكمال $name';
+  }
+
+  @override
+  String get packNotifyErrorBody => 'افتح الإعدادات لمتابعة التحميل.';
 }

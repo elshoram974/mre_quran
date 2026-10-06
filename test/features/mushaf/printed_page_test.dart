@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
@@ -12,6 +11,8 @@ import 'package:mre_quran/features/mushaf/application/page_image_providers.dart'
 import 'package:mre_quran/features/mushaf/data/ayah_info_database.dart';
 import 'package:mre_quran/features/mushaf/data/page_asset_store.dart';
 import 'package:mre_quran/features/mushaf/domain/mushaf_edition.dart';
+import 'package:mre_quran/features/mushaf/domain/page_geometry.dart';
+import 'package:mre_quran/features/mushaf/presentation/line_spread.dart';
 import 'package:mre_quran/features/mushaf/presentation/printed_page_view.dart';
 import 'package:mre_quran/features/quran_index/data/quran_metadata_parser.dart';
 import 'package:mre_quran/features/quran_index/data/quran_metadata_source.dart';
@@ -41,24 +42,30 @@ Future<Uint8List> _pagePng({bool transparent = false}) async {
   return data!.buffer.asUint8List();
 }
 
-final _layout = utf8.encode(
-  jsonEncode({
-    'page': 1,
-    'lines': [
-      {
-        'type': 'text',
-        'words': [
-          {'location': '1:1:1', 'word': 'بسم'},
-        ],
-      },
-      {
-        'type': 'text',
-        'words': [
-          {'location': '1:2:1', 'word': 'الحمد'},
-        ],
-      },
-    ],
-  }),
+/// Where the test page's two words sit, as the markers would place them.
+const _geometry = PageGeometry(
+  words: [
+    WordBox(
+      ayah: AyahRef(1, 1),
+      word: 1,
+      line: 0,
+      left: 0.2,
+      right: 0.85,
+      top: 0.12,
+      bottom: 0.4,
+    ),
+    WordBox(
+      ayah: AyahRef(1, 2),
+      word: 1,
+      line: 1,
+      left: 0.3,
+      right: 0.8,
+      top: 0.6,
+      bottom: 0.88,
+    ),
+  ],
+  inkTop: 0.15,
+  inkBottom: 0.8,
 );
 
 void main() {
@@ -96,6 +103,7 @@ void main() {
     Brightness brightness = Brightness.light,
     MushafStyle style = MushafStyle.madinahHd,
     List<Override> extra = const [],
+    VoidCallback? onTap,
   }) async {
     png = (await tester.runAsync(
       () => _pagePng(transparent: style == MushafStyle.madinah),
@@ -109,7 +117,7 @@ void main() {
             root: () async => root,
             fetch: (uri) async {
               if (!online()) throw PageDownloadException(uri, 'offline');
-              return uri.path.endsWith('.json') ? _layout : png;
+              return png;
             },
           ),
         ),
@@ -134,7 +142,7 @@ void main() {
               metadata: metadata,
               style: style,
               page: 1,
-              onTap: () {},
+              onTap: onTap ?? () {},
               onAyahLongPress: pressed.add,
               selected: const AyahRef(1, 2),
             ),
@@ -158,7 +166,14 @@ void main() {
   });
 
   testWidgets('long press finds the ayah under the finger', (tester) async {
-    final pressed = await pump(tester, online: () => true);
+    final pressed = await pump(
+      tester,
+      online: () => true,
+      extra: [
+        pageGeometryProvider((style: MushafStyle.madinahHd, page: 1))
+            .overrideWith((ref) => _geometry),
+      ],
+    );
     await settle(tester);
     final label = find.bySemanticsLabel('الصفحة ١ من المصحف المطبوع');
     final page = tester.getRect(label);
@@ -185,6 +200,33 @@ void main() {
     await tester.longPressAt(at(100, 90));
     await tester.longPressAt(at(110, 290));
     expect(pressed, [const AyahRef(1, 1), const AyahRef(1, 2)]);
+  });
+
+  testWidgets('a tap toggles the bars and splashes the ayah, then it fades', (
+    tester,
+  ) async {
+    var taps = 0;
+    await pump(
+      tester,
+      online: () => true,
+      onTap: () => taps++,
+      extra: [
+        pageGeometryProvider((style: MushafStyle.madinahHd, page: 1))
+            .overrideWith((ref) => _geometry),
+      ],
+    );
+    await settle(tester);
+    final page = tester.getRect(
+      find.bySemanticsLabel('الصفحة ١ من المصحف المطبوع'),
+    );
+    await tester.tapAt(page.center - Offset(0, page.height * 0.18));
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(taps, 1);
+    expect(tester.takeException(), isNull);
+    // The splash is not a selection: it is gone after it fades.
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
   });
 
   group('printedCropFor', () {
@@ -255,11 +297,23 @@ void main() {
     final page = tester.getRect(
       find.bySemanticsLabel('الصفحة ١ من المصحف المطبوع'),
     );
-    // The whole image is shown.
-    expect(page.width / page.height, closeTo(1260 / 2038, 0.01));
+    // The page is spread over the whole area, its rows apart.
+    final geometry = glyphGeometry(
+      database.page(1),
+      width: 1024,
+      height: 1656,
+      lines: printedLinesOnPage(1),
+    );
+    final edition = MushafEdition.madinah;
+    final spread = LineSpread.fit(
+      cuts: geometry.lineCuts,
+      crop: edition.crop,
+      aspect: edition.width / edition.height,
+      area: page.size,
+    )!;
     Offset at(double x, double y) => Offset(
       page.left + x / 1024 * page.width,
-      page.top + y / 1656 * page.height,
+      page.top + spread.toScreen(y / 1656),
     );
     await tester.longPressAt(at(500, 400));
     await tester.longPressAt(at(500, 1200));
