@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mre_quran/features/mushaf/presentation/flip/book_flip.dart';
+import 'package:mre_quran/features/mushaf/presentation/flip/page_curl_painter.dart';
 
 Future<List<int>> _pump(
   WidgetTester tester, {
@@ -75,24 +76,77 @@ void main() {
     });
   }
 
-  testWidgets('single: the sheet peels off and uncovers the next page', (
-    tester,
-  ) async {
-    await _pump(tester, realistic: true, spread: false);
-    final gesture = await tester.startGesture(const Offset(100, 350));
+  /// Drags halfway and leaves the finger down.
+  Future<TestGesture> halfway(WidgetTester tester, double dx) async {
+    final gesture = await tester.startGesture(const Offset(200, 350));
     for (var i = 0; i < 30; i++) {
-      await gesture.moveBy(const Offset(7, 0));
+      await gesture.moveBy(Offset(dx / 30, 0));
       await tester.pump(const Duration(milliseconds: 8));
     }
-    // Mid-turn the next page lies under the sheet, in place; the page before
-    // does not come in.
-    final next = tester.getRect(find.text('page 6'));
-    expect(next.center.dx, closeTo(200, 1));
-    expect(find.text('page 4').hitTestable(), findsNothing);
+    return gesture;
+  }
+
+  Finder curl() => find.byWidgetPredicate(
+    (w) => w is CustomPaint && w.painter is PageCurlPainter,
+  );
+
+  testWidgets('single: an even page turns its leaf onto the page before', (
+    tester,
+  ) async {
+    final changes = await _pump(
+      tester,
+      realistic: true,
+      spread: false,
+      page: 4,
+    );
+    final gesture = await halfway(tester, 210);
+    // Mid-turn the leaf is up, and the page it lands on (3, facing it in the
+    // open book) has come in from the right.
+    expect(curl(), findsOneWidget);
+    final facing = tester.getRect(find.text('page 3'));
+    expect(facing.center.dx, inExclusiveRange(200, 400));
     await gesture.up();
     await tester.pumpAndSettle();
+    expect(changes, [5]);
+    expect(find.text('page 5').hitTestable(), findsOneWidget);
+    expect(find.text('page 3').hitTestable(), findsNothing);
+  });
+
+  testWidgets('single: an odd page slides to the page facing it', (
+    tester,
+  ) async {
+    final changes = await _pump(tester, realistic: true, spread: false);
+    final gesture = await halfway(tester, 210);
+    // No leaf turns inside one spread: page 5 moves right, 6 comes from the
+    // left.
+    expect(curl(), findsNothing);
+    expect(tester.getRect(find.text('page 5')).center.dx, greaterThan(200));
+    expect(tester.getRect(find.text('page 6')).center.dx, lessThan(200));
+    await gesture.up();
+    await tester.pumpAndSettle();
+    expect(changes, [6]);
     expect(find.text('page 6').hitTestable(), findsOneWidget);
-    expect(find.text('page 5').hitTestable(), findsNothing);
+  });
+
+  testWidgets('single: going back slides within a spread and turns across', (
+    tester,
+  ) async {
+    final changes = await _pump(
+      tester,
+      realistic: true,
+      spread: false,
+      page: 6,
+    );
+    var gesture = await halfway(tester, -210);
+    expect(curl(), findsNothing, reason: '6 back to 5 is one spread');
+    await gesture.up();
+    await tester.pumpAndSettle();
+    gesture = await halfway(tester, -210);
+    expect(curl(), findsOneWidget, reason: '5 back to 4 turns the leaf');
+    await gesture.up();
+    await tester.pumpAndSettle();
+    expect(changes, [5, 4]);
+    expect(find.text('page 4').hitTestable(), findsOneWidget);
   });
 
   testWidgets('cannot turn before the first page or past the last', (
