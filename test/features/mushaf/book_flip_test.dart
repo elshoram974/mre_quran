@@ -75,7 +75,7 @@ void main() {
     });
   }
 
-  testWidgets('single: the facing page slides in beside the turning sheet', (
+  testWidgets('single: the sheet peels off and uncovers the next page', (
     tester,
   ) async {
     await _pump(tester, realistic: true, spread: false);
@@ -84,13 +84,15 @@ void main() {
       await gesture.moveBy(const Offset(7, 0));
       await tester.pump(const Duration(milliseconds: 8));
     }
-    // Mid-turn the page before (the facing page) has come in from the right.
-    final facing = tester.getRect(find.text('page 4'));
-    expect(facing.center.dx, inExclusiveRange(200, 400));
+    // Mid-turn the next page lies under the sheet, in place; the page before
+    // does not come in.
+    final next = tester.getRect(find.text('page 6'));
+    expect(next.center.dx, closeTo(200, 1));
+    expect(find.text('page 4').hitTestable(), findsNothing);
     await gesture.up();
     await tester.pumpAndSettle();
     expect(find.text('page 6').hitTestable(), findsOneWidget);
-    expect(find.text('page 4').hitTestable(), findsNothing);
+    expect(find.text('page 5').hitTestable(), findsNothing);
   });
 
   testWidgets('cannot turn before the first page or past the last', (

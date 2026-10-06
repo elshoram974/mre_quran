@@ -15,7 +15,10 @@ typedef BookPageBuilder = Widget Function(BuildContext context, int page);
 /// The book opens right to left. A drag to the right turns forward. In spread
 /// mode the left-hand page lifts from its outer edge, bends as it rises, swings
 /// over the spine, and lands on the right with its back showing the next page.
-/// In single mode the page bends and swings away around the spine. A drag to
+/// In single mode the page peels off around a moving cylinder, as in a book
+/// reader: its free edge lifts, rolls over, and lies back showing its own
+/// print faintly through the paper, uncovering the next page, until the sheet
+/// rolls off past the spine. A drag to
 /// the left turns back the same way in reverse. Letting go finishes or undoes
 /// the turn with a spring that keeps the speed of the hand. One gesture turns
 /// at most one step: one page, or one pair of facing pages.
@@ -152,8 +155,9 @@ class _BookFlipState extends State<BookFlip>
     );
     if (front == null) return;
     _front = front;
-    // The back of the sheet shows the page that follows it.
-    _back = _snapshot(_geometry.rightPage(step + 1));
+    // The back of a swinging sheet shows the page that follows it. A peeling
+    // single sheet shows its own front through.
+    _back = _geometry.spread ? _snapshot(_geometry.rightPage(step + 1)) : null;
     _textureStep = step;
   }
 
@@ -269,8 +273,8 @@ class _BookFlipState extends State<BookFlip>
         if (turning && spread) {
           visible.addAll([?_geometry.rightPage(k), ?_geometry.leftPage(k + 1)]);
         } else if (turning) {
-          // The sheet's back shows the next page; under it lies the page after.
-          visible.addAll([?_geometry.rightPage(k + 2)]);
+          // The sheet peels off its page and uncovers the next one.
+          visible.addAll([?_geometry.rightPage(k + 1)]);
         } else if (spread) {
           visible.addAll([
             ?_geometry.rightPage(rest),
@@ -280,14 +284,9 @@ class _BookFlipState extends State<BookFlip>
           visible.addAll([?_geometry.rightPage(rest)]);
         }
 
-        // In single mode the sheet swings past the spine onto the facing page,
-        // the one before it, which slides into view with the sheet.
-        final facing = turning && !spread ? _geometry.rightPage(k - 1) : null;
-
         // Each page sits in the slot its number says: odd on the right half,
         // even on the left half in spread mode, the whole area in single mode.
         Widget slot(int pageNumber, {required bool hidden}) {
-          final isFacing = pageNumber == facing;
           final right = pageNumber.isOdd;
           final child = RepaintBoundary(
             key: _keyFor(pageNumber),
@@ -299,21 +298,7 @@ class _BookFlipState extends State<BookFlip>
               ),
             ),
           );
-          final content = IgnorePointer(
-            ignoring: hidden || isFacing,
-            child: child,
-          );
-          if (isFacing) {
-            // Beyond the spine: one page width past the reading start.
-            return PositionedDirectional(
-              key: ValueKey<String>('slot-$pageNumber'),
-              start: -width,
-              width: width,
-              top: 0,
-              bottom: 0,
-              child: content,
-            );
-          }
+          final content = IgnorePointer(ignoring: hidden, child: child);
           return spread
               ? PositionedDirectional(
                   key: ValueKey<String>('slot-$pageNumber'),
@@ -334,9 +319,7 @@ class _BookFlipState extends State<BookFlip>
             ? const <Widget>[]
             : <Widget>[
                 for (final n in ordered)
-                  if (!visible.contains(n) && n != facing)
-                    slot(n, hidden: true),
-                ?facing == null ? null : slot(facing, hidden: false),
+                  if (!visible.contains(n)) slot(n, hidden: true),
                 for (final n in ordered)
                   if (visible.contains(n)) slot(n, hidden: false),
               ];
@@ -359,6 +342,7 @@ class _BookFlipState extends State<BookFlip>
                     vanishX: half * (spread ? 1 : 2),
                     pixelRatio: _pixelRatio,
                     paper: paper,
+                    peel: !spread,
                   ),
                   size: Size(spread ? half : width, height),
                 ),
@@ -367,24 +351,11 @@ class _BookFlipState extends State<BookFlip>
           );
         }
 
-        // In single mode the view follows the sheet as it lands, so the page
-        // on its back ends up in front of the reader.
-        final shift = turning && !spread
-            ? width *
-                  Curves.easeInOutCubic.transform(
-                    ((f - 0.25) / 0.75).clamp(0.0, 1.0),
-                  )
-            : 0.0;
-
         final Widget content = widget.realistic
-            ? Transform.translate(
-                offset: Offset(-shift, 0),
-                // The facing page and the landing sheet lie past the edge.
-                child: Stack(
-                  fit: StackFit.expand,
-                  clipBehavior: Clip.none,
-                  children: children,
-                ),
+            ? Stack(
+                fit: StackFit.expand,
+                clipBehavior: Clip.none,
+                children: children,
               )
             : _slide(context, paper: paper, k: k, f: f, width: width);
 

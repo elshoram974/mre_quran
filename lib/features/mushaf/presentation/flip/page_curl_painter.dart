@@ -14,6 +14,7 @@ class PageCurlPainter extends CustomPainter {
     required this.vanishX,
     required this.pixelRatio,
     required this.paper,
+    this.peel = false,
   });
 
   /// 0 flat on its page, 1 turned over.
@@ -34,14 +35,20 @@ class PageCurlPainter extends CustomPainter {
   /// Colour of blank paper.
   final Color paper;
 
+  /// Whether the sheet peels around a cylinder (a single page) instead of
+  /// swinging on its hinge (a spread). The back then shows the front, faded.
+  final bool peel;
+
   @override
   void paint(Canvas canvas, Size size) {
-    final mesh = buildCurlMesh(
-      progress: progress,
-      size: size,
-      vanishX: vanishX,
-      pixelRatio: pixelRatio,
-    );
+    final mesh = peel
+        ? buildPeelMesh(progress: progress, size: size, pixelRatio: pixelRatio)
+        : buildCurlMesh(
+            progress: progress,
+            size: size,
+            vanishX: vanishX,
+            pixelRatio: pixelRatio,
+          );
 
     // The shadow on the page below: the sheet's footprint, blurred.
     final shadow = Path()..moveTo(size.width, 0);
@@ -62,7 +69,16 @@ class PageCurlPainter extends CustomPainter {
     _drawFace(canvas, mesh.front, front);
     if (!mesh.back.isEmpty) {
       final image = back;
-      if (image != null) {
+      if (peel) {
+        // Paper shows its print through, faintly and reversed.
+        _drawBlank(canvas, mesh.back);
+        canvas.saveLayer(
+          null,
+          Paint()..color = const Color(0xFF000000).withValues(alpha: 0.16),
+        );
+        _drawFace(canvas, mesh.back, front);
+        canvas.restore();
+      } else if (image != null) {
         _drawFace(canvas, mesh.back, image);
       } else {
         _drawBlank(canvas, mesh.back);
@@ -107,5 +123,6 @@ class PageCurlPainter extends CustomPainter {
       old.back != back ||
       old.vanishX != vanishX ||
       old.pixelRatio != pixelRatio ||
-      old.paper != paper;
+      old.paper != paper ||
+      old.peel != peel;
 }
