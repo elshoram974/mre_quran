@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -21,6 +23,9 @@ Future<void> main() async {
   // Device Preview replaces the binding, so it is skipped outside debug.
   if (kDebugMode) DevicePreview.enable();
   WidgetsFlutterBinding.ensureInitialized();
+  // Android 15+ always draws edge to edge; earlier versions do the same so
+  // the app looks and lays out alike everywhere.
+  unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge));
   syncPreviewPlatform();
   final preferences = SharedPreferencesAsync();
   // Independent start-up work runs in parallel so the first frame waits only

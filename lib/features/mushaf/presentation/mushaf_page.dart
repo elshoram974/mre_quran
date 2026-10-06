@@ -27,7 +27,8 @@ class MushafPage extends ConsumerWidget {
     final text = ref.watch(quranTextProvider);
     final page = ref.watch(readingPositionProvider).value;
     final immersive = ref.watch(readerImmersiveProvider);
-    final media = MediaQuery.of(context);
+    // Rebuilds when the screen's insets change (rotation, navigation mode).
+    MediaQuery.viewPaddingOf(context);
 
     Future<void> open(AppRoute route) async {
       final chosen = await context.push<ReaderDestination>(route.path);
@@ -80,7 +81,15 @@ class MushafPage extends ConsumerWidget {
 
     // The page keeps one size: it fills the screen inside the system insets,
     // and the bars slide over it. Hiding them never re-lays out the page.
-    final safe = media.viewPadding;
+    // The insets come from the screen itself: the shell's Scaffold removes
+    // the bottom one while its tab bar shows, which would put the page under
+    // Android's navigation bar (drawn over the app, edge to edge, from
+    // Android 15). System insets are physical, so the sides stay physical.
+    final view = View.of(context);
+    final safe = EdgeInsets.fromViewPadding(
+      view.viewPadding,
+      view.devicePixelRatio,
+    );
     final duration = MediaQuery.disableAnimationsOf(context)
         ? Duration.zero
         : const Duration(milliseconds: 220);
@@ -90,10 +99,7 @@ class MushafPage extends ConsumerWidget {
         children: [
           Positioned.fill(
             child: Padding(
-              padding: EdgeInsetsDirectional.only(
-                top: safe.top,
-                bottom: safe.bottom,
-              ),
+              padding: safe,
               child: MushafPager(text: data, initialPage: page),
             ),
           ),

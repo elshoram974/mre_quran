@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/l10n/l10n.dart';
@@ -43,7 +44,39 @@ class QuranApp extends ConsumerWidget {
         darkTheme: AppTheme.dark,
         themeMode: settings.materialThemeMode,
         routerConfig: ref.watch(routerProvider),
+        builder: (context, child) => _SystemBars(child: child!),
       ),
+    );
+  }
+}
+
+/// The app draws edge to edge (required from Android 15): the status and
+/// navigation bars are transparent over the app's own surface, with icons
+/// that contrast with the current theme. Screens keep clear of the bars with
+/// the system insets.
+class _SystemBars extends StatelessWidget {
+  const _SystemBars({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final icons = dark ? Brightness.light : Brightness.dark;
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: icons,
+        statusBarBrightness: dark ? Brightness.dark : Brightness.light,
+        systemNavigationBarColor: Colors.transparent,
+        systemNavigationBarDividerColor: Colors.transparent,
+        systemNavigationBarIconBrightness: icons,
+        // No grey scrim behind the three-button bar: the paper shows through
+        // and the buttons take the theme's contrast instead.
+        systemNavigationBarContrastEnforced: false,
+        systemStatusBarContrastEnforced: false,
+      ),
+      child: child,
     );
   }
 }

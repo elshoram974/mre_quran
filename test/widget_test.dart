@@ -4,7 +4,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:mre_quran/app/quran_app.dart';
+import 'package:mre_quran/features/mushaf/application/reader_immersive_provider.dart';
 import 'package:mre_quran/features/mushaf/application/reading_position_provider.dart';
+import 'package:mre_quran/features/mushaf/presentation/mushaf_pager.dart';
 import 'package:mre_quran/features/quran_index/application/quran_metadata_provider.dart';
 import 'package:mre_quran/features/bookmarks/application/bookmarks_provider.dart';
 import 'package:mre_quran/features/quran_text/application/quran_text_providers.dart';
@@ -195,5 +197,47 @@ void main() {
     expect(find.byType(NavigationBar), findsOneWidget);
     expect(find.byType(GlassTabBar), findsNothing);
     debugDefaultTargetPlatformOverride = null;
+  });
+
+  testWidgets('the Mushaf keeps clear of the Android navigation bar', (
+    tester,
+  ) async {
+    // Edge to edge: a 48 px three-button bar is drawn over the app.
+    tester.view.physicalSize = const Size(360, 780);
+    tester.view.devicePixelRatio = 1;
+    tester.view.padding = const FakeViewPadding(top: 24, bottom: 48);
+    tester.view.viewPadding = const FakeViewPadding(top: 24, bottom: 48);
+    addTearDown(tester.view.reset);
+    final container = ProviderContainer(
+      overrides: [
+        settingsRepositoryProvider.overrideWithValue(
+          MemorySettingsRepository(),
+        ),
+        lastTabRepositoryProvider.overrideWithValue(MemoryLastTabRepository()),
+        quranMetadataSourceProvider.overrideWithValue(
+          FakeQuranMetadataSource(),
+        ),
+        readingPositionRepositoryProvider.overrideWithValue(
+          MemoryReadingPositionRepository()..page = 22,
+        ),
+        quranTextSourceProvider.overrideWithValue(FakeQuranTextSource()),
+        bookmarksRepositoryProvider.overrideWithValue(
+          MemoryBookmarksRepository(),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const QuranApp()),
+    );
+    await tester.pumpAndSettle();
+    final withBars = tester.getRect(find.byType(MushafPager));
+    container.read(readerImmersiveProvider.notifier).toggle();
+    await tester.pumpAndSettle();
+    final immersive = tester.getRect(find.byType(MushafPager));
+    // The tab bar's Scaffold drops the bottom inset; the page must not.
+    expect(withBars.bottom, 780 - 48);
+    expect(immersive, withBars, reason: 'hiding the bars never moves the page');
+    expect(tester.getRect(find.text('٢٢')).bottom, lessThanOrEqualTo(732));
   });
 }
