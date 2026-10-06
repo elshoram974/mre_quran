@@ -90,10 +90,7 @@ class PrintedPageView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => MushafPageFrame(
-    metadata: metadata,
-    page: page,
     onTap: onTap,
-    decorated: false,
     child: LayoutBuilder(
       builder: (context, constraints) {
         final edition = MushafEdition.of(style);

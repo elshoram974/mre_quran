@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mre_quran/features/mushaf/application/reader_immersive_provider.dart';
 import 'package:mre_quran/features/mushaf/application/reading_position_provider.dart';
 import 'package:mre_quran/features/mushaf/presentation/flip/book_flip.dart';
+import 'package:mre_quran/features/mushaf/presentation/reader_bar.dart';
 import 'package:mre_quran/features/mushaf/presentation/mushaf_page.dart';
 import 'package:mre_quran/features/quran_index/application/quran_metadata_provider.dart';
 import 'package:mre_quran/features/bookmarks/application/bookmarks_provider.dart';
@@ -48,7 +49,8 @@ Future<(ProviderContainer, MemoryReadingPositionRepository)> _pump(
     UncontrolledProviderScope(
       container: container,
       child: MediaQuery(
-        data: MediaQueryData(textScaler: TextScaler.linear(textScale)),
+        data: MediaQueryData.fromView(tester.view)
+            .copyWith(textScaler: TextScaler.linear(textScale)),
         child: MaterialApp(
           locale: Locale(locale),
           supportedLocales: AppLocalizations.supportedLocales,
@@ -63,51 +65,133 @@ Future<(ProviderContainer, MemoryReadingPositionRepository)> _pump(
 }
 
 void main() {
-  testWidgets('opens at page 1 with Al-Fatiha and the bar actions', (
-    tester,
-  ) async {
+  testWidgets('opens at page 1 with the floating bars showing', (tester) async {
     await _pump(tester);
-    expect(find.text('سورة الفاتحة'), findsWidgets);
-    expect(find.byTooltip('الفهرس'), findsOneWidget);
-    expect(find.byTooltip('ابحث في القرآن'), findsOneWidget);
-    expect(find.byTooltip('العرض'), findsOneWidget);
+    expect(find.text('سورة الفاتحة'), findsOneWidget, reason: 'banner');
+    // The surah label above the page and the surah button below.
+    expect(find.text('الفاتحة'), findsNWidgets(2));
+    expect(find.text('الجزء ١'), findsOneWidget);
+    expect(find.text('صفحة ١'), findsOneWidget, reason: 'page pill');
+    expect(find.bySemanticsLabel('ابحث في القرآن'), findsOneWidget);
+    for (final tip in [
+      'إضافة علامة للصفحة',
+      'العرض',
+      'إخفاء الأشرطة',
+      'السورة التالية',
+    ]) {
+      expect(find.byTooltip(tip), findsOneWidget, reason: tip);
+    }
   });
 
-  testWidgets('opens at the saved page', (tester) async {
+  testWidgets('hiding the bars leaves the page number and the arrow', (
+    tester,
+  ) async {
+    final (container, _) = await _pump(tester);
+    await tester.tap(find.byTooltip('إخفاء الأشرطة'));
+    await tester.pumpAndSettle();
+    expect(container.read(readerImmersiveProvider), isTrue);
+    expect(find.text('١').hitTestable(), findsOneWidget);
+    expect(find.byTooltip('الصفحة التالية').hitTestable(), findsOneWidget);
+    expect(find.bySemanticsLabel('ابحث في القرآن').hitTestable(), findsNothing);
+  });
+
+  testWidgets('the chips never cover the text and stay on screen', (
+    tester,
+  ) async {
+    final (container, _) = await _pump(tester, savedPage: 42);
+    container.read(readerImmersiveProvider.notifier).hide();
+    await tester.pumpAndSettle();
+    final page = tester.getRect(
+      find.byKey(const ValueKey<int>(42)).hitTestable(),
+    );
+    final chip = tester.getRect(find.text('الجزء ٣'));
+    final number = tester.getRect(find.text('٤٢'));
+    expect(chip.top, greaterThanOrEqualTo(page.top));
+    expect(number.bottom, lessThanOrEqualTo(page.bottom));
+  });
+
+  testWidgets('the arrows step to the next page and the next surah', (
+    tester,
+  ) async {
+    final (container, positions) = await _pump(tester, savedPage: 5);
+    container.read(readerImmersiveProvider.notifier).hide();
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('الصفحة التالية'));
+    await tester.pumpAndSettle();
+    expect(positions.page, 6);
+    await tester.tap(find.byTooltip('السورة التالية'));
+    await tester.pumpAndSettle();
+    // Al-Baqarah is followed by Al Imran, which starts on page 50.
+    expect(positions.page, 50);
+  });
+
+  testWidgets('the page pill opens a slider and goes to the chosen page', (
+    tester,
+  ) async {
+    final (_, positions) = await _pump(tester, savedPage: 10);
+    await tester.tap(find.byType(ReaderPagePill));
+    await tester.pumpAndSettle();
+    expect(find.text('صفحة ١٠ من ٦٠٤'), findsOneWidget);
+    // The slider runs right to left: the left end is the last page.
+    final slider = tester.getRect(find.byType(Slider));
+    await tester.tapAt(Offset(slider.left + 24, slider.center.dy));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('انتقال'));
+    await tester.pumpAndSettle();
+    expect(positions.page, greaterThan(550));
+  });
+
+  testWidgets('the bookmark button marks the page and unmarks it', (
+    tester,
+  ) async {
     await _pump(tester, savedPage: 42);
-    expect(find.textContaining('صفحة ٤٢'), findsWidgets);
+    await tester.tap(find.byTooltip('إضافة علامة للصفحة'));
+    await tester.pumpAndSettle();
+    expect(find.text('تمت إضافة العلامة'), findsOneWidget);
+    expect(find.byTooltip('إزالة علامة الصفحة'), findsOneWidget);
+    await tester.tap(find.byTooltip('إزالة علامة الصفحة'));
+    await tester.pumpAndSettle();
+    expect(find.byTooltip('إضافة علامة للصفحة'), findsOneWidget);
   });
 
   testWidgets('swiping turns the page right to left and saves it', (
     tester,
   ) async {
-    final (_, positions) = await _pump(tester);
+    final (container, positions) = await _pump(tester);
     // In a right-to-left Mushaf the next page comes from the left.
     await tester.fling(find.byType(BookFlip), const Offset(400, 0), 1500);
     await tester.pumpAndSettle();
     expect(positions.page, 2);
     expect(find.text('سورة البقرة'), findsWidgets);
+    expect(
+      container.read(readerImmersiveProvider),
+      isTrue,
+      reason: 'turning the page puts the bars away',
+    );
   });
 
   testWidgets('a page change made elsewhere moves the pager', (tester) async {
     final (container, _) = await _pump(tester);
     await container.read(readingPositionProvider.notifier).setPage(604);
     await tester.pumpAndSettle();
-    expect(find.textContaining('صفحة ٦٠٤'), findsWidgets);
+    expect(find.text('٦٠٤'), findsOneWidget);
+    expect(find.text('الجزء ٣٠'), findsOneWidget);
   });
 
-  testWidgets('a tap hides the bar and another brings it back', (tester) async {
+  testWidgets('a tap hides the app bars and another brings them back', (
+    tester,
+  ) async {
     final (container, _) = await _pump(tester);
     final book = tester.getRect(find.byType(BookFlip));
     await tester.tapAt(const Offset(195, 500));
     await tester.pumpAndSettle();
     expect(container.read(readerImmersiveProvider), isTrue);
-    expect(find.byTooltip('الفهرس').hitTestable(), findsNothing);
-    // The bar slides over the page; the page itself keeps its size.
+    // The chips belong to the page: they stay, and the page keeps its size.
+    expect(find.text('الفاتحة').hitTestable(), findsOneWidget);
     expect(tester.getRect(find.byType(BookFlip)), book);
     await tester.tapAt(const Offset(195, 500));
     await tester.pumpAndSettle();
-    expect(find.byTooltip('الفهرس').hitTestable(), findsOneWidget);
+    expect(container.read(readerImmersiveProvider), isFalse);
   });
 
   testWidgets('English, large text, narrow width, and long pages do not '

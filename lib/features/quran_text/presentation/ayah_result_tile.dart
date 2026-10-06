@@ -69,7 +69,14 @@ class AyahResultTile extends StatelessWidget {
                 text,
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.bodyLarge?.copyWith(height: 1.9),
+                // Quranic marks (small high letters, sukun, pause signs)
+                // need the Quran font; a UI font draws them detached.
+                style: TextStyle(
+                  fontFamily: AppTokens.quranFontFamily,
+                  fontSize: 20,
+                  height: 1.9,
+                  color: scheme.onSurface,
+                ),
               ),
             ],
           ),

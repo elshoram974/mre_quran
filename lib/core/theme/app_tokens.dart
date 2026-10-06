@@ -40,4 +40,22 @@ abstract final class AppTokens {
 
   /// Space reserved below scrollable content for the floating glass bar.
   static const double barClearance = 96;
+
+  /// Height of the floating tab bar on Android.
+  static const double floatingBarHeight = 68;
+
+  /// Space between the floating tab bar and the bottom of the screen.
+  static const double floatingBarGap = 12;
+
+  /// Room above a Mushaf page for its header chips (surah, juz).
+  static const double readerHeaderExtent = 48;
+
+  /// Room below a Mushaf page for its page-number chip.
+  static const double readerFooterExtent = 44;
+
+  /// Height of a reader chip.
+  static const double readerChipHeight = 32;
+
+  /// Side margin of the Mushaf text.
+  static const double readerGutter = 12;
 }

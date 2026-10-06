@@ -261,16 +261,6 @@ class AppLocalizationsAr extends AppLocalizations {
       'خط القرآن: أميري قرآن، تصميم خالد حسني وسباستيان كوش، رخصة SIL المفتوحة للخطوط 1.1، https://github.com/aliftype/amiri.';
 
   @override
-  String surahOrderLabel(String number) {
-    return 'ترتيبها $number';
-  }
-
-  @override
-  String surahAyahsLabel(String count) {
-    return 'آياتها $count';
-  }
-
-  @override
   String hizbTitle(String number) {
     return 'الحزب $number';
   }
@@ -422,4 +412,27 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get packNotifyErrorBody => 'افتح الإعدادات لمتابعة التحميل.';
+
+  @override
+  String get nextSurah => 'السورة التالية';
+
+  @override
+  String get goToPage => 'الانتقال إلى صفحة';
+
+  @override
+  String get goToPageAction => 'انتقال';
+
+  @override
+  String pageOfTotal(String page, String total) {
+    return 'صفحة $page من $total';
+  }
+
+  @override
+  String get bookmarkPage => 'إضافة علامة للصفحة';
+
+  @override
+  String get removePageBookmark => 'إزالة علامة الصفحة';
+
+  @override
+  String get hideBars => 'إخفاء الأشرطة';
 }

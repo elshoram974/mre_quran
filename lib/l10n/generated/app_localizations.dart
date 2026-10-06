@@ -518,18 +518,6 @@ abstract class AppLocalizations {
   /// **'Quran font: Amiri Quran by Khaled Hosny and Sebastian Kosch, SIL Open Font License 1.1, https://github.com/aliftype/amiri.'**
   String get creditsQuranFont;
 
-  /// No description provided for @surahOrderLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Order {number}'**
-  String surahOrderLabel(String number);
-
-  /// No description provided for @surahAyahsLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Ayahs {count}'**
-  String surahAyahsLabel(String count);
-
   /// No description provided for @hizbTitle.
   ///
   /// In en, this message translates to:
@@ -781,6 +769,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Open settings to continue the download.'**
   String get packNotifyErrorBody;
+
+  /// No description provided for @nextSurah.
+  ///
+  /// In en, this message translates to:
+  /// **'Next surah'**
+  String get nextSurah;
+
+  /// No description provided for @goToPage.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to page'**
+  String get goToPage;
+
+  /// No description provided for @goToPageAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Go'**
+  String get goToPageAction;
+
+  /// No description provided for @pageOfTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Page {page} of {total}'**
+  String pageOfTotal(String page, String total);
+
+  /// No description provided for @bookmarkPage.
+  ///
+  /// In en, this message translates to:
+  /// **'Bookmark this page'**
+  String get bookmarkPage;
+
+  /// No description provided for @removePageBookmark.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove this page\'s bookmark'**
+  String get removePageBookmark;
+
+  /// No description provided for @hideBars.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide the bars'**
+  String get hideBars;
 }
 
 class _AppLocalizationsDelegate

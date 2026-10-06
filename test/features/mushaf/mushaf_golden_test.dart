@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mre_quran/features/mushaf/application/reader_immersive_provider.dart';
 import 'package:mre_quran/core/theme/app_theme.dart';
 import 'package:mre_quran/features/mushaf/presentation/mushaf_page_view.dart';
 import 'package:mre_quran/features/quran_index/data/quran_metadata_parser.dart';
@@ -50,10 +49,8 @@ void main() {
         tester.view.devicePixelRatio = 2;
         addTearDown(tester.view.resetPhysicalSize);
         addTearDown(tester.view.resetDevicePixelRatio);
-        // Page labels show while the reader's bars are hidden.
         final container = ProviderContainer();
         addTearDown(container.dispose);
-        container.read(readerImmersiveProvider.notifier).toggle();
         await tester.pumpWidget(
           UncontrolledProviderScope(
             container: container,

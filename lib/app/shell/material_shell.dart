@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/layout/adaptive_layout.dart';
+import '../../core/theme/app_tokens.dart';
 import 'shell_destination.dart';
 
 /// Android chrome: Material 3 top app bar, navigation bar, and rail.
@@ -42,9 +43,9 @@ class MaterialShell extends StatelessWidget {
   Widget build(BuildContext context) {
     final compact = size == WindowSize.compact;
     return Scaffold(
-      // The Mushaf tab has no shell app bar; its page runs under the
-      // navigation bar, which floats over it.
-      extendBody: !showAppBar,
+      // The tab bar floats; every page runs under it and keeps clear of it
+      // through the bottom padding the Scaffold publishes.
+      extendBody: true,
       appBar: showAppBar
           ? AppBar(title: Text(destinations[index].label))
           : null,
@@ -72,9 +73,61 @@ class MaterialShell extends StatelessWidget {
               ],
             ),
       bottomNavigationBar: compact && showNavigation
-          ? NavigationBar(
+          ? _FloatingNavigationBar(
+              index: index,
+              onSelected: onSelected,
+              destinations: destinations,
+            )
+          : null,
+    );
+  }
+}
+
+/// The Material 3 navigation bar, floating: a rounded, raised pill held off
+/// the screen edges and above the system navigation bar. Only the selected
+/// destination shows its label.
+class _FloatingNavigationBar extends StatelessWidget {
+  const _FloatingNavigationBar({
+    required this.index,
+    required this.onSelected,
+    required this.destinations,
+  });
+
+  final int index;
+  final ValueChanged<int> onSelected;
+  final List<ShellDestination> destinations;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final shape = RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(AppTokens.radiusCard + 4),
+    );
+    return SafeArea(
+      top: false,
+      minimum: const EdgeInsets.only(bottom: AppTokens.floatingBarGap),
+      child: Padding(
+        padding: const EdgeInsetsDirectional.symmetric(
+          horizontal: AppTokens.gutterCompact,
+        ),
+        child: Material(
+          color: scheme.surfaceContainerLowest,
+          elevation: 3,
+          shadowColor: scheme.shadow.withValues(alpha: 0.4),
+          surfaceTintColor: Colors.transparent,
+          shape: shape,
+          clipBehavior: Clip.antiAlias,
+          child: MediaQuery.removePadding(
+            context: context,
+            removeBottom: true,
+            child: NavigationBar(
+              height: AppTokens.floatingBarHeight,
+              backgroundColor: Colors.transparent,
+              elevation: 0,
               selectedIndex: index,
               onDestinationSelected: onSelected,
+              labelBehavior:
+                  NavigationDestinationLabelBehavior.onlyShowSelected,
               destinations: [
                 for (final item in destinations)
                   NavigationDestination(
@@ -83,8 +136,10 @@ class MaterialShell extends StatelessWidget {
                     label: item.label,
                   ),
               ],
-            )
-          : null,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

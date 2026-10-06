@@ -9,10 +9,8 @@ import '../../settings/application/digits_provider.dart';
 import 'mushaf_ornaments.dart';
 import 'mushaf_page_frame.dart';
 
-/// One Mushaf page drawn like a printed copy: a framed page, the surah and
-/// juz at the top, a banner at each surah opening (name, order, ayah count,
-/// Meccan or Medinan), the basmala, the ayahs with their markers, and the
-/// page number in a medallion.
+/// One Mushaf page drawn like a printed copy: a banner at each surah opening,
+/// the basmala, and the ayahs with their markers, inside the reader's frame.
 ///
 /// The ayahs on a page follow the Madinah page starts. Line breaks come from
 /// the text layout, not the printed Mushaf, until layout data is approved.
@@ -52,12 +50,15 @@ class MushafPageView extends StatefulWidget {
 
   static const double _minSize = 15;
   static const double _maxSize = 34;
-  static const double _bannerExtent = 74;
+  static const double _bannerExtent = 62;
   static const double _lineHeight = 2.05;
 
   @override
   State<MushafPageView> createState() => _MushafPageViewState();
 }
+
+/// Size of the basmala relative to the ayahs.
+const double _basmalaScale = 0.82;
 
 class _MushafPageViewState extends State<MushafPageView> {
   final Map<AyahRef, LongPressGestureRecognizer> _recognizers = {};
@@ -159,7 +160,14 @@ class _MushafPageViewState extends State<MushafPageView> {
             total += MushafPageView._bannerExtent;
           case _Basmala(:final text):
             total +=
-                _measure(TextSpan(text: text, style: style), size.width) + 4;
+                _measure(
+                  TextSpan(
+                    text: text,
+                    style: style.copyWith(fontSize: fontSize * _basmalaScale),
+                  ),
+                  size.width,
+                ) +
+                4;
           case _Paragraph(:final spans):
             total += _measure(
               TextSpan(children: spans, style: style),
@@ -198,12 +206,9 @@ class _MushafPageViewState extends State<MushafPageView> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final label = MushafPageFrame.labelStyle(scheme);
     final segments = _segments(scheme, context.l10n.ayahNumber);
 
     return MushafPageFrame(
-      metadata: text.metadata,
-      page: widget.page,
       onTap: widget.onTap,
       child: LayoutBuilder(
         builder: (context, constraints) {
@@ -225,18 +230,17 @@ class _MushafPageViewState extends State<MushafPageView> {
                 children: [
                   for (final segment in segments)
                     switch (segment) {
-                      _Banner(:final surah) => _SurahBanner(
-                        surah: surah,
-                        label: label,
-                        number: _n,
-                      ),
+                      _Banner(:final surah) => _SurahBanner(surah: surah),
                       _Basmala(:final text) => Padding(
                         padding: const EdgeInsets.only(bottom: 4),
                         child: Text(
                           text,
                           textAlign: TextAlign.center,
                           textScaler: TextScaler.noScaling,
-                          style: quran,
+                          // Smaller than the ayahs, as printed.
+                          style: quran.copyWith(
+                            fontSize: quran.fontSize! * _basmalaScale,
+                          ),
                         ),
                       ),
                       _Paragraph(:final spans) => Text.rich(
@@ -276,72 +280,41 @@ class _Paragraph extends _Segment {
 }
 
 class _SurahBanner extends StatelessWidget {
-  const _SurahBanner({
-    required this.surah,
-    required this.label,
-    required this.number,
-  });
+  const _SurahBanner({required this.surah});
 
   final Surah surah;
-  final TextStyle label;
-  final String Function(int) number;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final l10n = context.l10n;
-    final side = label.copyWith(
-      fontSize: 13,
-      color: scheme.onSecondaryContainer,
-    );
-    final revelation = surah.revelation == Revelation.meccan
-        ? l10n.revelationMeccan
-        : l10n.revelationMedinan;
+    const height = MushafPageView._bannerExtent - 16;
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: SizedBox(
-        height: MushafPageView._bannerExtent - 20,
+        height: height,
         child: CustomPaint(
           painter: SurahBannerPainter(
             fill: scheme.secondaryContainer,
-            stroke: scheme.primary.withValues(alpha: 0.6),
+            stroke: scheme.primary.withValues(alpha: 0.75),
           ),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 42),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    l10n.surahOrderLabel(number(surah.number)),
-                    style: side,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.start,
+            padding: EdgeInsets.symmetric(
+              horizontal: SurahBannerPainter.endWidth(height) + 12,
+            ),
+            child: Center(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  context.l10n.surahTitle(surah.arabicName),
+                  textScaler: TextScaler.noScaling,
+                  style: TextStyle(
+                    fontFamily: AppTokens.quranFontFamily,
+                    fontSize: 22,
+                    height: 1.3,
+                    color: scheme.onSurface,
                   ),
                 ),
-                Flexible(
-                  flex: 2,
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
-                      l10n.surahTitle(surah.arabicName),
-                      style: label.copyWith(
-                        fontSize: 22,
-                        color: scheme.onSecondaryContainer,
-                      ),
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: Text(
-                    '${l10n.surahAyahsLabel(number(surah.ayahCount))}\n$revelation',
-                    style: side,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.end,
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         ),

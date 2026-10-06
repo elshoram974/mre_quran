@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,6 +8,7 @@ import '../../../app/router.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/widgets/empty_state.dart';
+import '../../bookmarks/application/bookmarks_provider.dart';
 import '../../quran_text/application/quran_text_providers.dart';
 import '../../settings/application/digits_provider.dart';
 import '../../quran_index/domain/reader_destination.dart';
@@ -14,10 +17,14 @@ import '../application/reader_immersive_provider.dart';
 import '../application/reading_position_provider.dart';
 import 'display_options_sheet.dart';
 import 'mushaf_pager.dart';
+import 'go_to_page_sheet.dart';
 import 'reader_bar.dart';
 
-/// The Mushaf tab: the pages themselves, with a bar for the index, search,
-/// and display options. A tap on the page hides or shows the bars.
+/// The Mushaf tab: the pages, labelled like a printed Mushaf (surah and juz
+/// above, page number below, arrows onward). A tap on the page or an ayah
+/// brings up a floating toolbar (index, search, page bookmark), floating
+/// controls (surah, page, text options), and the tab bar; turning the page
+/// puts them away.
 class MushafPage extends ConsumerWidget {
   const MushafPage({super.key});
 
@@ -59,28 +66,167 @@ class MushafPage extends ConsumerWidget {
     final digits = ref.watch(digitsFormatterProvider);
     final surah = metadata.surahAtPage(page);
     final juz = metadata.juzOfPage(page);
-    final bar = ReaderBar(
-      title: l10n.surahTitle(surah.arabicName),
-      subtitle:
-          '${l10n.juzTitle(digits(juz.number))} · ${l10n.pageNumber(digits(page))}',
-      menuTooltip: l10n.readerMenu,
-      onMenu: () => open(AppRoute.quranIndex),
-      actions: [
+    final onPage = metadata.ayahsOnPage(page);
+    final bookmarked = ref.watch(bookmarkedRefsProvider);
+    final marked = onPage.where(bookmarked.contains).toList();
+    final reading = ref.read(readingPositionProvider.notifier);
+    final scheme = Theme.of(context).colorScheme;
+
+    void goTo(int target) {
+      ref.read(highlightedAyahProvider.notifier).clear();
+      reading.setPage(target);
+    }
+
+    Future<void> togglePageBookmark() async {
+      final notifier = ref.read(bookmarksProvider.notifier);
+      final messenger = ScaffoldMessenger.maybeOf(context);
+      final message = marked.isEmpty
+          ? l10n.bookmarkAdded
+          : l10n.bookmarkRemoved;
+      if (marked.isEmpty) {
+        await notifier.toggle(onPage.first);
+      } else {
+        for (final ayah in marked) {
+          await notifier.remove(ayah);
+        }
+      }
+      messenger
+        ?..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(message)));
+    }
+
+    Widget icon(IconData data, String tooltip, VoidCallback onPressed) =>
         IconButton(
-          icon: const Icon(Icons.search),
-          tooltip: l10n.searchQuran,
-          onPressed: () => open(AppRoute.quranSearch),
+          icon: Icon(data),
+          color: scheme.primary,
+          tooltip: tooltip,
+          onPressed: onPressed,
+        );
+
+    Future<void> goToPage() async {
+      final chosen = await showGoToPage(
+        context,
+        page: page,
+        pageCount: metadata.pageCount,
+        digits: digits,
+      );
+      if (chosen != null) goTo(chosen);
+    }
+
+    final hideBars = ref.read(readerImmersiveProvider.notifier).hide;
+
+    // Always on the page, like the labels of a printed Mushaf: the surah and
+    // juz above, the page number below, and arrows onward.
+    final header = ReaderHeader(
+      start: [
+        ReaderChip(
+          label: surah.arabicName,
+          tooltip: l10n.quranIndex,
+          onPressed: () => open(AppRoute.quranIndex),
         ),
-        IconButton(
-          icon: const Icon(Icons.text_format),
-          tooltip: l10n.displayOptions,
-          onPressed: () => showDisplayOptions(context),
+        if (surah.number < metadata.surahs.length)
+          ReaderChip(
+            // The Mushaf turns right to left: onward is to the left.
+            icon: Icons.chevron_left_rounded,
+            tooltip: l10n.nextSurah,
+            onPressed: () => goTo(metadata.surah(surah.number + 1).startPage),
+          ),
+      ],
+      middle: const SizedBox.shrink(),
+      end: [
+        ReaderChip(
+          label: l10n.juzTitle(digits(juz.number)),
+          tooltip: l10n.quranIndex,
+          onPressed: () => open(AppRoute.quranIndex),
+        ),
+      ],
+    );
+    final footer = ReaderFooter(
+      children: [
+        ReaderChip(
+          label: digits(page),
+          tooltip: l10n.goToPage,
+          onPressed: goToPage,
+        ),
+        if (page < metadata.pageCount)
+          ReaderChip(
+            icon: Icons.chevron_left_rounded,
+            tooltip: l10n.nextPage,
+            onPressed: () => goTo(page + 1),
+          ),
+      ],
+    );
+
+    // Shown on a tap: a toolbar at the top and controls at the bottom,
+    // floating over the page.
+    final toolbar = ReaderToolbar(
+      menu: icon(Icons.menu_rounded, l10n.readerMenu, () {
+        open(AppRoute.quranIndex);
+      }),
+      searchLabel: l10n.searchQuran,
+      onSearch: () => open(AppRoute.quranSearch),
+      actions: [
+        icon(
+          marked.isEmpty
+              ? Icons.bookmark_add_outlined
+              : Icons.bookmark_added_rounded,
+          marked.isEmpty ? l10n.bookmarkPage : l10n.removePageBookmark,
+          togglePageBookmark,
+        ),
+      ],
+    );
+    final controls = Row(
+      children: [
+        Flexible(
+          child: ReaderFloatingSurface(
+            padding: EdgeInsets.zero,
+            child: TextButton(
+              onPressed: () => open(AppRoute.quranIndex),
+              child: Text(
+                surah.arabicName,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          flex: 2,
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 160),
+              child: ReaderPagePill(
+                label: l10n.pageNumber(digits(page)),
+                progress: page / metadata.pageCount,
+                tooltip: l10n.goToPage,
+                onPressed: goToPage,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        ReaderFloatingSurface(
+          padding: EdgeInsets.zero,
+          child: icon(
+            Icons.text_fields_rounded,
+            l10n.displayOptions,
+            () => showDisplayOptions(context),
+          ),
+        ),
+        const SizedBox(width: 8),
+        ReaderFloatingSurface(
+          padding: EdgeInsets.zero,
+          child: icon(
+            Icons.keyboard_arrow_down_rounded,
+            l10n.hideBars,
+            hideBars,
+          ),
         ),
       ],
     );
 
-    // The page keeps one size: it fills the screen inside the system insets,
-    // and the bars slide over it. Hiding them never re-lays out the page.
+    // The page keeps one size: it fills the screen inside the system insets.
     // The insets come from the screen itself: the shell's Scaffold removes
     // the bottom one while its tab bar shows, which would put the page under
     // Android's navigation bar (drawn over the app, edge to edge, from
@@ -90,38 +236,67 @@ class MushafPage extends ConsumerWidget {
       view.viewPadding,
       view.devicePixelRatio,
     );
+    // The shell's tab bar floats over the bottom of the page while it shows;
+    // the bottom controls sit above it.
+    final barRoom = math.max(
+      0.0,
+      MediaQuery.paddingOf(context).bottom - safe.bottom,
+    );
     final duration = MediaQuery.disableAnimationsOf(context)
         ? Duration.zero
         : const Duration(milliseconds: 220);
+    Widget appear(Widget child, {required bool shown, required Offset from}) =>
+        IgnorePointer(
+          ignoring: !shown,
+          child: AnimatedSlide(
+            offset: shown ? Offset.zero : from,
+            duration: duration,
+            curve: Curves.easeOutCubic,
+            child: AnimatedOpacity(
+              opacity: shown ? 1 : 0,
+              duration: duration,
+              child: child,
+            ),
+          ),
+        );
     return ColoredBox(
-      color: Theme.of(context).colorScheme.surface,
-      child: Stack(
-        children: [
-          Positioned.fill(
-            child: Padding(
-              padding: safe,
+      color: scheme.surface,
+      child: Padding(
+        padding: safe,
+        child: Stack(
+          children: [
+            Positioned.fill(
               child: MushafPager(text: data, initialPage: page),
             ),
-          ),
-          PositionedDirectional(
-            top: 0,
-            start: 0,
-            end: 0,
-            child: IgnorePointer(
-              ignoring: immersive,
-              child: AnimatedSlide(
-                offset: immersive ? const Offset(0, -1) : Offset.zero,
-                duration: duration,
-                curve: Curves.easeOutCubic,
-                child: AnimatedOpacity(
-                  opacity: immersive ? 0 : 1,
-                  duration: duration,
-                  child: bar,
-                ),
+            PositionedDirectional(top: 0, start: 0, end: 0, child: header),
+            PositionedDirectional(
+              bottom: 0,
+              start: 0,
+              end: 0,
+              child: appear(footer, shown: immersive, from: Offset.zero),
+            ),
+            PositionedDirectional(
+              top: 4,
+              start: 12,
+              end: 12,
+              child: appear(
+                toolbar,
+                shown: !immersive,
+                from: const Offset(0, -0.4),
               ),
             ),
-          ),
-        ],
+            PositionedDirectional(
+              bottom: barRoom + 10,
+              start: 12,
+              end: 12,
+              child: appear(
+                controls,
+                shown: !immersive,
+                from: const Offset(0, 0.4),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

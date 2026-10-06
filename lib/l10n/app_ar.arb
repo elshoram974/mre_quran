@@ -69,8 +69,6 @@
   "readerLoadError": "تعذّر تحميل المصحف.",
   "readerProvisional": "تخطيط مؤقت: الآيات موزعة على صفحات مصحف المدينة، وتقسيم الأسطر ليس مطابقًا بعد.",
   "creditsQuranFont": "خط القرآن: أميري قرآن، تصميم خالد حسني وسباستيان كوش، رخصة SIL المفتوحة للخطوط 1.1، https://github.com/aliftype/amiri.",
-  "surahOrderLabel": "ترتيبها {number}",
-  "surahAyahsLabel": "آياتها {count}",
   "hizbTitle": "الحزب {number}",
   "copyAyah": "نسخ الآية",
   "ayahCopied": "تم نسخ الآية",
@@ -121,5 +119,13 @@
   "packNotifyCompleteBody": "يعمل الآن دون اتصال.",
   "packNotifyErrorTitle": "تعذّر إكمال {name}",
   "@packNotifyErrorTitle": {"placeholders": {"name": {"type": "String"}}},
-  "packNotifyErrorBody": "افتح الإعدادات لمتابعة التحميل."
+  "packNotifyErrorBody": "افتح الإعدادات لمتابعة التحميل.",
+  "nextSurah": "السورة التالية",
+  "goToPage": "الانتقال إلى صفحة",
+  "goToPageAction": "انتقال",
+  "pageOfTotal": "صفحة {page} من {total}",
+  "@pageOfTotal": {"placeholders": {"page": {"type": "String"}, "total": {"type": "String"}}},
+  "bookmarkPage": "إضافة علامة للصفحة",
+  "removePageBookmark": "إزالة علامة الصفحة",
+  "hideBars": "إخفاء الأشرطة"
 }

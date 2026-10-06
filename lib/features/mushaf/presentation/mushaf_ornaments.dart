@@ -1,59 +1,13 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 /// Drawn ornaments for the Mushaf page. Vector shapes only, no image assets,
 /// all coloured from the theme so they follow light, sepia, and dark.
 
-/// Double rule around the page text, with small diamonds at the corners.
-class PageFramePainter extends CustomPainter {
-  /// Creates the painter.
-  const PageFramePainter({required this.color});
-
-  /// Line colour.
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final outer = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.6;
-    final inner = Paint()
-      ..color = color.withValues(alpha: color.a * 0.6)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 0.8;
-    final rect = Offset.zero & size;
-    canvas
-      ..drawRRect(
-        RRect.fromRectAndRadius(rect.deflate(1), const Radius.circular(14)),
-        outer,
-      )
-      ..drawRRect(
-        RRect.fromRectAndRadius(rect.deflate(6), const Radius.circular(10)),
-        inner,
-      );
-    final fill = Paint()..color = color;
-    for (final corner in [
-      rect.topLeft + const Offset(6, 6),
-      rect.topRight + const Offset(-6, 6),
-      rect.bottomLeft + const Offset(6, -6),
-      rect.bottomRight + const Offset(-6, -6),
-    ]) {
-      canvas.drawPath(_diamond(corner, 4), fill);
-    }
-  }
-
-  @override
-  bool shouldRepaint(PageFramePainter old) => old.color != color;
-}
-
-Path _diamond(Offset center, double r) => Path()
-  ..moveTo(center.dx, center.dy - r)
-  ..lineTo(center.dx + r, center.dy)
-  ..lineTo(center.dx, center.dy + r)
-  ..lineTo(center.dx - r, center.dy)
-  ..close();
-
-/// Cartouche with pointed ends, used for surah openings.
+/// The frame of a surah opening, after the printed Madinah Mushaf: a long
+/// panel with a double border, and at each end a rosette with a pointed leaf
+/// in its own compartment. The surah name goes in the middle.
 class SurahBannerPainter extends CustomPainter {
   /// Creates the painter.
   const SurahBannerPainter({required this.fill, required this.stroke});
@@ -61,97 +15,121 @@ class SurahBannerPainter extends CustomPainter {
   /// Inside colour.
   final Color fill;
 
-  /// Outline colour.
+  /// Line and ornament colour.
   final Color stroke;
 
-  Path _shape(Size size, double inset) {
-    final h = size.height - inset * 2;
-    final w = size.width - inset * 2;
-    final tip = h / 2;
-    return Path()
-      ..moveTo(inset, inset + h / 2)
-      ..lineTo(inset + tip, inset)
-      ..lineTo(inset + w - tip, inset)
-      ..lineTo(inset + w, inset + h / 2)
-      ..lineTo(inset + w - tip, inset + h)
-      ..lineTo(inset + tip, inset + h)
-      ..close();
-  }
+  /// Width of an end compartment for a banner of [height].
+  static double endWidth(double height) => height * 1.5;
 
   @override
   void paint(Canvas canvas, Size size) {
+    final rect = Offset.zero & size;
+    final line = Paint()
+      ..color = stroke
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.8;
+    final thin = Paint()
+      ..color = stroke.withValues(alpha: stroke.a * 0.7)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.8;
+    final solid = Paint()..color = stroke;
+
     canvas
-      ..drawPath(_shape(size, 0), Paint()..color = fill)
-      ..drawPath(
-        _shape(size, 0.8),
-        Paint()
-          ..color = stroke
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 1.6,
+      ..drawRRect(
+        RRect.fromRectAndRadius(rect.deflate(0.9), const Radius.circular(3)),
+        Paint()..color = fill,
       )
-      ..drawPath(
-        _shape(size, 5),
-        Paint()
-          ..color = stroke.withValues(alpha: stroke.a * 0.5)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 0.8,
+      ..drawRRect(
+        RRect.fromRectAndRadius(rect.deflate(0.9), const Radius.circular(3)),
+        line,
+      )
+      ..drawRRect(
+        RRect.fromRectAndRadius(rect.deflate(4.5), const Radius.circular(2)),
+        thin,
       );
-    final dot = Paint()..color = stroke;
+
+    final end = endWidth(size.height);
+    final inner = rect.deflate(4.5);
+    for (final left in [true, false]) {
+      // The divider between the end compartment and the name.
+      final x = left ? inner.left + end : inner.right - end;
+      for (final dx in [0.0, left ? 3.0 : -3.0]) {
+        canvas.drawLine(
+          Offset(x + dx, inner.top),
+          Offset(x + dx, inner.bottom),
+          dx == 0 ? line : thin,
+        );
+      }
+      final centre = Offset(
+        left ? inner.left + end * 0.58 : inner.right - end * 0.58,
+        size.height / 2,
+      );
+      _rosette(canvas, centre, size.height * 0.2, solid, thin);
+      // A leaf pointing out to the end of the banner.
+      final tip = Offset(
+        left ? inner.left + end * 0.12 : inner.right - end * 0.12,
+        size.height / 2,
+      );
+      final base = Offset(
+        left ? centre.dx - size.height * 0.27 : centre.dx + size.height * 0.27,
+        size.height / 2,
+      );
+      final bulge = size.height * 0.12;
+      canvas.drawPath(
+        Path()
+          ..moveTo(tip.dx, tip.dy)
+          ..quadraticBezierTo(
+            (tip.dx + base.dx) / 2,
+            tip.dy - bulge,
+            base.dx,
+            base.dy,
+          )
+          ..quadraticBezierTo(
+            (tip.dx + base.dx) / 2,
+            tip.dy + bulge,
+            tip.dx,
+            tip.dy,
+          ),
+        thin,
+      );
+      // Scrolls curling toward the divider, above and below.
+      for (final up in [true, false]) {
+        final sign = up ? -1.0 : 1.0;
+        final towards = left ? 1.0 : -1.0;
+        final start = Offset(centre.dx, centre.dy + sign * size.height * 0.24);
+        canvas.drawPath(
+          Path()
+            ..moveTo(start.dx, start.dy)
+            ..cubicTo(
+              start.dx + towards * end * 0.2,
+              start.dy + sign * size.height * 0.1,
+              x - towards * end * 0.15,
+              start.dy + sign * size.height * 0.06,
+              x - towards * end * 0.08,
+              start.dy - sign * size.height * 0.04,
+            ),
+          thin,
+        );
+      }
+    }
+  }
+
+  /// Eight petals around a small disc.
+  void _rosette(Canvas canvas, Offset c, double r, Paint solid, Paint thin) {
+    for (var i = 0; i < 8; i++) {
+      final a = i * math.pi / 4;
+      canvas.drawCircle(
+        c + Offset(math.cos(a), math.sin(a)) * r * 0.62,
+        r * 0.32,
+        thin,
+      );
+    }
     canvas
-      ..drawPath(
-        _diamond(Offset(size.height * 0.5 + 6, size.height / 2), 3),
-        dot,
-      )
-      ..drawPath(
-        _diamond(
-          Offset(size.width - size.height * 0.5 - 6, size.height / 2),
-          3,
-        ),
-        dot,
-      );
+      ..drawCircle(c, r * 0.3, solid)
+      ..drawCircle(c, r * 1.02, thin);
   }
 
   @override
   bool shouldRepaint(SurahBannerPainter old) =>
-      old.fill != fill || old.stroke != stroke;
-}
-
-/// Round medallion for the page number.
-class MedallionPainter extends CustomPainter {
-  /// Creates the painter.
-  const MedallionPainter({required this.fill, required this.stroke});
-
-  /// Inside colour.
-  final Color fill;
-
-  /// Ring colour.
-  final Color stroke;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = size.center(Offset.zero);
-    final radius = size.shortestSide / 2;
-    canvas
-      ..drawCircle(center, radius, Paint()..color = fill)
-      ..drawCircle(
-        center,
-        radius - 1,
-        Paint()
-          ..color = stroke
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 1.4,
-      )
-      ..drawCircle(
-        center,
-        radius - 4,
-        Paint()
-          ..color = stroke.withValues(alpha: stroke.a * 0.5)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 0.7,
-      );
-  }
-
-  @override
-  bool shouldRepaint(MedallionPainter old) =>
       old.fill != fill || old.stroke != stroke;
 }

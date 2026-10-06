@@ -258,16 +258,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Quran font: Amiri Quran by Khaled Hosny and Sebastian Kosch, SIL Open Font License 1.1, https://github.com/aliftype/amiri.';
 
   @override
-  String surahOrderLabel(String number) {
-    return 'Order $number';
-  }
-
-  @override
-  String surahAyahsLabel(String count) {
-    return 'Ayahs $count';
-  }
-
-  @override
   String hizbTitle(String number) {
     return 'Hizb $number';
   }
@@ -420,4 +410,27 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get packNotifyErrorBody => 'Open settings to continue the download.';
+
+  @override
+  String get nextSurah => 'Next surah';
+
+  @override
+  String get goToPage => 'Go to page';
+
+  @override
+  String get goToPageAction => 'Go';
+
+  @override
+  String pageOfTotal(String page, String total) {
+    return 'Page $page of $total';
+  }
+
+  @override
+  String get bookmarkPage => 'Bookmark this page';
+
+  @override
+  String get removePageBookmark => 'Remove this page\'s bookmark';
+
+  @override
+  String get hideBars => 'Hide the bars';
 }

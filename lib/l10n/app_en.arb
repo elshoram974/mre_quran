@@ -137,22 +137,6 @@
   "readerLoadError": "The Mushaf could not be loaded.",
   "readerProvisional": "Provisional layout: ayahs follow the Madinah pages, line breaks are not yet exact.",
   "creditsQuranFont": "Quran font: Amiri Quran by Khaled Hosny and Sebastian Kosch, SIL Open Font License 1.1, https://github.com/aliftype/amiri.",
-  "surahOrderLabel": "Order {number}",
-  "@surahOrderLabel": {
-    "placeholders": {
-      "number": {
-        "type": "String"
-      }
-    }
-  },
-  "surahAyahsLabel": "Ayahs {count}",
-  "@surahAyahsLabel": {
-    "placeholders": {
-      "count": {
-        "type": "String"
-      }
-    }
-  },
   "hizbTitle": "Hizb {number}",
   "@hizbTitle": {
     "placeholders": {
@@ -211,5 +195,13 @@
   "packNotifyCompleteBody": "It now works without internet.",
   "packNotifyErrorTitle": "Couldn't finish {name}",
   "@packNotifyErrorTitle": {"placeholders": {"name": {"type": "String"}}},
-  "packNotifyErrorBody": "Open settings to continue the download."
+  "packNotifyErrorBody": "Open settings to continue the download.",
+  "nextSurah": "Next surah",
+  "goToPage": "Go to page",
+  "goToPageAction": "Go",
+  "pageOfTotal": "Page {page} of {total}",
+  "@pageOfTotal": {"placeholders": {"page": {"type": "String"}, "total": {"type": "String"}}},
+  "bookmarkPage": "Bookmark this page",
+  "removePageBookmark": "Remove this page's bookmark",
+  "hideBars": "Hide the bars"
 }

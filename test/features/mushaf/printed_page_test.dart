@@ -153,16 +153,12 @@ void main() {
     return pressed;
   }
 
-  testWidgets('shows a shimmer, then the page, with the frame around it', (
-    tester,
-  ) async {
+  testWidgets('shows a shimmer, then the page', (tester) async {
     await pump(tester, online: () => true);
     expect(find.byType(AppShimmer), findsOneWidget);
     await settle(tester);
     expect(find.byType(AppShimmer), findsNothing);
     expect(find.bySemanticsLabel('الصفحة ١ من المصحف المطبوع'), findsOneWidget);
-    expect(find.text('سورة الفاتحة'), findsOneWidget);
-    expect(find.text('١'), findsOneWidget);
   });
 
   testWidgets('long press finds the ayah under the finger', (tester) async {

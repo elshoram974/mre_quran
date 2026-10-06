@@ -70,7 +70,7 @@ void main() {
         width < 600 ? findsNothing : findsOneWidget,
       );
 
-      await tester.tap(find.text('العلامات').first);
+      await tester.tap(find.byIcon(Icons.bookmarks_outlined).first);
       await tester.pumpAndSettle();
       expect(find.text('لا توجد علامات بعد'), findsOneWidget);
       expect(tester.takeException(), isNull);
@@ -111,7 +111,7 @@ void main() {
       Directionality.of(tester.element(find.byType(Scaffold).first)),
       TextDirection.ltr,
     );
-    expect(find.byTooltip('Index'), findsOneWidget);
+    expect(find.byTooltip('Index'), findsWidgets);
   });
 
   testWidgets('Large Arabic text has no layout exception', (tester) async {
