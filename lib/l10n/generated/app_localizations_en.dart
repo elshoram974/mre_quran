@@ -444,4 +444,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String surahOrderLabel(String number) {
     return 'Order $number';
   }
+
+  @override
+  String get packStorageInfo =>
+      'Downloaded Mushafs are kept in the app\'s own private storage, not in the cache, so clearing the cache does not remove them. They stay out of backups, and are removed when you delete them here or uninstall the app.';
+
+  @override
+  String packOnDevice(String size) {
+    return 'On this device: $size MB';
+  }
+
+  @override
+  String packDeleteWarnTitle(String name) {
+    return 'Delete $name from this device?';
+  }
+
+  @override
+  String packDeleteWarnBody(String pages, String size) {
+    return '$pages page images ($size MB) will be deleted permanently. This edition will not work without internet until you download it again.';
+  }
+
+  @override
+  String get packDeleteAck => 'I understand and want to delete it';
+
+  @override
+  String get packDeletePermanently => 'Delete permanently';
 }

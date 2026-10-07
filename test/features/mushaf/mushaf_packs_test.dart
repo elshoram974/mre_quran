@@ -36,6 +36,7 @@ void main() {
   late ProviderContainer container;
 
   setUp(() {
+    MushafPacks.settleDelay = const Duration(milliseconds: 10);
     root = Directory.systemTemp.createTempSync('mushaf_packs');
     downloader = FakePackDownloader();
     container = ProviderContainer(
@@ -109,7 +110,7 @@ void main() {
       downloader
         ..running['mushaf-madinahHd'] = 1
         ..finish('mushaf-madinahHd', first.path);
-      await Future<void>.delayed(const Duration(milliseconds: 50));
+      await Future<void>.delayed(const Duration(milliseconds: 250));
       final state = await progress(MushafEdition.madinahHd);
       expect(state.done, 1);
       expect(state.active, isFalse);
@@ -121,7 +122,7 @@ void main() {
     final page = MushafEdition.madinahHd.packFiles.first;
     final bad = file(page.path, '<html>503</html>'.codeUnits);
     downloader.finish('mushaf-madinahHd', page.path);
-    await Future<void>.delayed(const Duration(milliseconds: 50));
+    await Future<void>.delayed(const Duration(milliseconds: 250));
     expect((await progress(MushafEdition.madinahHd)).done, 0);
     expect(bad.existsSync(), isFalse);
   });

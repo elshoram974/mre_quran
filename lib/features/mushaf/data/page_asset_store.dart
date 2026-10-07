@@ -86,6 +86,19 @@ class PageAssetStore {
     }
   }
 
+  /// How many bytes the images of [edition] take on the device.
+  Future<int> bytesOnDevice(MushafEdition edition) async {
+    final folder = Directory(
+      '${(await directory()).path}/images/${edition.style.name}',
+    );
+    if (!await folder.exists()) return 0;
+    var total = 0;
+    await for (final entity in folder.list(recursive: true)) {
+      if (entity is File) total += await entity.length();
+    }
+    return total;
+  }
+
   /// Deletes every image of [edition].
   Future<void> deleteImages(MushafEdition edition) async {
     final folder = Directory(

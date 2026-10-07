@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Downloaded Mushaf pages are large and can be fetched again, so they stay
+     out of cloud backups and device transfers. Android 12 and newer. -->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="file" path="mushaf" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="file" path="mushaf" />
+    </device-transfer>
+</data-extraction-rules>

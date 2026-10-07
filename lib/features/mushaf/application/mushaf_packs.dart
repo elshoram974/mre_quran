@@ -19,7 +19,11 @@ class PackProgress {
     required this.done,
     required this.total,
     required this.active,
+    this.bytes = 0,
   });
+
+  /// Bytes the files take on the device.
+  final int bytes;
 
   /// Files on the device.
   final int done;
@@ -39,10 +43,11 @@ class PackProgress {
   /// Whether some files are there but a download is not running.
   bool get partial => !active && done > 0 && !complete;
 
-  PackProgress copyWith({int? done, bool? active}) => PackProgress(
+  PackProgress copyWith({int? done, bool? active, int? bytes}) => PackProgress(
     done: done ?? this.done,
     total: total,
     active: active ?? this.active,
+    bytes: bytes ?? this.bytes,
   );
 
   @override
@@ -50,10 +55,11 @@ class PackProgress {
       other is PackProgress &&
       other.done == done &&
       other.total == total &&
-      other.active == active;
+      other.active == active &&
+      other.bytes == bytes;
 
   @override
-  int get hashCode => Object.hash(done, total, active);
+  int get hashCode => Object.hash(done, total, active, bytes);
 }
 
 /// Provides the downloader of Mushaf packs. Tests override it.
@@ -86,10 +92,22 @@ class MushafPacks extends AsyncNotifier<Map<MushafStyle, PackProgress>> {
     return null;
   }
 
+  /// How long finished files are gathered before the counts are read again.
+  /// Hundreds of files end within seconds; reading the disk for each one
+  /// would make the screen stutter.
+  @visibleForTesting
+  static Duration settleDelay = const Duration(milliseconds: 1200);
+
+  final Set<MushafEdition> _dirty = {};
+  Timer? _timer;
+
   @override
   Future<Map<MushafStyle, PackProgress>> build() async {
     final sub = _downloader.results.listen(_onResult);
-    ref.onDispose(sub.cancel);
+    ref.onDispose(() {
+      sub.cancel();
+      _timer?.cancel();
+    });
     return {
       for (final edition in MushafEdition.all)
         edition.style: await _read(edition),
@@ -103,6 +121,7 @@ class MushafPacks extends AsyncNotifier<Map<MushafStyle, PackProgress>> {
       done: total - missing,
       total: total,
       active: await _downloader.pending(_group(edition)) > 0,
+      bytes: await _store.bytesOnDevice(edition),
     );
   }
 
@@ -112,29 +131,50 @@ class MushafPacks extends AsyncNotifier<Map<MushafStyle, PackProgress>> {
     state = AsyncData({...current, style: progress});
   }
 
-  Future<void> _onResult(PackFileResult result) async {
+  /// A file ended: note it, and read the counts once things have settled.
+  void _onResult(PackFileResult result) {
     final edition = _edition(result.group);
-    final current = state.value?[edition?.style];
-    if (edition == null || current == null) return;
-    var done = current.done;
-    if (result.ok) {
-      final file = File('${(await _store.directory()).path}/${result.path}');
-      // A CDN can answer 200 with an error page; drop it so it is fetched
-      // again, and do not count it.
-      if (await _store.isImageFile(file)) {
-        done++;
-      } else if (await file.exists()) {
-        await file.delete();
+    if (edition == null) return;
+    _dirty.add(edition);
+    if (_timer?.isActive ?? false) return;
+    _timer = Timer(settleDelay, _settle);
+  }
+
+  Future<void> _settle() async {
+    final editions = _dirty.toList();
+    _dirty.clear();
+    for (final edition in editions) {
+      var progress = await _read(edition);
+      if (!progress.active) {
+        // The download is over: clear out what came back broken, so the next
+        // attempt fetches it again, and count again.
+        await _dropBrokenFiles(edition);
+        progress = await _read(edition);
       }
+      _set(edition.style, progress);
     }
-    final stillRunning = await _downloader.pending(_group(edition)) > 0;
-    _set(
-      edition.style,
-      current.copyWith(
-        done: done.clamp(0, current.total),
-        active: stillRunning,
-      ),
-    );
+    // More may have ended while the disk was being read.
+    if (_dirty.isNotEmpty) _timer = Timer(settleDelay, _settle);
+  }
+
+  /// A CDN can answer 200 with an error page; drop such files so they are
+  /// fetched again, and never count them.
+  Future<void> _dropBrokenFiles(MushafEdition edition) async {
+    final base = (await _store.directory()).path;
+    for (final file in edition.packFiles) {
+      final f = File('$base/${file.path}');
+      if (await f.exists() && !await _store.isImageFile(f)) await f.delete();
+    }
+  }
+
+  /// Reads everything again and collects what finished while the app was
+  /// away. Called when the app comes back to the front.
+  Future<void> refresh() async {
+    if (state.value == null) return;
+    await _downloader.resume();
+    for (final edition in MushafEdition.all) {
+      _set(edition.style, await _read(edition));
+    }
   }
 
   /// Downloads what [edition] still lacks, with a notification described by

@@ -25,7 +25,7 @@ void main() {
 
   /// File work runs in real time and one step at a time; pump until [done].
   Future<void> until(WidgetTester tester, bool Function() done) async {
-    for (var i = 0; i < 300 && !done(); i++) {
+    for (var i = 0; i < 1500 && !done(); i++) {
       await tester.runAsync(
         () => Future<void>.delayed(const Duration(milliseconds: 20)),
       );
@@ -114,26 +114,101 @@ void main() {
     expect(downloader.cancelled, ['mushaf-tajweed']);
   });
 
-  testWidgets('a finished edition shows ready and can be deleted', (
-    tester,
-  ) async {
-    final png = Uint8List.fromList([
-      0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0, 0, 0, 0, //
-    ]);
-    for (final f in MushafEdition.madinah.packFiles) {
+  Uint8List pngBytes() => Uint8List.fromList([
+    0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0, 0, 0, 0, //
+  ]);
+
+  void putFiles(MushafEdition edition, {int? count}) {
+    final files = edition.packFiles;
+    for (final f in count == null ? files : files.take(count)) {
       File('${root.path}/mushaf/${f.path}')
         ..createSync(recursive: true)
-        ..writeAsBytesSync(png);
+        ..writeAsBytesSync(pngBytes());
     }
+  }
+
+  testWidgets('a finished edition shows ready and its size on the device', (
+    tester,
+  ) async {
+    putFiles(MushafEdition.madinah);
     await pump(tester);
-    expect(find.text('جاهز دون اتصال'), findsOneWidget);
+    expect(find.textContaining('جاهز دون اتصال'), findsOneWidget);
+    expect(find.textContaining('على الجهاز'), findsOneWidget);
+    expect(find.textContaining('وليست في الذاكرة المؤقتة'), findsOneWidget);
+  });
+
+  testWidgets('deleting is strict: warning, ticked box, then it goes', (
+    tester,
+  ) async {
+    putFiles(MushafEdition.madinah);
+    await pump(tester);
     await tester.tap(find.text('حذف'));
     await tester.pumpAndSettle();
-    expect(find.text('حذف مصحف المدينة؟'), findsOneWidget);
-    await tester.tap(find.widgetWithText(FilledButton, 'حذف').last);
-    await until(tester, () => find.text('جاهز دون اتصال').evaluate().isEmpty);
-    expect(find.text('جاهز دون اتصال'), findsNothing);
+    expect(find.text('حذف مصحف المدينة من هذا الجهاز؟'), findsOneWidget);
+    expect(find.textContaining('٦٠٤ ملف صورة'), findsOneWidget);
+    expect(find.textContaining('نهائيًا'), findsOneWidget);
+    final delete = find.widgetWithText(FilledButton, 'حذف نهائي');
+    // Not before the box is ticked.
+    expect(tester.widget<FilledButton>(delete).onPressed, isNull);
+    await tester.tap(delete, warnIfMissed: false);
+    await tester.pumpAndSettle();
+    expect(find.text('حذف نهائي'), findsOneWidget, reason: 'still asking');
+    await tester.tap(find.byType(CheckboxListTile));
+    await tester.pumpAndSettle();
+    expect(tester.widget<FilledButton>(delete).onPressed, isNotNull);
+    await tester.tap(delete);
+    await until(
+      tester,
+      () => find.textContaining('جاهز دون اتصال').evaluate().isEmpty,
+    );
     expect(find.text('تحميل'), findsNWidgets(3));
+    expect(
+      Directory('${root.path}/mushaf/images/madinah').existsSync(),
+      isFalse,
+    );
+  });
+
+  testWidgets('cancelling the warning deletes nothing', (tester) async {
+    putFiles(MushafEdition.madinah);
+    await pump(tester);
+    await tester.tap(find.text('حذف'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('إلغاء'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('جاهز دون اتصال'), findsOneWidget);
+    expect(
+      Directory('${root.path}/mushaf/images/madinah').existsSync(),
+      isTrue,
+    );
+  });
+
+  testWidgets('a partial download can be deleted to free space too', (
+    tester,
+  ) async {
+    putFiles(MushafEdition.madinah, count: 100);
+    await pump(tester);
+    expect(find.byTooltip('حذف'), findsOneWidget);
+    expect(find.text('متابعة'), findsOneWidget);
+  });
+
+  testWidgets('coming back to the app collects what finished meanwhile', (
+    tester,
+  ) async {
+    await pump(tester);
+    final before = downloader.resumes;
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+    putFiles(MushafEdition.madinah);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await until(
+      tester,
+      () => find.textContaining('جاهز دون اتصال').evaluate().isNotEmpty,
+    );
+    expect(downloader.resumes, greaterThan(before));
+    expect(find.textContaining('جاهز دون اتصال'), findsOneWidget);
   });
 
   for (final (name, locale, brightness, scale, size) in [

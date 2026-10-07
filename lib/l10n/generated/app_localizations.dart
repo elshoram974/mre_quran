@@ -829,6 +829,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Order {number}'**
   String surahOrderLabel(String number);
+
+  /// No description provided for @packStorageInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloaded Mushafs are kept in the app\'s own private storage, not in the cache, so clearing the cache does not remove them. They stay out of backups, and are removed when you delete them here or uninstall the app.'**
+  String get packStorageInfo;
+
+  /// No description provided for @packOnDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'On this device: {size} MB'**
+  String packOnDevice(String size);
+
+  /// No description provided for @packDeleteWarnTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete {name} from this device?'**
+  String packDeleteWarnTitle(String name);
+
+  /// No description provided for @packDeleteWarnBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{pages} page images ({size} MB) will be deleted permanently. This edition will not work without internet until you download it again.'**
+  String packDeleteWarnBody(String pages, String size);
+
+  /// No description provided for @packDeleteAck.
+  ///
+  /// In en, this message translates to:
+  /// **'I understand and want to delete it'**
+  String get packDeleteAck;
+
+  /// No description provided for @packDeletePermanently.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete permanently'**
+  String get packDeletePermanently;
 }
 
 class _AppLocalizationsDelegate

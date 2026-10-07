@@ -131,5 +131,14 @@
   "surahOrderCaption": "الترتيب",
   "surahAyahsCaption": "آيات",
   "surahOrderLabel": "ترتيبها {number}",
-  "@surahOrderLabel": {"placeholders": {"number": {"type": "String"}}}
+  "@surahOrderLabel": {"placeholders": {"number": {"type": "String"}}},
+  "packStorageInfo": "تُحفظ المصاحف المحمّلة في مساحة التطبيق الخاصة وليست في الذاكرة المؤقتة، فلا يمسحها تنظيف الذاكرة المؤقتة. ولا تدخل في النسخ الاحتياطي، وتُزال عند حذفها من هنا أو عند حذف التطبيق.",
+  "packOnDevice": "على الجهاز: {size} ميجابايت",
+  "@packOnDevice": {"placeholders": {"size": {"type": "String"}}},
+  "packDeleteWarnTitle": "حذف {name} من هذا الجهاز؟",
+  "@packDeleteWarnTitle": {"placeholders": {"name": {"type": "String"}}},
+  "packDeleteWarnBody": "سيُحذف {pages} ملف صورة ({size} ميجابايت) نهائيًا. لن تعمل هذه النسخة دون إنترنت حتى تحمّلها من جديد.",
+  "@packDeleteWarnBody": {"placeholders": {"pages": {"type": "String"}, "size": {"type": "String"}}},
+  "packDeleteAck": "أفهم ذلك وأريد الحذف",
+  "packDeletePermanently": "حذف نهائي"
 }

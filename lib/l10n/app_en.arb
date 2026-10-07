@@ -207,5 +207,14 @@
   "surahOrderCaption": "Order",
   "surahAyahsCaption": "Ayahs",
   "surahOrderLabel": "Order {number}",
-  "@surahOrderLabel": {"placeholders": {"number": {"type": "String"}}}
+  "@surahOrderLabel": {"placeholders": {"number": {"type": "String"}}},
+  "packStorageInfo": "Downloaded Mushafs are kept in the app's own private storage, not in the cache, so clearing the cache does not remove them. They stay out of backups, and are removed when you delete them here or uninstall the app.",
+  "packOnDevice": "On this device: {size} MB",
+  "@packOnDevice": {"placeholders": {"size": {"type": "String"}}},
+  "packDeleteWarnTitle": "Delete {name} from this device?",
+  "@packDeleteWarnTitle": {"placeholders": {"name": {"type": "String"}}},
+  "packDeleteWarnBody": "{pages} page images ({size} MB) will be deleted permanently. This edition will not work without internet until you download it again.",
+  "@packDeleteWarnBody": {"placeholders": {"pages": {"type": "String"}, "size": {"type": "String"}}},
+  "packDeleteAck": "I understand and want to delete it",
+  "packDeletePermanently": "Delete permanently"
 }

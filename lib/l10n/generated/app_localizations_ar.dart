@@ -446,4 +446,29 @@ class AppLocalizationsAr extends AppLocalizations {
   String surahOrderLabel(String number) {
     return 'ترتيبها $number';
   }
+
+  @override
+  String get packStorageInfo =>
+      'تُحفظ المصاحف المحمّلة في مساحة التطبيق الخاصة وليست في الذاكرة المؤقتة، فلا يمسحها تنظيف الذاكرة المؤقتة. ولا تدخل في النسخ الاحتياطي، وتُزال عند حذفها من هنا أو عند حذف التطبيق.';
+
+  @override
+  String packOnDevice(String size) {
+    return 'على الجهاز: $size ميجابايت';
+  }
+
+  @override
+  String packDeleteWarnTitle(String name) {
+    return 'حذف $name من هذا الجهاز؟';
+  }
+
+  @override
+  String packDeleteWarnBody(String pages, String size) {
+    return 'سيُحذف $pages ملف صورة ($size ميجابايت) نهائيًا. لن تعمل هذه النسخة دون إنترنت حتى تحمّلها من جديد.';
+  }
+
+  @override
+  String get packDeleteAck => 'أفهم ذلك وأريد الحذف';
+
+  @override
+  String get packDeletePermanently => 'حذف نهائي';
 }

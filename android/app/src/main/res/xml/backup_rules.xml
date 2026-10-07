@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Downloaded Mushaf pages are large and can be fetched again, so they stay
+     out of device backups. Android 11 and older. -->
+<full-backup-content>
+    <exclude domain="file" path="mushaf" />
+</full-backup-content>

@@ -45,6 +45,12 @@ class FakePackDownloader implements PackDownloader {
     running[group] = enqueued[group]!.length;
   }
 
+  /// How often the app was told to collect what finished meanwhile.
+  int resumes = 0;
+
+  @override
+  Future<void> resume() async => resumes++;
+
   @override
   Future<int> pending(String group) async => running[group] ?? 0;
 

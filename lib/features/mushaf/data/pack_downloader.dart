@@ -58,6 +58,10 @@ abstract interface class PackDownloader {
     PackNotificationText text,
   );
 
+  /// Collects what finished while the app was away. Called whenever the app
+  /// comes back to the front.
+  Future<void> resume();
+
   /// How many files of [group] are waiting or running.
   Future<int> pending(String group);
 
@@ -84,10 +88,19 @@ class BackgroundPackDownloader implements PackDownloader {
         // A few files at a time, queued natively so the queue keeps going
         // while the app is suspended.
         (Config.holdingQueue, (4, null, null)),
+        // Page images are re-downloadable, so they stay out of the iCloud
+        // backup on iOS.
+        (Config.excludeFromCloudBackup, true),
       ],
     );
     await _downloader.resumeFromBackground();
   }();
+
+  @override
+  Future<void> resume() async {
+    await _configure();
+    await _downloader.resumeFromBackground();
+  }
 
   @override
   Stream<PackFileResult> get results => _downloader.updates

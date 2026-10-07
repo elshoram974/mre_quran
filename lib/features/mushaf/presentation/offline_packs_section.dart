@@ -14,12 +14,35 @@ import 'mushaf_style_field.dart';
 /// The settings section for reading the Mushaf without internet: every
 /// edition with what is on the device, and a button to download, stop, or
 /// delete it. Downloads run in the background and show a notification.
-class OfflinePacksSection extends ConsumerWidget {
+class OfflinePacksSection extends ConsumerStatefulWidget {
   /// Creates the section.
   const OfflinePacksSection({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<OfflinePacksSection> createState() =>
+      _OfflinePacksSectionState();
+}
+
+class _OfflinePacksSectionState extends ConsumerState<OfflinePacksSection> {
+  late final AppLifecycleListener _lifecycle;
+
+  @override
+  void initState() {
+    super.initState();
+    _lifecycle = AppLifecycleListener(
+      // Downloads go on while the app is away; collect what finished.
+      onResume: () => ref.read(mushafPacksProvider.notifier).refresh(),
+    );
+  }
+
+  @override
+  void dispose() {
+    _lifecycle.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     return Column(
@@ -30,6 +53,13 @@ class OfflinePacksSection extends ConsumerWidget {
         Text(
           l10n.offlineMushafIntro,
           style: theme.textTheme.bodyMedium?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          l10n.packStorageInfo,
+          style: theme.textTheme.bodySmall?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
           ),
         ),
@@ -84,16 +114,22 @@ class _PackTile extends ConsumerWidget {
 
   Future<void> _delete(BuildContext context, WidgetRef ref) async {
     final l10n = context.l10n;
+    final digits = ref.read(digitsFormatterProvider);
     final notifier = ref.read(mushafPacksProvider.notifier);
-    final confirmed = await _confirm(
-      context,
-      title: l10n.packDeleteTitle(mushafStyleLabel(l10n, edition.style)),
-      body: l10n.packDeleteBody,
-      action: l10n.packDelete,
-      destructive: true,
+    final progress = ref.read(mushafPacksProvider).value?[edition.style];
+    if (progress == null) return;
+    final megabytes = (progress.bytes / (1024 * 1024)).ceil();
+    final confirmed = await AppSheet.show<bool>(
+      context: context,
+      builder: (sheet) => _DeleteWarning(
+        title: l10n.packDeleteWarnTitle(mushafStyleLabel(l10n, edition.style)),
+        body: l10n.packDeleteWarnBody(digits(progress.done), digits(megabytes)),
+      ),
     );
     if (confirmed == true) await notifier.delete(edition);
   }
+
+  static int _mb(int bytes) => (bytes / (1024 * 1024)).ceil();
 
   int get _megabytes => (edition.approxBytes / (1024 * 1024)).round();
 
@@ -110,8 +146,10 @@ class _PackTile extends ConsumerWidget {
     final subtitle = switch (progress) {
       null => '',
       PackProgress(active: true) => l10n.packDownloading(percent),
-      PackProgress(complete: true) => l10n.packReady,
-      PackProgress(partial: true) => l10n.packPartial(percent),
+      PackProgress(complete: true) =>
+        '${l10n.packReady} · ${l10n.packOnDevice(digits(_mb(progress.bytes)))}',
+      PackProgress(partial: true) =>
+        '${l10n.packPartial(percent)} · ${l10n.packOnDevice(digits(_mb(progress.bytes)))}',
       _ => l10n.packNotDownloaded(digits(_megabytes)),
     };
     final Widget? action = switch (progress) {
@@ -125,9 +163,20 @@ class _PackTile extends ConsumerWidget {
         style: TextButton.styleFrom(foregroundColor: scheme.error),
         child: Text(l10n.packDelete),
       ),
-      PackProgress(partial: true) => FilledButton.tonal(
-        onPressed: () => _download(context, ref),
-        child: Text(l10n.packResume),
+      PackProgress(partial: true) => Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            tooltip: l10n.packDelete,
+            color: scheme.error,
+            icon: const Icon(Icons.delete_outline_rounded),
+            onPressed: () => _delete(context, ref),
+          ),
+          FilledButton.tonal(
+            onPressed: () => _download(context, ref),
+            child: Text(l10n.packResume),
+          ),
+        ],
       ),
       _ => FilledButton.tonal(
         onPressed: () => _download(context, ref),
@@ -222,3 +271,72 @@ Future<bool?> _confirm(
     );
   },
 );
+
+/// The last warning before downloaded files are deleted: what goes, what it
+/// costs, and a box to tick before the button works.
+class _DeleteWarning extends StatefulWidget {
+  const _DeleteWarning({required this.title, required this.body});
+
+  final String title;
+  final String body;
+
+  @override
+  State<_DeleteWarning> createState() => _DeleteWarningState();
+}
+
+class _DeleteWarningState extends State<_DeleteWarning> {
+  bool _understood = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return Padding(
+      padding: const EdgeInsetsDirectional.fromSTEB(24, 4, 24, 20),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Icon(Icons.warning_amber_rounded, size: 36, color: scheme.error),
+          const SizedBox(height: 8),
+          Text(
+            widget.title,
+            textAlign: TextAlign.center,
+            style: theme.textTheme.titleLarge,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            widget.body,
+            textAlign: TextAlign.center,
+            style: theme.textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 8),
+          CheckboxListTile(
+            value: _understood,
+            onChanged: (value) => setState(() => _understood = value ?? false),
+            controlAffinity: ListTileControlAffinity.leading,
+            contentPadding: EdgeInsets.zero,
+            title: Text(l10n.packDeleteAck),
+          ),
+          const SizedBox(height: 8),
+          FilledButton(
+            // Nothing is deleted until the box is ticked.
+            onPressed: _understood
+                ? () => Navigator.of(context).pop(true)
+                : null,
+            style: FilledButton.styleFrom(
+              backgroundColor: scheme.error,
+              foregroundColor: scheme.onError,
+            ),
+            child: Text(l10n.packDeletePermanently),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(l10n.packCancel),
+          ),
+        ],
+      ),
+    );
+  }
+}
