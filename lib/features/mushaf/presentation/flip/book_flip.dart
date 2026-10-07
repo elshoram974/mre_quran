@@ -5,7 +5,6 @@ import 'package:flutter/physics.dart';
 import 'package:flutter/rendering.dart';
 
 import 'book_geometry.dart';
-import 'curl_mesh.dart';
 import 'page_curl_painter.dart';
 
 /// Builds one page of the book.
@@ -105,6 +104,11 @@ class _BookFlipState extends State<BookFlip>
   ui.Image? _front;
   ui.Image? _back;
   int? _textureStep;
+
+  /// How the sheet of the current textures moves: 0 swings over the spine
+  /// (spread), -1 peels off its right edge (going back), 1 peels off its
+  /// left edge (going forward).
+  int _textureDir = 0;
   double _pixelRatio = 1;
 
   BookGeometry _makeGeometry() =>
@@ -149,6 +153,7 @@ class _BookFlipState extends State<BookFlip>
     _front = null;
     _back = null;
     _textureStep = null;
+    _textureDir = 0;
   }
 
   ui.Image? _snapshot(int? page) {
@@ -164,19 +169,34 @@ class _BookFlipState extends State<BookFlip>
   /// facing it in the same spread.
   bool _turnsLeaf(int step) => _geometry.spread || (step + 1).isEven;
 
+  /// How the turn between [step] and [step] + 1 moves its sheet. In single
+  /// mode a leaf always peels, from the edge the hand holds, around a cylinder
+  /// under the finger: forward off the left edge, back off the right edge, the
+  /// two mirror images of one another. A spread swings the sheet over the
+  /// spine.
+  int _directionOf(int step) =>
+      _geometry.spread ? 0 : (_leadTarget < 0 ? -1 : 1);
+
   /// Takes the snapshots a turn between [step] and [step] + 1 needs.
   void _ensureTextures(int step) {
     if (!widget.realistic || !_turnsLeaf(step)) return;
-    if (_textureStep == step && _front != null) return;
+    final dir = _directionOf(step);
+    if (_textureStep == step && _textureDir == dir && _front != null) return;
     _disposeTextures();
     final front = _snapshot(
-      _geometry.spread ? _geometry.leftPage(step) : _geometry.rightPage(step),
+      dir < 0
+          ? _geometry.rightPage(step + 1)
+          : _geometry.spread
+          ? _geometry.leftPage(step)
+          : _geometry.rightPage(step),
     );
     if (front == null) return;
     _front = front;
-    // The back of the sheet shows the page that follows it.
-    _back = _snapshot(_geometry.rightPage(step + 1));
+    // The back of a swinging sheet shows the page that follows it. A peeling
+    // sheet shows its own print through.
+    _back = dir == 0 ? _snapshot(_geometry.rightPage(step + 1)) : null;
     _textureStep = step;
+    _textureDir = dir;
   }
 
   /// Points the bend of the sheet the way the turn is going.
@@ -212,7 +232,13 @@ class _BookFlipState extends State<BookFlip>
   void _dragUpdate(DragUpdateDetails details, double width) {
     // A drag to the right turns forward. A full width of travel is a bit less
     // than a full turn so the page feels light under the finger.
-    var next = _position + details.delta.dx / (width * 0.7);
+    // A peel keeps the roll under the finger, so a width of travel is a turn.
+    final peelDrag =
+        !_geometry.spread &&
+        _turnsLeaf(
+          details.delta.dx < 0 ? _position.ceil() - 1 : _position.floor(),
+        );
+    var next = _position + details.delta.dx / (width * (peelDrag ? 1.0 : 0.7));
     next = next.clamp(_dragStartStep - 1.0, _dragStartStep + 1.0);
     next = _geometry.clampPosition(next);
     _steer(details.delta.dx);
@@ -285,6 +311,8 @@ class _BookFlipState extends State<BookFlip>
         final k = _position.floor().clamp(0, lastStep);
         final f = k >= lastStep ? 0.0 : (_position - k).clamp(0.0, 1.0);
         final turning = f > 0.0005 && _front != null && _textureStep == k;
+        final peeling = turning && _textureDir != 0;
+        final peelsForward = _textureDir > 0;
         final rest = _position.round().clamp(0, lastStep);
         // Single mode, within one spread: the two facing pages slide.
         final sliding = !spread && f > 0.0005 && !_turnsLeaf(k);
@@ -304,7 +332,10 @@ class _BookFlipState extends State<BookFlip>
         // are the next step's left page and this step's right page (spread),
         // or just the next page (single).
         final visible = <int>{};
-        if (sliding) {
+        if (peeling) {
+          // The page the turn is going to lies uncovered under the sheet.
+          visible.addAll([?_geometry.rightPage(peelsForward ? k + 1 : k)]);
+        } else if (sliding) {
           visible.addAll([
             ?_geometry.rightPage(k),
             ?_geometry.rightPage(k + 1),
@@ -325,7 +356,9 @@ class _BookFlipState extends State<BookFlip>
 
         // In single mode the sheet swings past the spine onto the facing page,
         // the one before it, which slides into view with the sheet.
-        final facing = turning && !spread ? _geometry.rightPage(k - 1) : null;
+        final facing = turning && !spread && !peeling
+            ? _geometry.rightPage(k - 1)
+            : null;
 
         // Each page sits in the slot its number says: odd on the right half,
         // even on the left half in spread mode, the whole area in single mode.
@@ -406,7 +439,11 @@ class _BookFlipState extends State<BookFlip>
               child: IgnorePointer(
                 child: CustomPaint(
                   painter: PageCurlPainter(
-                    progress: f,
+                    peel: peeling,
+                    mirror: peelsForward,
+                    // Going back a peel runs the other way: whole at k + 1,
+                    // gone at k.
+                    progress: peeling && !peelsForward ? 1 - f : f,
                     front: _front!,
                     back: _back,
                     vanishX: half * (spread ? 1 : 2),
@@ -423,30 +460,24 @@ class _BookFlipState extends State<BookFlip>
 
         // In single mode the view follows the sheet as it lands, so the page
         // on its back ends up in front of the reader.
-        // Going forward the view follows the sheet after it has crossed the
-        // spine. Going back the hand holds the free edge, so the view must
-        // keep that edge under the finger: the shift is whatever puts the
-        // free edge at the finger's share of the page. Between the two, as
-        // the direction changes, the shifts blend.
+        // The view follows the sheet once it has crossed the spine. Going
+        // back is the mirror image of going forward: the book is seen from
+        // the other side, so the view stays where it is while the sheet
+        // lifts, and pans only after the sheet is upright. Between the two,
+        // as the direction changes, the shifts blend.
+        double followed(double turned) =>
+            width *
+            Curves.easeInOutCubic.transform(
+              ((turned - 0.25) / 0.75).clamp(0.0, 1.0),
+            );
         double shiftFor() {
-          final forward =
-              width *
-              Curves.easeInOutCubic.transform(
-                ((f - 0.25) / 0.75).clamp(0.0, 1.0),
-              );
+          final forward = followed(f);
+          final back = width - followed(1 - f);
           final backWeight = ((1 - _lead) / 2).clamp(0.0, 1.0);
-          if (backWeight == 0) return forward;
-          final edge = curlFreeEdgeX(
-            progress: f,
-            width: width,
-            height: height,
-            lead: _lead,
-          );
-          final tracked = (edge - width * f).clamp(0.0, width);
-          return forward + (tracked - forward) * backWeight;
+          return forward + (back - forward) * backWeight;
         }
 
-        final shift = turning && !spread ? shiftFor() : 0.0;
+        final shift = turning && !spread && !peeling ? shiftFor() : 0.0;
 
         final Widget content = widget.realistic
             ? Transform.translate(

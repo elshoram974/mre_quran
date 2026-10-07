@@ -90,7 +90,7 @@ void main() {
     (w) => w is CustomPaint && w.painter is PageCurlPainter,
   );
 
-  testWidgets('single: an even page turns its leaf onto the page before', (
+  testWidgets('single: an even page peels off, uncovering the page after it', (
     tester,
   ) async {
     final changes = await _pump(
@@ -100,11 +100,10 @@ void main() {
       page: 4,
     );
     final gesture = await halfway(tester, 210);
-    // Mid-turn the leaf is up, and the page it lands on (3, facing it in the
-    // open book) has come in from the right.
+    // Mid-turn the page being left (4) peels off from its left edge, and the
+    // page after it (5) lies uncovered underneath, in place.
     expect(curl(), findsOneWidget);
-    final facing = tester.getRect(find.text('page 3'));
-    expect(facing.center.dx, inExclusiveRange(200, 400));
+    expect(tester.getRect(find.text('page 5')).center.dx, closeTo(200, 1));
     await gesture.up();
     await tester.pumpAndSettle();
     expect(changes, [5]);
@@ -165,21 +164,18 @@ void main() {
       .single
       .lead;
 
-  for (final spread in [true, false]) {
-    final mode = spread ? 'spread' : 'single';
-    testWidgets('$mode: the sheet bends one way going forward and the other '
-        'going back', (tester) async {
-      await _pump(tester, realistic: true, spread: spread, page: 4);
-      var gesture = await halfway(tester, 210);
-      expect(leadOf(tester), closeTo(1, 0.02));
-      await gesture.up();
-      await tester.pumpAndSettle();
-      gesture = await halfway(tester, -210);
-      expect(leadOf(tester), closeTo(-1, 0.1));
-      await gesture.up();
-      await tester.pumpAndSettle();
-    });
-  }
+  testWidgets('spread: the sheet bends one way going forward and the other '
+      'going back', (tester) async {
+    await _pump(tester, realistic: true, spread: true, page: 4);
+    var gesture = await halfway(tester, 210);
+    expect(leadOf(tester), closeTo(1, 0.02));
+    await gesture.up();
+    await tester.pumpAndSettle();
+    gesture = await halfway(tester, -210);
+    expect(leadOf(tester), closeTo(-1, 0.1));
+    await gesture.up();
+    await tester.pumpAndSettle();
+  });
 
   testWidgets('a turn tells the reader it began, before anything moves', (
     tester,
@@ -206,6 +202,39 @@ void main() {
     await gesture.moveBy(const Offset(40, 0));
     await tester.pump();
     expect(began, 1);
+    await gesture.up();
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('single: going back peels the page off from its right edge, '
+      'uncovering the page before it', (tester) async {
+    await _pump(tester, realistic: true, spread: false, page: 5);
+    // 5 -> 4 is a leaf turn. Halfway, the page being left (5) is the sheet,
+    // and the page before it (4) lies uncovered underneath, in place.
+    final gesture = await halfway(tester, -210);
+    final sheet = tester
+        .widgetList<CustomPaint>(find.byType(CustomPaint))
+        .map((w) => w.painter)
+        .whereType<PageCurlPainter>()
+        .single;
+    expect(sheet.peel, isTrue);
+    expect(tester.getRect(find.text('page 4')).center.dx, closeTo(200, 1));
+    await gesture.up();
+    await tester.pumpAndSettle();
+    expect(find.text('page 4').hitTestable(), findsOneWidget);
+  });
+
+  testWidgets('single: going forward peels off the left edge, the mirror of '
+      'going back', (tester) async {
+    await _pump(tester, realistic: true, spread: false, page: 4);
+    final gesture = await halfway(tester, 210);
+    final sheet = tester
+        .widgetList<CustomPaint>(find.byType(CustomPaint))
+        .map((w) => w.painter)
+        .whereType<PageCurlPainter>()
+        .single;
+    expect(sheet.peel, isTrue);
+    expect(sheet.mirror, isTrue, reason: 'hinged on the right');
     await gesture.up();
     await tester.pumpAndSettle();
   });

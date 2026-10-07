@@ -188,20 +188,114 @@ CurlMesh buildCurlMesh({
   );
 }
 
-/// Where the free edge of a sheet of [width] hinged on its right edge lies,
-/// measured from the sheet's own left edge when flat: [width] at the hinge,
-/// 0 while the sheet lies on its page, up to twice [width] once it has landed
-/// on the far side.
-double curlFreeEdgeX({
+/// A page peeling off around a moving cylinder, as in a book reader: the free
+/// edge lifts toward the reader, rolls over the cylinder, and lies back on the
+/// sheet showing its reverse. The part beyond the cylinder is still flat.
+///
+/// The sheet is hinged on its left edge and its right edge is the free one.
+/// [progress] runs from 0 (flat) to 1 (rolled off past the hinge). The
+/// cylinder sits at the point of the sheet where it lifts, so a finger
+/// holding the edge keeps it under the finger: at [progress] the roll is at
+/// `size.width * (1 - progress)` from the left, going to the hinge.
+CurlMesh buildPeelMesh({
   required double progress,
-  required double width,
-  required double height,
-  double lead = 1,
-}) => buildCurlMesh(
-  progress: progress,
-  size: Size(width, height),
-  vanishX: width,
-  pixelRatio: 1,
-  lead: lead,
-  columns: 12,
-).outline.last.x;
+  required Size size,
+  required double pixelRatio,
+  bool mirror = false,
+  int columns = 56,
+}) {
+  final t = progress.clamp(0.0, 1.0);
+  final w = size.width;
+  final h = size.height;
+  final radius = w * 0.07;
+  // Where the cylinder touches the sheet, from the hinge: it starts at the
+  // free edge and ends at the hinge, with room for the roll itself.
+  final line = (w + math.pi * radius) * (1 - t) - math.pi * radius * t;
+
+  final xs = <double>[];
+  final angles = <double>[];
+  for (var i = 0; i <= columns; i++) {
+    final s = w * i / columns; // distance from the hinge along the sheet
+    final a = s - line;
+    if (a <= 0) {
+      xs.add(s);
+      angles.add(0);
+    } else if (a <= math.pi * radius) {
+      final theta = a / radius;
+      xs.add(line + radius * math.sin(theta));
+      angles.add(theta);
+    } else {
+      xs.add(line - (a - math.pi * radius));
+      angles.add(math.pi);
+    }
+  }
+
+  int shade(double v) {
+    final g = (v.clamp(0.0, 1.0) * 255).round();
+    return 0xFF000000 | (g << 16) | (g << 8) | g;
+  }
+
+  // Light from above the reader: a sheet facing it is bright, the roll
+  // darkens as it turns away and catches a soft highlight where it stands
+  // up toward the light; the reverse is always a little dimmer.
+  double sheen(double phi) => 0.16 * math.exp(-math.pow((phi - 1.0) / 0.38, 2));
+  double frontShade(double phi) =>
+      (0.74 + 0.26 * math.cos(phi) + sheen(phi)).clamp(0.0, 1.0);
+  double backShade(double phi) =>
+      (0.80 + 0.16 * math.cos(math.pi - phi) + sheen(math.pi - phi) * 0.6)
+          .clamp(0.0, 1.0);
+
+  final frontP = <double>[];
+  final frontT = <double>[];
+  final frontC = <int>[];
+  final backP = <double>[];
+  final backT = <double>[];
+  final backC = <int>[];
+  for (var i = 0; i < columns; i++) {
+    final mid = (angles[i] + angles[i + 1]) / 2;
+    final isFront = mid < math.pi / 2;
+    final p = isFront ? frontP : backP;
+    final tex = isFront ? frontT : backT;
+    final c = isFront ? frontC : backC;
+    final shadeOf = isFront ? frontShade : backShade;
+    // Mirrored, the sheet is hinged on the right: a point s from the hinge
+    // lies at w - s, and its texture is w - s too.
+    final u0 = mirror ? w - w * i / columns : w * i / columns;
+    final u1 = mirror ? w - w * (i + 1) / columns : w * (i + 1) / columns;
+    final x0 = mirror ? w - xs[i] : xs[i];
+    final x1 = mirror ? w - xs[i + 1] : xs[i + 1];
+    final s0 = shadeOf(angles[i]);
+    final s1 = shadeOf(angles[i + 1]);
+    final corners = [
+      (x0, 0.0, u0, 0.0, s0),
+      (x1, 0.0, u1, 0.0, s1),
+      (x1, h, u1, h, s1),
+      (x0, h, u0, h, s0),
+    ];
+    for (final index in [0, 1, 2, 0, 2, 3]) {
+      final corner = corners[index];
+      p
+        ..add(corner.$1)
+        ..add(corner.$2);
+      tex
+        ..add(corner.$3 * pixelRatio)
+        ..add(corner.$4 * pixelRatio);
+      c.add(shade(corner.$5));
+    }
+  }
+
+  CurlFace face(List<double> p, List<double> tex, List<int> c) => CurlFace(
+    positions: Float32List.fromList(p),
+    textureCoordinates: Float32List.fromList(tex),
+    colors: Int32List.fromList(c),
+  );
+  return CurlMesh(
+    front: face(frontP, frontT, frontC),
+    back: face(backP, backT, backC),
+    outline: [
+      for (var i = 0; i <= columns; i++)
+        (x: mirror ? w - xs[i] : xs[i], top: 0.0, bottom: h),
+    ],
+    lift: math.sin(math.pi * t),
+  );
+}

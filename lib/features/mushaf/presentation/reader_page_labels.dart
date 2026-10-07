@@ -104,6 +104,15 @@ class ReaderPageLabels extends ConsumerWidget {
           child: aside(
             ReaderFooter(
               children: [
+                // Fixed sides: back to the right, onward to the left.
+                if (page > 1)
+                  ReaderChip(
+                    icon: Icons.chevron_right_rounded,
+                    tooltip: l10n.previousPage,
+                    onPressed: () => goToReaderPage(ref, page - 1),
+                  )
+                else
+                  const SizedBox(width: 48),
                 ReaderChip(
                   label: digits(page),
                   tooltip: l10n.goToPage,
@@ -114,7 +123,9 @@ class ReaderPageLabels extends ConsumerWidget {
                     icon: Icons.chevron_left_rounded,
                     tooltip: l10n.nextPage,
                     onPressed: () => goToReaderPage(ref, page + 1),
-                  ),
+                  )
+                else
+                  const SizedBox(width: 48),
               ],
             ),
           ),

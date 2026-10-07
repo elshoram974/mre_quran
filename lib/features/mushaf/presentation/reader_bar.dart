@@ -143,13 +143,14 @@ class ReaderHeader extends StatelessWidget {
 Widget _fit(Widget item) =>
     item is ReaderChip && item.label != null ? Flexible(child: item) : item;
 
-/// The row below the Mushaf page: the page number and a step to the next
-/// page, at the reading end (left in Arabic), as in the printed Mushaf apps.
+/// The row below the Mushaf page: the page number in the middle, with a step
+/// to the previous page on its right and to the next on its left. The Mushaf
+/// turns right to left in every language, so the sides never swap.
 class ReaderFooter extends StatelessWidget {
   /// Creates the footer.
   const ReaderFooter({super.key, required this.children});
 
-  /// The chips, in reading order.
+  /// The chips, from the right: previous, number, next.
   final List<Widget> children;
 
   @override
@@ -159,9 +160,12 @@ class ReaderFooter extends StatelessWidget {
       height: AppTokens.readerFooterExtent,
       child: Padding(
         padding: const EdgeInsetsDirectional.symmetric(horizontal: 8),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: children,
+        child: Directionality(
+          textDirection: TextDirection.rtl,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: children,
+          ),
         ),
       ),
     ),

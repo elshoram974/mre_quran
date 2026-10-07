@@ -80,6 +80,25 @@ void main() {
     expect(find.text('الجزء ١').hitTestable(), findsNothing);
   });
 
+  testWidgets('the arrows keep their sides: back on the right, onward on the '
+      'left, number in the middle', (tester) async {
+    final (container, _) = await _pump(tester, savedPage: 5);
+    container.read(readerImmersiveProvider.notifier).hide();
+    await tester.pumpAndSettle();
+    final back = tester.getCenter(
+      find.byTooltip('الصفحة السابقة').hitTestable(),
+    );
+    final next = tester.getCenter(
+      find.byTooltip('الصفحة التالية').hitTestable(),
+    );
+    final number = tester.getCenter(
+      find.byTooltip('الانتقال إلى صفحة').hitTestable(),
+    );
+    expect(back.dx, greaterThan(number.dx));
+    expect(next.dx, lessThan(number.dx));
+    expect(number.dx, closeTo(195, 12));
+  });
+
   testWidgets('hiding the bars leaves the page number and the arrow', (
     tester,
   ) async {
@@ -137,6 +156,11 @@ void main() {
     await tester.tap(find.byTooltip('الصفحة التالية').hitTestable());
     await tester.pumpAndSettle();
     expect(positions.page, 6);
+    await tester.tap(find.byTooltip('الصفحة السابقة').hitTestable());
+    await tester.pumpAndSettle();
+    expect(positions.page, 5);
+    await tester.tap(find.byTooltip('الصفحة التالية').hitTestable());
+    await tester.pumpAndSettle();
     container.read(readerImmersiveProvider.notifier).hide();
     await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('السورة التالية').hitTestable());
