@@ -26,6 +26,7 @@ Future<(ProviderContainer, MemoryReadingPositionRepository)> _pump(
   String locale = 'ar',
   double width = 390,
   double textScale = 1,
+  bool realistic = false,
 }) async {
   tester.view.physicalSize = Size(width, 844);
   tester.view.devicePixelRatio = 1;
@@ -41,7 +42,11 @@ Future<(ProviderContainer, MemoryReadingPositionRepository)> _pump(
       ),
       readingPositionRepositoryProvider.overrideWithValue(positions),
       settingsRepositoryProvider.overrideWithValue(
-        MemorySettingsRepository()..settings = AppSettings(localeCode: locale),
+        MemorySettingsRepository()
+          ..settings = AppSettings(
+            localeCode: locale,
+            realisticPageTurn: realistic,
+          ),
       ),
     ],
   );
@@ -121,7 +126,7 @@ void main() {
   testWidgets('the surah, juz, and page number are part of the page itself', (
     tester,
   ) async {
-    await _pump(tester, savedPage: 5);
+    await _pump(tester, savedPage: 5, realistic: true);
     // Inside each page's own subtree, so the turning sheet carries them.
     for (final number in [4, 5, 6]) {
       final labels = find.descendant(

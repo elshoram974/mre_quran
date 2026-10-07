@@ -103,7 +103,7 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
       settingsProvider.select((s) => s.value?.readerFontScale ?? 1),
     );
     final realistic = ref.watch(
-      settingsProvider.select((s) => s.value?.realisticPageTurn ?? true),
+      settingsProvider.select((s) => s.value?.realisticPageTurn ?? false),
     );
     final mode = ref.watch(
       settingsProvider.select((s) => s.value?.readerMode ?? ReaderMode.text),

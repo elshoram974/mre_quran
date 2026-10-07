@@ -11,7 +11,7 @@ class AppSettings {
     this.crashReportsEnabled = false,
     this.startupBehavior = StartupBehavior.lastTab,
     this.readerFontScale = 1,
-    this.realisticPageTurn = true,
+    this.realisticPageTurn = false,
     this.readerMode = ReaderMode.text,
     this.mushafStyle = MushafStyle.madinah,
   });

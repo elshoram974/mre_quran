@@ -62,7 +62,7 @@ class LocalSettingsRepository implements SettingsRepository {
         orElse: () => StartupBehavior.lastTab,
       ),
       readerFontScale: (fontScale ?? 1).clamp(0.8, 1.6).toDouble(),
-      realisticPageTurn: realisticTurn ?? true,
+      realisticPageTurn: realisticTurn ?? false,
       readerMode: ReaderMode.values.firstWhere(
         (item) => item.name == readerMode,
         orElse: () => ReaderMode.text,
