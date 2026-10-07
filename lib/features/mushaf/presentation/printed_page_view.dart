@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
@@ -67,7 +68,17 @@ class PrintedPageView extends StatelessWidget {
     this.onAyahLongPress,
     this.bookmarked = const {},
     this.selected,
+    this.fallbackBuilder,
+    this.fallbackAfter = const Duration(seconds: 30),
   });
+
+  /// Builds the page as typeset text, shown in place of the image when the
+  /// image cannot be had: offline, a failed download, or one that takes longer
+  /// than [fallbackAfter]. The image replaces it as soon as it arrives.
+  final WidgetBuilder? fallbackBuilder;
+
+  /// How long the image may take before the text stands in for it.
+  final Duration fallbackAfter;
 
   /// Quran structure, for the frame labels.
   final QuranMetadata metadata;
@@ -104,24 +115,80 @@ class PrintedPageView extends StatelessWidget {
             constraints.maxWidth /
             (edition.crop.right - edition.crop.left) *
             MediaQuery.devicePixelRatioOf(context);
-        return _PrintedBody(
-          metadata: metadata,
-          edition: edition,
-          page: page,
-          area: constraints.biggest,
-          width: ((pixels / 180).ceil() * 180).clamp(360, edition.width),
-          onTap: onTap,
-          onAyahLongPress: onAyahLongPress,
-          bookmarked: bookmarked,
-          selected: selected,
+        return _SlowGate(
+          key: ValueKey<(MushafStyle, int)>((style, page)),
+          after: fallbackAfter,
+          builder: (context, slow, restart) => _PrintedBody(
+            metadata: metadata,
+            edition: edition,
+            page: page,
+            area: constraints.biggest,
+            width: ((pixels / 180).ceil() * 180).clamp(360, edition.width),
+            onTap: onTap,
+            onAyahLongPress: onAyahLongPress,
+            bookmarked: bookmarked,
+            selected: selected,
+            fallbackBuilder: fallbackBuilder,
+            slow: slow,
+            onRetry: restart,
+          ),
         );
       },
     ),
   );
 }
 
+/// Tells its builder when [after] has passed since it began (or since it was
+/// restarted): how long the page's image has been awaited.
+class _SlowGate extends StatefulWidget {
+  const _SlowGate({super.key, required this.after, required this.builder});
+
+  final Duration after;
+  final Widget Function(BuildContext context, bool slow, VoidCallback restart)
+  builder;
+
+  @override
+  State<_SlowGate> createState() => _SlowGateState();
+}
+
+class _SlowGateState extends State<_SlowGate> {
+  Timer? _timer;
+  bool _slow = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _start();
+  }
+
+  void _start() {
+    _timer?.cancel();
+    _timer = Timer(widget.after, () {
+      if (mounted) setState(() => _slow = true);
+    });
+  }
+
+  void _restart() {
+    setState(() => _slow = false);
+    _start();
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) =>
+      widget.builder(context, _slow, _restart);
+}
+
 class _PrintedBody extends ConsumerWidget {
   const _PrintedBody({
+    required this.fallbackBuilder,
+    required this.slow,
+    required this.onRetry,
     required this.metadata,
     required this.edition,
     required this.page,
@@ -133,6 +200,9 @@ class _PrintedBody extends ConsumerWidget {
     required this.selected,
   });
 
+  final WidgetBuilder? fallbackBuilder;
+  final bool slow;
+  final VoidCallback onRetry;
   final QuranMetadata metadata;
   final MushafEdition edition;
   final int page;
@@ -152,6 +222,7 @@ class _PrintedBody extends ConsumerWidget {
         pageImageFileProvider((style: edition.style, page: page, dark: false)),
       )
       ..invalidate(ayahInfoDatabaseProvider);
+    onRetry();
   }
 
   @override
@@ -233,6 +304,16 @@ class _PrintedBody extends ConsumerWidget {
           label: l10n.printedPageLabel(formatDigits(page, arabic: true)),
         ),
       ),
+      // The image cannot be had, or is taking too long: show the page as
+      // text, with a way to try the image again.
+      _ when fallbackBuilder != null && (slow || image.hasError) =>
+        _TextStandIn(
+          key: const ValueKey('fallback'),
+          notice: l10n.printedFallbackNotice,
+          retryLabel: l10n.retry,
+          onRetry: () => _retry(ref, dark),
+          child: fallbackBuilder!(context),
+        ),
       AsyncValue(hasError: true) => EmptyState(
         key: const ValueKey('error'),
         icon: Icons.cloud_off_outlined,
@@ -665,6 +746,62 @@ class _PrintedPagePainter extends CustomPainter {
       }
     }
     return true;
+  }
+}
+
+/// A page of text standing in for its image, under a one-line notice with a
+/// button to try the image again.
+class _TextStandIn extends StatelessWidget {
+  const _TextStandIn({
+    super.key,
+    required this.notice,
+    required this.retryLabel,
+    required this.onRetry,
+    required this.child,
+  });
+
+  final String notice;
+  final String retryLabel;
+  final VoidCallback onRetry;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Column(
+      children: [
+        Row(
+          children: [
+            Icon(
+              Icons.cloud_off_outlined,
+              size: 16,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+            const SizedBox(width: 6),
+            Expanded(
+              child: Text(
+                notice,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: onRetry,
+              style: TextButton.styleFrom(
+                minimumSize: const Size(0, 32),
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                visualDensity: VisualDensity.compact,
+              ),
+              child: Text(retryLabel),
+            ),
+          ],
+        ),
+        Expanded(child: child),
+      ],
+    );
   }
 }
 

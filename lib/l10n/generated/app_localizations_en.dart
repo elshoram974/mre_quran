@@ -479,4 +479,8 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get editionsIntroDone => 'Continue reading';
+
+  @override
+  String get printedFallbackNotice =>
+      'The page image isn\'t available, so the text is shown.';
 }

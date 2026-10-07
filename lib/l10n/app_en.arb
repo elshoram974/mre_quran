@@ -219,5 +219,6 @@
   "packDeletePermanently": "Delete permanently",
   "editionsIntroTitle": "More Mushafs to choose from",
   "editionsIntroBody": "You are reading the standard Madinah Mushaf. Other editions are available, such as the tajweed-coloured Mushaf. Pick the one you like, and download any of them to read without internet. You can change this later in Settings.",
-  "editionsIntroDone": "Continue reading"
+  "editionsIntroDone": "Continue reading",
+  "printedFallbackNotice": "The page image isn't available, so the text is shown."
 }

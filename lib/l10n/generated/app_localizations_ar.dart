@@ -481,4 +481,8 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get editionsIntroDone => 'متابعة القراءة';
+
+  @override
+  String get printedFallbackNotice =>
+      'صورة الصفحة غير متاحة الآن، فيُعرض النص.';
 }

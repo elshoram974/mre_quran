@@ -151,6 +151,17 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
             selected: _selected ?? highlighted,
             onAyahLongPress: _showActions,
             onTap: _onTap,
+            // Without its image the page still reads, as text.
+            fallbackBuilder: (_) => MushafPageView(
+              text: widget.text,
+              page: number,
+              fontScale: fontScale,
+              bookmarked: bookmarked,
+              selected: _selected ?? highlighted,
+              onAyahLongPress: _showActions,
+              onTap: _onTap,
+              framed: false,
+            ),
           ),
         },
       ),

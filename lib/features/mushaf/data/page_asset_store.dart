@@ -182,8 +182,7 @@ class PageAssetStore {
   }
 
   static Future<Uint8List> _httpFetch(Uri uri) async {
-    final client = HttpClient()
-      ..connectionTimeout = const Duration(seconds: 15);
+    final client = HttpClient()..connectionTimeout = const Duration(seconds: 8);
     try {
       final request = await client.getUrl(uri);
       final response = await request.close().timeout(

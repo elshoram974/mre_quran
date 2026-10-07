@@ -25,6 +25,7 @@ class MushafPageView extends StatefulWidget {
     this.onAyahLongPress,
     this.bookmarked = const {},
     this.selected,
+    this.framed = true,
   });
 
   /// The verified text.
@@ -47,6 +48,10 @@ class MushafPageView extends StatefulWidget {
 
   /// The ayah whose actions are open, highlighted on the page.
   final AyahRef? selected;
+
+  /// Whether to draw the page's own frame and labels. Off when the page is
+  /// shown inside another frame, as the stand-in of a printed page.
+  final bool framed;
 
   static const double _minSize = 15;
   static const double _maxSize = 34;
@@ -208,59 +213,61 @@ class _MushafPageViewState extends State<MushafPageView> {
     final scheme = Theme.of(context).colorScheme;
     final segments = _segments(scheme, context.l10n.ayahNumber);
 
+    final body = LayoutBuilder(
+      builder: (context, constraints) {
+        final fitted = _fittedSize(segments, constraints.biggest);
+        final quran = TextStyle(
+          fontFamily: AppTokens.quranFontFamily,
+          fontSize: fitted * widget.fontScale,
+          height: MushafPageView._lineHeight,
+          color: scheme.onSurface,
+        );
+        // Quran text size follows the reader's own setting, so it is not
+        // scaled again by the system. Larger text scrolls in the frame.
+        return SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (final segment in segments)
+                  switch (segment) {
+                    _Banner(:final surah) => _SurahBanner(
+                      surah: surah,
+                      number: _n,
+                    ),
+                    _Basmala(:final text) => Padding(
+                      padding: const EdgeInsets.only(bottom: 4),
+                      child: Text(
+                        text,
+                        textAlign: TextAlign.center,
+                        textScaler: TextScaler.noScaling,
+                        // Smaller than the ayahs, as printed.
+                        style: quran.copyWith(
+                          fontSize: quran.fontSize! * _basmalaScale,
+                        ),
+                      ),
+                    ),
+                    _Paragraph(:final spans) => Text.rich(
+                      TextSpan(children: spans),
+                      textAlign: TextAlign.justify,
+                      textScaler: TextScaler.noScaling,
+                      style: quran,
+                    ),
+                  },
+              ],
+            ),
+          ),
+        );
+      },
+    );
+    if (!widget.framed) return body;
     return MushafPageFrame(
       metadata: text.metadata,
       page: widget.page,
       onTap: widget.onTap,
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final fitted = _fittedSize(segments, constraints.biggest);
-          final quran = TextStyle(
-            fontFamily: AppTokens.quranFontFamily,
-            fontSize: fitted * widget.fontScale,
-            height: MushafPageView._lineHeight,
-            color: scheme.onSurface,
-          );
-          // Quran text size follows the reader's own setting, so it is not
-          // scaled again by the system. Larger text scrolls in the frame.
-          return SingleChildScrollView(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(minHeight: constraints.maxHeight),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  for (final segment in segments)
-                    switch (segment) {
-                      _Banner(:final surah) => _SurahBanner(
-                        surah: surah,
-                        number: _n,
-                      ),
-                      _Basmala(:final text) => Padding(
-                        padding: const EdgeInsets.only(bottom: 4),
-                        child: Text(
-                          text,
-                          textAlign: TextAlign.center,
-                          textScaler: TextScaler.noScaling,
-                          // Smaller than the ayahs, as printed.
-                          style: quran.copyWith(
-                            fontSize: quran.fontSize! * _basmalaScale,
-                          ),
-                        ),
-                      ),
-                      _Paragraph(:final spans) => Text.rich(
-                        TextSpan(children: spans),
-                        textAlign: TextAlign.justify,
-                        textScaler: TextScaler.noScaling,
-                        style: quran,
-                      ),
-                    },
-                ],
-              ),
-            ),
-          );
-        },
-      ),
+      child: body,
     );
   }
 }

@@ -45,28 +45,52 @@ class PagePrefetcher {
     unawaited(_run(generation, edition, pages, dark));
   }
 
+  /// Pages fetched at the same time. The page being read never waits for
+  /// them: it is requested on its own, outside this pool.
+  static const int parallel = 3;
+
+  /// Failed fetches in a row after which prefetching gives up (offline).
+  static const int giveUpAfter = 3;
+
   Future<void> _run(
     int generation,
     MushafEdition edition,
     List<int> pages,
     bool dark,
   ) async {
-    try {
-      if (edition.geometry == PageGeometrySource.glyphDatabase) {
-        await _store.ayahInfoDatabase();
-      }
-      for (final page in pages) {
-        if (generation != _generation) return;
-        await _store.image(edition, page, dark: dark);
-        // Ayah positions are measured on the light image.
-        if (edition.geometry == PageGeometrySource.measured && dark) {
-          await _store.image(edition, page, dark: false);
+    if (edition.geometry == PageGeometrySource.glyphDatabase) {
+      // Not awaited: it runs beside the images, and the page on screen needs
+      // it as much as they do.
+      unawaited(
+        _store.ayahInfoDatabase().then<void>(
+          (_) {},
+          onError: (Object error) =>
+              AppLogger.debug('Glyph database failed: ${error.runtimeType}'),
+        ),
+      );
+    }
+    final queue = pages.iterator;
+    var failures = 0;
+    Future<void> worker() async {
+      while (generation == _generation && failures < giveUpAfter) {
+        if (!queue.moveNext()) return;
+        final page = queue.current;
+        try {
+          await _store.image(edition, page, dark: dark);
+          // Ayah positions are measured on the light image.
+          if (edition.geometry == PageGeometrySource.measured && dark) {
+            await _store.image(edition, page, dark: false);
+          }
+          failures = 0;
+        } on Exception catch (error) {
+          // Offline, a bad response, or a full disk: the page tries again
+          // when it is opened.
+          failures++;
+          AppLogger.debug('Prefetch failed: ${error.runtimeType}');
         }
       }
-    } on Exception catch (error) {
-      // Offline, a bad response, or a full disk: the page tries again when
-      // it is opened.
-      AppLogger.debug('Prefetch stopped: ${error.runtimeType}');
     }
+
+    await Future.wait([for (var i = 0; i < parallel; i++) worker()]);
   }
 }

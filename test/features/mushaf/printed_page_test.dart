@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
@@ -104,6 +105,9 @@ void main() {
     MushafStyle style = MushafStyle.madinahHd,
     List<Override> extra = const [],
     VoidCallback? onTap,
+    bool withFallback = false,
+    Duration fallbackAfter = const Duration(seconds: 30),
+    Future<Uint8List> Function(Uri)? fetch,
   }) async {
     png = (await tester.runAsync(
       () => _pagePng(transparent: style == MushafStyle.madinah),
@@ -115,10 +119,12 @@ void main() {
         pageAssetStoreProvider.overrideWithValue(
           PageAssetStore(
             root: () async => root,
-            fetch: (uri) async {
-              if (!online()) throw PageDownloadException(uri, 'offline');
-              return png;
-            },
+            fetch:
+                fetch ??
+                (uri) async {
+                  if (!online()) throw PageDownloadException(uri, 'offline');
+                  return png;
+                },
           ),
         ),
         ...extra,
@@ -145,6 +151,10 @@ void main() {
               onTap: onTap ?? () {},
               onAyahLongPress: pressed.add,
               selected: const AyahRef(1, 2),
+              fallbackAfter: fallbackAfter,
+              fallbackBuilder: withFallback
+                  ? (_) => const Center(child: Text('نص الصفحة'))
+                  : null,
             ),
           ),
         ),
@@ -334,5 +344,64 @@ void main() {
       until: find.bySemanticsLabel('الصفحة ١ من المصحف المطبوع'),
     );
     expect(find.bySemanticsLabel('الصفحة ١ من المصحف المطبوع'), findsOneWidget);
+  });
+
+  group('text fallback', () {
+    testWidgets('offline, the page shows as text at once, with a retry', (
+      tester,
+    ) async {
+      var online = false;
+      await pump(tester, online: () => online, withFallback: true);
+      await settle(tester, until: find.text('نص الصفحة'));
+      expect(find.text('نص الصفحة'), findsOneWidget);
+      expect(
+        find.text('صورة الصفحة غير متاحة الآن، فيُعرض النص.'),
+        findsOneWidget,
+      );
+      online = true;
+      await tester.tap(find.text('إعادة المحاولة'));
+      await settle(
+        tester,
+        until: find.bySemanticsLabel('الصفحة ١ من المصحف المطبوع'),
+      );
+      expect(find.text('نص الصفحة'), findsNothing);
+      expect(
+        find.bySemanticsLabel('الصفحة ١ من المصحف المطبوع'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('a download that takes too long gives way to the text, then '
+        'the image takes over when it arrives', (tester) async {
+      final arrive = Completer<Uint8List>();
+      await pump(
+        tester,
+        online: () => true,
+        withFallback: true,
+        fallbackAfter: const Duration(milliseconds: 400),
+        fetch: (_) => arrive.future,
+      );
+      expect(find.byType(AppShimmer), findsOneWidget);
+      expect(find.text('نص الصفحة'), findsNothing);
+      await tester.pump(const Duration(milliseconds: 500));
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(find.text('نص الصفحة'), findsOneWidget);
+      arrive.complete(png);
+      await settle(
+        tester,
+        until: find.bySemanticsLabel('الصفحة ١ من المصحف المطبوع'),
+      );
+      expect(find.text('نص الصفحة'), findsNothing);
+    });
+
+    testWidgets('a quick download never shows the text', (tester) async {
+      await pump(tester, online: () => true, withFallback: true);
+      await settle(tester);
+      expect(find.text('نص الصفحة'), findsNothing);
+      expect(
+        find.bySemanticsLabel('الصفحة ١ من المصحف المطبوع'),
+        findsOneWidget,
+      );
+    });
   });
 }

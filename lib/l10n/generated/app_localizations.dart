@@ -883,6 +883,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Continue reading'**
   String get editionsIntroDone;
+
+  /// No description provided for @printedFallbackNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'The page image isn\'t available, so the text is shown.'**
+  String get printedFallbackNotice;
 }
 
 class _AppLocalizationsDelegate
