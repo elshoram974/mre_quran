@@ -35,6 +35,7 @@ class MushafEdition {
     required this.approxBytes,
     required this._path,
     this.darkPaper,
+    this.bannerCircles,
   });
 
   /// The edition shown for [style].
@@ -61,6 +62,8 @@ class MushafEdition {
     geometry: PageGeometrySource.glyphDatabase,
     crop: (left: 0, top: 0, right: 1, bottom: 1),
     approxBytes: 80 * _megabyte,
+    // Measured on the banner of page 50: the two empty circles.
+    bannerCircles: (start: 0.765, end: 0.231, diameter: 0.064),
     path: (page, _) =>
         'https://files.quran.app/hafs/madani/width_1260/'
         'page${page.toString().padLeft(3, '0')}.png',
@@ -126,6 +129,13 @@ class MushafEdition {
 
   /// Paper colour (0xRRGGBB) of the dark images, for [PageInk.onPaper].
   final int? darkPaper;
+
+  /// Where the two empty circles of a surah banner lie, as fractions of the
+  /// image width: the centre of the circle at the reading start (right), the
+  /// centre of the one at the end (left), and their inner diameter. Null when
+  /// the edition's banners have no such circles, or they have not been
+  /// measured.
+  final ({double start, double end, double diameter})? bannerCircles;
 
   /// Size of every image of the edition, light and dark, in bytes, measured
   /// on sample pages. For telling the reader what a download costs.

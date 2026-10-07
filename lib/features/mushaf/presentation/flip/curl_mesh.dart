@@ -80,10 +80,20 @@ CurlMesh buildCurlMesh({
   final camera = w * 14;
   final step = w / columns;
 
+  // Going forward the sheet lifts off its own page: the bend grows with the
+  // turn, and the free edge runs ahead. Going back the sheet lifts off the
+  // page it landed on, the exact mirror of that: seen from the far side the
+  // same lift, so the bend grows with the turn *left to go*, and again the
+  // free edge runs ahead. Mixing the two weights keeps a change of direction
+  // smooth.
+  final backWeight = ((1 - lead) / 2).clamp(0.0, 1.0);
   double angleAt(double s) {
     final base = math.pi * t;
-    final bow = lead.clamp(-1.0, 1.0) * 0.5 * bend * (2 * math.pow(s, 1.6) - 1);
-    return math.max(0.0, math.min(math.pi, base * (1 + bow)));
+    final bow = 0.5 * bend * (2 * math.pow(s, 1.6) - 1);
+    final forward = base * (1 + bow);
+    final back = math.pi - (math.pi - base) * (1 + bow);
+    final angle = forward + (back - forward) * backWeight;
+    return math.max(0.0, math.min(math.pi, angle));
   }
 
   final xs = <double>[w];
@@ -177,3 +187,21 @@ CurlMesh buildCurlMesh({
     lift: bend,
   );
 }
+
+/// Where the free edge of a sheet of [width] hinged on its right edge lies,
+/// measured from the sheet's own left edge when flat: [width] at the hinge,
+/// 0 while the sheet lies on its page, up to twice [width] once it has landed
+/// on the far side.
+double curlFreeEdgeX({
+  required double progress,
+  required double width,
+  required double height,
+  double lead = 1,
+}) => buildCurlMesh(
+  progress: progress,
+  size: Size(width, height),
+  vanishX: width,
+  pixelRatio: 1,
+  lead: lead,
+  columns: 12,
+).outline.last.x;

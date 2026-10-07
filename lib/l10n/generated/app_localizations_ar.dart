@@ -435,4 +435,15 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get hideBars => 'إخفاء الأشرطة';
+
+  @override
+  String get surahOrderCaption => 'الترتيب';
+
+  @override
+  String get surahAyahsCaption => 'آيات';
+
+  @override
+  String surahOrderLabel(String number) {
+    return 'ترتيبها $number';
+  }
 }

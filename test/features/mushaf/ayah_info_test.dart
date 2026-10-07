@@ -97,4 +97,57 @@ void main() {
       expect(rects.last.top, closeTo(rects.first.bottom, 1e-9));
     });
   });
+
+  group('surah banners', () {
+    GlyphBox glyph(int surah, int ayah, int line, int y) => (
+      ayah: AyahRef(surah, ayah),
+      position: 1,
+      line: line,
+      minX: 100,
+      maxX: 900,
+      minY: y,
+      maxY: y + 60,
+    );
+
+    test('a surah opening finds its banner two rows above its first line', () {
+      // 100 px rows: row 1 (the banner) at 0–100, row 2 (the basmala), and
+      // the first text line, row 3, at 200–260.
+      final geometry = glyphGeometry(
+        [glyph(3, 1, 3, 200), glyph(3, 2, 12, 1100)],
+        width: 1000,
+        height: 1600,
+        lines: 15,
+      );
+      expect(geometry.banners, hasLength(1));
+      final banner = geometry.banners.single;
+      expect(banner.surah, 3);
+      expect(banner.top, closeTo(geometry.lineCuts[0], 1e-9));
+      expect(banner.bottom, closeTo(geometry.lineCuts[1], 1e-9));
+    });
+
+    test('al-Fatiha and at-Tawba have their banner one row above', () {
+      for (final surah in [1, 9]) {
+        final geometry = glyphGeometry(
+          [glyph(surah, 1, 3, 200), glyph(surah, 2, 12, 1100)],
+          width: 1000,
+          height: 1600,
+          lines: 15,
+        );
+        expect(
+          geometry.banners.single.top,
+          closeTo(geometry.lineCuts[1], 1e-9),
+        );
+      }
+    });
+
+    test('a page where no surah opens has no banners', () {
+      final geometry = glyphGeometry(
+        [glyph(2, 5, 1, 100), glyph(2, 6, 12, 1100)],
+        width: 1000,
+        height: 1600,
+        lines: 15,
+      );
+      expect(geometry.banners, isEmpty);
+    });
+  });
 }

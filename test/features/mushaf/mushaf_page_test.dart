@@ -88,7 +88,13 @@ void main() {
     await tester.pumpAndSettle();
     expect(container.read(readerImmersiveProvider), isTrue);
     expect(find.text('الجزء ١').hitTestable(), findsOneWidget);
-    expect(find.text('١').hitTestable(), findsOneWidget);
+    // The page number is a chip; the banner's medallion also holds a one.
+    expect(
+      find
+          .descendant(of: find.byType(ReaderChip), matching: find.text('١'))
+          .hitTestable(),
+      findsOneWidget,
+    );
     expect(find.byTooltip('الصفحة التالية').hitTestable(), findsOneWidget);
     expect(find.bySemanticsLabel('ابحث في القرآن').hitTestable(), findsNothing);
   });

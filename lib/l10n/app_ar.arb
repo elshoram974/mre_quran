@@ -127,5 +127,9 @@
   "@pageOfTotal": {"placeholders": {"page": {"type": "String"}, "total": {"type": "String"}}},
   "bookmarkPage": "إضافة علامة للصفحة",
   "removePageBookmark": "إزالة علامة الصفحة",
-  "hideBars": "إخفاء الأشرطة"
+  "hideBars": "إخفاء الأشرطة",
+  "surahOrderCaption": "الترتيب",
+  "surahAyahsCaption": "آيات",
+  "surahOrderLabel": "ترتيبها {number}",
+  "@surahOrderLabel": {"placeholders": {"number": {"type": "String"}}}
 }

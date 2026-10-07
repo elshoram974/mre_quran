@@ -1,11 +1,13 @@
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/l10n/l10n.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../quran_index/domain/quran_metadata.dart';
@@ -103,6 +105,7 @@ class PrintedPageView extends StatelessWidget {
             (edition.crop.right - edition.crop.left) *
             MediaQuery.devicePixelRatioOf(context);
         return _PrintedBody(
+          metadata: metadata,
           edition: edition,
           page: page,
           area: constraints.biggest,
@@ -119,6 +122,7 @@ class PrintedPageView extends StatelessWidget {
 
 class _PrintedBody extends ConsumerWidget {
   const _PrintedBody({
+    required this.metadata,
     required this.edition,
     required this.page,
     required this.area,
@@ -129,6 +133,7 @@ class _PrintedBody extends ConsumerWidget {
     required this.selected,
   });
 
+  final QuranMetadata metadata;
   final MushafEdition edition;
   final int page;
   final Size area;
@@ -187,6 +192,29 @@ class _PrintedBody extends ConsumerWidget {
             area: area,
           )
         : edition.crop;
+    // The empty circles of each surah banner hold the surah's details.
+    final circles = edition.bannerCircles;
+    final banners = geometry == null || circles == null
+        ? const <BannerDetails>[]
+        : [
+            for (final banner in geometry.banners)
+              BannerDetails(
+                top: banner.top,
+                bottom: banner.bottom,
+                startMain: formatDigits(
+                  metadata.surah(banner.surah).ayahCount,
+                  arabic: true,
+                ),
+                startCaption: l10n.surahAyahsCaption,
+                endMain:
+                    metadata.surah(banner.surah).revelation == Revelation.meccan
+                    ? l10n.revelationMeccan
+                    : l10n.revelationMedinan,
+                endCaption: l10n.surahOrderLabel(
+                  formatDigits(banner.surah, arabic: true),
+                ),
+              ),
+          ];
     final Widget child = switch (image) {
       AsyncValue(:final value?) when ready => _placed(
         _PrintedImage(
@@ -197,6 +225,7 @@ class _PrintedBody extends ConsumerWidget {
           spread: spread,
           dark: dark,
           geometry: geometry,
+          banners: banners,
           bookmarked: bookmarked,
           selected: selected,
           onTap: onTap,
@@ -248,6 +277,7 @@ class _PrintedImage extends StatefulWidget {
     required this.spread,
     required this.dark,
     required this.geometry,
+    required this.banners,
     required this.bookmarked,
     required this.selected,
     required this.onTap,
@@ -255,6 +285,7 @@ class _PrintedImage extends StatefulWidget {
     required this.label,
   });
 
+  final List<BannerDetails> banners;
   final MushafEdition edition;
   final ui.Image image;
   final FractionRect crop;
@@ -397,6 +428,9 @@ class _PrintedImageState extends State<_PrintedImage>
               paper: scheme.surface,
               imagePaint: _imagePaint(scheme),
               marks: marks,
+              banners: widget.banners,
+              circles: widget.edition.bannerCircles,
+              bannerInk: scheme.onSurface.withValues(alpha: 0.85),
               splash: _flash,
               splashRects: _flashRects,
               splashColor: scheme.primary.withValues(alpha: dark ? 0.45 : 0.3),
@@ -416,10 +450,22 @@ class _PrintedPagePainter extends CustomPainter {
     required this.paper,
     required this.imagePaint,
     required this.marks,
+    required this.banners,
+    required this.circles,
+    required this.bannerInk,
     required this.splash,
     required this.splashRects,
     required this.splashColor,
   }) : super(repaint: splash);
+
+  /// Details to write in the empty circles of the surah banners.
+  final List<BannerDetails> banners;
+
+  /// Where the circles are, or null when the edition has none.
+  final ({double start, double end, double diameter})? circles;
+
+  /// Colour of the text in the circles.
+  final Color bannerInk;
 
   final ui.Image image;
   final FractionRect crop;
@@ -513,7 +559,83 @@ class _PrintedPagePainter extends CustomPainter {
         imagePaint,
       );
     }
+    _paintBanners(canvas, size);
     canvas.restore();
+  }
+
+  /// Writes each banner's details in its two circles, following the image
+  /// wherever the page has been cropped or spread.
+  void _paintBanners(Canvas canvas, Size size) {
+    final circles = this.circles;
+    if (circles == null) return;
+    final cropWidth = crop.right - crop.left;
+    final cropHeight = crop.bottom - crop.top;
+    double screenX(double fraction) =>
+        (fraction - crop.left) / cropWidth * size.width;
+    final diameter = circles.diameter / cropWidth * size.width;
+    for (final banner in banners) {
+      final top = spread == null
+          ? (banner.top - crop.top) / cropHeight * size.height
+          : spread!.toScreen(banner.top);
+      final bottom = spread == null
+          ? (banner.bottom - crop.top) / cropHeight * size.height
+          : spread!.toScreen(banner.bottom, bottom: true);
+      final y = (top + bottom) / 2;
+      _circleText(
+        canvas,
+        Offset(screenX(circles.start), y),
+        diameter,
+        banner.startMain,
+        banner.startCaption,
+      );
+      _circleText(
+        canvas,
+        Offset(screenX(circles.end), y),
+        diameter,
+        banner.endMain,
+        banner.endCaption,
+      );
+    }
+  }
+
+  /// [main] over a smaller [caption], scaled down to fit a circle.
+  void _circleText(
+    Canvas canvas,
+    Offset centre,
+    double diameter,
+    String main,
+    String? caption,
+  ) {
+    TextStyle style(double size, double alpha) => TextStyle(
+      fontFamily: AppTokens.quranFontFamily,
+      fontSize: size,
+      height: 1.05,
+      color: bannerInk.withValues(alpha: bannerInk.a * alpha),
+    );
+    final painter = TextPainter(
+      textDirection: TextDirection.rtl,
+      textAlign: TextAlign.center,
+      text: TextSpan(
+        text: main,
+        style: style(100, 1),
+        children: [
+          if (caption != null) ...[
+            const TextSpan(text: '\n'),
+            TextSpan(text: caption, style: style(58, 0.8)),
+          ],
+        ],
+      ),
+    )..layout();
+    // Fit inside the circle's inscribed square, with a little air.
+    final room = diameter * 0.84;
+    final scale = math.min(room / painter.width, room / painter.height);
+    canvas
+      ..save()
+      ..translate(centre.dx, centre.dy)
+      ..scale(scale);
+    painter.paint(canvas, Offset(-painter.width / 2, -painter.height / 2));
+    canvas.restore();
+    painter.dispose();
   }
 
   @override
@@ -526,6 +648,8 @@ class _PrintedPagePainter extends CustomPainter {
       old.imagePaint.blendMode != imagePaint.blendMode ||
       old.splashRects != splashRects ||
       old.splashColor != splashColor ||
+      old.bannerInk != bannerInk ||
+      !listEquals(old.banners, banners) ||
       !_sameMarks(old.marks, marks);
 
   static bool _sameMarks(
@@ -542,6 +666,53 @@ class _PrintedPagePainter extends CustomPainter {
     }
     return true;
   }
+}
+
+/// What is written in the two empty circles of one surah banner.
+@immutable
+class BannerDetails {
+  /// Creates the details of the banner spanning [top]–[bottom] (fractions of
+  /// the image height).
+  const BannerDetails({
+    required this.top,
+    required this.bottom,
+    required this.startMain,
+    required this.startCaption,
+    required this.endMain,
+    required this.endCaption,
+  });
+
+  /// Top of the banner.
+  final double top;
+
+  /// Bottom of the banner.
+  final double bottom;
+
+  /// Text in the circle at the reading start: the number of ayahs...
+  final String startMain;
+
+  /// ... with its caption under it.
+  final String startCaption;
+
+  /// Text in the circle at the reading end: where the surah was revealed...
+  final String endMain;
+
+  /// ... with its place in the Mushaf under it.
+  final String endCaption;
+
+  @override
+  bool operator ==(Object other) =>
+      other is BannerDetails &&
+      other.top == top &&
+      other.bottom == bottom &&
+      other.startMain == startMain &&
+      other.startCaption == startCaption &&
+      other.endMain == endMain &&
+      other.endCaption == endCaption;
+
+  @override
+  int get hashCode =>
+      Object.hash(top, bottom, startMain, startCaption, endMain, endCaption);
 }
 
 /// Fifteen line placeholders spread like the printed page.

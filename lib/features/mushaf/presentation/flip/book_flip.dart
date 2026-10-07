@@ -5,6 +5,7 @@ import 'package:flutter/physics.dart';
 import 'package:flutter/rendering.dart';
 
 import 'book_geometry.dart';
+import 'curl_mesh.dart';
 import 'page_curl_painter.dart';
 
 /// Builds one page of the book.
@@ -422,12 +423,30 @@ class _BookFlipState extends State<BookFlip>
 
         // In single mode the view follows the sheet as it lands, so the page
         // on its back ends up in front of the reader.
-        final shift = turning && !spread
-            ? width *
-                  Curves.easeInOutCubic.transform(
-                    ((f - 0.25) / 0.75).clamp(0.0, 1.0),
-                  )
-            : 0.0;
+        // Going forward the view follows the sheet after it has crossed the
+        // spine. Going back the hand holds the free edge, so the view must
+        // keep that edge under the finger: the shift is whatever puts the
+        // free edge at the finger's share of the page. Between the two, as
+        // the direction changes, the shifts blend.
+        double shiftFor() {
+          final forward =
+              width *
+              Curves.easeInOutCubic.transform(
+                ((f - 0.25) / 0.75).clamp(0.0, 1.0),
+              );
+          final backWeight = ((1 - _lead) / 2).clamp(0.0, 1.0);
+          if (backWeight == 0) return forward;
+          final edge = curlFreeEdgeX(
+            progress: f,
+            width: width,
+            height: height,
+            lead: _lead,
+          );
+          final tracked = (edge - width * f).clamp(0.0, width);
+          return forward + (tracked - forward) * backWeight;
+        }
+
+        final shift = turning && !spread ? shiftFor() : 0.0;
 
         final Widget content = widget.realistic
             ? Transform.translate(

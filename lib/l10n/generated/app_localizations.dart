@@ -811,6 +811,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Hide the bars'**
   String get hideBars;
+
+  /// No description provided for @surahOrderCaption.
+  ///
+  /// In en, this message translates to:
+  /// **'Order'**
+  String get surahOrderCaption;
+
+  /// No description provided for @surahAyahsCaption.
+  ///
+  /// In en, this message translates to:
+  /// **'Ayahs'**
+  String get surahAyahsCaption;
+
+  /// No description provided for @surahOrderLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Order {number}'**
+  String surahOrderLabel(String number);
 }
 
 class _AppLocalizationsDelegate

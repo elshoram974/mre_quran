@@ -433,4 +433,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get hideBars => 'Hide the bars';
+
+  @override
+  String get surahOrderCaption => 'Order';
+
+  @override
+  String get surahAyahsCaption => 'Ayahs';
+
+  @override
+  String surahOrderLabel(String number) {
+    return 'Order $number';
+  }
 }

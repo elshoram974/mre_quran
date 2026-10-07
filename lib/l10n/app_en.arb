@@ -203,5 +203,9 @@
   "@pageOfTotal": {"placeholders": {"page": {"type": "String"}, "total": {"type": "String"}}},
   "bookmarkPage": "Bookmark this page",
   "removePageBookmark": "Remove this page's bookmark",
-  "hideBars": "Hide the bars"
+  "hideBars": "Hide the bars",
+  "surahOrderCaption": "Order",
+  "surahAyahsCaption": "Ayahs",
+  "surahOrderLabel": "Order {number}",
+  "@surahOrderLabel": {"placeholders": {"number": {"type": "String"}}}
 }

@@ -77,6 +77,7 @@ class PageGeometry {
     this.inkTop = 0,
     this.inkBottom = 1,
     this.lineCuts = const [],
+    this.banners = const [],
   });
 
   /// Every word on the page.
@@ -91,6 +92,10 @@ class PageGeometry {
   /// Top of every line row of the page, then the bottom of the last, as
   /// fractions of the image height; empty when the rows are not known.
   final List<double> lineCuts;
+
+  /// The surah banners on the page: the surah that opens there and the
+  /// vertical extent of its banner, as fractions of the image height.
+  final List<({int surah, double top, double bottom})> banners;
 
   /// The area of [ayah] on the page: one rectangle per line it covers.
   ///
@@ -237,12 +242,38 @@ PageGeometry glyphGeometry(
       ),
     );
   }
+  final cuts = _rowsFromBands(bands, lines, height);
   return PageGeometry(
     words: List.unmodifiable(boxes),
     inkTop: inkTop / height,
     inkBottom: inkBottom / height,
-    lineCuts: _rowsFromBands(bands, lines, height),
+    lineCuts: cuts,
+    banners: _bannersOf(glyphs, cuts),
   );
+}
+
+/// The banner of every surah that opens on the page: its first ayah's first
+/// glyph sits on a text row, the basmala on the row above (but for al-Fatiha,
+/// whose basmala is its first ayah, and at-Tawba, which has none), and the
+/// banner on the row above that.
+List<({int surah, double top, double bottom})> _bannersOf(
+  List<GlyphBox> glyphs,
+  List<double> cuts,
+) {
+  if (cuts.length < 2) return const [];
+  final banners = <({int surah, double top, double bottom})>[];
+  final seen = <int>{};
+  for (final glyph in glyphs) {
+    if (glyph.ayah.ayah != 1 || glyph.position != 1) continue;
+    final surah = glyph.ayah.surah;
+    if (!seen.add(surah)) continue;
+    final hasBasmala = surah != 1 && surah != 9;
+    // Rows are 0-based; the database's lines are 1-based.
+    final row = glyph.line - 1 - (hasBasmala ? 2 : 1);
+    if (row < 0 || row >= cuts.length - 1) continue;
+    banners.add((surah: surah, top: cuts[row], bottom: cuts[row + 1]));
+  }
+  return banners;
 }
 
 /// Row edges of a page with [lines] equal rows, from the bands of the rows
