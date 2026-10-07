@@ -90,6 +90,8 @@ class PrintedPageView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => MushafPageFrame(
+    metadata: metadata,
+    page: page,
     onTap: onTap,
     child: LayoutBuilder(
       builder: (context, constraints) {
@@ -457,9 +459,9 @@ class _PrintedPagePainter extends CustomPainter {
         canvas.drawRRect(
           RRect.fromLTRBR(
             (rect.left - crop.left) / cropWidth * size.width - 3,
-            top - 2,
+            top - 0.5,
             (rect.right - crop.left) / cropWidth * size.width + 3,
-            bottom + 2,
+            bottom + 0.5,
             const Radius.circular(6),
           ),
           paint,

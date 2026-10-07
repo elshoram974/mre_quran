@@ -93,7 +93,31 @@ class PageGeometry {
   final List<double> lineCuts;
 
   /// The area of [ayah] on the page: one rectangle per line it covers.
+  ///
+  /// When the rows of the page are known, each rectangle takes the full
+  /// height of its row, so the lines of a selection are as tall as one
+  /// another and touch, instead of following the ink of each line.
   List<FractionRect> rectsOf(AyahRef ayah) {
+    final rects = _inkRectsOf(ayah);
+    if (lineCuts.length < 2) return rects;
+    return [for (final rect in rects) _snapToRow(rect)];
+  }
+
+  FractionRect _snapToRow(FractionRect rect) {
+    final middle = (rect.top + rect.bottom) / 2;
+    var row = 0;
+    while (row < lineCuts.length - 2 && middle >= lineCuts[row + 1]) {
+      row++;
+    }
+    return (
+      left: rect.left,
+      top: lineCuts[row],
+      right: rect.right,
+      bottom: lineCuts[row + 1],
+    );
+  }
+
+  List<FractionRect> _inkRectsOf(AyahRef ayah) {
     final byLine = <int, FractionRect>{};
     for (final box in words) {
       if (box.ayah != ayah) continue;

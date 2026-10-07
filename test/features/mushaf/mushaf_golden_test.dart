@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mre_quran/core/theme/app_theme.dart';
+import 'package:mre_quran/features/mushaf/application/reader_immersive_provider.dart';
 import 'package:mre_quran/features/mushaf/presentation/mushaf_page_view.dart';
 import 'package:mre_quran/features/quran_index/data/quran_metadata_parser.dart';
 import 'package:mre_quran/features/quran_text/domain/quran_text.dart';
@@ -51,6 +52,8 @@ void main() {
         addTearDown(tester.view.resetDevicePixelRatio);
         final container = ProviderContainer();
         addTearDown(container.dispose);
+        // The page's labels show while the floating bars are away.
+        container.read(readerImmersiveProvider.notifier).toggle();
         await tester.pumpWidget(
           UncontrolledProviderScope(
             container: container,

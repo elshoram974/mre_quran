@@ -56,24 +56,34 @@ class CurlMesh {
 /// free edge leads, so the paper curves instead of staying flat. At 0 and 1 it
 /// is flat. [vanishX] is the horizontal position of the viewer's eye, in the
 /// sheet's local space. [pixelRatio] converts local units to texture pixels.
+///
+/// [lead] is the direction of the turn: 1 while the sheet is being turned
+/// forward, -1 while it is being turned back. A hand pulling the free edge
+/// leads with it, so going forward the free edge runs ahead of the hinge and
+/// going back it runs ahead the other way: the bend is mirrored. Values in
+/// between blend the two, so a change of mind mid-turn does not jump.
 CurlMesh buildCurlMesh({
   required double progress,
   required Size size,
   required double vanishX,
   required double pixelRatio,
+  double lead = 1,
   int columns = 30,
 }) {
   final t = progress.clamp(0.0, 1.0);
   final w = size.width;
   final h = size.height;
   final bend = math.sin(math.pi * t);
-  final camera = w * 5.5;
+  // Far camera: the lifted part grows only a few percent, so the sheet
+  // stays within the page's height instead of spilling over its top and
+  // bottom (and its labels).
+  final camera = w * 14;
   final step = w / columns;
 
   double angleAt(double s) {
     final base = math.pi * t;
-    final lead = 0.5 * bend * (2 * math.pow(s, 1.6) - 1);
-    return math.min(math.pi, base * (1 + lead));
+    final bow = lead.clamp(-1.0, 1.0) * 0.5 * bend * (2 * math.pow(s, 1.6) - 1);
+    return math.max(0.0, math.min(math.pi, base * (1 + bow)));
   }
 
   final xs = <double>[w];

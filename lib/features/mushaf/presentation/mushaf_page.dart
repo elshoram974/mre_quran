@@ -2,7 +2,6 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../app/router.dart';
 import '../../../core/l10n/l10n.dart';
@@ -11,14 +10,13 @@ import '../../../core/widgets/empty_state.dart';
 import '../../bookmarks/application/bookmarks_provider.dart';
 import '../../quran_text/application/quran_text_providers.dart';
 import '../../settings/application/digits_provider.dart';
-import '../../quran_index/domain/reader_destination.dart';
-import '../application/highlighted_ayah_provider.dart';
 import '../application/reader_immersive_provider.dart';
 import '../application/reading_position_provider.dart';
 import 'display_options_sheet.dart';
 import 'mushaf_pager.dart';
 import 'go_to_page_sheet.dart';
 import 'reader_bar.dart';
+import 'reader_navigation.dart';
 
 /// The Mushaf tab: the pages, labelled like a printed Mushaf (surah and juz
 /// above, page number below, arrows onward). A tap on the page or an ayah
@@ -37,18 +35,7 @@ class MushafPage extends ConsumerWidget {
     // Rebuilds when the screen's insets change (rotation, navigation mode).
     MediaQuery.viewPaddingOf(context);
 
-    Future<void> open(AppRoute route) async {
-      final chosen = await context.push<ReaderDestination>(route.path);
-      if (chosen != null) {
-        final highlight = ref.read(highlightedAyahProvider.notifier);
-        if (chosen.ayah == null) {
-          highlight.clear();
-        } else {
-          highlight.show(chosen.ayah!);
-        }
-        await ref.read(readingPositionProvider.notifier).setPage(chosen.page);
-      }
-    }
+    Future<void> open(AppRoute route) => openReaderRoute(context, ref, route);
 
     if (text.hasError) {
       return EmptyState(
@@ -65,17 +52,12 @@ class MushafPage extends ConsumerWidget {
     final metadata = data.metadata;
     final digits = ref.watch(digitsFormatterProvider);
     final surah = metadata.surahAtPage(page);
-    final juz = metadata.juzOfPage(page);
     final onPage = metadata.ayahsOnPage(page);
     final bookmarked = ref.watch(bookmarkedRefsProvider);
     final marked = onPage.where(bookmarked.contains).toList();
-    final reading = ref.read(readingPositionProvider.notifier);
     final scheme = Theme.of(context).colorScheme;
 
-    void goTo(int target) {
-      ref.read(highlightedAyahProvider.notifier).clear();
-      reading.setPage(target);
-    }
+    void goTo(int target) => goToReaderPage(ref, target);
 
     Future<void> togglePageBookmark() async {
       final notifier = ref.read(bookmarksProvider.notifier);
@@ -114,48 +96,6 @@ class MushafPage extends ConsumerWidget {
     }
 
     final hideBars = ref.read(readerImmersiveProvider.notifier).hide;
-
-    // Always on the page, like the labels of a printed Mushaf: the surah and
-    // juz above, the page number below, and arrows onward.
-    final header = ReaderHeader(
-      start: [
-        ReaderChip(
-          label: surah.arabicName,
-          tooltip: l10n.quranIndex,
-          onPressed: () => open(AppRoute.quranIndex),
-        ),
-        if (surah.number < metadata.surahs.length)
-          ReaderChip(
-            // The Mushaf turns right to left: onward is to the left.
-            icon: Icons.chevron_left_rounded,
-            tooltip: l10n.nextSurah,
-            onPressed: () => goTo(metadata.surah(surah.number + 1).startPage),
-          ),
-      ],
-      middle: const SizedBox.shrink(),
-      end: [
-        ReaderChip(
-          label: l10n.juzTitle(digits(juz.number)),
-          tooltip: l10n.quranIndex,
-          onPressed: () => open(AppRoute.quranIndex),
-        ),
-      ],
-    );
-    final footer = ReaderFooter(
-      children: [
-        ReaderChip(
-          label: digits(page),
-          tooltip: l10n.goToPage,
-          onPressed: goToPage,
-        ),
-        if (page < metadata.pageCount)
-          ReaderChip(
-            icon: Icons.chevron_left_rounded,
-            tooltip: l10n.nextPage,
-            onPressed: () => goTo(page + 1),
-          ),
-      ],
-    );
 
     // Shown on a tap: a toolbar at the top and controls at the bottom,
     // floating over the page.
@@ -267,13 +207,6 @@ class MushafPage extends ConsumerWidget {
           children: [
             Positioned.fill(
               child: MushafPager(text: data, initialPage: page),
-            ),
-            PositionedDirectional(top: 0, start: 0, end: 0, child: header),
-            PositionedDirectional(
-              bottom: 0,
-              start: 0,
-              end: 0,
-              child: appear(footer, shown: immersive, from: Offset.zero),
             ),
             PositionedDirectional(
               top: 4,

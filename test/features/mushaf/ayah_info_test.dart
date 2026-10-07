@@ -86,7 +86,15 @@ void main() {
       final rects = geometry.rectsOf(const AyahRef(1, 2));
       expect(rects, hasLength(2));
       expect(rects.first.left, 0.1);
-      expect(rects.last.top, 0.3);
+    });
+
+    test('a selection takes whole rows, equally tall, with no gap between', () {
+      final rects = geometry.rectsOf(const AyahRef(1, 2));
+      final pitch = geometry.lineCuts[1] - geometry.lineCuts[0];
+      for (final rect in rects) {
+        expect(rect.bottom - rect.top, closeTo(pitch, 1e-9));
+      }
+      expect(rects.last.top, closeTo(rects.first.bottom, 1e-9));
     });
   });
 }

@@ -5,6 +5,7 @@ import 'package:mre_quran/features/mushaf/application/reader_immersive_provider.
 import 'package:mre_quran/features/mushaf/application/reading_position_provider.dart';
 import 'package:mre_quran/features/mushaf/presentation/flip/book_flip.dart';
 import 'package:mre_quran/features/mushaf/presentation/reader_bar.dart';
+import 'package:mre_quran/features/mushaf/presentation/reader_page_labels.dart';
 import 'package:mre_quran/features/mushaf/presentation/mushaf_page.dart';
 import 'package:mre_quran/features/quran_index/application/quran_metadata_provider.dart';
 import 'package:mre_quran/features/bookmarks/application/bookmarks_provider.dart';
@@ -67,20 +68,16 @@ Future<(ProviderContainer, MemoryReadingPositionRepository)> _pump(
 void main() {
   testWidgets('opens at page 1 with the floating bars showing', (tester) async {
     await _pump(tester);
-    expect(find.text('سورة الفاتحة'), findsOneWidget, reason: 'banner');
-    // The surah label above the page and the surah button below.
-    expect(find.text('الفاتحة'), findsNWidgets(2));
-    expect(find.text('الجزء ١'), findsOneWidget);
+    expect(find.text('سورة الفاتحة'), findsWidgets, reason: 'banner');
+    // The surah button of the floating controls, and the page pill.
+    expect(find.text('الفاتحة').hitTestable(), findsOneWidget);
     expect(find.text('صفحة ١'), findsOneWidget, reason: 'page pill');
     expect(find.bySemanticsLabel('ابحث في القرآن'), findsOneWidget);
-    for (final tip in [
-      'إضافة علامة للصفحة',
-      'العرض',
-      'إخفاء الأشرطة',
-      'السورة التالية',
-    ]) {
+    for (final tip in ['إضافة علامة للصفحة', 'العرض', 'إخفاء الأشرطة']) {
       expect(find.byTooltip(tip), findsOneWidget, reason: tip);
     }
+    // The page's own labels step aside while the bars show.
+    expect(find.text('الجزء ١').hitTestable(), findsNothing);
   });
 
   testWidgets('hiding the bars leaves the page number and the arrow', (
@@ -90,9 +87,24 @@ void main() {
     await tester.tap(find.byTooltip('إخفاء الأشرطة'));
     await tester.pumpAndSettle();
     expect(container.read(readerImmersiveProvider), isTrue);
+    expect(find.text('الجزء ١').hitTestable(), findsOneWidget);
     expect(find.text('١').hitTestable(), findsOneWidget);
     expect(find.byTooltip('الصفحة التالية').hitTestable(), findsOneWidget);
     expect(find.bySemanticsLabel('ابحث في القرآن').hitTestable(), findsNothing);
+  });
+
+  testWidgets('the surah, juz, and page number are part of the page itself', (
+    tester,
+  ) async {
+    await _pump(tester, savedPage: 5);
+    // Inside each page's own subtree, so the turning sheet carries them.
+    for (final number in [4, 5, 6]) {
+      final labels = find.descendant(
+        of: find.byKey(ValueKey<int>(number)),
+        matching: find.byType(ReaderPageLabels),
+      );
+      expect(labels, findsOneWidget, reason: 'page $number');
+    }
   });
 
   testWidgets('the chips never cover the text and stay on screen', (
@@ -104,8 +116,8 @@ void main() {
     final page = tester.getRect(
       find.byKey(const ValueKey<int>(42)).hitTestable(),
     );
-    final chip = tester.getRect(find.text('الجزء ٣'));
-    final number = tester.getRect(find.text('٤٢'));
+    final chip = tester.getRect(find.text('الجزء ٣').hitTestable());
+    final number = tester.getRect(find.text('٤٢').hitTestable());
     expect(chip.top, greaterThanOrEqualTo(page.top));
     expect(number.bottom, lessThanOrEqualTo(page.bottom));
   });
@@ -116,10 +128,12 @@ void main() {
     final (container, positions) = await _pump(tester, savedPage: 5);
     container.read(readerImmersiveProvider.notifier).hide();
     await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('الصفحة التالية'));
+    await tester.tap(find.byTooltip('الصفحة التالية').hitTestable());
     await tester.pumpAndSettle();
     expect(positions.page, 6);
-    await tester.tap(find.byTooltip('السورة التالية'));
+    container.read(readerImmersiveProvider.notifier).hide();
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('السورة التالية').hitTestable());
     await tester.pumpAndSettle();
     // Al-Baqarah is followed by Al Imran, which starts on page 50.
     expect(positions.page, 50);
@@ -174,8 +188,10 @@ void main() {
     final (container, _) = await _pump(tester);
     await container.read(readingPositionProvider.notifier).setPage(604);
     await tester.pumpAndSettle();
-    expect(find.text('٦٠٤'), findsOneWidget);
-    expect(find.text('الجزء ٣٠'), findsOneWidget);
+    container.read(readerImmersiveProvider.notifier).hide();
+    await tester.pumpAndSettle();
+    expect(find.text('٦٠٤').hitTestable(), findsOneWidget);
+    expect(find.text('الجزء ٣٠').hitTestable(), findsOneWidget);
   });
 
   testWidgets('a tap hides the app bars and another brings them back', (

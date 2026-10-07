@@ -156,4 +156,57 @@ void main() {
     await _drag(tester, -300);
     expect(first, isEmpty);
   });
+
+  /// The lead of the painter drawing the turning sheet.
+  double leadOf(WidgetTester tester) => tester
+      .widgetList<CustomPaint>(find.byType(CustomPaint))
+      .map((w) => w.painter)
+      .whereType<PageCurlPainter>()
+      .single
+      .lead;
+
+  for (final spread in [true, false]) {
+    final mode = spread ? 'spread' : 'single';
+    testWidgets('$mode: the sheet bends one way going forward and the other '
+        'going back', (tester) async {
+      await _pump(tester, realistic: true, spread: spread, page: 4);
+      var gesture = await halfway(tester, 210);
+      expect(leadOf(tester), closeTo(1, 0.02));
+      await gesture.up();
+      await tester.pumpAndSettle();
+      gesture = await halfway(tester, -210);
+      expect(leadOf(tester), closeTo(-1, 0.1));
+      await gesture.up();
+      await tester.pumpAndSettle();
+    });
+  }
+
+  testWidgets('a turn tells the reader it began, before anything moves', (
+    tester,
+  ) async {
+    var began = 0;
+    tester.view.physicalSize = const Size(400, 700);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: BookFlip(
+          pageCount: 20,
+          spread: false,
+          realistic: true,
+          page: 4,
+          onTurnStart: () => began++,
+          onPageChanged: (_) {},
+          pageBuilder: (context, p) => Center(child: Text('page $p')),
+        ),
+      ),
+    );
+    final gesture = await tester.startGesture(const Offset(200, 350));
+    await gesture.moveBy(const Offset(40, 0));
+    await tester.pump();
+    expect(began, 1);
+    await gesture.up();
+    await tester.pumpAndSettle();
+  });
 }

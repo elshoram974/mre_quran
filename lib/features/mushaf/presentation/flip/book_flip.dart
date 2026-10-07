@@ -46,6 +46,7 @@ class BookFlip extends StatefulWidget {
     this.realistic = true,
     this.nextLabel,
     this.previousLabel,
+    this.onTurnStart,
   });
 
   /// Number of pages.
@@ -75,6 +76,9 @@ class BookFlip extends StatefulWidget {
   /// Screen reader label of the "previous page" action.
   final String? previousLabel;
 
+  /// Called when a turn begins, by a drag or an action, before anything moves.
+  final VoidCallback? onTurnStart;
+
   @override
   State<BookFlip> createState() => _BookFlipState();
 }
@@ -91,6 +95,11 @@ class _BookFlipState extends State<BookFlip>
   bool _dragging = false;
   int _dragStartStep = 0;
   int _reportedStep = 0;
+
+  /// 1 while turning forward, -1 while turning back, eased between so the
+  /// bend of the sheet mirrors smoothly when the hand changes direction.
+  double _lead = 1;
+  double _leadTarget = 1;
 
   ui.Image? _front;
   ui.Image? _back;
@@ -169,8 +178,17 @@ class _BookFlipState extends State<BookFlip>
     _textureStep = step;
   }
 
+  /// Points the bend of the sheet the way the turn is going.
+  void _steer(double direction) {
+    if (direction == 0) return;
+    _leadTarget = direction > 0 ? 1 : -1;
+  }
+
+  void _easeLead() => _lead += (_leadTarget - _lead) * 0.3;
+
   void _onTick() {
     final next = _geometry.clampPosition(_settle.value);
+    _easeLead();
     final step = next.floor();
     if (next - step > 0.0005) _ensureTextures(step);
     setState(() => _position = next);
@@ -187,6 +205,7 @@ class _BookFlipState extends State<BookFlip>
     _settle.stop();
     _dragging = true;
     _dragStartStep = _position.round();
+    widget.onTurnStart?.call();
   }
 
   void _dragUpdate(DragUpdateDetails details, double width) {
@@ -195,6 +214,8 @@ class _BookFlipState extends State<BookFlip>
     var next = _position + details.delta.dx / (width * 0.7);
     next = next.clamp(_dragStartStep - 1.0, _dragStartStep + 1.0);
     next = _geometry.clampPosition(next);
+    _steer(details.delta.dx);
+    _easeLead();
     final step = next.floor();
     if (next - step > 0.0005) _ensureTextures(step);
     setState(() => _position = next);
@@ -214,6 +235,7 @@ class _BookFlipState extends State<BookFlip>
   }
 
   void _animateTo(double target, [double velocity = 0]) {
+    _steer(target - _position);
     if (MediaQuery.disableAnimationsOf(context)) {
       _settle.stop();
       setState(() => _position = target);
@@ -241,6 +263,7 @@ class _BookFlipState extends State<BookFlip>
   }
 
   void _turn(int by) {
+    widget.onTurnStart?.call();
     final base = _position.round();
     _dragStartStep = base;
     final target = _geometry.clampPosition((base + by).toDouble());
@@ -388,6 +411,7 @@ class _BookFlipState extends State<BookFlip>
                     vanishX: half * (spread ? 1 : 2),
                     pixelRatio: _pixelRatio,
                     paper: paper,
+                    lead: _lead,
                   ),
                   size: Size(spread ? half : width, height),
                 ),
@@ -434,6 +458,7 @@ class _BookFlipState extends State<BookFlip>
             child: Directionality(
               textDirection: TextDirection.rtl,
               child: ClipRect(
+                clipper: const _SideClip(),
                 child: ColoredBox(color: paper, child: content),
               ),
             ),
@@ -484,4 +509,17 @@ class _BookFlipState extends State<BookFlip>
       ],
     );
   }
+}
+
+/// Clips the sides of the book but not its top and bottom, so a sheet that
+/// lifts toward the reader and grows a little is not cut off.
+class _SideClip extends CustomClipper<Rect> {
+  const _SideClip();
+
+  @override
+  Rect getClip(Size size) =>
+      Rect.fromLTRB(0, -size.height * 0.1, size.width, size.height * 1.1);
+
+  @override
+  bool shouldReclip(_SideClip old) => false;
 }

@@ -209,6 +209,8 @@ class _MushafPageViewState extends State<MushafPageView> {
     final segments = _segments(scheme, context.l10n.ayahNumber);
 
     return MushafPageFrame(
+      metadata: text.metadata,
+      page: widget.page,
       onTap: widget.onTap,
       child: LayoutBuilder(
         builder: (context, constraints) {

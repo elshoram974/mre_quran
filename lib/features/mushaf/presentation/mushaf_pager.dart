@@ -129,11 +129,10 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
         page: page,
         nextLabel: l10n.nextPage,
         previousLabel: l10n.previousPage,
-        onPageChanged: (turned) {
-          // Reading on: the bars step out of the way.
-          ref.read(readerImmersiveProvider.notifier).hide();
-          ref.read(readingPositionProvider.notifier).setPage(turned);
-        },
+        // The bars would be in the snapshot of the sheet; put them away first.
+        onTurnStart: () => ref.read(readerImmersiveProvider.notifier).hide(),
+        onPageChanged: (turned) =>
+            ref.read(readingPositionProvider.notifier).setPage(turned),
         pageBuilder: (context, number) => switch (mode) {
           ReaderMode.text => MushafPageView(
             text: widget.text,

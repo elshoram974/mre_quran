@@ -14,6 +14,7 @@ class PageCurlPainter extends CustomPainter {
     required this.vanishX,
     required this.pixelRatio,
     required this.paper,
+    this.lead = 1,
   });
 
   /// 0 flat on its page, 1 turned over.
@@ -34,6 +35,9 @@ class PageCurlPainter extends CustomPainter {
   /// Colour of blank paper.
   final Color paper;
 
+  /// 1 turning forward, -1 turning back: the bend of the sheet mirrors.
+  final double lead;
+
   @override
   void paint(Canvas canvas, Size size) {
     final mesh = buildCurlMesh(
@@ -41,6 +45,7 @@ class PageCurlPainter extends CustomPainter {
       size: size,
       vanishX: vanishX,
       pixelRatio: pixelRatio,
+      lead: lead,
     );
 
     // The shadow on the page below: the sheet's footprint, blurred.
@@ -107,5 +112,6 @@ class PageCurlPainter extends CustomPainter {
       old.back != back ||
       old.vanishX != vanishX ||
       old.pixelRatio != pixelRatio ||
-      old.paper != paper;
+      old.paper != paper ||
+      old.lead != lead;
 }
