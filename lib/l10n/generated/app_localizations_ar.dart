@@ -471,4 +471,14 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get packDeletePermanently => 'حذف نهائي';
+
+  @override
+  String get editionsIntroTitle => 'مصاحف متنوعة بين يديك';
+
+  @override
+  String get editionsIntroBody =>
+      'أنت تقرأ الآن مصحف المدينة المعتاد. وتوجد نسخ أخرى، مثل مصحف التجويد الملوّن. اختر ما يناسبك، ونزّل ما تشاء منها لتقرأ دون إنترنت. ويمكنك تغيير ذلك لاحقًا من الإعدادات.';
+
+  @override
+  String get editionsIntroDone => 'متابعة القراءة';
 }

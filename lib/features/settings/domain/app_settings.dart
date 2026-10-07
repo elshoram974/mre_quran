@@ -12,8 +12,9 @@ class AppSettings {
     this.startupBehavior = StartupBehavior.lastTab,
     this.readerFontScale = 1,
     this.realisticPageTurn = false,
-    this.readerMode = ReaderMode.text,
+    this.readerMode = ReaderMode.printed,
     this.mushafStyle = MushafStyle.madinah,
+    this.editionsIntroSeen = false,
   });
 
   final AppThemePreference theme;
@@ -37,6 +38,9 @@ class AppSettings {
   /// Which printed edition the printed reader shows.
   final MushafStyle mushafStyle;
 
+  /// Whether the person has been told about the other Mushaf editions.
+  final bool editionsIntroSeen;
+
   Locale get locale => Locale(localeCode);
 
   ThemeMode get materialThemeMode => switch (theme) {
@@ -56,6 +60,7 @@ class AppSettings {
     bool? realisticPageTurn,
     ReaderMode? readerMode,
     MushafStyle? mushafStyle,
+    bool? editionsIntroSeen,
   }) => AppSettings(
     theme: theme ?? this.theme,
     localeCode: localeCode ?? this.localeCode,
@@ -67,6 +72,7 @@ class AppSettings {
     realisticPageTurn: realisticPageTurn ?? this.realisticPageTurn,
     readerMode: readerMode ?? this.readerMode,
     mushafStyle: mushafStyle ?? this.mushafStyle,
+    editionsIntroSeen: editionsIntroSeen ?? this.editionsIntroSeen,
   );
 }
 

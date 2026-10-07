@@ -865,6 +865,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Delete permanently'**
   String get packDeletePermanently;
+
+  /// No description provided for @editionsIntroTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'More Mushafs to choose from'**
+  String get editionsIntroTitle;
+
+  /// No description provided for @editionsIntroBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You are reading the standard Madinah Mushaf. Other editions are available, such as the tajweed-coloured Mushaf. Pick the one you like, and download any of them to read without internet. You can change this later in Settings.'**
+  String get editionsIntroBody;
+
+  /// No description provided for @editionsIntroDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue reading'**
+  String get editionsIntroDone;
 }
 
 class _AppLocalizationsDelegate

@@ -23,6 +23,7 @@ class LocalSettingsRepository implements SettingsRepository {
   static const _realisticTurnKey = 'settings.realistic_page_turn';
   static const _readerModeKey = 'settings.reader_mode';
   static const _mushafStyleKey = 'settings.mushaf_style';
+  static const _introSeenKey = 'settings.editions_intro_seen';
 
   @override
   Future<AppSettings> load() async {
@@ -48,6 +49,7 @@ class LocalSettingsRepository implements SettingsRepository {
       _preferences.getString(_readerModeKey),
     ).wait;
     final mushafStyle = await _preferences.getString(_mushafStyleKey);
+    final introSeen = await _preferences.getBool(_introSeenKey);
     return AppSettings(
       theme: AppThemePreference.values.firstWhere(
         (item) => item.name == theme,
@@ -65,12 +67,13 @@ class LocalSettingsRepository implements SettingsRepository {
       realisticPageTurn: realisticTurn ?? false,
       readerMode: ReaderMode.values.firstWhere(
         (item) => item.name == readerMode,
-        orElse: () => ReaderMode.text,
+        orElse: () => ReaderMode.printed,
       ),
       mushafStyle: MushafStyle.values.firstWhere(
         (item) => item.name == mushafStyle,
         orElse: () => MushafStyle.madinah,
       ),
+      editionsIntroSeen: introSeen ?? false,
     );
   }
 
@@ -87,6 +90,7 @@ class LocalSettingsRepository implements SettingsRepository {
       _preferences.setBool(_realisticTurnKey, settings.realisticPageTurn),
       _preferences.setString(_readerModeKey, settings.readerMode.name),
       _preferences.setString(_mushafStyleKey, settings.mushafStyle.name),
+      _preferences.setBool(_introSeenKey, settings.editionsIntroSeen),
     ]);
   }
 }

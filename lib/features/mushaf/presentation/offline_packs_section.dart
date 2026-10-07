@@ -65,17 +65,34 @@ class _OfflinePacksSectionState extends ConsumerState<OfflinePacksSection> {
         ),
         for (final edition in MushafEdition.all) ...[
           const SizedBox(height: 12),
-          _PackTile(edition: edition),
+          PackTile(edition: edition),
         ],
       ],
     );
   }
 }
 
-class _PackTile extends ConsumerWidget {
-  const _PackTile({required this.edition});
+/// One edition with what is on the device and its download, stop, and delete
+/// buttons. With [onSelect], tapping it chooses the edition, and [selected]
+/// marks the one in use.
+class PackTile extends ConsumerWidget {
+  /// Creates the tile of [edition].
+  const PackTile({
+    super.key,
+    required this.edition,
+    this.selected = false,
+    this.onSelect,
+  });
 
+  /// The edition shown.
   final MushafEdition edition;
+
+  /// Whether the edition is the one the reader shows.
+  final bool selected;
+
+  /// Called when the tile is tapped, to choose the edition; null when the tile
+  /// is not for choosing.
+  final VoidCallback? onSelect;
 
   /// Words of the download's notification.
   PackNotificationText _text(AppLocalizations l10n) {
@@ -184,48 +201,61 @@ class _PackTile extends ConsumerWidget {
       ),
     };
     final showBar = progress != null && (progress.active || progress.partial);
+    final choosing = onSelect != null;
     return AppCard(
       padding: const EdgeInsetsDirectional.fromSTEB(16, 12, 8, 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            children: [
-              Icon(
-                progress?.complete ?? false
-                    ? Icons.download_done_outlined
-                    : Icons.cloud_download_outlined,
-                color: progress?.complete ?? false
-                    ? scheme.primary
-                    : scheme.onSurfaceVariant,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      mushafStyleLabel(l10n, edition.style),
-                      style: theme.textTheme.titleMedium,
-                    ),
-                    Text(
-                      subtitle,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: scheme.onSurfaceVariant,
+      child: InkWell(
+        onTap: onSelect,
+        borderRadius: BorderRadius.circular(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                if (choosing)
+                  Icon(
+                    selected
+                        ? Icons.radio_button_checked
+                        : Icons.radio_button_unchecked,
+                    color: selected ? scheme.primary : scheme.onSurfaceVariant,
+                  )
+                else
+                  Icon(
+                    progress?.complete ?? false
+                        ? Icons.download_done_outlined
+                        : Icons.cloud_download_outlined,
+                    color: progress?.complete ?? false
+                        ? scheme.primary
+                        : scheme.onSurfaceVariant,
+                  ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        mushafStyleLabel(l10n, edition.style),
+                        style: theme.textTheme.titleMedium,
                       ),
-                    ),
-                  ],
+                      Text(
+                        subtitle,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              ?action,
-            ],
-          ),
-          if (showBar)
-            Padding(
-              padding: const EdgeInsetsDirectional.only(top: 10, end: 8),
-              child: LinearProgressIndicator(value: progress.fraction),
+                ?action,
+              ],
             ),
-        ],
+            if (showBar)
+              Padding(
+                padding: const EdgeInsetsDirectional.only(top: 10, end: 8),
+                child: LinearProgressIndicator(value: progress.fraction),
+              ),
+          ],
+        ),
       ),
     );
   }

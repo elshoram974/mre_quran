@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mre_quran/features/mushaf/application/mushaf_packs.dart';
 import 'package:mre_quran/features/mushaf/application/reader_immersive_provider.dart';
 import 'package:mre_quran/features/mushaf/application/reading_position_provider.dart';
 import 'package:mre_quran/features/mushaf/presentation/flip/book_flip.dart';
@@ -14,6 +15,7 @@ import 'package:mre_quran/features/settings/application/settings_provider.dart';
 import 'package:mre_quran/features/settings/domain/app_settings.dart';
 import 'package:mre_quran/l10n/generated/app_localizations.dart';
 
+import '../../helpers/fake_pack_downloader.dart';
 import '../../helpers/fake_quran_metadata_source.dart';
 import '../../helpers/fake_quran_text_source.dart';
 import '../../helpers/memory_bookmarks_repository.dart';
@@ -46,6 +48,8 @@ Future<(ProviderContainer, MemoryReadingPositionRepository)> _pump(
           ..settings = AppSettings(
             localeCode: locale,
             realisticPageTurn: realistic,
+            readerMode: ReaderMode.text,
+            editionsIntroSeen: true,
           ),
       ),
     ],
@@ -336,5 +340,80 @@ void main() {
     }
     expect(find.text('نسخ الآية'), findsOneWidget);
     expect(find.text('إضافة علامة'), findsOneWidget);
+  });
+
+  group('editions intro', () {
+    Future<(ProviderContainer, MemorySettingsRepository)> open(
+      WidgetTester tester, {
+      required bool seen,
+    }) async {
+      final repository = MemorySettingsRepository()
+        ..settings = AppSettings(
+          readerMode: ReaderMode.text,
+          editionsIntroSeen: seen,
+        );
+      tester.view.physicalSize = const Size(390, 844);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final container = ProviderContainer(
+        overrides: [
+          quranMetadataSourceProvider.overrideWithValue(
+            FakeQuranMetadataSource(),
+          ),
+          quranTextSourceProvider.overrideWithValue(FakeQuranTextSource()),
+          bookmarksRepositoryProvider.overrideWithValue(
+            MemoryBookmarksRepository(),
+          ),
+          readingPositionRepositoryProvider.overrideWithValue(
+            MemoryReadingPositionRepository(),
+          ),
+          settingsRepositoryProvider.overrideWithValue(repository),
+          packDownloaderProvider.overrideWithValue(FakePackDownloader()),
+        ],
+      );
+      addTearDown(container.dispose);
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: const MaterialApp(
+            locale: Locale('ar'),
+            supportedLocales: AppLocalizations.supportedLocales,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            home: Scaffold(body: MushafPage()),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      return (container, repository);
+    }
+
+    testWidgets('tells a new reader about the other editions, once', (
+      tester,
+    ) async {
+      final (_, repository) = await open(tester, seen: false);
+      expect(find.text('مصاحف متنوعة بين يديك'), findsOneWidget);
+      expect(find.text('مصحف المدينة'), findsOneWidget);
+      expect(find.text('مصحف التجويد'), findsOneWidget);
+      expect(repository.settings.editionsIntroSeen, isTrue);
+      await tester.tap(find.text('متابعة القراءة'));
+      await tester.pumpAndSettle();
+      expect(find.text('مصاحف متنوعة بين يديك'), findsNothing);
+    });
+
+    testWidgets('does not show again once seen', (tester) async {
+      await open(tester, seen: true);
+      expect(find.text('مصاحف متنوعة بين يديك'), findsNothing);
+    });
+
+    testWidgets('choosing an edition in it switches the Mushaf', (
+      tester,
+    ) async {
+      final (_, repository) = await open(tester, seen: false);
+      await tester.tap(find.text('مصحف التجويد'));
+      // The printed reader then waits for its pages; it never settles here.
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(repository.settings.mushafStyle, MushafStyle.tajweed);
+      expect(repository.settings.readerMode, ReaderMode.printed);
+    });
   });
 }

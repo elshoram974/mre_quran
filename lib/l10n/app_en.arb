@@ -216,5 +216,8 @@
   "packDeleteWarnBody": "{pages} page images ({size} MB) will be deleted permanently. This edition will not work without internet until you download it again.",
   "@packDeleteWarnBody": {"placeholders": {"pages": {"type": "String"}, "size": {"type": "String"}}},
   "packDeleteAck": "I understand and want to delete it",
-  "packDeletePermanently": "Delete permanently"
+  "packDeletePermanently": "Delete permanently",
+  "editionsIntroTitle": "More Mushafs to choose from",
+  "editionsIntroBody": "You are reading the standard Madinah Mushaf. Other editions are available, such as the tajweed-coloured Mushaf. Pick the one you like, and download any of them to read without internet. You can change this later in Settings.",
+  "editionsIntroDone": "Continue reading"
 }

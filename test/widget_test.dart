@@ -83,7 +83,11 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     final repository = MemorySettingsRepository()
-      ..settings = const AppSettings(localeCode: 'en');
+      ..settings = const AppSettings(
+        localeCode: 'en',
+        readerMode: ReaderMode.text,
+        editionsIntroSeen: true,
+      );
     final container = ProviderContainer(
       overrides: [
         settingsRepositoryProvider.overrideWithValue(repository),

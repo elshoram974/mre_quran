@@ -21,7 +21,7 @@ void main() {
 
       expect(
         await container.read(settingsProvider.future),
-        const AppSettings(),
+        repository.settings,
       );
 
       await container
@@ -53,7 +53,7 @@ void main() {
           .read(settingsProvider.notifier)
           .save(const AppSettings(theme: AppThemePreference.dark));
 
-      expect(container.read(settingsProvider).value, const AppSettings());
+      expect(container.read(settingsProvider).value, repository.settings);
     });
 
     test('shows the new value before storage finishes', () async {

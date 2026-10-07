@@ -469,4 +469,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get packDeletePermanently => 'Delete permanently';
+
+  @override
+  String get editionsIntroTitle => 'More Mushafs to choose from';
+
+  @override
+  String get editionsIntroBody =>
+      'You are reading the standard Madinah Mushaf. Other editions are available, such as the tajweed-coloured Mushaf. Pick the one you like, and download any of them to read without internet. You can change this later in Settings.';
+
+  @override
+  String get editionsIntroDone => 'Continue reading';
 }

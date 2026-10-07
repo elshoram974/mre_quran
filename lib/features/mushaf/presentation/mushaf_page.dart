@@ -14,6 +14,7 @@ import '../application/reader_immersive_provider.dart';
 import '../application/reading_position_provider.dart';
 import 'display_options_sheet.dart';
 import 'mushaf_pager.dart';
+import 'editions_intro_sheet.dart';
 import 'go_to_page_sheet.dart';
 import 'reader_bar.dart';
 import 'reader_navigation.dart';
@@ -207,6 +208,12 @@ class MushafPage extends ConsumerWidget {
           children: [
             Positioned.fill(
               child: MushafPager(text: data, initialPage: page),
+            ),
+            // Positioned, so it never gives the stack a size of its own.
+            const Positioned(
+              width: 0,
+              height: 0,
+              child: EditionsIntroTrigger(),
             ),
             PositionedDirectional(
               top: 4,

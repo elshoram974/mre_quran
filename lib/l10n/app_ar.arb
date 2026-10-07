@@ -140,5 +140,8 @@
   "packDeleteWarnBody": "سيُحذف {pages} ملف صورة ({size} ميجابايت) نهائيًا. لن تعمل هذه النسخة دون إنترنت حتى تحمّلها من جديد.",
   "@packDeleteWarnBody": {"placeholders": {"pages": {"type": "String"}, "size": {"type": "String"}}},
   "packDeleteAck": "أفهم ذلك وأريد الحذف",
-  "packDeletePermanently": "حذف نهائي"
+  "packDeletePermanently": "حذف نهائي",
+  "editionsIntroTitle": "مصاحف متنوعة بين يديك",
+  "editionsIntroBody": "أنت تقرأ الآن مصحف المدينة المعتاد. وتوجد نسخ أخرى، مثل مصحف التجويد الملوّن. اختر ما يناسبك، ونزّل ما تشاء منها لتقرأ دون إنترنت. ويمكنك تغيير ذلك لاحقًا من الإعدادات.",
+  "editionsIntroDone": "متابعة القراءة"
 }
