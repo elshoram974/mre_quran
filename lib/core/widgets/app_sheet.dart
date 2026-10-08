@@ -12,6 +12,11 @@ import '../theme/app_tokens.dart';
 ///
 /// iOS draws a floating liquid glass panel. Android draws the Material 3
 /// container. The body is a plain, non-scrolling widget.
+///
+/// The sheet always sits above the on-screen keyboard: it is lifted by the
+/// keyboard height and shrinks to the room left, and its body scrolls when
+/// that room is short. Drag the handle or the sheet down to dismiss, with the
+/// keyboard open or closed.
 abstract final class AppSheet {
   /// Shows a sheet and returns the value it is popped with.
   static Future<T?> show<T>({
@@ -31,36 +36,68 @@ abstract final class AppSheet {
       sheetAnimationStyle: MediaQuery.disableAnimationsOf(context)
           ? AnimationStyle.noAnimation
           : null,
-      builder: (sheetContext) {
-        if (!expandable) {
-          return ConstrainedBox(
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.sizeOf(sheetContext).height * 0.85,
-            ),
-            child: _SheetSurface(
-              // Clamping physics: short content does not claim the drag, so
-              // dragging the sheet down still dismisses it.
-              child: SingleChildScrollView(
-                physics: const ClampingScrollPhysics(),
-                child: builder(sheetContext),
+      builder: (sheetContext) => _KeyboardLift(
+        child: Builder(
+          builder: (context) {
+            if (!expandable) {
+              // The room left above the keyboard and the status bar.
+              final media = MediaQuery.of(context);
+              final room =
+                  media.size.height -
+                  media.viewInsets.bottom -
+                  media.padding.top;
+              return ConstrainedBox(
+                constraints: BoxConstraints(maxHeight: room * 0.9),
+                child: _SheetSurface(
+                  // Clamping physics: short content does not claim the drag,
+                  // so dragging the sheet down still dismisses it.
+                  child: SingleChildScrollView(
+                    physics: const ClampingScrollPhysics(),
+                    keyboardDismissBehavior:
+                        ScrollViewKeyboardDismissBehavior.onDrag,
+                    child: builder(context),
+                  ),
+                ),
+              );
+            }
+            return DraggableScrollableSheet(
+              expand: false,
+              snap: true,
+              initialChildSize: 0.6,
+              minChildSize: 0.3,
+              maxChildSize: 0.92,
+              builder: (context, controller) => _SheetSurface(
+                child: SingleChildScrollView(
+                  controller: controller,
+                  keyboardDismissBehavior:
+                      ScrollViewKeyboardDismissBehavior.onDrag,
+                  child: builder(context),
+                ),
               ),
-            ),
-          );
-        }
-        return DraggableScrollableSheet(
-          expand: false,
-          snap: true,
-          initialChildSize: 0.6,
-          minChildSize: 0.3,
-          maxChildSize: 0.92,
-          builder: (context, controller) => _SheetSurface(
-            child: SingleChildScrollView(
-              controller: controller,
-              child: builder(context),
-            ),
-          ),
-        );
-      },
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+/// Lifts its child by the keyboard height and tells the content the keyboard
+/// is accounted for, so a sheet never sits under the keyboard.
+class _KeyboardLift extends StatelessWidget {
+  const _KeyboardLift({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final media = MediaQuery.of(context);
+    return Padding(
+      padding: EdgeInsets.only(bottom: media.viewInsets.bottom),
+      child: MediaQuery(
+        data: media.removeViewInsets(removeBottom: true),
+        child: child,
+      ),
     );
   }
 }

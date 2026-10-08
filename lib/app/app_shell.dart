@@ -1,12 +1,15 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
+import '../core/l10n/l10n.dart';
 import '../core/layout/adaptive_layout.dart';
 import '../core/theme/app_platform.dart';
+import '../core/widgets/app_confirm_sheet.dart';
 import '../features/mushaf/application/reader_immersive_provider.dart';
 import '../features/startup/application/startup_providers.dart';
 import 'router.dart';
@@ -48,18 +51,37 @@ class AppShell extends ConsumerWidget {
             );
 
       return PopScope(
-        // Sheets and pushed reader routes are above the shell and dismiss
-        // normally. At the reader root, back first restores the controls.
-        canPop: !immersive,
+        // Back never closes the app by accident. Sheets and pushed routes sit
+        // above the shell and dismiss normally. At the shell: immersive
+        // reading restores its controls, another tab returns to the Mushaf,
+        // and only back on the Mushaf asks whether to close.
+        canPop: false,
         onPopInvokedWithResult: (didPop, _) {
-          if (!didPop && immersive) {
+          if (didPop) return;
+          if (immersive) {
             ref.read(readerImmersiveProvider.notifier).exit();
+          } else if (!reader) {
+            _goBranch(ref, AppRoute.tabs.indexOf(AppRoute.reader));
+          } else {
+            unawaited(_confirmExit(context));
           }
         },
         child: _KeepScreenAwake(enabled: reader, child: shell),
       );
     },
   );
+
+  Future<void> _confirmExit(BuildContext context) async {
+    final l10n = context.l10n;
+    final close = await AppConfirmSheet.show(
+      context: context,
+      title: l10n.exitTitle,
+      message: l10n.exitBody,
+      confirmLabel: l10n.exitClose,
+      cancelLabel: l10n.exitStay,
+    );
+    if (close) await SystemNavigator.pop();
+  }
 
   void _goBranch(WidgetRef ref, int index) {
     navigationShell.goBranch(

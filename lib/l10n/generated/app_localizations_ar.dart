@@ -108,6 +108,18 @@ class AppLocalizationsAr extends AppLocalizations {
   String get done => 'تم';
 
   @override
+  String get exitTitle => 'إغلاق التطبيق؟';
+
+  @override
+  String get exitBody => 'مكانك في المصحف وتقدّمك في الأذكار محفوظان.';
+
+  @override
+  String get exitStay => 'البقاء';
+
+  @override
+  String get exitClose => 'إغلاق';
+
+  @override
   String get back => 'رجوع';
 
   @override
@@ -126,7 +138,21 @@ class AppLocalizationsAr extends AppLocalizations {
   String get adhkarSuggested => 'المقترح الآن';
 
   @override
-  String get adhkarAll => 'كل الأذكار';
+  String get adhkarGroupDaily => 'الأذكار اليومية';
+
+  @override
+  String get adhkarGroupPrayer => 'أذكار الصلاة';
+
+  @override
+  String get adhkarGroupDuas => 'الأدعية';
+
+  @override
+  String get adhkarResume => 'أكمل من حيث توقفت';
+
+  @override
+  String adhkarNext(String title) {
+    return 'التالي: $title';
+  }
 
   @override
   String get adhkarStart => 'ابدأ';
@@ -155,6 +181,9 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get adhkarSourceLabel => 'المصدر';
+
+  @override
+  String get adhkarQuranLabel => 'من القرآن';
 
   @override
   String get adhkarVirtueLabel => 'الفضل';

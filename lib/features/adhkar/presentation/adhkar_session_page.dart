@@ -3,6 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../../app/router.dart';
 
 import '../../../core/l10n/l10n.dart';
 import '../../../core/layout/adaptive_layout.dart';
@@ -89,12 +92,21 @@ class _SessionState extends ConsumerState<_Session> {
     final finished = await ref
         .read(adhkarProgressProvider.notifier)
         .increment(collection, collection.entries[index]);
-    if (finished) {
-      unawaited(HapticFeedback.mediumImpact());
-      WidgetsBinding.instance.addPostFrameCallback((_) => _advance(index));
-    } else {
+    if (!finished) {
+      // A light tick for each repeat.
       unawaited(HapticFeedback.selectionClick());
+      return;
     }
+    // A firmer pulse when a dhikr is done and the next comes into view, and
+    // two when the whole list is done.
+    unawaited(HapticFeedback.heavyImpact());
+    if (ref.read(collectionProgressProvider(collection)).complete) {
+      Future<void>.delayed(
+        const Duration(milliseconds: 160),
+        HapticFeedback.heavyImpact,
+      );
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) => _advance(index));
   }
 
   /// Brings the next unfinished dhikr into view, or the closing message when
@@ -134,6 +146,9 @@ class _SessionState extends ConsumerState<_Session> {
     final collection = widget.collection;
     final padding = pagePadding(context);
     final progress = ref.watch(collectionProgressProvider(collection));
+    final next = progress.complete
+        ? ref.watch(nextCollectionProvider(collection))
+        : null;
     return Column(
       children: [
         Padding(
@@ -181,6 +196,14 @@ class _SessionState extends ConsumerState<_Session> {
                   onRestart: () => ref
                       .read(adhkarProgressProvider.notifier)
                       .reset(collection),
+                  nextTitle: next?.title(
+                    Localizations.localeOf(context).languageCode,
+                  ),
+                  onNext: next == null
+                      ? null
+                      : () => context.pushReplacement(
+                          AppRoute.adhkarSessionPath(next.id),
+                        ),
                 ),
             ],
           ),
@@ -228,10 +251,16 @@ class _CompleteCard extends StatelessWidget {
     super.key,
     required this.title,
     required this.onRestart,
+    this.nextTitle,
+    this.onNext,
   });
 
   final String title;
   final VoidCallback onRestart;
+
+  /// Title of the list to go on to, when there is one.
+  final String? nextTitle;
+  final VoidCallback? onNext;
 
   @override
   Widget build(BuildContext context) {
@@ -264,6 +293,13 @@ class _CompleteCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
+          if (onNext != null && nextTitle != null) ...[
+            FilledButton(
+              onPressed: onNext,
+              child: Text(l10n.adhkarNext(nextTitle!)),
+            ),
+            const SizedBox(height: 4),
+          ],
           TextButton(onPressed: onRestart, child: Text(l10n.adhkarRestart)),
         ],
       ),

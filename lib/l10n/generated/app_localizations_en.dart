@@ -109,6 +109,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get done => 'Done';
 
   @override
+  String get exitTitle => 'Close the app?';
+
+  @override
+  String get exitBody =>
+      'Your place in the Mushaf and today\'s adhkar are saved.';
+
+  @override
+  String get exitStay => 'Stay';
+
+  @override
+  String get exitClose => 'Close';
+
+  @override
   String get back => 'Back';
 
   @override
@@ -127,7 +140,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adhkarSuggested => 'Suggested now';
 
   @override
-  String get adhkarAll => 'All adhkar';
+  String get adhkarGroupDaily => 'Daily adhkar';
+
+  @override
+  String get adhkarGroupPrayer => 'Prayer adhkar';
+
+  @override
+  String get adhkarGroupDuas => 'Duas';
+
+  @override
+  String get adhkarResume => 'Pick up where you left off';
+
+  @override
+  String adhkarNext(String title) {
+    return 'Next: $title';
+  }
 
   @override
   String get adhkarStart => 'Start';
@@ -156,6 +183,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get adhkarSourceLabel => 'Source';
+
+  @override
+  String get adhkarQuranLabel => 'From the Quran';
 
   @override
   String get adhkarVirtueLabel => 'Virtue';

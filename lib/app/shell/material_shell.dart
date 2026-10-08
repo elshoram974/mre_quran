@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/layout/adaptive_layout.dart';
-import '../../core/theme/app_tokens.dart';
+import 'expanding_nav_bar.dart';
 import 'shell_destination.dart';
 
 /// Android chrome: Material 3 top app bar, navigation bar, and rail.
@@ -54,6 +54,8 @@ class MaterialShell extends StatelessWidget {
           : Row(
               children: [
                 NavigationRail(
+                  indicatorShape: const StadiumBorder(),
+                  backgroundColor: Theme.of(context).colorScheme.surface,
                   extended: size == WindowSize.expanded,
                   selectedIndex: index,
                   onDestinationSelected: onSelected,
@@ -73,73 +75,12 @@ class MaterialShell extends StatelessWidget {
               ],
             ),
       bottomNavigationBar: compact && showNavigation
-          ? _FloatingNavigationBar(
+          ? ExpandingNavBar(
               index: index,
               onSelected: onSelected,
               destinations: destinations,
             )
           : null,
-    );
-  }
-}
-
-/// The Material 3 navigation bar, floating: a rounded, raised pill held off
-/// the screen edges and above the system navigation bar. Only the selected
-/// destination shows its label.
-class _FloatingNavigationBar extends StatelessWidget {
-  const _FloatingNavigationBar({
-    required this.index,
-    required this.onSelected,
-    required this.destinations,
-  });
-
-  final int index;
-  final ValueChanged<int> onSelected;
-  final List<ShellDestination> destinations;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final shape = RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(AppTokens.radiusCard + 4),
-    );
-    return SafeArea(
-      top: false,
-      minimum: const EdgeInsets.only(bottom: AppTokens.floatingBarGap),
-      child: Padding(
-        padding: const EdgeInsetsDirectional.symmetric(
-          horizontal: AppTokens.gutterCompact,
-        ),
-        child: Material(
-          color: scheme.surfaceContainerLowest,
-          elevation: 3,
-          shadowColor: scheme.shadow.withValues(alpha: 0.4),
-          surfaceTintColor: Colors.transparent,
-          shape: shape,
-          clipBehavior: Clip.antiAlias,
-          child: MediaQuery.removePadding(
-            context: context,
-            removeBottom: true,
-            child: NavigationBar(
-              height: AppTokens.floatingBarHeight,
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              selectedIndex: index,
-              onDestinationSelected: onSelected,
-              labelBehavior:
-                  NavigationDestinationLabelBehavior.onlyShowSelected,
-              destinations: [
-                for (final item in destinations)
-                  NavigationDestination(
-                    icon: Icon(item.icon),
-                    selectedIcon: Icon(item.activeIcon),
-                    label: item.label,
-                  ),
-              ],
-            ),
-          ),
-        ),
-      ),
     );
   }
 }

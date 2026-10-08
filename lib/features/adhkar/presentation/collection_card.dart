@@ -103,7 +103,7 @@ class CollectionCard extends ConsumerWidget {
                           : FilledButton(
                               onPressed: open,
                               child: Text(
-                                progress.doneEntries == 0
+                                progress.fraction == 0
                                     ? l10n.adhkarStart
                                     : l10n.adhkarContinue,
                               ),

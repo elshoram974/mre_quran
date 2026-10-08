@@ -64,51 +64,84 @@ class _Content extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final theme = Theme.of(context);
-    final now = ref.read(adhkarClockProvider)();
-    final suggested = catalog.suggestedAt(now.hour * 60 + now.minute);
-    final others = [
-      for (final collection in catalog.collections)
-        if (collection != suggested) collection,
-    ];
+    final active = ref.watch(activeSessionProvider);
+    final now = ref.watch(adhkarNowProvider);
+    final featured = active ?? catalog.suggestedAt(now.hour * 60 + now.minute);
     return ContentContainer(
       child: ListView(
         padding: pagePadding(context),
         children: [
-          if (suggested != null) ...[
-            Text(l10n.adhkarSuggested, style: theme.textTheme.titleMedium),
-            const SizedBox(height: 8),
-            CollectionCard(collection: suggested, featured: true),
-          ],
-          if (others.isNotEmpty) ...[
-            const SizedBox(height: 24),
-            Text(l10n.adhkarAll, style: theme.textTheme.titleMedium),
-            const SizedBox(height: 8),
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final columns =
-                    WindowSize.fromWidth(constraints.maxWidth) ==
-                        WindowSize.compact
-                    ? 1
-                    : 2;
-                const gap = 12.0;
-                final width =
-                    (constraints.maxWidth - gap * (columns - 1)) / columns;
-                return Wrap(
-                  spacing: gap,
-                  runSpacing: gap,
-                  children: [
-                    for (final collection in others)
-                      SizedBox(
-                        width: width,
-                        child: CollectionCard(collection: collection),
-                      ),
-                  ],
-                );
-              },
+          if (featured != null) ...[
+            Text(
+              active != null ? l10n.adhkarResume : l10n.adhkarSuggested,
+              style: theme.textTheme.titleMedium,
             ),
+            const SizedBox(height: 8),
+            CollectionCard(collection: featured, featured: true),
           ],
+          for (final group in AdhkarGroup.values)
+            _GroupSection(
+              group: group,
+              collections: [
+                for (final collection in catalog.collections)
+                  if (collection.group == group && collection != featured)
+                    collection,
+              ],
+            ),
           const SizedBox(height: 24),
           const _RemindersTile(),
+        ],
+      ),
+    );
+  }
+}
+
+/// One titled group of collections, laid out in one or two columns.
+class _GroupSection extends StatelessWidget {
+  const _GroupSection({required this.group, required this.collections});
+
+  final AdhkarGroup group;
+  final List<AdhkarCollection> collections;
+
+  @override
+  Widget build(BuildContext context) {
+    if (collections.isEmpty) return const SizedBox.shrink();
+    final l10n = context.l10n;
+    final title = switch (group) {
+      AdhkarGroup.daily => l10n.adhkarGroupDaily,
+      AdhkarGroup.prayer => l10n.adhkarGroupPrayer,
+      AdhkarGroup.duas => l10n.adhkarGroupDuas,
+    };
+    return Padding(
+      padding: const EdgeInsets.only(top: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 8),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final columns =
+                  WindowSize.fromWidth(constraints.maxWidth) ==
+                      WindowSize.compact
+                  ? 1
+                  : 2;
+              const gap = 12.0;
+              final width =
+                  (constraints.maxWidth - gap * (columns - 1)) / columns;
+              return Wrap(
+                spacing: gap,
+                runSpacing: gap,
+                children: [
+                  for (final collection in collections)
+                    SizedBox(
+                      width: width,
+                      child: CollectionCard(collection: collection),
+                    ),
+                ],
+              );
+            },
+          ),
         ],
       ),
     );

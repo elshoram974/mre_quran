@@ -7,6 +7,7 @@ import 'package:mre_quran/features/adhkar/data/reminders_repository.dart';
 import 'package:mre_quran/features/adhkar/domain/adhkar_collection.dart';
 import 'package:mre_quran/features/adhkar/domain/adhkar_progress.dart';
 import 'package:mre_quran/features/adhkar/domain/dhikr.dart';
+import 'package:mre_quran/features/adhkar/domain/quran_passage.dart';
 import 'package:mre_quran/features/adhkar/domain/reminder_setting.dart';
 
 /// A dhikr with the given repeat count and a source.
@@ -41,6 +42,29 @@ AdhkarCatalog fixtureCatalog() => AdhkarCatalog([
     entries: [dhikr(1), dhikr(2, repeat: 2)],
   ),
 ]);
+
+/// Morning and evening plus an after-prayer list that keeps its counts for
+/// 30 minutes.
+AdhkarCatalog fixtureCatalogWithPrayer() {
+  final base = fixtureCatalog();
+  return AdhkarCatalog([
+    ...base.collections,
+    AdhkarCollection(
+      id: 'after_prayer',
+      titles: const {'ar': 'أذكار بعد الصلاة', 'en': 'After prayer'},
+      icon: AdhkarIcon.generic,
+      group: AdhkarGroup.prayer,
+      sessionWindowMinutes: 30,
+      entries: [dhikr(1, repeat: 3), dhikr(2)],
+    ),
+    AdhkarCollection(
+      id: 'sleep',
+      titles: const {'ar': 'أذكار النوم', 'en': 'Sleep'},
+      icon: AdhkarIcon.generic,
+      entries: [dhikr(1)],
+    ),
+  ]);
+}
 
 /// Serves [fixtureCatalog] without touching assets.
 class FakeAdhkarSource extends AdhkarSource {
@@ -126,3 +150,27 @@ class FakeReminderScheduler implements ReminderScheduler {
   @override
   Future<void> cancel(int id) async => scheduled.remove(id);
 }
+
+/// One list with an ayah (with the isti'adha) and a plain dhikr.
+AdhkarCatalog fixtureCatalogWithQuran() => AdhkarCatalog([
+  AdhkarCollection(
+    id: 'kursi',
+    titles: const {'ar': 'آية الكرسي', 'en': 'Ayat al-Kursi'},
+    icon: AdhkarIcon.generic,
+    entries: [
+      const Dhikr(
+        order: 1,
+        text: '',
+        repeat: 1,
+        repeatLabel: 'مرة',
+        source: 'رواه النسائي',
+        variant: 0,
+        quran: QuranPassage(
+          istiadha: true,
+          spans: [AyahSpan(surah: 2, from: 255, to: 255)],
+        ),
+      ),
+      dhikr(2),
+    ],
+  ),
+]);

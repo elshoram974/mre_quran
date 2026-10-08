@@ -79,7 +79,7 @@ work under ~150 ms.
 | Shell | App bar, tab bar / rail | done |
 | Settings | Theme, language, launch behaviour (last tab / Mushaf), motion, digits, crash reports, About | done |
 | Bookmarks | Empty state; list later | placeholder |
-| Duas | Adhkar and duas tab | tab added, content blocked on a licensed source |
+| Adhkar | Groups (daily, prayer), counter per dhikr, evidence sheet, daily reminders, prayer-window lists | done for morning, evening, sleep, waking, after prayer; more duas follow `docs/ADHKAR_SOURCES.md` |
 | Reader | Mushaf pages (provisional font and line breaks), index via the menu, search, display options, last position | provisional; exact lines wait for layout data |
 | Credits | Attribution and licences | basic |
 

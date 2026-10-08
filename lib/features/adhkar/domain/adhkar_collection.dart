@@ -10,6 +10,15 @@ enum AdhkarIcon {
   /// Evening.
   sunset,
 
+  /// Sleep.
+  sleep,
+
+  /// Waking.
+  wake,
+
+  /// Around the prayer.
+  prayer,
+
   /// Used when a manifest names an icon the app does not know.
   generic;
 
@@ -17,6 +26,24 @@ enum AdhkarIcon {
   static AdhkarIcon parse(Object? name) => AdhkarIcon.values.firstWhere(
     (icon) => icon.name == name,
     orElse: () => generic,
+  );
+}
+
+/// Where a collection sits on the adhkar tab.
+enum AdhkarGroup {
+  /// Said at a fixed time of day: morning, evening, sleep, waking.
+  daily,
+
+  /// Said around the prayer.
+  prayer,
+
+  /// Duas for a situation.
+  duas;
+
+  /// Reads a manifest group name, falling back to [duas].
+  static AdhkarGroup parse(Object? name) => AdhkarGroup.values.firstWhere(
+    (group) => group.name == name,
+    orElse: () => duas,
   );
 }
 
@@ -29,6 +56,8 @@ class AdhkarCollection {
     required this.titles,
     required this.icon,
     required this.entries,
+    this.group = AdhkarGroup.daily,
+    this.sessionWindowMinutes,
     this.reminderMinutes,
   });
 
@@ -43,6 +72,14 @@ class AdhkarCollection {
 
   /// The adhkar, in reading order.
   final List<Dhikr> entries;
+
+  /// Which section of the tab it appears in.
+  final AdhkarGroup group;
+
+  /// For adhkar said once per prayer: how long after the last tap the counts
+  /// are kept before the next prayer starts them again. Null means they last
+  /// the whole day.
+  final int? sessionWindowMinutes;
 
   /// Default reminder time as minutes after midnight, or null when the
   /// collection offers no reminder.

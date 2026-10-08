@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mre_quran/features/adhkar/application/adhkar_providers.dart';
 import 'package:mre_quran/features/adhkar/application/reminders_provider.dart';
+import 'package:mre_quran/features/adhkar/domain/adhkar_collection.dart';
 import 'package:mre_quran/features/adhkar/domain/adhkar_progress.dart';
 import 'package:mre_quran/features/adhkar/domain/reminder_payload.dart';
 import 'package:mre_quran/features/adhkar/domain/reminder_setting.dart';
@@ -17,10 +18,11 @@ ProviderContainer _container({
   FakeReminderScheduler? scheduler,
   MemorySettingsRepository? settings,
   DateTime Function()? clock,
+  AdhkarCatalog? catalog,
 }) {
   final container = ProviderContainer(
     overrides: [
-      adhkarSourceProvider.overrideWithValue(FakeAdhkarSource()),
+      adhkarSourceProvider.overrideWithValue(FakeAdhkarSource(catalog)),
       adhkarProgressRepositoryProvider.overrideWithValue(
         progress ?? MemoryAdhkarProgressRepository(),
       ),
@@ -147,6 +149,71 @@ void main() {
         1,
       );
     });
+  });
+
+  group('prayer lists', () {
+    test('the open list leads while its window lasts, then lets go', () async {
+      var now = DateTime(2026, 10, 8, 13);
+      final container = _container(
+        clock: () => now,
+        catalog: fixtureCatalogWithPrayer(),
+      );
+      final catalog = await container.read(adhkarCatalogProvider.future);
+      final prayer = catalog.byId('after_prayer')!;
+      await container.read(adhkarProgressProvider.future);
+      expect(container.read(activeSessionProvider), isNull);
+
+      await container
+          .read(adhkarProgressProvider.notifier)
+          .increment(prayer, prayer.entries.first);
+      expect(container.read(activeSessionProvider), prayer);
+
+      now = now.add(const Duration(minutes: 31));
+      container.read(adhkarNowProvider.notifier).refresh();
+      expect(container.read(activeSessionProvider), isNull);
+      expect(
+        container.read(dhikrCountProvider((prayer, prayer.entries.first))),
+        0,
+      );
+    });
+
+    test('a finished list is not offered again as the open one', () async {
+      final container = _container(catalog: fixtureCatalogWithPrayer());
+      final prayer = (await container.read(adhkarCatalogProvider.future))
+          .byId('after_prayer')!;
+      await container.read(adhkarProgressProvider.future);
+      final notifier = container.read(adhkarProgressProvider.notifier);
+      for (final entry in prayer.entries) {
+        for (var i = 0; i < entry.repeat; i++) {
+          await notifier.increment(prayer, entry);
+        }
+      }
+      expect(
+        container.read(collectionProgressProvider(prayer)).complete,
+        isTrue,
+      );
+      expect(container.read(activeSessionProvider), isNull);
+    });
+
+    test(
+      'next goes to the following unfinished list of the same group',
+      () async {
+        final container = _container(catalog: fixtureCatalogWithPrayer());
+        final catalog = await container.read(adhkarCatalogProvider.future);
+        final morning = catalog.byId('morning')!;
+        final evening = catalog.byId('evening')!;
+        await container.read(adhkarProgressProvider.future);
+        expect(container.read(nextCollectionProvider(morning)), isNot(morning));
+        expect(
+          container.read(nextCollectionProvider(morning))!.group,
+          AdhkarGroup.daily,
+        );
+        expect(container.read(nextCollectionProvider(evening))!.id, 'sleep');
+        // A group of one has nothing to go on to.
+        final prayer = catalog.byId('after_prayer')!;
+        expect(container.read(nextCollectionProvider(prayer)), isNull);
+      },
+    );
   });
 
   group('RemindersNotifier', () {

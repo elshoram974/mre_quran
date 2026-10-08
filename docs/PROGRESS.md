@@ -48,6 +48,10 @@
   Quran.com), a splash on the tapped ayah, pages spread over the screen, and offline packs downloaded in the
   background with a notification (`docs/QURAN_SOURCES.md`, section 12).
 
+- Adhkar: data-driven collections (manifest + checked files), per-dhikr counter with light and firm
+  haptics, evidence sheet, groups, prayer windows, daily reminders (`docs/ADHKAR_SOURCES.md`). Smart back
+  (other tab → Mushaf → close warning), keyboard-aware `AppSheet`, new expanding Android tab bar.
+
 ## In progress
 
 - Foundation migration: localization, typed routing, Riverpod, adaptive shell,

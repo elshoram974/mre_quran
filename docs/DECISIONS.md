@@ -132,3 +132,28 @@
 - **Alternatives:** Wait for the KFGQPC fonts and line layout; bundle per-page fonts without permission.
 - **Reason:** The text and page starts are verified and licensed, and an open Quran font needs no
   permission. Lines are not yet the printed lines; that waits for the layout data.
+
+## D-016: Adhkar are data, evidence is mandatory
+
+- **Decision:** Collections are declared in `assets/adhkar/manifest.json`; entry files are checked by SHA-256 and a
+  test fails when an entry has no source. Titles live in the manifest (like surah names), not in ARB.
+  Quran dhikr store only ayah references; the text comes from the verified Tanzil file.
+- **Alternatives:** One Dart enum per collection with ARB titles (every new list needs code); copying an
+  unlicensed full Hisn al-Muslim JSON; typing the adhkar by hand.
+- **Reason:** Changing content is a data edit. Religious text is either copied unmodified from a licensed
+  source or cut from the hadith itself by a tool that fails when a reference does not hold.
+
+## D-017: Back never closes the app by accident
+
+- **Decision:** Pushed routes and sheets pop normally. At the shell: immersive reading restores its controls,
+  any other tab returns to the Mushaf, and back on the Mushaf asks before closing (`AppConfirmSheet`).
+- **Alternatives:** Double-back-to-exit toast; letting back leave the app from any tab.
+- **Reason:** One stray back press should never lose a reading session; the warning appears only at the root.
+
+## D-018: Sheets sit above the keyboard; Android tab bar expands the selected item
+
+- **Decision:** `AppSheet` lifts itself by the keyboard height, limits its height to the room left, and keeps drag to
+  dismiss. The Android tab bar is a floating pill where the selected destination grows into a labelled chip
+  (`ExpandingNavBar`); iOS keeps the liquid glass tab bar.
+- **Reason:** A sheet under the keyboard hid its own button; the old bar looked like stock Material.
+

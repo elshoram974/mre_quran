@@ -5,6 +5,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mre_quran/features/adhkar/data/adhkar_parser.dart';
 import 'package:mre_quran/features/adhkar/data/adhkar_source.dart';
+import 'package:mre_quran/features/adhkar/domain/quran_passage.dart';
+import 'package:mre_quran/features/quran_index/data/quran_metadata_parser.dart';
+import 'package:mre_quran/features/quran_index/data/quran_metadata_source.dart';
 
 /// Serves asset bytes from disk, with optional replacements.
 class _DiskBundle extends CachingAssetBundle {
@@ -44,9 +47,18 @@ void main() {
       'loads, verifies, and splits the shared file into collections',
       () async {
         final catalog = await AdhkarSource(bundle: _DiskBundle()).load();
-        expect(catalog.collections.map((c) => c.id), ['morning', 'evening']);
+        expect(catalog.collections.map((c) => c.id), [
+          'morning',
+          'evening',
+          'sleep',
+          'wake',
+          'after_prayer',
+        ]);
+        expect(catalog.byId('after_prayer')!.group.name, 'prayer');
+        expect(catalog.byId('after_prayer')!.sessionWindowMinutes, 30);
         final morning = catalog.byId('morning')!;
         final evening = catalog.byId('evening')!;
+        expect(morning.group.name, 'daily');
         expect(morning.entries, isNotEmpty);
         expect(evening.entries, isNotEmpty);
         // Variant 1 is morning only, 2 is evening only, 0 is both.
@@ -64,10 +76,51 @@ void main() {
       for (final collection in catalog.collections) {
         expect(collection.titles['ar'], isNotEmpty);
         for (final entry in collection.entries) {
-          expect(entry.text.trim(), isNotEmpty, reason: '${entry.order}');
+          expect(
+            entry.text.trim().isNotEmpty || entry.quran != null,
+            isTrue,
+            reason: '${entry.order}',
+          );
           expect(entry.repeat, greaterThanOrEqualTo(1));
           expect(entry.source.trim(), isNotEmpty, reason: '${entry.order}');
         }
+      }
+    });
+
+    test('every Quran passage names ayahs that exist', () async {
+      final catalog = await AdhkarSource(bundle: _DiskBundle()).load();
+      final metadata = QuranMetadataParser.parse(
+        File(QuranMetadataSource.assetPath).readAsStringSync(),
+      );
+      var passages = 0;
+      for (final collection in catalog.collections) {
+        for (final entry in collection.entries) {
+          for (final span in entry.quran?.spans ?? const <AyahSpan>[]) {
+            passages++;
+            expect(
+              span.to,
+              lessThanOrEqualTo(metadata.surah(span.surah).ayahCount),
+              reason: '${collection.id} ${entry.order}',
+            );
+          }
+        }
+      }
+      expect(passages, greaterThan(0));
+    });
+
+    test('the isti\'adha opens a list once, not every surah', () async {
+      final catalog = await AdhkarSource(bundle: _DiskBundle()).load();
+      for (final id in ['sleep', 'after_prayer', 'wake']) {
+        final withIstiadha = [
+          for (final entry in catalog.byId(id)!.entries)
+            if (entry.quran?.istiadha ?? false) entry,
+        ];
+        expect(withIstiadha, hasLength(1), reason: id);
+        final firstQuran = catalog
+            .byId(id)!
+            .entries
+            .firstWhere((entry) => entry.quran != null);
+        expect(firstQuran.quran!.istiadha, isTrue, reason: id);
       }
     });
 
@@ -134,6 +187,85 @@ void main() {
           throwsA(isA<AdhkarDataException>()),
         );
       }
+    });
+
+    test('reads the group and the prayer window, and rejects a bad window', () {
+      Map<String, Object?> collection({Object? window, Object? group}) => {
+        'id': 'a',
+        'title': {'ar': 'س'},
+        'file': 'a.json',
+        'sha256': 'x',
+        'variants': [0],
+        'group': group,
+        'sessionWindowMinutes': window,
+      };
+      String manifest(Map<String, Object?> c) => jsonEncode({
+        'schema': 1,
+        'collections': [c],
+      });
+
+      final spec = AdhkarParser.parseManifest(
+        manifest(collection(window: 30, group: 'prayer')),
+      ).single;
+      expect(spec.group.name, 'prayer');
+      expect(spec.sessionWindowMinutes, 30);
+      expect(
+        AdhkarParser.parseManifest(manifest(collection(group: 'zzz')))
+            .single
+            .group
+            .name,
+        'duas',
+      );
+      for (final bad in [0, -5, '30']) {
+        expect(
+          () => AdhkarParser.parseManifest(manifest(collection(window: bad))),
+          throwsA(isA<AdhkarDataException>()),
+        );
+      }
+    });
+
+    test('reads a Quran passage and rejects a bad range', () {
+      Map<String, Object?> entry(Object? quran, {String content = ''}) => {
+        ..._entry(order: 1),
+        'content': content,
+        'quran': quran,
+      };
+      final parsed = AdhkarParser.parseEntries(
+        jsonEncode([
+          entry({
+            'istiadha': true,
+            'ranges': [
+              {'surah': 2, 'from': 255, 'to': 255},
+            ],
+          }),
+        ]),
+      );
+      expect(parsed.single.quran!.istiadha, isTrue);
+      expect(parsed.single.quran!.spans.single.surah, 2);
+      expect(parsed.single.text, isEmpty);
+      for (final bad in [
+        <String, Object?>{'ranges': <Object?>[]},
+        {
+          'ranges': [
+            {'surah': 0, 'from': 1, 'to': 1},
+          ],
+        },
+        {
+          'ranges': [
+            {'surah': 2, 'from': 5, 'to': 4},
+          ],
+        },
+      ]) {
+        expect(
+          () => AdhkarParser.parseEntries(jsonEncode([entry(bad)])),
+          throwsA(isA<AdhkarDataException>()),
+        );
+      }
+      // Without a passage the words are required.
+      expect(
+        () => AdhkarParser.parseEntries(jsonEncode([entry(null)])),
+        throwsA(isA<AdhkarDataException>()),
+      );
     });
 
     test('an unknown icon name falls back to the generic icon', () {

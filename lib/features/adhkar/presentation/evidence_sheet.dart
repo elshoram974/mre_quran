@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/app_sheet.dart';
+import '../../quran_text/application/quran_text_providers.dart';
+import '../../settings/application/digits_provider.dart';
+import '../application/passage_text.dart';
 import '../domain/dhikr.dart';
 
 /// Shows the evidence behind a dhikr: its source, virtue, and hadith.
@@ -16,16 +21,25 @@ abstract final class EvidenceSheet {
       );
 }
 
-class _EvidenceBody extends StatelessWidget {
+class _EvidenceBody extends ConsumerWidget {
   const _EvidenceBody({required this.dhikr});
 
   final Dhikr dhikr;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
+    final digits = ref.watch(digitsFormatterProvider);
+    final passage = dhikr.quran;
+    final quran = passage == null
+        ? null
+        : ref
+              .watch(quranTextProvider)
+              .whenData((text) => describePassage(passage, text, digits))
+              .value;
     final theme = Theme.of(context);
     final sections = <(String, String)>[
+      if (quran != null) (l10n.adhkarQuranLabel, quran),
       (l10n.adhkarSourceLabel, dhikr.source),
       if (dhikr.virtue != null) (l10n.adhkarVirtueLabel, dhikr.virtue!),
       if (dhikr.hadithText != null) (l10n.adhkarHadithLabel, dhikr.hadithText!),

@@ -59,6 +59,7 @@ flutter:
     - assets/fonts/amiri_quran/OFL.txt
     - assets/adhkar/manifest.json
     - assets/adhkar/morning_evening.ar.json
+    - assets/adhkar/curated.ar.json
     - assets/adhkar/LICENSE.seen-arabic.txt
   fonts:
     - family: AmiriQuran

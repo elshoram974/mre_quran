@@ -6,12 +6,19 @@ import 'package:mre_quran/app/router.dart';
 import 'package:mre_quran/core/theme/app_theme.dart';
 import 'package:mre_quran/features/adhkar/application/adhkar_providers.dart';
 import 'package:mre_quran/features/adhkar/application/reminders_provider.dart';
+import 'package:mre_quran/features/quran_index/application/quran_metadata_provider.dart';
+import 'package:mre_quran/features/quran_index/domain/quran_metadata.dart';
+import 'package:mre_quran/features/quran_text/application/quran_text_providers.dart';
+import 'package:mre_quran/features/adhkar/domain/adhkar_collection.dart';
+import 'package:mre_quran/features/adhkar/domain/quran_passage.dart';
 import 'package:mre_quran/features/adhkar/presentation/adhkar_session_page.dart';
 import 'package:mre_quran/features/adhkar/presentation/duas_page.dart';
 import 'package:mre_quran/features/settings/application/settings_provider.dart';
 import 'package:mre_quran/l10n/generated/app_localizations.dart';
 
 import '../../helpers/adhkar_fixtures.dart';
+import '../../helpers/fake_quran_metadata_source.dart';
+import '../../helpers/fake_quran_text_source.dart';
 import '../../helpers/memory_settings_repository.dart';
 
 Future<FakeReminderScheduler> _pump(
@@ -21,6 +28,7 @@ Future<FakeReminderScheduler> _pump(
   double textScale = 1,
   ThemeData? theme,
   bool allowNotifications = true,
+  AdhkarCatalog? catalog,
 }) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
@@ -44,7 +52,7 @@ Future<FakeReminderScheduler> _pump(
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
-        adhkarSourceProvider.overrideWithValue(FakeAdhkarSource()),
+        adhkarSourceProvider.overrideWithValue(FakeAdhkarSource(catalog)),
         adhkarProgressRepositoryProvider.overrideWithValue(
           MemoryAdhkarProgressRepository(),
         ),
@@ -52,6 +60,10 @@ Future<FakeReminderScheduler> _pump(
           MemoryRemindersRepository(),
         ),
         reminderSchedulerProvider.overrideWithValue(scheduler),
+        quranMetadataSourceProvider.overrideWithValue(
+          FakeQuranMetadataSource(),
+        ),
+        quranTextSourceProvider.overrideWithValue(FakeQuranTextSource()),
         settingsRepositoryProvider.overrideWithValue(
           MemorySettingsRepository(),
         ),
@@ -126,6 +138,84 @@ void main() {
     });
   });
 
+  group('groups', () {
+    testWidgets('lists each group under its own heading', (tester) async {
+      await _pump(tester, catalog: fixtureCatalogWithPrayer());
+      expect(find.text('المقترح الآن'), findsOneWidget);
+      expect(find.text('الأذكار اليومية'), findsOneWidget);
+      expect(find.text('أذكار الصلاة'), findsOneWidget);
+      expect(find.text('أذكار بعد الصلاة'), findsOneWidget);
+      expect(find.text('أذكار النوم'), findsOneWidget);
+      // The featured list is not repeated in its group.
+      expect(find.text('أذكار الصباح'), findsOneWidget);
+    });
+
+    testWidgets('a list in progress leads the tab', (tester) async {
+      await _pump(tester, catalog: fixtureCatalogWithPrayer());
+      await tester.tap(find.text('أذكار بعد الصلاة'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('٠ من ٣'));
+      await tester.pumpAndSettle();
+      GoRouter.of(tester.element(find.byType(AdhkarSessionPage))).pop();
+      await tester.pumpAndSettle();
+      expect(find.text('أكمل من حيث توقفت'), findsOneWidget);
+      expect(find.text('المقترح الآن'), findsNothing);
+      expect(find.text('تابع'), findsOneWidget);
+    });
+
+    testWidgets('finishing a list offers the next one', (tester) async {
+      await _pump(tester, catalog: fixtureCatalogWithPrayer());
+      await tester.tap(find.text('ابدأ'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('٠ من ١'));
+      await tester.pumpAndSettle();
+      for (var i = 0; i < 3; i++) {
+        await tester.tap(find.textContaining(' من ٣'));
+        await tester.pumpAndSettle();
+      }
+      await tester.tap(find.text('التالي: أذكار المساء'));
+      await tester.pumpAndSettle();
+      expect(find.text('أذكار المساء'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  });
+
+  group('Quran dhikr', () {
+    testWidgets('shows the isti\'adha and the verified ayah, and cites it', (
+      tester,
+    ) async {
+      await _pump(tester, catalog: fixtureCatalogWithQuran());
+      await tester.tap(find.text('ابدأ'));
+      await tester.pumpAndSettle();
+      final words = tester.widget<Text>(
+        find.textContaining('أَعُوذُ بِاللَّهِ مِنَ الشَّيْطَانِ الرَّجِيمِ'),
+      );
+      expect(words.data, startsWith(Recitation.istiadha));
+      final quran = ProviderScope.containerOf(
+        tester.element(find.byType(AdhkarSessionPage)),
+      ).read(quranTextProvider).value!;
+      expect(words.data, contains(quran.uthmani(const AyahRef(2, 255))));
+
+      await tester.tap(find.text('الدليل').first);
+      await tester.pumpAndSettle();
+      expect(find.text('من القرآن'), findsOneWidget);
+      expect(find.textContaining('٢٥٥'), findsWidgets);
+      expect(find.text('رواه النسائي'), findsOneWidget);
+    });
+  });
+
+  testWidgets('iOS glass chrome lays out without error', (tester) async {
+    await _pump(
+      tester,
+      theme: AppTheme.light.copyWith(platform: TargetPlatform.iOS),
+    );
+    expect(tester.takeException(), isNull);
+    expect(find.text('أذكار الصباح'), findsOneWidget);
+    await tester.tap(find.text('ابدأ'));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+  });
+
   group('session', () {
     testWidgets('counts a dhikr, finishes the list, and can start over', (
       tester,
@@ -136,15 +226,15 @@ void main() {
 
       expect(find.text('ذكر 1'), findsOneWidget);
       expect(find.text('٠ من ٢'), findsOneWidget);
-      expect(find.text('٠ / ١'), findsOneWidget);
+      expect(find.text('٠ من ١'), findsOneWidget);
 
-      await tester.tap(find.text('٠ / ١'));
+      await tester.tap(find.text('٠ من ١'));
       await tester.pumpAndSettle();
       expect(find.text('١ من ٢'), findsOneWidget);
-      expect(find.text('تمّ اليوم'), findsOneWidget);
+      expect(find.text('تم'), findsOneWidget);
 
       for (var i = 0; i < 3; i++) {
-        await tester.tap(find.textContaining(' / ٣'));
+        await tester.tap(find.textContaining(' من ٣'));
         await tester.pumpAndSettle();
       }
       expect(find.text('تقبّل الله منك'), findsOneWidget);
@@ -160,12 +250,12 @@ void main() {
       await _pump(tester);
       await tester.tap(find.text('ابدأ'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('٠ / ٣'));
+      await tester.tap(find.text('٠ من ٣'));
       await tester.pumpAndSettle();
-      expect(find.text('١ / ٣'), findsOneWidget);
+      expect(find.text('١ من ٣'), findsOneWidget);
       await tester.tap(find.byTooltip('تراجع عن مرة'));
       await tester.pumpAndSettle();
-      expect(find.text('٠ / ٣'), findsOneWidget);
+      expect(find.text('٠ من ٣'), findsOneWidget);
     });
 
     testWidgets('the evidence sheet shows the source and the virtue', (

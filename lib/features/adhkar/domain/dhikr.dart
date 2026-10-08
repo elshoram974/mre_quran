@@ -1,5 +1,7 @@
 import 'package:meta/meta.dart';
 
+import 'quran_passage.dart';
+
 /// One dhikr or dua with the number of times to say it and its evidence.
 @immutable
 class Dhikr {
@@ -14,12 +16,14 @@ class Dhikr {
     this.virtue,
     this.hadithText,
     this.vocabulary,
+    this.quran,
   });
 
   /// Position in its source file. Unique inside one file.
   final int order;
 
-  /// The words to say, with tashkeel, exactly as in the source file.
+  /// The words to say, with tashkeel, exactly as in the source file. Empty
+  /// for a [quran] dhikr, whose words come from the Quran text.
   final String text;
 
   /// How many times to say it. At least 1.
@@ -40,6 +44,9 @@ class Dhikr {
 
   /// The hadith the dhikr is taken from, with its chain, if the source has it.
   final String? hadithText;
+
+  /// The ayahs to recite, for a dhikr that is a passage of the Quran.
+  final QuranPassage? quran;
 
   /// Explanation of difficult words in [hadithText], if the source has it.
   final String? vocabulary;

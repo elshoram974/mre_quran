@@ -3,21 +3,79 @@
   "collections": [
     {
       "id": "morning",
-      "title": { "ar": "أذكار الصباح", "en": "Morning adhkar" },
+      "title": {
+        "ar": "أذكار الصباح",
+        "en": "Morning adhkar"
+      },
+      "group": "daily",
       "icon": "sunrise",
       "file": "morning_evening.ar.json",
       "sha256": "9e0dd6a10d26ddc0e2b36b94098c287644996c7f81b707f8ad24f1ce40b8c821",
-      "variants": [0, 1],
+      "variants": [
+        0,
+        1
+      ],
       "reminderTime": "05:30"
     },
     {
       "id": "evening",
-      "title": { "ar": "أذكار المساء", "en": "Evening adhkar" },
+      "title": {
+        "ar": "أذكار المساء",
+        "en": "Evening adhkar"
+      },
+      "group": "daily",
       "icon": "sunset",
       "file": "morning_evening.ar.json",
       "sha256": "9e0dd6a10d26ddc0e2b36b94098c287644996c7f81b707f8ad24f1ce40b8c821",
-      "variants": [0, 2],
+      "variants": [
+        0,
+        2
+      ],
       "reminderTime": "17:30"
+    },
+    {
+      "id": "sleep",
+      "title": {
+        "ar": "أذكار النوم",
+        "en": "Sleep adhkar"
+      },
+      "group": "daily",
+      "icon": "sleep",
+      "file": "curated.ar.json",
+      "sha256": "f6606ee29cd17bc72b2fb805dce7c5667827b993dcf59bec9a4b8a6b14e9acce",
+      "variants": [
+        20
+      ],
+      "reminderTime": "22:30"
+    },
+    {
+      "id": "wake",
+      "title": {
+        "ar": "أذكار الاستيقاظ",
+        "en": "Waking adhkar"
+      },
+      "group": "daily",
+      "icon": "wake",
+      "file": "curated.ar.json",
+      "sha256": "f6606ee29cd17bc72b2fb805dce7c5667827b993dcf59bec9a4b8a6b14e9acce",
+      "variants": [
+        30
+      ]
+    },
+    {
+      "id": "after_prayer",
+      "title": {
+        "ar": "أذكار بعد الصلاة",
+        "en": "After-prayer adhkar"
+      },
+      "group": "prayer",
+      "icon": "prayer",
+      "file": "curated.ar.json",
+      "sha256": "f6606ee29cd17bc72b2fb805dce7c5667827b993dcf59bec9a4b8a6b14e9acce",
+      "variants": [
+        10
+      ],
+      "sessionWindowMinutes": 30
     }
   ]
 }

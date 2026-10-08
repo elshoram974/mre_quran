@@ -284,6 +284,30 @@ abstract class AppLocalizations {
   /// **'Done'**
   String get done;
 
+  /// No description provided for @exitTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Close the app?'**
+  String get exitTitle;
+
+  /// No description provided for @exitBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your place in the Mushaf and today\'s adhkar are saved.'**
+  String get exitBody;
+
+  /// No description provided for @exitStay.
+  ///
+  /// In en, this message translates to:
+  /// **'Stay'**
+  String get exitStay;
+
+  /// No description provided for @exitClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get exitClose;
+
   /// No description provided for @back.
   ///
   /// In en, this message translates to:
@@ -320,11 +344,35 @@ abstract class AppLocalizations {
   /// **'Suggested now'**
   String get adhkarSuggested;
 
-  /// No description provided for @adhkarAll.
+  /// No description provided for @adhkarGroupDaily.
   ///
   /// In en, this message translates to:
-  /// **'All adhkar'**
-  String get adhkarAll;
+  /// **'Daily adhkar'**
+  String get adhkarGroupDaily;
+
+  /// No description provided for @adhkarGroupPrayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Prayer adhkar'**
+  String get adhkarGroupPrayer;
+
+  /// No description provided for @adhkarGroupDuas.
+  ///
+  /// In en, this message translates to:
+  /// **'Duas'**
+  String get adhkarGroupDuas;
+
+  /// No description provided for @adhkarResume.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick up where you left off'**
+  String get adhkarResume;
+
+  /// No description provided for @adhkarNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next: {title}'**
+  String adhkarNext(String title);
 
   /// No description provided for @adhkarStart.
   ///
@@ -373,6 +421,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Source'**
   String get adhkarSourceLabel;
+
+  /// No description provided for @adhkarQuranLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'From the Quran'**
+  String get adhkarQuranLabel;
 
   /// No description provided for @adhkarVirtueLabel.
   ///

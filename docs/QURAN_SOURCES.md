@@ -51,8 +51,10 @@ Decisions needed from the project owner:
 
 ## 5. Duas and adhkar
 
-No source chosen. Candidates need their own licence check (Hisn al-Muslim text, translations, audio). The Duas tab
-exists as an empty state until a licensed source is approved.
+Morning and evening adhkar come from an MIT dataset; sleep, waking, and after-prayer adhkar are built from
+hadith-api (The Unlicense) with Quran passages drawn from the Tanzil text above. Sources, checksums, the entries a
+scholar should still review, and the open question about the Hisn al-Muslim text rights are in
+`docs/ADHKAR_SOURCES.md`.
 
 ## 6. Data files: what we have and what is missing
 

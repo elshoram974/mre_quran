@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import '../domain/adhkar_collection.dart';
 import '../domain/dhikr.dart';
+import '../domain/quran_passage.dart';
 import '../domain/reminder_setting.dart';
 
 /// Raised when an adhkar data file or the manifest breaks the schema.
@@ -26,6 +27,8 @@ class AdhkarCollectionSpec {
     required this.file,
     required this.sha256,
     required this.variants,
+    this.group = AdhkarGroup.daily,
+    this.sessionWindowMinutes,
     this.reminderMinutes,
   });
 
@@ -47,6 +50,12 @@ class AdhkarCollectionSpec {
   /// Entry variants to take from [file].
   final Set<int> variants;
 
+  /// Section of the tab the collection appears in.
+  final AdhkarGroup group;
+
+  /// Minutes counts are kept after the last tap, or null for a whole day.
+  final int? sessionWindowMinutes;
+
   /// Default reminder time, if the collection has a reminder.
   final int? reminderMinutes;
 
@@ -64,6 +73,8 @@ class AdhkarCollectionSpec {
       titles: titles,
       icon: icon,
       entries: entries,
+      group: group,
+      sessionWindowMinutes: sessionWindowMinutes,
       reminderMinutes: reminderMinutes,
     );
   }
@@ -124,8 +135,18 @@ abstract final class AdhkarParser {
     if (clock != null && minutes == null) {
       throw AdhkarDataException('Collection $id has a bad reminderTime');
     }
+    final window = json['sessionWindowMinutes'];
+    if (window != null && (window is! int || window < 1)) {
+      throw AdhkarDataException(
+        'Collection $id has a bad sessionWindowMinutes',
+      );
+    }
     return AdhkarCollectionSpec(
       id: id,
+      group: json['group'] == null
+          ? AdhkarGroup.daily
+          : AdhkarGroup.parse(json['group']),
+      sessionWindowMinutes: window as int?,
       titles: {
         for (final entry in titles.entries)
           if (entry.value is String) entry.key: entry.value! as String,
@@ -145,7 +166,8 @@ abstract final class AdhkarParser {
     if (order is! int || repeat is! int || repeat < 1 || variant is! int) {
       throw AdhkarDataException('Entry $order has a bad order, count, or type');
     }
-    final text = _string(json, 'content');
+    final quran = _quran(json['quran'], order);
+    final text = quran == null ? _string(json, 'content') : '';
     final source = _string(json, 'source');
     return Dhikr(
       order: order,
@@ -157,7 +179,35 @@ abstract final class AdhkarParser {
       virtue: _optional(json['fadl']),
       hadithText: _optional(json['hadith_text']),
       vocabulary: _optional(json['explanation_of_hadith_vocabulary']),
+      quran: quran,
     );
+  }
+
+  static QuranPassage? _quran(Object? value, int order) {
+    if (value == null) return null;
+    final json = _map(value, 'quran of entry $order');
+    final ranges = json['ranges'];
+    if (ranges is! List<Object?> || ranges.isEmpty) {
+      throw AdhkarDataException('Entry $order has no ayah range');
+    }
+    final spans = <AyahSpan>[];
+    for (final range in ranges) {
+      final span = _map(range, 'range of entry $order');
+      final surah = span['surah'];
+      final from = span['from'];
+      final to = span['to'];
+      if (surah is! int ||
+          from is! int ||
+          to is! int ||
+          surah < 1 ||
+          surah > 114 ||
+          from < 1 ||
+          to < from) {
+        throw AdhkarDataException('Entry $order has a bad ayah range');
+      }
+      spans.add(AyahSpan(surah: surah, from: from, to: to));
+    }
+    return QuranPassage(spans: spans, istiadha: json['istiadha'] == true);
   }
 
   static Map<String, Object?> _map(Object? value, String what) {

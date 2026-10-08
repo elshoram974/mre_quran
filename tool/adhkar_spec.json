@@ -1,0 +1,737 @@
+{
+  "hadithApiRef": "df57907be35291c91ad6a6691180e22ca9920784",
+  "editionSha256": {
+    "ara-abudawud": "216139c5f40a8147e700d62ffa3b5b2fe45d0e034f86941a193c598c10056189",
+    "ara-bukhari": "e34a3402889ca378871da3c5984b7875c680920e93f1c8738ac7afe502179562",
+    "ara-ibnmajah": "b406e6be81588ab0ec1ddbed32f5fd95bbcdda242c460d88331e82eb5c2bc0aa",
+    "ara-muslim": "194073b24090c5368e4d14a3f55c9e0ef144c7437bd7e5aa83aa4d2bc54a8ea0",
+    "ara-nasai": "c705983c19bb089c87cd6531aff609bd94d862183ed0859115b0ff991826a956",
+    "ara-tirmidhi": "408028cd56329ed78edbe3ad443beb96b58e16c3e5bd49f9bc7b0eac77c8820f"
+  },
+  "countLabels": {
+    "1": "مَرَّةٌ وَاحِدَةٌ",
+    "3": "ثَلَاثُ مَرَّاتٍ",
+    "7": "سَبعُ مَرَّاتٍ",
+    "10": "عَشرُ مَرَّاتٍ",
+    "33": "ثَلَاثًا وَثَلَاثِينَ مَرَّةً",
+    "100": "مِائَةُ مَرَّةٍ",
+    "34": "أَرْبَعًا وَثَلَاثِينَ مَرَّةً"
+  },
+  "entries": [
+    {
+      "id": "ap-istighfar",
+      "variant": 10,
+      "order": 1,
+      "count": 3,
+      "text": {
+        "literal": "أَسْتَغْفِرُ اللَّهَ"
+      },
+      "evidence": [
+        {
+          "edition": "ara-muslim",
+          "number": "591"
+        }
+      ],
+      "mustContain": [
+        {
+          "from": {
+            "edition": "ara-muslim",
+            "number": "591"
+          },
+          "phrase": "إذا انصرف من صلاته استغفر ثلاثا"
+        }
+      ],
+      "verified": "narration"
+    },
+    {
+      "id": "ap-salam",
+      "variant": 10,
+      "order": 2,
+      "count": 1,
+      "text": {
+        "from": {
+          "edition": "ara-muslim",
+          "number": "591"
+        },
+        "start": "اللهم أنت السلام",
+        "end": "ذا الجلال والإكرام"
+      },
+      "evidence": [
+        {
+          "edition": "ara-muslim",
+          "number": "591"
+        }
+      ]
+    },
+    {
+      "id": "ap-la-mani",
+      "variant": 10,
+      "order": 3,
+      "count": 1,
+      "text": {
+        "from": {
+          "edition": "ara-bukhari",
+          "number": "844"
+        },
+        "start": "لا إله إلا الله وحده لا شريك له",
+        "end": "منك الجد"
+      },
+      "evidence": [
+        {
+          "edition": "ara-bukhari",
+          "number": "844"
+        },
+        {
+          "edition": "ara-muslim",
+          "number": "593.01"
+        }
+      ]
+    },
+    {
+      "id": "ap-hawqala",
+      "variant": 10,
+      "order": 4,
+      "count": 1,
+      "text": {
+        "from": {
+          "edition": "ara-muslim",
+          "number": "594.01"
+        },
+        "start": "لا إله إلا الله وحده",
+        "end": "ولو كره الكافرون"
+      },
+      "evidence": [
+        {
+          "edition": "ara-muslim",
+          "number": "594.01"
+        }
+      ]
+    },
+    {
+      "id": "ap-tasbih-0",
+      "variant": 10,
+      "order": 5,
+      "count": 33,
+      "text": {
+        "literal": "سُبْحَانَ اللَّهِ"
+      },
+      "evidence": [
+        {
+          "edition": "ara-muslim",
+          "number": "597.01"
+        },
+        {
+          "edition": "ara-muslim",
+          "number": "596.01"
+        }
+      ],
+      "mustContain": [
+        {
+          "from": {
+            "edition": "ara-muslim",
+            "number": "597.01"
+          },
+          "phrase": "سبح الله في دبر كل صلاة ثلاثا وثلاثين"
+        }
+      ],
+      "verified": "narration"
+    },
+    {
+      "id": "ap-tasbih-1",
+      "variant": 10,
+      "order": 6,
+      "count": 33,
+      "text": {
+        "literal": "الْحَمْدُ لِلَّهِ"
+      },
+      "evidence": [
+        {
+          "edition": "ara-muslim",
+          "number": "597.01"
+        },
+        {
+          "edition": "ara-muslim",
+          "number": "596.01"
+        }
+      ],
+      "mustContain": [
+        {
+          "from": {
+            "edition": "ara-muslim",
+            "number": "597.01"
+          },
+          "phrase": "وحمد الله ثلاثا وثلاثين"
+        }
+      ],
+      "verified": "narration"
+    },
+    {
+      "id": "ap-tasbih-2",
+      "variant": 10,
+      "order": 7,
+      "count": 33,
+      "text": {
+        "literal": "اللَّهُ أَكْبَرُ"
+      },
+      "evidence": [
+        {
+          "edition": "ara-muslim",
+          "number": "597.01"
+        },
+        {
+          "edition": "ara-muslim",
+          "number": "596.01"
+        }
+      ],
+      "mustContain": [
+        {
+          "from": {
+            "edition": "ara-muslim",
+            "number": "597.01"
+          },
+          "phrase": "وكبر الله ثلاثا وثلاثين"
+        }
+      ],
+      "verified": "narration"
+    },
+    {
+      "id": "ap-hundred",
+      "variant": 10,
+      "order": 8,
+      "count": 1,
+      "text": {
+        "from": {
+          "edition": "ara-muslim",
+          "number": "597.01"
+        },
+        "start": "لا إله إلا الله وحده",
+        "end": "قدير"
+      },
+      "virtue": {
+        "from": {
+          "edition": "ara-muslim",
+          "number": "597.01"
+        },
+        "start": "غفرت خطاياه",
+        "end": "زبد البحر"
+      },
+      "evidence": [
+        {
+          "edition": "ara-muslim",
+          "number": "597.01"
+        }
+      ]
+    },
+    {
+      "id": "ap-kursi",
+      "variant": 10,
+      "order": 9,
+      "count": 1,
+      "quran": {
+        "istiadha": true,
+        "ranges": [
+          {
+            "surah": 2,
+            "from": 255,
+            "to": 255
+          }
+        ]
+      },
+      "note": "رواه النسائي في «عمل اليوم والليلة»، وصححه الألباني.",
+      "verified": "unchecked: not in hadith-api"
+    },
+    {
+      "id": "ap-muawwidhat",
+      "variant": 10,
+      "order": 10,
+      "count": 1,
+      "quran": {
+        "istiadha": false,
+        "ranges": [
+          {
+            "surah": 112,
+            "from": 1,
+            "to": 4
+          },
+          {
+            "surah": 113,
+            "from": 1,
+            "to": 5
+          },
+          {
+            "surah": 114,
+            "from": 1,
+            "to": 6
+          }
+        ]
+      },
+      "evidence": [
+        {
+          "edition": "ara-abudawud",
+          "number": "1523"
+        },
+        {
+          "edition": "ara-nasai",
+          "number": "1336"
+        }
+      ],
+      "mustContain": [
+        {
+          "from": {
+            "edition": "ara-abudawud",
+            "number": "1523"
+          },
+          "phrase": "أن أقرأ بالمعوذات دبر كل صلاة"
+        }
+      ]
+    },
+    {
+      "id": "sl-muawwidhat",
+      "variant": 20,
+      "order": 1,
+      "count": 3,
+      "quran": {
+        "istiadha": true,
+        "ranges": [
+          {
+            "surah": 112,
+            "from": 1,
+            "to": 4
+          },
+          {
+            "surah": 113,
+            "from": 1,
+            "to": 5
+          },
+          {
+            "surah": 114,
+            "from": 1,
+            "to": 6
+          }
+        ]
+      },
+      "evidence": [
+        {
+          "edition": "ara-bukhari",
+          "number": "5017"
+        }
+      ],
+      "mustContain": [
+        {
+          "from": {
+            "edition": "ara-bukhari",
+            "number": "5017"
+          },
+          "phrase": "جمع كفيه ثم نفث فيهما"
+        }
+      ]
+    },
+    {
+      "id": "sl-kursi",
+      "variant": 20,
+      "order": 2,
+      "count": 1,
+      "quran": {
+        "istiadha": false,
+        "ranges": [
+          {
+            "surah": 2,
+            "from": 255,
+            "to": 255
+          }
+        ]
+      },
+      "virtue": {
+        "from": {
+          "edition": "ara-bukhari",
+          "number": "2311"
+        },
+        "start": "لن يزال عليك من الله حافظ",
+        "end": "حتى تصبح"
+      },
+      "evidence": [
+        {
+          "edition": "ara-bukhari",
+          "number": "2311"
+        }
+      ],
+      "mustContain": [
+        {
+          "from": {
+            "edition": "ara-bukhari",
+            "number": "2311"
+          },
+          "phrase": "إذا أويت إلى فراشك فاقرأ آية الكرسي"
+        }
+      ]
+    },
+    {
+      "id": "sl-baqara",
+      "variant": 20,
+      "order": 3,
+      "count": 1,
+      "quran": {
+        "istiadha": false,
+        "ranges": [
+          {
+            "surah": 2,
+            "from": 285,
+            "to": 286
+          }
+        ]
+      },
+      "virtue": {
+        "from": {
+          "edition": "ara-bukhari",
+          "number": "5009"
+        },
+        "start": "من قرأ بالآيتين",
+        "end": "كفتاه"
+      },
+      "evidence": [
+        {
+          "edition": "ara-bukhari",
+          "number": "5009"
+        },
+        {
+          "edition": "ara-muslim",
+          "number": "807.01"
+        }
+      ]
+    },
+    {
+      "id": "sl-wada3tu",
+      "variant": 20,
+      "order": 4,
+      "count": 1,
+      "text": {
+        "from": {
+          "edition": "ara-bukhari",
+          "number": "6320"
+        },
+        "start": "باسمك رب وضعت جنبي",
+        "end": "عبادك الصالحين"
+      },
+      "evidence": [
+        {
+          "edition": "ara-bukhari",
+          "number": "6320"
+        },
+        {
+          "edition": "ara-muslim",
+          "number": "2714.02"
+        }
+      ]
+    },
+    {
+      "id": "sl-khalaqta",
+      "variant": 20,
+      "order": 5,
+      "count": 1,
+      "text": {
+        "from": {
+          "edition": "ara-muslim",
+          "number": "2712"
+        },
+        "start": "اللهم خلقت نفسي",
+        "end": "أسألك العافية"
+      },
+      "evidence": [
+        {
+          "edition": "ara-muslim",
+          "number": "2712"
+        }
+      ]
+    },
+    {
+      "id": "sl-qini",
+      "variant": 20,
+      "order": 6,
+      "count": 3,
+      "text": {
+        "from": {
+          "edition": "ara-abudawud",
+          "number": "5045"
+        },
+        "start": "اللهم قني عذابك يوم تبعث عبادك",
+        "end": "يوم تبعث عبادك"
+      },
+      "evidence": [
+        {
+          "edition": "ara-abudawud",
+          "number": "5045"
+        }
+      ]
+    },
+    {
+      "id": "sl-amutu",
+      "variant": 20,
+      "order": 7,
+      "count": 1,
+      "text": {
+        "from": {
+          "edition": "ara-bukhari",
+          "number": "6324"
+        },
+        "start": "باسمك اللهم أموت وأحيا",
+        "end": "باسمك اللهم أموت وأحيا"
+      },
+      "evidence": [
+        {
+          "edition": "ara-bukhari",
+          "number": "6324"
+        }
+      ]
+    },
+    {
+      "id": "sl-tasbih-0",
+      "variant": 20,
+      "order": 8,
+      "count": 33,
+      "text": {
+        "literal": "سُبْحَانَ اللَّهِ"
+      },
+      "evidence": [
+        {
+          "edition": "ara-bukhari",
+          "number": "5361"
+        }
+      ],
+      "mustContain": [
+        {
+          "from": {
+            "edition": "ara-bukhari",
+            "number": "5361"
+          },
+          "phrase": "فسبحا ثلاثا وثلاثين"
+        }
+      ],
+      "verified": "narration"
+    },
+    {
+      "id": "sl-tasbih-1",
+      "variant": 20,
+      "order": 9,
+      "count": 33,
+      "text": {
+        "literal": "الْحَمْدُ لِلَّهِ"
+      },
+      "evidence": [
+        {
+          "edition": "ara-bukhari",
+          "number": "5361"
+        }
+      ],
+      "mustContain": [
+        {
+          "from": {
+            "edition": "ara-bukhari",
+            "number": "5361"
+          },
+          "phrase": "واحمدا ثلاثا وثلاثين"
+        }
+      ],
+      "verified": "narration"
+    },
+    {
+      "id": "sl-tasbih-2",
+      "variant": 20,
+      "order": 10,
+      "count": 34,
+      "text": {
+        "literal": "اللَّهُ أَكْبَرُ"
+      },
+      "evidence": [
+        {
+          "edition": "ara-bukhari",
+          "number": "5361"
+        }
+      ],
+      "mustContain": [
+        {
+          "from": {
+            "edition": "ara-bukhari",
+            "number": "5361"
+          },
+          "phrase": "وكبرا أربعا وثلاثين"
+        }
+      ],
+      "verified": "narration"
+    },
+    {
+      "id": "sl-rabb",
+      "variant": 20,
+      "order": 11,
+      "count": 1,
+      "text": {
+        "from": {
+          "edition": "ara-muslim",
+          "number": "2713.01"
+        },
+        "start": "اللهم رب السموات",
+        "end": "من الفقر"
+      },
+      "evidence": [
+        {
+          "edition": "ara-muslim",
+          "number": "2713.01"
+        }
+      ]
+    },
+    {
+      "id": "sl-atamana",
+      "variant": 20,
+      "order": 12,
+      "count": 1,
+      "text": {
+        "from": {
+          "edition": "ara-muslim",
+          "number": "2715"
+        },
+        "start": "الحمد لله الذي أطعمنا وسقانا",
+        "end": "ولا مئوي"
+      },
+      "evidence": [
+        {
+          "edition": "ara-muslim",
+          "number": "2715"
+        }
+      ]
+    },
+    {
+      "id": "sl-aslamtu",
+      "variant": 20,
+      "order": 13,
+      "count": 1,
+      "text": {
+        "from": {
+          "edition": "ara-bukhari",
+          "number": "6313"
+        },
+        "start": "اللهم أسلمت نفسي إليك",
+        "end": "الذي أرسلت"
+      },
+      "virtue": {
+        "from": {
+          "edition": "ara-bukhari",
+          "number": "6313"
+        },
+        "start": "فإن مت مت على الفطرة",
+        "end": "على الفطرة"
+      },
+      "evidence": [
+        {
+          "edition": "ara-bukhari",
+          "number": "6313"
+        }
+      ]
+    },
+    {
+      "id": "wk-ahyana",
+      "variant": 30,
+      "order": 1,
+      "count": 1,
+      "text": {
+        "from": {
+          "edition": "ara-bukhari",
+          "number": "6312"
+        },
+        "start": "الحمد لله الذي أحيانا بعد ما أماتنا",
+        "end": "النشور"
+      },
+      "evidence": [
+        {
+          "edition": "ara-bukhari",
+          "number": "6312"
+        },
+        {
+          "edition": "ara-muslim",
+          "number": "2711"
+        }
+      ]
+    },
+    {
+      "id": "wk-ta3arra",
+      "variant": 30,
+      "order": 2,
+      "count": 1,
+      "text": {
+        "from": {
+          "edition": "ara-bukhari",
+          "number": "1154"
+        },
+        "start": "لا إله إلا الله وحده",
+        "end": "ولا حول ولا قوة إلا بالله"
+      },
+      "virtue": {
+        "from": {
+          "edition": "ara-bukhari",
+          "number": "1154"
+        },
+        "start": "ثم قال اللهم اغفر لي",
+        "end": "قبلت صلاته"
+      },
+      "evidence": [
+        {
+          "edition": "ara-bukhari",
+          "number": "1154"
+        }
+      ]
+    },
+    {
+      "id": "wk-afani",
+      "variant": 30,
+      "order": 3,
+      "count": 1,
+      "text": {
+        "from": {
+          "edition": "ara-tirmidhi",
+          "number": "3401"
+        },
+        "start": "الحمد لله الذي عافاني في جسدي",
+        "end": "بذكره"
+      },
+      "evidence": [
+        {
+          "edition": "ara-tirmidhi",
+          "number": "3401"
+        }
+      ]
+    },
+    {
+      "id": "wk-imran",
+      "variant": 30,
+      "order": 4,
+      "count": 1,
+      "quran": {
+        "istiadha": true,
+        "ranges": [
+          {
+            "surah": 3,
+            "from": 190,
+            "to": 200
+          }
+        ]
+      },
+      "evidence": [
+        {
+          "edition": "ara-bukhari",
+          "number": "4571"
+        },
+        {
+          "edition": "ara-muslim",
+          "number": "763.02"
+        }
+      ],
+      "mustContain": [
+        {
+          "from": {
+            "edition": "ara-bukhari",
+            "number": "4571"
+          },
+          "phrase": "ثم قرأ العشر الآيات الخواتم من سورة آل عمران"
+        }
+      ]
+    }
+  ]
+}

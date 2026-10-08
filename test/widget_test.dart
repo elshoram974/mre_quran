@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:mre_quran/app/quran_app.dart';
+import 'package:mre_quran/app/shell/expanding_nav_bar.dart';
 import 'package:mre_quran/features/mushaf/application/reader_immersive_provider.dart';
 import 'package:mre_quran/features/mushaf/application/reading_position_provider.dart';
 import 'package:mre_quran/features/mushaf/presentation/mushaf_pager.dart';
@@ -62,7 +63,7 @@ void main() {
         TextDirection.rtl,
       );
       expect(
-        find.byType(NavigationBar),
+        find.byType(ExpandingNavBar),
         width < 600 ? findsOneWidget : findsNothing,
       );
       expect(
@@ -193,12 +194,12 @@ void main() {
     debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
     await pump();
     expect(find.byType(GlassTabBar), findsOneWidget);
-    expect(find.byType(NavigationBar), findsNothing);
+    expect(find.byType(ExpandingNavBar), findsNothing);
 
     debugDefaultTargetPlatformOverride = TargetPlatform.android;
     await tester.pumpWidget(const SizedBox());
     await pump();
-    expect(find.byType(NavigationBar), findsOneWidget);
+    expect(find.byType(ExpandingNavBar), findsOneWidget);
     expect(find.byType(GlassTabBar), findsNothing);
     debugDefaultTargetPlatformOverride = null;
   });

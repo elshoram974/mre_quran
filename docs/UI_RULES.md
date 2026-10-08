@@ -7,7 +7,7 @@ The single rule file for UI/UX. `AGENTS.md` points here. The design plan is in
 
 1. Decide the platform with `context.isCupertino`, which reads `Theme.of(context).platform`. Never read `defaultTargetPlatform` directly.
 2. iOS/macOS use liquid glass (`liquid_glass_widgets`) for chrome: app bar, tab bar, rail, sheets, and cards.
-3. Android and other platforms use Material 3: `AppBar`, `NavigationRail`, `Card`, Material sheets. No glass. The compact tab bar is a Material `NavigationBar` floating as a raised rounded pill above the system navigation bar (owner's decision, 2026-10-06), showing only the selected label.
+3. Android and other platforms use Material 3: `AppBar`, `NavigationRail`, `Card`, Material sheets. No glass. The compact tab bar is `ExpandingNavBar`: a floating rounded pill above the system navigation bar where the selected destination grows into a labelled chip and the others show only their icon (owner's decision, 2026-10-06; redesigned 2026-10-08).
 4. Branch only inside shared widgets (`AppShell`, `AppCard`, `AppSheet`, `AppSelectField`, `AppSwitchTile`). Feature screens never check the platform.
 5. Glass never goes over Quran text. The reading surface is opaque paper.
 6. Judge glass on a real iOS simulator or device, not only in Device Preview. Preview scales the view and can distort glass sampling.
@@ -17,7 +17,7 @@ The single rule file for UI/UX. `AGENTS.md` points here. The design plan is in
 
 1. Reusable widgets live in `lib/core/widgets`. Look there before writing one. Extend instead of copying. A pattern used twice becomes a shared widget.
 2. Single choice: `AppSelectField` (search field above 5 options). Never `DropdownButton`, `DropdownButtonFormField`, or `DropdownMenu`.
-3. Bottom sheets: `AppSheet` only. It is draggable (medium and large on iOS glass, snap-drag on Android). Never `showModalBottomSheet`, `GlassModalSheet`, or a hand-built sheet in a screen.
+3. Bottom sheets: `AppSheet` only. It is draggable (medium and large on iOS glass, snap-drag on Android) and always sits above the keyboard. Never `showModalBottomSheet`, `GlassModalSheet`, or a hand-built sheet in a screen. Yes/no questions use `AppConfirmSheet`; times use `AppTimePicker`.
 4. Switches: `AppSwitchTile`. Cards: `AppCard`. Text inputs: `MRETextField` / `MRETextFormField` from `mre_fields`.
 5. Do not restyle a field, button, or card per screen. Change the theme or the shared widget.
 
@@ -52,6 +52,8 @@ The single rule file for UI/UX. `AGENTS.md` points here. The design plan is in
 2. Use the platform's own tab and sheet motion (glass pill physics on iOS, Material indicator on Android). Do not fake it.
 
 ## 7. Navigation
+
+4. Back never closes the app by accident: sheets and pushed routes pop first; at the shell, another tab returns to the Mushaf, and back on the Mushaf asks before closing.
 
 1. Routes are typed `go_router` routes. Tabs are listed once in `AppRoute.tabs`, in the same order as the shell branches.
 2. The app opens on the last used tab or on the Mushaf, per the startup setting. The Mushaf tab reopens at the last page read.

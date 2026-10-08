@@ -3,8 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_tokens.dart';
+import '../../../core/widgets/app_shimmer.dart';
+import '../../quran_text/application/quran_text_providers.dart';
 import '../../settings/application/digits_provider.dart';
 import '../application/adhkar_providers.dart';
+import '../application/passage_text.dart';
 import '../domain/adhkar_collection.dart';
 import '../domain/dhikr.dart';
 import 'evidence_sheet.dart';
@@ -45,7 +48,7 @@ class DhikrCard extends ConsumerWidget {
     final digits = ref.watch(digitsFormatterProvider);
     final count = ref.watch(dhikrCountProvider((collection, dhikr)));
     final done = count >= dhikr.repeat;
-    final counter = '${digits(count)} / ${digits(dhikr.repeat)}';
+    final counter = l10n.adhkarProgress(digits(count), digits(dhikr.repeat));
 
     return RepaintBoundary(
       child: AnimatedContainer(
@@ -105,20 +108,7 @@ class DhikrCard extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 8),
-            // The words are Arabic whatever the interface language is.
-            Directionality(
-              textDirection: TextDirection.rtl,
-              child: Text(
-                dhikr.text,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontFamily: AppTokens.quranFontFamily,
-                  fontSize: 24,
-                  height: 2,
-                  color: scheme.onSurface.withValues(alpha: done ? 0.7 : 1),
-                ),
-              ),
-            ),
+            _DhikrWords(collection: collection, dhikr: dhikr, done: done),
             const SizedBox(height: 16),
             Row(
               children: [
@@ -126,7 +116,7 @@ class DhikrCard extends ConsumerWidget {
                   IconButton.filledTonal(
                     onPressed: onUndo,
                     tooltip: l10n.adhkarUndo,
-                    icon: const Icon(Icons.undo_rounded),
+                    icon: const Icon(Icons.remove_rounded),
                   ),
                   const SizedBox(width: 8),
                 ],
@@ -139,7 +129,7 @@ class DhikrCard extends ConsumerWidget {
                     ),
                     excludeSemantics: true,
                     child: done
-                        ? _DoneBadge(label: l10n.adhkarDoneToday)
+                        ? _DoneBadge(label: l10n.done)
                         : FilledButton(
                             onPressed: onCount,
                             style: FilledButton.styleFrom(
@@ -162,6 +152,59 @@ class DhikrCard extends ConsumerWidget {
         ),
       ),
     );
+  }
+}
+
+/// The words of a dhikr. A Quran dhikr shows a placeholder while the verified
+/// text loads, and a retry when it cannot.
+class _DhikrWords extends ConsumerWidget {
+  const _DhikrWords({
+    required this.collection,
+    required this.dhikr,
+    required this.done,
+  });
+
+  final AdhkarCollection collection;
+  final Dhikr dhikr;
+  final bool done;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final scheme = Theme.of(context).colorScheme;
+    return ref
+        .watch(dhikrTextProvider(dhikr))
+        .when(
+          loading: () => const AppShimmer(
+            child: Column(
+              children: [
+                SkeletonBox(height: 22),
+                SizedBox(height: 10),
+                SkeletonBox(height: 22),
+                SizedBox(height: 10),
+                SkeletonBox(height: 22),
+              ],
+            ),
+          ),
+          error: (_, _) => TextButton.icon(
+            onPressed: () => ref.invalidate(quranTextDataProvider),
+            icon: const Icon(Icons.refresh),
+            label: Text(context.l10n.retry),
+          ),
+          // The words are Arabic whatever the interface language is.
+          data: (text) => Directionality(
+            textDirection: TextDirection.rtl,
+            child: Text(
+              text,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontFamily: AppTokens.quranFontFamily,
+                fontSize: 24,
+                height: 2,
+                color: scheme.onSurface.withValues(alpha: done ? 0.7 : 1),
+              ),
+            ),
+          ),
+        );
   }
 }
 
