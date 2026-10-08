@@ -394,7 +394,7 @@ void main() {
       await tester.tap(find.text('٠ من ٣'));
       await tester.pumpAndSettle();
       expect(find.text('١ من ٣'), findsOneWidget);
-      await tester.tap(find.byTooltip('تراجع عن مرة'));
+      await tester.tap(find.text('تراجع عن مرة'));
       await tester.pumpAndSettle();
       expect(find.text('٠ من ٣'), findsOneWidget);
     });

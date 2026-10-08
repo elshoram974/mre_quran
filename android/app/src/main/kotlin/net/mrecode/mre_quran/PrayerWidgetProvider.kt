@@ -38,13 +38,36 @@ class PrayerWidgetProvider : AppWidgetProvider() {
                 editor.putString("time", values["time"] as? String)
                 editor.putLong("at", (values["at"] as Number).toLong())
                 editor.putBoolean("arabicDigits", values["useArabicDigits"] as? Boolean ?: true)
+                val times = values["times"] as? List<*> ?: emptyList<Any>()
+                times.take(5).forEachIndexed { index, item ->
+                    val row = item as? Map<*, *> ?: return@forEachIndexed
+                    editor.putString("time_name_$index", row["name"] as? String)
+                    editor.putString("time_value_$index", row["time"] as? String)
+                }
                 editor.apply()
             }
             updateAll(context, AppWidgetManager.getInstance(context))
+            updateSchedule(context, AppWidgetManager.getInstance(context))
         }
 
         fun refresh(context: Context) {
             updateAll(context, AppWidgetManager.getInstance(context))
+        }
+
+        fun updateSchedule(context: Context, manager: AppWidgetManager) {
+            val ids = manager.getAppWidgetIds(ComponentName(context, PrayerScheduleWidgetProvider::class.java))
+            if (ids.isEmpty()) return
+            val store = context.getSharedPreferences(preferences, Context.MODE_PRIVATE)
+            val views = RemoteViews(context.packageName, R.layout.prayer_schedule_widget)
+            views.setTextViewText(R.id.schedule_label, context.getString(R.string.prayer_widget_name))
+            val rows = intArrayOf(R.id.schedule_0, R.id.schedule_1, R.id.schedule_2, R.id.schedule_3, R.id.schedule_4)
+            rows.forEachIndexed { index, id ->
+                val name = store.getString("time_name_$index", "")
+                val time = store.getString("time_value_$index", "")
+                views.setTextViewText(id, if (name.isNullOrBlank()) "" else "$name  $time")
+            }
+            views.setOnClickPendingIntent(R.id.schedule_label, openAppIntent(context))
+            manager.updateAppWidget(ids, views)
         }
 
         private fun updateAll(context: Context, manager: AppWidgetManager) {

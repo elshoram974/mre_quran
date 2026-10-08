@@ -118,44 +118,39 @@ class DhikrCard extends ConsumerWidget {
             const SizedBox(height: 8),
             _DhikrWords(collection: collection, dhikr: dhikr, done: done),
             const SizedBox(height: 16),
-            Row(
-              children: [
-                if (count > 0) ...[
-                  IconButton.filledTonal(
-                    onPressed: onUndo,
-                    tooltip: l10n.adhkarUndo,
-                    icon: const Icon(Icons.remove_rounded),
-                  ),
-                  const SizedBox(width: 8),
-                ],
-                Expanded(
-                  child: Semantics(
-                    button: !done,
-                    label: l10n.adhkarCounterLabel(
-                      digits(count),
-                      digits(dhikr.repeat),
+            Semantics(
+              button: !done,
+              label: l10n.adhkarCounterLabel(
+                digits(count),
+                digits(dhikr.repeat),
+              ),
+              excludeSemantics: true,
+              child: done
+                  ? _DoneBadge(label: l10n.done)
+                  : FilledButton(
+                      onPressed: onCount,
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size.fromHeight(
+                          AppTokens.counterButtonHeight,
+                        ),
+                      ),
+                      child: Text(
+                        counter,
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          color: scheme.onPrimary,
+                        ),
+                      ),
                     ),
-                    excludeSemantics: true,
-                    child: done
-                        ? _DoneBadge(label: l10n.done)
-                        : FilledButton(
-                            onPressed: onCount,
-                            style: FilledButton.styleFrom(
-                              minimumSize: const Size.fromHeight(
-                                AppTokens.counterButtonHeight,
-                              ),
-                            ),
-                            child: Text(
-                              counter,
-                              style: theme.textTheme.titleLarge?.copyWith(
-                                color: scheme.onPrimary,
-                              ),
-                            ),
-                          ),
-                  ),
-                ),
-              ],
             ),
+            if (count > 0 && !done)
+              Align(
+                alignment: AlignmentDirectional.centerEnd,
+                child: TextButton.icon(
+                  onPressed: onUndo,
+                  icon: const Icon(Icons.undo_rounded),
+                  label: Text(l10n.adhkarUndo),
+                ),
+              ),
           ],
         ),
       ),

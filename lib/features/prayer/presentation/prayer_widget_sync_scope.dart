@@ -38,7 +38,10 @@ class _PrayerWidgetSyncScopeState extends ConsumerState<PrayerWidgetSyncScope> {
 
   Future<void> _sync(NextPrayer? next) {
     final settings = ref.read(settingsProvider).value;
-    if (next == null || settings == null) return PrayerWidgetSync.update(null);
+    final day = ref.read(prayerDayProvider);
+    if (next == null || settings == null || day == null) {
+      return PrayerWidgetSync.update(null);
+    }
     final l10n = context.l10n;
     final digits = ref.read(displayDigitsFormatterProvider);
     return PrayerWidgetSync.update(
@@ -49,6 +52,13 @@ class _PrayerWidgetSyncScopeState extends ConsumerState<PrayerWidgetSyncScope> {
         time: formatPrayerTime(context, next.at, digits),
         at: next.at,
         useArabicDigits: settings.useArabicDigits,
+        times: [
+          for (final prayer in DailyPrayer.values)
+            PrayerWidgetTime(
+              name: prayerName(l10n, prayer),
+              time: formatPrayerTime(context, day.of(prayer), digits),
+            ),
+        ],
       ),
     );
   }

@@ -3,6 +3,16 @@ import 'package:flutter/services.dart';
 import '../../../core/diagnostics/app_logger.dart';
 import '../domain/prayer_times.dart';
 
+/// One prayer row in the daily home-screen widget.
+class PrayerWidgetTime {
+  const PrayerWidgetTime({required this.name, required this.time});
+
+  final String name;
+  final String time;
+
+  Map<String, String> toMap() => {'name': name, 'time': time};
+}
+
 /// Data rendered by the platform's next-prayer home-screen widget.
 class PrayerWidgetData {
   /// Creates widget data from the already calculated next prayer.
@@ -13,6 +23,7 @@ class PrayerWidgetData {
     required this.time,
     required this.at,
     required this.useArabicDigits,
+    required this.times,
   });
 
   final DailyPrayer prayer;
@@ -21,6 +32,7 @@ class PrayerWidgetData {
   final String time;
   final DateTime at;
   final bool useArabicDigits;
+  final List<PrayerWidgetTime> times;
 
   Map<String, Object> toMap() => {
     'prayer': prayer.name,
@@ -29,6 +41,7 @@ class PrayerWidgetData {
     'time': time,
     'at': at.millisecondsSinceEpoch,
     'useArabicDigits': useArabicDigits,
+    'times': [for (final item in times) item.toMap()],
   };
 }
 

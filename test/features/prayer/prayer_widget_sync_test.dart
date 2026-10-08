@@ -12,6 +12,7 @@ void main() {
       time: '١٢:٠٠',
       at: at,
       useArabicDigits: true,
+      times: const [PrayerWidgetTime(name: 'الظهر', time: '١٢:٠٠')],
     );
 
     expect(data.toMap(), {
@@ -21,6 +22,9 @@ void main() {
       'time': '١٢:٠٠',
       'at': at.millisecondsSinceEpoch,
       'useArabicDigits': true,
+      'times': [
+        {'name': 'الظهر', 'time': '١٢:٠٠'},
+      ],
     });
   });
 }

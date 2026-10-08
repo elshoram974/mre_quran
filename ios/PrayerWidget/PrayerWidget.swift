@@ -3,6 +3,7 @@ import WidgetKit
 
 private let appGroup = "group.net.mrecode.mreQuran"
 private let widgetKind = "NextPrayerWidget"
+private let scheduleWidgetKind = "PrayerScheduleWidget"
 
 private struct PrayerEntry: TimelineEntry {
   let date: Date
@@ -71,6 +72,27 @@ private struct PrayerWidgetView: View {
   }
 }
 
+private struct PrayerScheduleWidgetView: View {
+  let rows: [[String: String]]
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 4) {
+      Text("مواقيت الصلاة").font(.caption).foregroundStyle(.secondary)
+      ForEach(Array(rows.prefix(5).enumerated()), id: \.offset) { _, row in
+        HStack {
+          Text(row["name"] ?? "")
+          Spacer()
+          Text(row["time"] ?? "").monospacedDigit()
+        }
+        .font(.caption)
+      }
+    }
+    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+    .background(Color(uiColor: .secondarySystemBackground))
+    .widgetURL(URL(string: "mrequran://prayer-times"))
+  }
+}
+
 struct PrayerWidget: Widget {
   let kind = widgetKind
 
@@ -84,9 +106,25 @@ struct PrayerWidget: Widget {
   }
 }
 
+struct PrayerScheduleWidget: Widget {
+  let kind = scheduleWidgetKind
+
+  var body: some WidgetConfiguration {
+    StaticConfiguration(kind: kind, provider: PrayerProvider()) { _ in
+      PrayerScheduleWidgetView(
+        rows: UserDefaults(suiteName: appGroup)?.array(forKey: "times") as? [[String: String]] ?? [],
+      )
+    }
+    .configurationDisplayName("مواقيت اليوم")
+    .description("مواقيت الصلوات الخمس")
+    .supportedFamilies([.systemMedium, .systemLarge])
+  }
+}
+
 @main
 struct PrayerWidgetBundle: WidgetBundle {
   var body: some Widget {
     PrayerWidget()
+    PrayerScheduleWidget()
   }
 }

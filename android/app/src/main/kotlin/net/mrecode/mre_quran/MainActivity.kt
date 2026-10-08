@@ -25,5 +25,6 @@ class MainActivity : FlutterActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         PrayerWidgetProvider.refresh(this)
+        PrayerScheduleWidgetProvider.refresh(this)
     }
 }

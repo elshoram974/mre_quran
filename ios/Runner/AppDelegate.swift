@@ -34,11 +34,13 @@ import WidgetKit
         defaults?.set(values["label"] as? String, forKey: "label")
         defaults?.set(values["time"] as? String, forKey: "time")
         defaults?.set(values["at"] as? NSNumber, forKey: "at")
+        defaults?.set(values["times"] as? [[String: String]], forKey: "times")
       } else {
         defaults?.removeObject(forKey: "title")
         defaults?.removeObject(forKey: "label")
         defaults?.removeObject(forKey: "time")
         defaults?.removeObject(forKey: "at")
+        defaults?.removeObject(forKey: "times")
       }
       WidgetCenter.shared.reloadTimelines(ofKind: "NextPrayerWidget")
       callback(nil)
