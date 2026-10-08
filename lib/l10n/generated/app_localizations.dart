@@ -278,6 +278,12 @@ abstract class AppLocalizations {
   /// **'Images mode: not enabled. No page image has been downloaded or bundled.'**
   String get creditsImages;
 
+  /// No description provided for @done.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get done;
+
   /// No description provided for @back.
   ///
   /// In en, this message translates to:
@@ -305,20 +311,158 @@ abstract class AppLocalizations {
   /// No description provided for @duas.
   ///
   /// In en, this message translates to:
-  /// **'Duas'**
+  /// **'Adhkar'**
   String get duas;
 
-  /// No description provided for @duasEmptyTitle.
+  /// No description provided for @adhkarSuggested.
   ///
   /// In en, this message translates to:
-  /// **'Duas and adhkar'**
-  String get duasEmptyTitle;
+  /// **'Suggested now'**
+  String get adhkarSuggested;
 
-  /// No description provided for @duasEmptyBody.
+  /// No description provided for @adhkarAll.
   ///
   /// In en, this message translates to:
-  /// **'Duas and adhkar will appear once a verified, licensed source is approved.'**
-  String get duasEmptyBody;
+  /// **'All adhkar'**
+  String get adhkarAll;
+
+  /// No description provided for @adhkarStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get adhkarStart;
+
+  /// No description provided for @adhkarContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get adhkarContinue;
+
+  /// No description provided for @adhkarDoneToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Done today'**
+  String get adhkarDoneToday;
+
+  /// No description provided for @adhkarProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'{done} of {total}'**
+  String adhkarProgress(String done, String total);
+
+  /// No description provided for @adhkarCounterLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{done} of {total}. Tap to count.'**
+  String adhkarCounterLabel(String done, String total);
+
+  /// No description provided for @adhkarUndo.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo one'**
+  String get adhkarUndo;
+
+  /// No description provided for @adhkarEvidence.
+  ///
+  /// In en, this message translates to:
+  /// **'Evidence'**
+  String get adhkarEvidence;
+
+  /// No description provided for @adhkarSourceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Source'**
+  String get adhkarSourceLabel;
+
+  /// No description provided for @adhkarVirtueLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Virtue'**
+  String get adhkarVirtueLabel;
+
+  /// No description provided for @adhkarHadithLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'The hadith'**
+  String get adhkarHadithLabel;
+
+  /// No description provided for @adhkarVocabularyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Word meanings'**
+  String get adhkarVocabularyLabel;
+
+  /// No description provided for @adhkarCompleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'May Allah accept from you'**
+  String get adhkarCompleteTitle;
+
+  /// No description provided for @adhkarCompleteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You finished {title} for today.'**
+  String adhkarCompleteBody(String title);
+
+  /// No description provided for @adhkarRestart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start over'**
+  String get adhkarRestart;
+
+  /// No description provided for @adhkarLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the adhkar. Try again.'**
+  String get adhkarLoadError;
+
+  /// No description provided for @adhkarReminders.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminders'**
+  String get adhkarReminders;
+
+  /// No description provided for @adhkarRemindersNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No reminder is on'**
+  String get adhkarRemindersNone;
+
+  /// No description provided for @adhkarRemindersSome.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} on'**
+  String adhkarRemindersSome(String count);
+
+  /// No description provided for @adhkarReminderTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder time'**
+  String get adhkarReminderTime;
+
+  /// No description provided for @adhkarReminderBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Time for your adhkar. Tap to read.'**
+  String get adhkarReminderBody;
+
+  /// No description provided for @adhkarReminderChannel.
+  ///
+  /// In en, this message translates to:
+  /// **'Adhkar reminders'**
+  String get adhkarReminderChannel;
+
+  /// No description provided for @adhkarPermissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications are off for this app. Allow them in the system settings to get reminders.'**
+  String get adhkarPermissionDenied;
+
+  /// No description provided for @creditsAdhkar.
+  ///
+  /// In en, this message translates to:
+  /// **'Adhkar text, repeat counts, and evidence: the Morning and Evening Adhkar database by Seen Arabic (MIT), https://github.com/Seen-Arabic/Morning-And-Evening-Adhkar-DB, taken from the book Hisn al-Muslim by Sa\'id bin Ali bin Wahf al-Qahtani. Bundled unmodified and verified by checksum.'**
+  String get creditsAdhkar;
 
   /// No description provided for @startup.
   ///

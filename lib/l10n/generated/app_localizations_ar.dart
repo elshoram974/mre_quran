@@ -105,6 +105,9 @@ class AppLocalizationsAr extends AppLocalizations {
       'وضع الصور: غير مفعّل. لم يتم تنزيل أو تضمين أي صورة صفحة.';
 
   @override
+  String get done => 'تم';
+
+  @override
   String get back => 'رجوع';
 
   @override
@@ -117,14 +120,92 @@ class AppLocalizationsAr extends AppLocalizations {
   String get selectOption => 'اختيار';
 
   @override
-  String get duas => 'الأدعية';
+  String get duas => 'الأذكار';
 
   @override
-  String get duasEmptyTitle => 'الأدعية والأذكار';
+  String get adhkarSuggested => 'المقترح الآن';
 
   @override
-  String get duasEmptyBody =>
-      'ستظهر الأدعية والأذكار بعد اعتماد مصدر موثّق ومرخّص.';
+  String get adhkarAll => 'كل الأذكار';
+
+  @override
+  String get adhkarStart => 'ابدأ';
+
+  @override
+  String get adhkarContinue => 'تابع';
+
+  @override
+  String get adhkarDoneToday => 'تمّ اليوم';
+
+  @override
+  String adhkarProgress(String done, String total) {
+    return '$done من $total';
+  }
+
+  @override
+  String adhkarCounterLabel(String done, String total) {
+    return '$done من $total. اضغط للعدّ.';
+  }
+
+  @override
+  String get adhkarUndo => 'تراجع عن مرة';
+
+  @override
+  String get adhkarEvidence => 'الدليل';
+
+  @override
+  String get adhkarSourceLabel => 'المصدر';
+
+  @override
+  String get adhkarVirtueLabel => 'الفضل';
+
+  @override
+  String get adhkarHadithLabel => 'نص الحديث';
+
+  @override
+  String get adhkarVocabularyLabel => 'معاني الكلمات';
+
+  @override
+  String get adhkarCompleteTitle => 'تقبّل الله منك';
+
+  @override
+  String adhkarCompleteBody(String title) {
+    return 'أتممت $title لليوم.';
+  }
+
+  @override
+  String get adhkarRestart => 'ابدأ من جديد';
+
+  @override
+  String get adhkarLoadError => 'تعذّر تحميل الأذكار. حاول مرة أخرى.';
+
+  @override
+  String get adhkarReminders => 'التذكيرات';
+
+  @override
+  String get adhkarRemindersNone => 'لا يوجد تذكير مفعّل';
+
+  @override
+  String adhkarRemindersSome(String count) {
+    return '$count مفعّل';
+  }
+
+  @override
+  String get adhkarReminderTime => 'وقت التذكير';
+
+  @override
+  String get adhkarReminderBody => 'حان وقت أذكارك. اضغط للقراءة.';
+
+  @override
+  String get adhkarReminderChannel => 'تذكيرات الأذكار';
+
+  @override
+  String get adhkarPermissionDenied =>
+      'الإشعارات متوقفة لهذا التطبيق. اسمح بها من إعدادات الجهاز لتصلك التذكيرات.';
+
+  @override
+  String get creditsAdhkar =>
+      'نص الأذكار وعدد تكرارها وأدلتها: قاعدة بيانات أذكار الصباح والمساء من Seen Arabic (ترخيص MIT)، https://github.com/Seen-Arabic/Morning-And-Evening-Adhkar-DB، المأخوذة من كتاب «حصن المسلم» للشيخ سعيد بن علي بن وهف القحطاني. مضمّنة دون تعديل ومتحقَّق منها بالبصمة.';
 
   @override
   String get startup => 'عند فتح التطبيق';

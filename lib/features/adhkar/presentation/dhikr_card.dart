@@ -1,0 +1,197 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../core/l10n/l10n.dart';
+import '../../../core/theme/app_tokens.dart';
+import '../../settings/application/digits_provider.dart';
+import '../application/adhkar_providers.dart';
+import '../domain/adhkar_collection.dart';
+import '../domain/dhikr.dart';
+import 'evidence_sheet.dart';
+
+/// One dhikr: its words, how many times to say it, a big tap-to-count button,
+/// and a way to read the evidence.
+class DhikrCard extends ConsumerWidget {
+  /// Creates the card for [dhikr], the [number]th of [collection].
+  const DhikrCard({
+    super.key,
+    required this.collection,
+    required this.dhikr,
+    required this.number,
+    required this.onCount,
+    required this.onUndo,
+  });
+
+  /// The collection it belongs to.
+  final AdhkarCollection collection;
+
+  /// The dhikr shown.
+  final Dhikr dhikr;
+
+  /// Position in the collection, starting at 1.
+  final int number;
+
+  /// Called when the person taps the counter.
+  final VoidCallback onCount;
+
+  /// Called when the person takes back one repeat.
+  final VoidCallback onUndo;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final l10n = context.l10n;
+    final digits = ref.watch(digitsFormatterProvider);
+    final count = ref.watch(dhikrCountProvider((collection, dhikr)));
+    final done = count >= dhikr.repeat;
+    final counter = '${digits(count)} / ${digits(dhikr.repeat)}';
+
+    return RepaintBoundary(
+      child: AnimatedContainer(
+        duration: MediaQuery.disableAnimationsOf(context)
+            ? Duration.zero
+            : const Duration(milliseconds: 250),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: done
+              ? scheme.primaryContainer.withValues(alpha: 0.45)
+              : scheme.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(AppTokens.radiusCard),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // A Wrap so the evidence button drops to its own line when large
+            // text leaves no room beside the repeat label.
+            Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 8,
+              children: [
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircleAvatar(
+                      radius: 14,
+                      backgroundColor: scheme.secondaryContainer,
+                      foregroundColor: scheme.onSecondaryContainer,
+                      child: Text(
+                        digits(number),
+                        style: theme.textTheme.labelMedium,
+                      ),
+                    ),
+                    if (dhikr.repeatLabel.isNotEmpty) ...[
+                      const SizedBox(width: 10),
+                      Flexible(
+                        child: Directionality(
+                          textDirection: TextDirection.rtl,
+                          child: Text(
+                            dhikr.repeatLabel,
+                            style: theme.textTheme.labelLarge?.copyWith(
+                              color: scheme.primary,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                TextButton.icon(
+                  onPressed: () => EvidenceSheet.show(context, dhikr),
+                  icon: const Icon(Icons.menu_book_outlined, size: 20),
+                  label: Text(l10n.adhkarEvidence),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            // The words are Arabic whatever the interface language is.
+            Directionality(
+              textDirection: TextDirection.rtl,
+              child: Text(
+                dhikr.text,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: AppTokens.quranFontFamily,
+                  fontSize: 24,
+                  height: 2,
+                  color: scheme.onSurface.withValues(alpha: done ? 0.7 : 1),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                if (count > 0) ...[
+                  IconButton.filledTonal(
+                    onPressed: onUndo,
+                    tooltip: l10n.adhkarUndo,
+                    icon: const Icon(Icons.undo_rounded),
+                  ),
+                  const SizedBox(width: 8),
+                ],
+                Expanded(
+                  child: Semantics(
+                    button: !done,
+                    label: l10n.adhkarCounterLabel(
+                      digits(count),
+                      digits(dhikr.repeat),
+                    ),
+                    excludeSemantics: true,
+                    child: done
+                        ? _DoneBadge(label: l10n.adhkarDoneToday)
+                        : FilledButton(
+                            onPressed: onCount,
+                            style: FilledButton.styleFrom(
+                              minimumSize: const Size.fromHeight(
+                                AppTokens.counterButtonHeight,
+                              ),
+                            ),
+                            child: Text(
+                              counter,
+                              style: theme.textTheme.titleLarge?.copyWith(
+                                color: scheme.onPrimary,
+                              ),
+                            ),
+                          ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DoneBadge extends StatelessWidget {
+  const _DoneBadge({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      height: AppTokens.counterButtonHeight,
+      decoration: BoxDecoration(
+        color: scheme.primaryContainer,
+        borderRadius: BorderRadius.circular(AppTokens.radiusField),
+      ),
+      alignment: Alignment.center,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.check_rounded, color: scheme.onPrimaryContainer),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.titleMedium
+                ?.copyWith(color: scheme.onPrimaryContainer),
+          ),
+        ],
+      ),
+    );
+  }
+}

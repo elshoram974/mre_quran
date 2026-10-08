@@ -13,6 +13,8 @@ import 'app/quran_app.dart';
 import 'core/crash/crash_reporter.dart';
 import 'core/dev/preview_platform_sync.dart';
 import 'core/diagnostics/app_logger.dart';
+import 'features/adhkar/application/reminders_provider.dart';
+import 'features/adhkar/data/reminder_scheduler.dart';
 import 'firebase_options.dart';
 import 'features/settings/application/settings_provider.dart';
 import 'features/settings/data/settings_repository.dart';
@@ -30,11 +32,12 @@ Future<void> main() async {
   final preferences = SharedPreferencesAsync();
   // Independent start-up work runs in parallel so the first frame waits only
   // for the slowest item, not the sum of all of them.
-  final (_, settings, lastTab, _) = await (
+  final (_, settings, lastTab, _, reminderScheduler) = await (
     Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform),
     LocalSettingsRepository(preferences).load(),
     LocalLastTabRepository(preferences).load(),
     LiquidGlassWidgets.initialize(),
+    LocalReminderScheduler.create(),
   ).wait;
   // Crashlytics exists only after Firebase is initialised above.
   final crashReporter = FirebaseCrashReporter();
@@ -48,6 +51,9 @@ Future<void> main() async {
     yield LicenseEntryWithLineBreaks(const [
       'Amiri Quran',
     ], await rootBundle.loadString('assets/fonts/amiri_quran/OFL.txt'));
+    yield LicenseEntryWithLineBreaks(const [
+      'Morning and Evening Adhkar database (Seen Arabic)',
+    ], await rootBundle.loadString('assets/adhkar/LICENSE.seen-arabic.txt'));
   });
   final initialLocation = resolveInitialLocation(
     settings.startupBehavior,
@@ -59,6 +65,7 @@ Future<void> main() async {
       child: ProviderScope(
         overrides: [
           crashReporterProvider.overrideWithValue(crashReporter),
+          reminderSchedulerProvider.overrideWithValue(reminderScheduler),
           initialLocationProvider.overrideWithValue(initialLocation),
           initialSettingsProvider.overrideWithValue((settings: settings)),
         ],

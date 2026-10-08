@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/l10n/l10n.dart';
 import '../core/theme/app_theme.dart';
+import '../features/adhkar/application/reminders_provider.dart';
 import '../features/settings/application/settings_provider.dart';
 import '../features/settings/domain/app_settings.dart';
 import '../l10n/generated/app_localizations.dart';
@@ -27,6 +28,16 @@ class QuranApp extends ConsumerWidget {
         );
       });
     });
+    // Keeps the reminder schedule in step with the saved choices and language
+    // from the first frame, and opens the list of a tapped reminder.
+    ref
+      ..listen(remindersProvider, (_, _) {})
+      ..listen(reminderTapsProvider, (_, next) {
+        final path = next.value == null
+            ? null
+            : AppRoute.fromReminderPayload(next.value!);
+        if (path != null) unawaited(ref.read(routerProvider).push<void>(path));
+      });
     return MediaQuery(
       data: MediaQuery.of(context).copyWith(
         disableAnimations:

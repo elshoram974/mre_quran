@@ -106,6 +106,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'Images mode: not enabled. No page image has been downloaded or bundled.';
 
   @override
+  String get done => 'Done';
+
+  @override
   String get back => 'Back';
 
   @override
@@ -118,14 +121,92 @@ class AppLocalizationsEn extends AppLocalizations {
   String get selectOption => 'Select';
 
   @override
-  String get duas => 'Duas';
+  String get duas => 'Adhkar';
 
   @override
-  String get duasEmptyTitle => 'Duas and adhkar';
+  String get adhkarSuggested => 'Suggested now';
 
   @override
-  String get duasEmptyBody =>
-      'Duas and adhkar will appear once a verified, licensed source is approved.';
+  String get adhkarAll => 'All adhkar';
+
+  @override
+  String get adhkarStart => 'Start';
+
+  @override
+  String get adhkarContinue => 'Continue';
+
+  @override
+  String get adhkarDoneToday => 'Done today';
+
+  @override
+  String adhkarProgress(String done, String total) {
+    return '$done of $total';
+  }
+
+  @override
+  String adhkarCounterLabel(String done, String total) {
+    return '$done of $total. Tap to count.';
+  }
+
+  @override
+  String get adhkarUndo => 'Undo one';
+
+  @override
+  String get adhkarEvidence => 'Evidence';
+
+  @override
+  String get adhkarSourceLabel => 'Source';
+
+  @override
+  String get adhkarVirtueLabel => 'Virtue';
+
+  @override
+  String get adhkarHadithLabel => 'The hadith';
+
+  @override
+  String get adhkarVocabularyLabel => 'Word meanings';
+
+  @override
+  String get adhkarCompleteTitle => 'May Allah accept from you';
+
+  @override
+  String adhkarCompleteBody(String title) {
+    return 'You finished $title for today.';
+  }
+
+  @override
+  String get adhkarRestart => 'Start over';
+
+  @override
+  String get adhkarLoadError => 'Could not load the adhkar. Try again.';
+
+  @override
+  String get adhkarReminders => 'Reminders';
+
+  @override
+  String get adhkarRemindersNone => 'No reminder is on';
+
+  @override
+  String adhkarRemindersSome(String count) {
+    return '$count on';
+  }
+
+  @override
+  String get adhkarReminderTime => 'Reminder time';
+
+  @override
+  String get adhkarReminderBody => 'Time for your adhkar. Tap to read.';
+
+  @override
+  String get adhkarReminderChannel => 'Adhkar reminders';
+
+  @override
+  String get adhkarPermissionDenied =>
+      'Notifications are off for this app. Allow them in the system settings to get reminders.';
+
+  @override
+  String get creditsAdhkar =>
+      'Adhkar text, repeat counts, and evidence: the Morning and Evening Adhkar database by Seen Arabic (MIT), https://github.com/Seen-Arabic/Morning-And-Evening-Adhkar-DB, taken from the book Hisn al-Muslim by Sa\'id bin Ali bin Wahf al-Qahtani. Bundled unmodified and verified by checksum.';
 
   @override
   String get startup => 'On launch';

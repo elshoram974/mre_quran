@@ -1,9 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:flutter/widgets.dart';
+
 import '../features/about/presentation/about_page.dart';
+import '../features/adhkar/application/reminders_provider.dart';
+import '../features/adhkar/domain/reminder_payload.dart';
+import '../features/adhkar/presentation/adhkar_session_page.dart';
+import '../features/adhkar/presentation/duas_page.dart';
 import '../features/bookmarks/presentation/bookmarks_page.dart';
-import '../features/duas/presentation/duas_page.dart';
 import '../features/mushaf/presentation/mushaf_page.dart';
 import '../features/quran_index/presentation/quran_index_page.dart';
 import '../features/quran_text/presentation/quran_search_page.dart';
@@ -62,11 +67,26 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const QuranIndexPage(),
       ),
       GoRoute(
+        path: AppRoute.adhkarSession.path,
+        builder: (context, state) =>
+            AdhkarSessionPage(collectionId: state.pathParameters['id']!),
+      ),
+      GoRoute(
         path: AppRoute.about.path,
         builder: (context, state) => const AboutPage(),
       ),
     ],
   );
+  // A reminder that launched the app opens its list on top of the first tab.
+  final launch = ref.read(reminderSchedulerProvider).launchPayload;
+  final launchPath = launch == null
+      ? null
+      : AppRoute.fromReminderPayload(launch);
+  if (launchPath != null) {
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => router.push(launchPath),
+    );
+  }
   ref.onDispose(router.dispose);
   return router;
 });
@@ -79,10 +99,20 @@ enum AppRoute {
   settings('/settings'),
   about('/about'),
   quranIndex('/quran-index'),
-  quranSearch('/quran-search');
+  quranSearch('/quran-search'),
+  adhkarSession('/adhkar/:id');
 
   const AppRoute(this.path);
   final String path;
+
+  /// Path that opens the adhkar collection [id].
+  static String adhkarSessionPath(String id) => '/adhkar/$id';
+
+  /// Path a reminder notification opens, or null for a payload that is not ours.
+  static String? fromReminderPayload(String payload) {
+    final id = ReminderPayload.collectionId(payload);
+    return id == null ? null : adhkarSessionPath(id);
+  }
 
   /// Top-level tabs in navigation order. Must match the shell branches.
   static const List<AppRoute> tabs = [reader, duas, bookmarks, settings];

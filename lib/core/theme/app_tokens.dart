@@ -29,6 +29,9 @@ abstract final class AppTokens {
   static const EdgeInsetsDirectional fieldPadding =
       EdgeInsetsDirectional.symmetric(horizontal: 18, vertical: 14);
 
+  /// Height of the big tap-to-count button on an adhkar card.
+  static const double counterButtonHeight = 56;
+
   /// Page gutter on compact widths.
   static const double gutterCompact = 16;
 

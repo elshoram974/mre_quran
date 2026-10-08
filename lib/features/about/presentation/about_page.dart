@@ -21,6 +21,8 @@ class AboutPage extends StatelessWidget {
             const SizedBox(height: 16),
             Text(l10n.creditsQuranFont),
             const SizedBox(height: 16),
+            Text(l10n.creditsAdhkar),
+            const SizedBox(height: 16),
             Text(l10n.creditsFonts),
             const SizedBox(height: 16),
             Text(l10n.creditsImages),

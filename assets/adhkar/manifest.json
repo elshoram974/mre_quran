@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "collections": [
+    {
+      "id": "morning",
+      "title": { "ar": "أذكار الصباح", "en": "Morning adhkar" },
+      "icon": "sunrise",
+      "file": "morning_evening.ar.json",
+      "sha256": "9e0dd6a10d26ddc0e2b36b94098c287644996c7f81b707f8ad24f1ce40b8c821",
+      "variants": [0, 1],
+      "reminderTime": "05:30"
+    },
+    {
+      "id": "evening",
+      "title": { "ar": "أذكار المساء", "en": "Evening adhkar" },
+      "icon": "sunset",
+      "file": "morning_evening.ar.json",
+      "sha256": "9e0dd6a10d26ddc0e2b36b94098c287644996c7f81b707f8ad24f1ce40b8c821",
+      "variants": [0, 2],
+      "reminderTime": "17:30"
+    }
+  ]
+}

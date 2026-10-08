@@ -8,8 +8,8 @@ import UserNotifications
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-    // Download progress notifications. The permission is asked for when a
-    // download starts, not here.
+    // Download progress and adhkar reminder notifications. The permission is
+    // asked for when a download starts or a reminder is turned on, not here.
     UNUserNotificationCenter.current().delegate = self as UNUserNotificationCenterDelegate
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }

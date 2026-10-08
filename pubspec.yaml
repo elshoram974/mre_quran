@@ -21,9 +21,11 @@ dependencies:
   firebase_crashlytics: ^5.4.0
   flutter:
     sdk: flutter
+  flutter_local_notifications: ^22.3.1
   flutter_localizations:
     sdk: flutter
   flutter_riverpod: ^3.4.3
+  flutter_timezone: ^5.1.1
   go_router: ^18.0.2
   intl: ^0.20.3
   liquid_glass_widgets: ^1.9.0
@@ -32,6 +34,7 @@ dependencies:
   path_provider: ^2.1.6
   shared_preferences: ^2.5.3
   sqlite3: ^3.7.0
+  timezone: ^0.11.1
   wakelock_plus: ^1.5.2
   xml: ^7.1.0
 
@@ -54,6 +57,9 @@ flutter:
     - assets/quran/quran-uthmani.txt
     - assets/quran/quran-simple-clean.txt
     - assets/fonts/amiri_quran/OFL.txt
+    - assets/adhkar/manifest.json
+    - assets/adhkar/morning_evening.ar.json
+    - assets/adhkar/LICENSE.seen-arabic.txt
   fonts:
     - family: AmiriQuran
       fonts:
