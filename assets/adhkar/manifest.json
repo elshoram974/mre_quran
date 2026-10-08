@@ -116,7 +116,7 @@
       "group": "daily",
       "icon": "sleep",
       "file": "curated.ar.json",
-      "sha256": "f6606ee29cd17bc72b2fb805dce7c5667827b993dcf59bec9a4b8a6b14e9acce",
+      "sha256": "6c5bbf163e43a348a061887994215d9f5d14a63c07cca494dc64c19b31a85d82",
       "variants": [
         20
       ],
@@ -131,7 +131,7 @@
       "group": "daily",
       "icon": "wake",
       "file": "curated.ar.json",
-      "sha256": "f6606ee29cd17bc72b2fb805dce7c5667827b993dcf59bec9a4b8a6b14e9acce",
+      "sha256": "6c5bbf163e43a348a061887994215d9f5d14a63c07cca494dc64c19b31a85d82",
       "variants": [
         30
       ]
@@ -145,7 +145,7 @@
       "group": "prayer",
       "icon": "prayer",
       "file": "curated.ar.json",
-      "sha256": "f6606ee29cd17bc72b2fb805dce7c5667827b993dcf59bec9a4b8a6b14e9acce",
+      "sha256": "6c5bbf163e43a348a061887994215d9f5d14a63c07cca494dc64c19b31a85d82",
       "variants": [
         10
       ],

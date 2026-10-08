@@ -233,7 +233,25 @@ abstract final class AdhkarParser {
       hadithText: _optional(json['hadith_text']),
       vocabulary: _optional(json['explanation_of_hadith_vocabulary']),
       quran: quran,
+      onlyAfter: _prayers(json['when'], order),
     );
+  }
+
+  static const Set<String> _prayerIds = {
+    'fajr',
+    'dhuhr',
+    'asr',
+    'maghrib',
+    'isha',
+  };
+
+  static Set<String> _prayers(Object? value, int order) {
+    if (value == null) return const {};
+    if (value is! List<Object?> ||
+        value.any((item) => item is! String || !_prayerIds.contains(item))) {
+      throw AdhkarDataException('Entry $order has a bad "when"');
+    }
+    return value.cast<String>().toSet();
   }
 
   static QuranPassage? _quran(Object? value, int order) {

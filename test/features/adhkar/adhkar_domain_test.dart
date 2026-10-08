@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mre_quran/app/router.dart';
 import 'package:mre_quran/features/adhkar/domain/adhkar_collection.dart';
 import 'package:mre_quran/features/adhkar/domain/adhkar_progress.dart';
 import 'package:mre_quran/core/notifications/reminder_payload.dart';
@@ -188,17 +187,6 @@ void main() {
       expect(ReminderSetting.parseClock('5:30'), isNull);
       expect(ReminderSetting.parseClock(530), isNull);
     });
-
-    test(
-      'a tapped reminder opens its list, and foreign payloads open nothing',
-      () {
-        expect(
-          AppRoute.fromReminderPayload('adhkar:evening'),
-          '/adhkar/evening',
-        );
-        expect(AppRoute.fromReminderPayload('download:1'), isNull);
-      },
-    );
 
     test('payloads carry the collection id and ids are stable', () {
       final payload = ReminderPayload.forCollection('morning');

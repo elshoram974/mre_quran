@@ -336,6 +336,30 @@ class AppLocalizationsAr extends AppLocalizations {
       'نبضة خفيفة مع كل عدّة، وأقوى عند اكتمال الذكر.';
 
   @override
+  String adhkarOnlyAfter(String prayers) {
+    return 'بعد $prayers فقط';
+  }
+
+  @override
+  String adhkarAnd(String first, String second) {
+    return '$first و$second';
+  }
+
+  @override
+  String adhkarStep(String step, String total) {
+    return 'الخطوة $step من $total';
+  }
+
+  @override
+  String get adhkarStepPrevious => 'السابق';
+
+  @override
+  String get adhkarStepNext => 'التالي';
+
+  @override
+  String get adhkarShowList => 'عرض كقائمة';
+
+  @override
   String get adhkarResume => 'أكمل من حيث توقفت';
 
   @override

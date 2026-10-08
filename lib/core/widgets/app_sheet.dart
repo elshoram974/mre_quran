@@ -6,6 +6,7 @@ import '../theme/app_tokens.dart';
 
 /// Shared bottom sheet.
 ///
+/// [initialSize] is the share of the screen an expandable sheet opens at.
 /// Short content gets a sheet sized to the content; drag it down to dismiss.
 /// Long content ([expandable]) gets a draggable sheet that snaps between half
 /// and almost full height and scrolls its body.
@@ -23,6 +24,7 @@ abstract final class AppSheet {
     required BuildContext context,
     required WidgetBuilder builder,
     bool expandable = false,
+    double initialSize = 0.6,
   }) {
     final cupertino = context.isCupertino;
     return showModalBottomSheet<T>(
@@ -63,7 +65,7 @@ abstract final class AppSheet {
             return DraggableScrollableSheet(
               expand: false,
               snap: true,
-              initialChildSize: 0.6,
+              initialChildSize: initialSize,
               minChildSize: 0.3,
               maxChildSize: 0.92,
               builder: (context, controller) => _SheetSurface(

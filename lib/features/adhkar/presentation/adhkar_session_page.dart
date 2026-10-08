@@ -6,16 +6,17 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/router.dart';
 
-import '../../../core/haptics/haptics.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/layout/adaptive_layout.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/app_page_scaffold.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/widgets/empty_state.dart';
-import '../../settings/application/digits_provider.dart';
 import '../application/adhkar_providers.dart';
+import '../application/dhikr_counter.dart';
 import '../domain/adhkar_collection.dart';
+import 'adhkar_complete_card.dart';
+import 'adhkar_progress_strip.dart';
 import 'dhikr_card.dart';
 
 /// Reads one collection and counts each dhikr as the person says it.
@@ -114,32 +115,13 @@ class _SessionState extends ConsumerState<_Session> {
   }
 
   Future<void> _count(int index) async {
-    final collection = widget.collection;
-    final entry = collection.entries[index];
-    final count = ref.read(dhikrCountProvider((collection, entry)));
-    if (count >= entry.repeat) return;
-    final finishes = count + 1 >= entry.repeat;
-    // Feel it the moment the finger lands, before anything is saved: a light
-    // tick for a repeat, a firmer pulse when the dhikr is done and the next
-    // comes into view, a double pulse when the whole list is done.
-    final lastOne =
-        finishes &&
-        collection.entries.every(
-          (other) =>
-              other == entry ||
-              ref.read(dhikrCountProvider((collection, other))) >= other.repeat,
-        );
-    unawaited(
-      lastOne
-          ? Haptics.celebrate()
-          : finishes
-          ? Haptics.step()
-          : Haptics.tick(),
+    final outcome = await countDhikr(
+      ref,
+      widget.collection,
+      widget.collection.entries[index],
     );
-    await ref
-        .read(adhkarProgressProvider.notifier)
-        .increment(collection, entry);
-    if (finishes) {
+    if (outcome == CountOutcome.finishedDhikr ||
+        outcome == CountOutcome.finishedList) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _advance(index));
     }
   }
@@ -193,7 +175,7 @@ class _SessionState extends ConsumerState<_Session> {
             padding.end,
             8,
           ),
-          child: _ProgressStrip(
+          child: AdhkarProgressStrip(
             done: progress.doneEntries,
             total: progress.totalEntries,
             fraction: progress.fraction,
@@ -223,7 +205,7 @@ class _SessionState extends ConsumerState<_Session> {
                   ),
                 ),
               if (progress.complete)
-                _CompleteCard(
+                AdhkarCompleteCard(
                   key: _completeKey,
                   title: collection.title(
                     Localizations.localeOf(context).languageCode,
@@ -244,100 +226,6 @@ class _SessionState extends ConsumerState<_Session> {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _ProgressStrip extends ConsumerWidget {
-  const _ProgressStrip({
-    required this.done,
-    required this.total,
-    required this.fraction,
-  });
-
-  final int done;
-  final int total;
-  final double fraction;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final digits = ref.watch(digitsFormatterProvider);
-    final theme = Theme.of(context);
-    return Row(
-      children: [
-        Expanded(
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(AppTokens.radiusField),
-            child: LinearProgressIndicator(value: fraction, minHeight: 8),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Text(
-          context.l10n.adhkarProgress(digits(done), digits(total)),
-          style: theme.textTheme.labelLarge,
-        ),
-      ],
-    );
-  }
-}
-
-class _CompleteCard extends StatelessWidget {
-  const _CompleteCard({
-    super.key,
-    required this.title,
-    required this.onRestart,
-    this.nextTitle,
-    this.onNext,
-  });
-
-  final String title;
-  final VoidCallback onRestart;
-
-  /// Title of the list to go on to, when there is one.
-  final String? nextTitle;
-  final VoidCallback? onNext;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-    final l10n = context.l10n;
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: scheme.primaryContainer,
-        borderRadius: BorderRadius.circular(AppTokens.radiusCard),
-      ),
-      child: Column(
-        children: [
-          Icon(Icons.check_circle_rounded, size: 48, color: scheme.primary),
-          const SizedBox(height: 12),
-          Text(
-            l10n.adhkarCompleteTitle,
-            textAlign: TextAlign.center,
-            style: theme.textTheme.titleLarge?.copyWith(
-              color: scheme.onPrimaryContainer,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            l10n.adhkarCompleteBody(title),
-            textAlign: TextAlign.center,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: scheme.onPrimaryContainer,
-            ),
-          ),
-          const SizedBox(height: 12),
-          if (onNext != null && nextTitle != null) ...[
-            FilledButton(
-              onPressed: onNext,
-              child: Text(l10n.adhkarNext(nextTitle!)),
-            ),
-            const SizedBox(height: 4),
-          ],
-          TextButton(onPressed: onRestart, child: Text(l10n.adhkarRestart)),
-        ],
-      ),
     );
   }
 }

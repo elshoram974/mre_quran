@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../../app/router.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/app_card.dart';
@@ -10,6 +8,7 @@ import '../../settings/application/digits_provider.dart';
 import '../application/adhkar_providers.dart';
 import '../domain/adhkar_collection.dart';
 import 'adhkar_icons.dart';
+import 'adhkar_steps_sheet.dart';
 import 'favorite_button.dart';
 import 'progress_ring.dart';
 
@@ -44,7 +43,7 @@ class CollectionCard extends ConsumerWidget {
       digits(progress.doneEntries),
       digits(progress.totalEntries),
     );
-    void open() => context.push(AppRoute.adhkarSessionPath(collection.id));
+    void open() => AdhkarSteps.show(context, collectionId: collection.id);
 
     final header = Row(
       children: [

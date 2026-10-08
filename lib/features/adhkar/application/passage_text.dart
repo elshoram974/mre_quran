@@ -11,7 +11,8 @@ import '../domain/quran_passage.dart';
 /// Nothing is typed here. The recitation is, in order: the isti'adha when the
 /// passage starts one, then for each span the basmala (only when the span opens
 /// a surah that has one: not Al-Fatiha, whose basmala is its first ayah, and
-/// not At-Tawba) and the ayahs between ﴿ ﴾.
+/// not At-Tawba) and the ayahs between ﴿ ﴾. Each is on its own line: the
+/// formulas above, the ayahs below.
 String composePassage(QuranPassage passage, QuranText text) {
   final parts = <String>[if (passage.istiadha) Recitation.istiadha];
   for (final span in passage.spans) {
@@ -24,7 +25,7 @@ String composePassage(QuranPassage passage, QuranText text) {
     ];
     parts.add('﴿${ayahs.join(' ')}﴾');
   }
-  return parts.join(' ');
+  return parts.join('\n');
 }
 
 /// "البقرة ٢٥٥" or "آل عمران ١٩٠–٢٠٠" for each span, joined by Arabic commas.

@@ -12,6 +12,7 @@ import '../features/adhkar/application/reminders_provider.dart';
 import '../features/settings/application/settings_provider.dart';
 import '../features/settings/domain/app_settings.dart';
 import '../l10n/generated/app_localizations.dart';
+import 'reminder_opener.dart';
 import 'router.dart';
 import '../core/notifications/reminder_scheduler_provider.dart';
 
@@ -38,10 +39,10 @@ class QuranApp extends ConsumerWidget {
       ..listen(remindersProvider, (_, _) {})
       ..listen(prayerProvider, (_, _) {})
       ..listen(reminderTapsProvider, (_, next) {
-        final path = next.value == null
-            ? null
-            : AppRoute.fromReminderPayload(next.value!);
-        if (path != null) unawaited(ref.read(routerProvider).push<void>(path));
+        final payload = next.value;
+        if (payload != null) {
+          unawaited(openReminder(ref.read(routerProvider), payload));
+        }
       });
     return MediaQuery(
       data: MediaQuery.of(context).copyWith(

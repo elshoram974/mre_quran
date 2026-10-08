@@ -9,6 +9,9 @@ import '../../settings/application/digits_provider.dart';
 import '../application/adhkar_providers.dart';
 import '../application/passage_text.dart';
 import '../domain/adhkar_collection.dart';
+import '../../prayer/application/prayer_provider.dart';
+import '../../prayer/domain/prayer_times.dart';
+import '../domain/adhkar_layout.dart';
 import '../domain/dhikr.dart';
 import 'evidence_sheet.dart';
 
@@ -84,6 +87,10 @@ class DhikrCard extends ConsumerWidget {
                         style: theme.textTheme.labelMedium,
                       ),
                     ),
+                    if (dhikr.onlyAfter.isNotEmpty) ...[
+                      const SizedBox(width: 8),
+                      _OnlyAfterChip(prayers: dhikr.onlyAfter),
+                    ],
                     if (dhikr.repeatLabel.isNotEmpty) ...[
                       const SizedBox(width: 10),
                       Flexible(
@@ -155,6 +162,43 @@ class DhikrCard extends ConsumerWidget {
   }
 }
 
+/// "After Fajr and Maghrib only": for a dhikr said after some prayers only.
+class _OnlyAfterChip extends StatelessWidget {
+  const _OnlyAfterChip({required this.prayers});
+
+  final Set<String> prayers;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final scheme = Theme.of(context).colorScheme;
+    final names = [
+      for (final prayer in DailyPrayer.values)
+        if (prayers.contains(prayer.name)) prayerName(l10n, prayer),
+    ];
+    final joined = names.length < 2
+        ? names.join()
+        : l10n.adhkarAnd(
+            names.sublist(0, names.length - 1).join('، '),
+            names.last,
+          );
+    return Flexible(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: scheme.tertiaryContainer,
+          borderRadius: BorderRadius.circular(AppTokens.radiusField),
+        ),
+        child: Text(
+          l10n.adhkarOnlyAfter(joined),
+          style: Theme.of(context).textTheme.labelMedium
+              ?.copyWith(color: scheme.onTertiaryContainer),
+        ),
+      ),
+    );
+  }
+}
+
 /// The words of a dhikr. A Quran dhikr shows a placeholder while the verified
 /// text loads, and a retry when it cannot.
 class _DhikrWords extends ConsumerWidget {
@@ -194,7 +238,7 @@ class _DhikrWords extends ConsumerWidget {
           data: (text) => Directionality(
             textDirection: TextDirection.rtl,
             child: Text(
-              text,
+              layoutAdhkarText(text),
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontFamily: AppTokens.quranFontFamily,

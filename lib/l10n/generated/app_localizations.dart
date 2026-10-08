@@ -692,6 +692,42 @@ abstract class AppLocalizations {
   /// **'A light tick for each count, a firmer one when a dhikr is done.'**
   String get settingsHapticsHint;
 
+  /// No description provided for @adhkarOnlyAfter.
+  ///
+  /// In en, this message translates to:
+  /// **'After {prayers} only'**
+  String adhkarOnlyAfter(String prayers);
+
+  /// No description provided for @adhkarAnd.
+  ///
+  /// In en, this message translates to:
+  /// **'{first} and {second}'**
+  String adhkarAnd(String first, String second);
+
+  /// No description provided for @adhkarStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Step {step} of {total}'**
+  String adhkarStep(String step, String total);
+
+  /// No description provided for @adhkarStepPrevious.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous'**
+  String get adhkarStepPrevious;
+
+  /// No description provided for @adhkarStepNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get adhkarStepNext;
+
+  /// No description provided for @adhkarShowList.
+  ///
+  /// In en, this message translates to:
+  /// **'Show as a list'**
+  String get adhkarShowList;
+
   /// No description provided for @adhkarResume.
   ///
   /// In en, this message translates to:

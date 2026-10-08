@@ -1,10 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 
 import '../features/about/presentation/about_page.dart';
-import '../core/notifications/reminder_payload.dart';
 import '../features/adhkar/presentation/adhkar_group_page.dart';
 import '../features/adhkar/presentation/adhkar_search_page.dart';
 import '../features/adhkar/presentation/adhkar_session_page.dart';
@@ -17,6 +18,7 @@ import '../features/quran_text/presentation/quran_search_page.dart';
 import '../features/settings/presentation/settings_page.dart';
 import '../features/startup/application/startup_providers.dart';
 import 'app_shell.dart';
+import 'reminder_opener.dart';
 import '../core/notifications/reminder_scheduler_provider.dart';
 
 /// App-wide declarative routes and persistent navigation branches.
@@ -95,14 +97,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
     ],
   );
-  // A reminder that launched the app opens its list on top of the first tab.
+  // A reminder that launched the app opens what it points at, once the first
+  // frame is up.
   final launch = ref.read(reminderSchedulerProvider).launchPayload;
-  final launchPath = launch == null
-      ? null
-      : AppRoute.fromReminderPayload(launch);
-  if (launchPath != null) {
+  if (launch != null) {
     WidgetsBinding.instance.addPostFrameCallback(
-      (_) => router.push(launchPath),
+      (_) => unawaited(openReminder(router, launch)),
     );
   }
   ref.onDispose(router.dispose);
@@ -133,13 +133,6 @@ enum AppRoute {
 
   /// Path that opens the adhkar group [id].
   static String adhkarGroupPath(String id) => '/adhkar-group/$id';
-
-  /// Path a reminder notification opens, or null for a payload that is not ours.
-  static String? fromReminderPayload(String payload) {
-    if (payload == ReminderPayload.prayerTimes) return prayerTimes.path;
-    final id = ReminderPayload.collectionId(payload);
-    return id == null ? null : adhkarSessionPath(id);
-  }
 
   /// Top-level tabs in navigation order. Must match the shell branches.
   static const List<AppRoute> tabs = [reader, duas, bookmarks, settings];

@@ -17,6 +17,7 @@ class Dhikr {
     this.hadithText,
     this.vocabulary,
     this.quran,
+    this.onlyAfter = const {},
   });
 
   /// Position in its source file. Unique inside one file.
@@ -44,6 +45,10 @@ class Dhikr {
 
   /// The hadith the dhikr is taken from, with its chain, if the source has it.
   final String? hadithText;
+
+  /// Prayers (`fajr`, `dhuhr`, `asr`, `maghrib`, `isha`) it is said after,
+  /// when it is not said after every prayer. Empty means after any.
+  final Set<String> onlyAfter;
 
   /// The ayahs to recite, for a dhikr that is a passage of the Quran.
   final QuranPassage? quran;

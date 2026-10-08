@@ -50,6 +50,7 @@ COLLECTIONS = {
 GRADES = {
     "Sahih": "صحيح",
     "Hasan": "حسن",
+    "Hasan Sahih": "حسن صحيح",
     "Sahih Lighairihi": "صحيح لغيره",
     "Hasan Lighairihi": "حسن لغيره",
 }
@@ -193,6 +194,8 @@ def entry_for(editions, spec, item, order):
         "hadith_text": "",
         "explanation_of_hadith_vocabulary": "",
     }
+    if "when" in item:
+        out["when"] = item["when"]
     if "quran" in item:
         out["quran"] = item["quran"]
         if not item["quran"]["ranges"]:
@@ -239,6 +242,23 @@ def build(cache):
     return json.dumps(entries, ensure_ascii=False, indent=2) + "\n"
 
 
+def update_manifest(digest):
+    """Records the new checksum in assets/adhkar/manifest.json."""
+    path = ROOT / "assets" / "adhkar" / "manifest.json"
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    changed = 0
+    for collection in manifest["collections"]:
+        if collection["file"] == OUT.name and collection["sha256"] != digest:
+            collection["sha256"] = digest
+            changed += 1
+    if changed:
+        path.write_text(
+            json.dumps(manifest, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        print(f"updated {changed} checksum(s) in {path.name}")
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--cache", required=True)
@@ -251,8 +271,10 @@ def main():
         print("up to date")
         return
     OUT.write_text(built, encoding="utf-8")
+    digest = hashlib.sha256(built.encode()).hexdigest()
     print(f"wrote {OUT} ({len(json.loads(built))} entries)")
-    print("sha256", hashlib.sha256(built.encode()).hexdigest())
+    print("sha256", digest)
+    update_manifest(digest)
 
 
 if __name__ == "__main__":

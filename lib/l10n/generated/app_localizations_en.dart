@@ -339,6 +339,30 @@ class AppLocalizationsEn extends AppLocalizations {
       'A light tick for each count, a firmer one when a dhikr is done.';
 
   @override
+  String adhkarOnlyAfter(String prayers) {
+    return 'After $prayers only';
+  }
+
+  @override
+  String adhkarAnd(String first, String second) {
+    return '$first and $second';
+  }
+
+  @override
+  String adhkarStep(String step, String total) {
+    return 'Step $step of $total';
+  }
+
+  @override
+  String get adhkarStepPrevious => 'Previous';
+
+  @override
+  String get adhkarStepNext => 'Next';
+
+  @override
+  String get adhkarShowList => 'Show as a list';
+
+  @override
   String get adhkarResume => 'Pick up where you left off';
 
   @override

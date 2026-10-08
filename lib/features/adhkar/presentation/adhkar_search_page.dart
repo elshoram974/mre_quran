@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:mre_fields/mre_fields.dart';
 
-import '../../../app/router.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/layout/adaptive_layout.dart';
 import '../../../core/theme/app_tokens.dart';
@@ -13,6 +11,7 @@ import '../../../core/widgets/empty_state.dart';
 import '../application/adhkar_providers.dart';
 import '../domain/adhkar_search.dart';
 import 'adhkar_icons.dart';
+import 'adhkar_steps_sheet.dart';
 
 /// Search over the names of the lists and the words of every dhikr. Names
 /// come first.
@@ -144,7 +143,7 @@ class _Results extends StatelessWidget {
               icon: adhkarIconData(hit.collection.icon),
               title: hit.collection.title(language),
               onTap: () =>
-                  context.push(AppRoute.adhkarSessionPath(hit.collection.id)),
+                  AdhkarSteps.show(context, collectionId: hit.collection.id),
             ),
           const SizedBox(height: 16),
         ],
@@ -156,11 +155,10 @@ class _Results extends StatelessWidget {
               icon: adhkarIconData(hit.collection.icon),
               title: hit.collection.title(language),
               snippet: hit.snippet,
-              onTap: () => context.push(
-                AppRoute.adhkarSessionPath(
-                  hit.collection.id,
-                  focusOrder: hit.dhikr.order,
-                ),
+              onTap: () => AdhkarSteps.show(
+                context,
+                collectionId: hit.collection.id,
+                focusOrder: hit.dhikr.order,
               ),
             ),
         ],

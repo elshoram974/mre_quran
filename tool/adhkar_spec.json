@@ -733,6 +733,46 @@
           "phrase": "ثم قرأ العشر الآيات الخواتم من سورة آل عمران"
         }
       ]
+    },
+    {
+      "id": "ap-maghrib-ten",
+      "variant": 10,
+      "order": 11,
+      "count": 10,
+      "text": {
+        "from": {
+          "edition": "ara-tirmidhi",
+          "number": "3534"
+        },
+        "start": "لا إله إلا الله وحده لا شريك له",
+        "end": "قدير"
+      },
+      "when": [
+        "maghrib"
+      ],
+      "virtue": {
+        "from": {
+          "edition": "ara-tirmidhi",
+          "number": "3534"
+        },
+        "start": "بعث الله له مسلحة",
+        "end": "رقاب مؤمنات"
+      },
+      "evidence": [
+        {
+          "edition": "ara-tirmidhi",
+          "number": "3534"
+        }
+      ],
+      "mustContain": [
+        {
+          "from": {
+            "edition": "ara-tirmidhi",
+            "number": "3534"
+          },
+          "phrase": "عشر مرات على إثر المغرب"
+        }
+      ]
     }
   ]
 }
