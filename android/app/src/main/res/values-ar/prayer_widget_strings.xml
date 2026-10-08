@@ -1,0 +1,6 @@
+<resources>
+    <string name="prayer_widget_label">الصلاة القادمة</string>
+    <string name="prayer_widget_remaining">متبقٍ %1$s</string>
+    <string name="prayer_widget_empty">افتح مصحف MRE لتحديد موقعك</string>
+    <string name="prayer_widget_name">مواقيت الصلاة</string>
+</resources>
