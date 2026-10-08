@@ -128,6 +128,23 @@ void main() {
       }
     });
 
+    test(
+      'the after-prayer list marks what is said after Maghrib only',
+      () async {
+        final catalog = await AdhkarSource(bundle: _DiskBundle()).load();
+        final only = [
+          for (final entry in catalog.byId('after_prayer')!.entries)
+            if (entry.onlyAfter.isNotEmpty) entry,
+        ];
+        expect(only, isNotEmpty);
+        expect(
+          only.every((entry) => entry.onlyAfter.contains('maghrib')),
+          isTrue,
+        );
+        expect(only.first.repeat, 10);
+      },
+    );
+
     test('refuses a file changed by even one character', () async {
       final bytes = File('assets/adhkar/morning_evening.ar.json')
           .readAsBytesSync();
@@ -223,6 +240,36 @@ void main() {
         );
       }
     });
+
+    test(
+      'reads which prayers a dhikr is said after, and rejects an unknown one',
+      () {
+        Map<String, Object?> entry(Object? when) => {
+          ..._entry(order: 1),
+          'when': when,
+        };
+        final parsed = AdhkarParser.parseEntries(
+          jsonEncode([
+            entry(['fajr', 'maghrib']),
+          ]),
+        );
+        expect(parsed.single.onlyAfter, {'fajr', 'maghrib'});
+        expect(
+          AdhkarParser.parseEntries(jsonEncode([entry(null)])).single.onlyAfter,
+          isEmpty,
+        );
+        for (final bad in [
+          ['noon'],
+          'fajr',
+          [1],
+        ]) {
+          expect(
+            () => AdhkarParser.parseEntries(jsonEncode([entry(bad)])),
+            throwsA(isA<AdhkarDataException>()),
+          );
+        }
+      },
+    );
 
     test('reads a Quran passage and rejects a bad range', () {
       Map<String, Object?> entry(Object? quran, {String content = ''}) => {

@@ -61,6 +61,20 @@ fails when a dhikr has no source, a repeat count below one, or an ayah that does
   istikhara hadith).
 - Rebuild: `python3 tool/build_hisn.py --cache <folder with the editions> --hisn <adhkar.json>`; check with `--check`.
 
+## How a list is read
+
+- Tapping a list opens it as **steps in a bottom sheet** (`AdhkarSteps`): one dhikr at a time, a counter, and previous
+  and next. When a dhikr's count is done the next step comes by itself; when the last is done the sheet says so and offers
+  the next list. "Show as a list" opens the whole list as a page.
+- A tapped notification opens the same sheet over the Adhkar tab.
+- **Layout of Quran text:** the isti'adha and the basmala each sit on their own line, with the ayahs between ﴿ ﴾ below
+  (`layoutAdhkarText`, for the dataset's text, and `composePassage`, for passages). Only line breaks are added.
+- **"After Maghrib only":** an entry may carry `"when": ["maghrib"]` (any of `fajr`, `dhuhr`, `asr`, `maghrib`, `isha`). The
+  card shows "After Maghrib only". In `tool/adhkar_spec.json` the same field is written on the entry. The first such entry
+  is "لا إله إلا الله وحده… ×10" after Maghrib (Tirmidhi 3534, Albani: hasan sahih). The Fajr version of that dhikr (Tirmidhi
+  3474) and "اللهم أجرني من النار ×7" (Abu Dawud 5079) are graded weak by Al-Albani in the data, so they are not included.
+- `python3 tool/build_adhkar.py` writes the new checksum into `manifest.json` itself.
+
 ## Search, favourites, and groups
 
 - Search folds tashkeel, the forms of alef and ya, and ta marbuta, so a name or words typed without tashkeel

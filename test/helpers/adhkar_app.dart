@@ -120,3 +120,9 @@ Future<void> tapVisible(WidgetTester tester, Finder finder) async {
   await tester.pumpAndSettle();
   await tester.tap(finder.first);
 }
+
+/// Opens the morning list as a page, the way "show as a list" does.
+Future<void> openList(WidgetTester tester, {String id = 'morning'}) async {
+  GoRouter.of(tester.element(find.byType(DuasPage))).push('/adhkar/$id');
+  await tester.pumpAndSettle();
+}

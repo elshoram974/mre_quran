@@ -198,3 +198,10 @@
   both the adhkar and the prayer features.
 - **Reason:** Two features used them; one should not import the other.
 
+## D-024: A list opens as steps in a bottom sheet
+
+- **Decision:** `AdhkarSteps` shows one dhikr per step, moves on when the count is done, and ends with the next list. The old
+  page stays as "show as a list" and as the place a deep link can land. Both count through `countDhikr`.
+- **Alternatives:** Only a long list of cards (the person scrolls to find where they are); a full-screen pager.
+- **Reason:** One thing to read and one big button to press, with the list one tap away. The sheet keeps the tab underneath.
+

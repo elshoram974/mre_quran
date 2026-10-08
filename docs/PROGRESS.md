@@ -61,6 +61,9 @@
   calculation method chosen from the place, a vibration class with a Settings switch, and shared notification and clock code
   in `lib/core`. The adhan recording waits for a licensed file (`docs/PERMISSION_REQUESTS.md`).
 
+- Adhkar steps in a bottom sheet with auto-advance, formulas on their own lines above the ayahs, and "after Maghrib only"
+  notes on a dhikr.
+
 ## In progress
 
 - Foundation migration: localization, typed routing, Riverpod, adaptive shell,

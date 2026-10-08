@@ -170,9 +170,13 @@ class _StepsBodyState extends ConsumerState<_StepsBody> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
+          // A Wrap so the button drops under the title when large text leaves
+          // no room beside it.
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              Expanded(child: Text(title, style: theme.textTheme.titleLarge)),
+              Text(title, style: theme.textTheme.titleLarge),
               TextButton(
                 onPressed: () {
                   final root = Navigator.of(context, rootNavigator: true);

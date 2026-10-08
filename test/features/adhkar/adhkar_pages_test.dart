@@ -13,7 +13,6 @@ import 'package:mre_quran/features/adhkar/presentation/collection_card.dart';
 import 'package:mre_quran/features/adhkar/presentation/dhikr_card.dart';
 import 'package:mre_quran/features/adhkar/presentation/favorite_button.dart';
 import 'package:mre_quran/features/adhkar/presentation/adhkar_search_page.dart';
-import 'package:mre_quran/features/adhkar/presentation/adhkar_session_page.dart';
 import 'package:mre_quran/features/adhkar/presentation/duas_page.dart';
 
 import '../../helpers/adhkar_app.dart';
@@ -205,7 +204,7 @@ void main() {
       await tester.tap(find.text('أذكار النوم').first);
       await tester.pumpAndSettle();
       expect(find.byType(DhikrCard), findsOneWidget);
-      expect(find.text('الخطوة ١ من ٣'), findsOneWidget);
+      expect(find.text('الخطوة ١ من ١'), findsOneWidget);
     });
 
     testWidgets('says so when nothing matches', (tester) async {
@@ -358,12 +357,12 @@ void main() {
     });
   });
 
-  group('session', () {
+  group('list page', () {
     testWidgets('counts a dhikr, finishes the list, and can start over', (
       tester,
     ) async {
       await pumpAdhkarApp(tester);
-      await tapVisible(tester, find.text('ابدأ'));
+      await openList(tester);
       await tester.pumpAndSettle();
 
       expect(find.text('ذكر 1'), findsOneWidget);
@@ -390,7 +389,7 @@ void main() {
 
     testWidgets('undo takes one repeat back', (tester) async {
       await pumpAdhkarApp(tester);
-      await tapVisible(tester, find.text('ابدأ'));
+      await openList(tester);
       await tester.pumpAndSettle();
       await tester.tap(find.text('٠ من ٣'));
       await tester.pumpAndSettle();
@@ -404,7 +403,7 @@ void main() {
       tester,
     ) async {
       await pumpAdhkarApp(tester);
-      await tapVisible(tester, find.text('ابدأ'));
+      await openList(tester);
       await tester.pumpAndSettle();
       await tester.tap(find.text('الدليل').first);
       await tester.pumpAndSettle();
@@ -431,7 +430,7 @@ void main() {
         textScale: 2,
         size: const Size(320, 640),
       );
-      await tapVisible(tester, find.text('Start'));
+      await openList(tester);
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
       expect(find.text('Evidence'), findsWidgets);
