@@ -614,6 +614,30 @@ abstract class AppLocalizations {
   /// **'The printed Mushaf downloads page by page and is kept on the device.'**
   String get readerModeDescription;
 
+  /// No description provided for @readerPageLayout.
+  ///
+  /// In en, this message translates to:
+  /// **'Page layout'**
+  String get readerPageLayout;
+
+  /// No description provided for @readerPageLayoutAuto.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic'**
+  String get readerPageLayoutAuto;
+
+  /// No description provided for @readerPageLayoutSingle.
+  ///
+  /// In en, this message translates to:
+  /// **'Single page'**
+  String get readerPageLayoutSingle;
+
+  /// No description provided for @readerPageLayoutSpread.
+  ///
+  /// In en, this message translates to:
+  /// **'Two-page spread'**
+  String get readerPageLayoutSpread;
+
   /// No description provided for @printedPageError.
   ///
   /// In en, this message translates to:

@@ -11,6 +11,7 @@ import '../../../core/widgets/app_switch_tile.dart';
 
 import '../application/settings_provider.dart';
 import '../../mushaf/presentation/mushaf_style_field.dart';
+import '../../mushaf/presentation/reader_page_layout_field.dart';
 import '../../mushaf/presentation/offline_packs_section.dart';
 import '../domain/app_settings.dart';
 
@@ -141,6 +142,8 @@ class _SettingsContent extends ConsumerWidget {
         ),
         const SizedBox(height: 12),
         const MushafStyleField(),
+        const SizedBox(height: 12),
+        const ReaderPageLayoutField(),
         const SizedBox(height: 28),
         const OfflinePacksSection(),
         const SizedBox(height: 28),

@@ -18,6 +18,7 @@ import 'editions_intro_sheet.dart';
 import 'go_to_page_sheet.dart';
 import 'reader_bar.dart';
 import 'reader_navigation.dart';
+import 'reader_page_layout_field.dart';
 
 /// The Mushaf tab: the pages, labelled like a printed Mushaf (surah and juz
 /// above, page number below, arrows onward). A tap on the page or an ayah
@@ -147,6 +148,13 @@ class MushafPage extends ConsumerWidget {
           ),
         ),
         const SizedBox(width: 8),
+        if (MediaQuery.sizeOf(context).width >= mushafSpreadMinWidth) ...[
+          const ReaderFloatingSurface(
+            padding: EdgeInsets.zero,
+            child: ReaderPageLayoutToggle(),
+          ),
+          const SizedBox(width: 8),
+        ],
         ReaderFloatingSurface(
           padding: EdgeInsets.zero,
           child: icon(

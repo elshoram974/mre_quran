@@ -29,6 +29,7 @@ Future<(ProviderContainer, MemoryReadingPositionRepository)> _pump(
   double width = 390,
   double textScale = 1,
   bool realistic = false,
+  ReaderPageLayout layout = ReaderPageLayout.auto,
 }) async {
   tester.view.physicalSize = Size(width, 844);
   tester.view.devicePixelRatio = 1;
@@ -49,6 +50,7 @@ Future<(ProviderContainer, MemoryReadingPositionRepository)> _pump(
             localeCode: locale,
             realisticPageTurn: realistic,
             readerMode: ReaderMode.text,
+            readerPageLayout: layout,
             editionsIntroSeen: true,
           ),
       ),
@@ -266,6 +268,17 @@ void main() {
         .getCenter(find.byKey(const ValueKey<int>(4)).hitTestable())
         .dx;
     expect(right, greaterThan(left));
+  });
+
+  testWidgets('single-page layout stays single on a wide window', (tester) async {
+    await _pump(
+      tester,
+      width: 1000,
+      savedPage: 3,
+      layout: ReaderPageLayout.single,
+    );
+    expect(find.byKey(const ValueKey<int>(3)).hitTestable(), findsOneWidget);
+    expect(find.byKey(const ValueKey<int>(4)).hitTestable(), findsNothing);
   });
 
   testWidgets('the first spread is pages 1 on the right and 2 on the left', (

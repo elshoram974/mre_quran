@@ -313,6 +313,18 @@ class AppLocalizationsAr extends AppLocalizations {
       'المصحف المطبوع يُنزَّل صفحة صفحة ويُحفظ على الجهاز.';
 
   @override
+  String get readerPageLayout => 'تخطيط الصفحات';
+
+  @override
+  String get readerPageLayoutAuto => 'تلقائي';
+
+  @override
+  String get readerPageLayoutSingle => 'صفحة واحدة';
+
+  @override
+  String get readerPageLayoutSpread => 'صفحتان متقابلتان';
+
+  @override
   String get printedPageError =>
       'تعذّر تحميل الصفحة. تأكد من الاتصال بالإنترنت.';
 

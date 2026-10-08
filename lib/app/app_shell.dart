@@ -47,7 +47,17 @@ class AppShell extends ConsumerWidget {
               child: navigationShell,
             );
 
-      return _KeepScreenAwake(enabled: reader, child: shell);
+      return PopScope(
+        // Sheets and pushed reader routes are above the shell and dismiss
+        // normally. At the reader root, back first restores the controls.
+        canPop: !immersive,
+        onPopInvokedWithResult: (didPop, _) {
+          if (!didPop && immersive) {
+            ref.read(readerImmersiveProvider.notifier).exit();
+          }
+        },
+        child: _KeepScreenAwake(enabled: reader, child: shell),
+      );
     },
   );
 

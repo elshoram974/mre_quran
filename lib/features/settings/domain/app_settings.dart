@@ -13,6 +13,7 @@ class AppSettings {
     this.readerFontScale = 1,
     this.realisticPageTurn = false,
     this.readerMode = ReaderMode.printed,
+    this.readerPageLayout = ReaderPageLayout.auto,
     this.mushafStyle = MushafStyle.madinah,
     this.editionsIntroSeen = false,
   });
@@ -34,6 +35,9 @@ class AppSettings {
 
   /// Whether the Mushaf shows typeset text or printed page images.
   final ReaderMode readerMode;
+
+  /// How the printed Mushaf uses the available reading area.
+  final ReaderPageLayout readerPageLayout;
 
   /// Which printed edition the printed reader shows.
   final MushafStyle mushafStyle;
@@ -59,6 +63,7 @@ class AppSettings {
     double? readerFontScale,
     bool? realisticPageTurn,
     ReaderMode? readerMode,
+    ReaderPageLayout? readerPageLayout,
     MushafStyle? mushafStyle,
     bool? editionsIntroSeen,
   }) => AppSettings(
@@ -71,6 +76,7 @@ class AppSettings {
     readerFontScale: readerFontScale ?? this.readerFontScale,
     realisticPageTurn: realisticPageTurn ?? this.realisticPageTurn,
     readerMode: readerMode ?? this.readerMode,
+    readerPageLayout: readerPageLayout ?? this.readerPageLayout,
     mushafStyle: mushafStyle ?? this.mushafStyle,
     editionsIntroSeen: editionsIntroSeen ?? this.editionsIntroSeen,
   );
@@ -95,6 +101,18 @@ enum ReaderMode {
 
   /// Images of the printed Madinah Mushaf, downloaded page by page.
   printed,
+}
+
+/// The arrangement of pages in the printed Mushaf reader.
+enum ReaderPageLayout {
+  /// One page on compact widths and a two-page spread where it fits.
+  auto,
+
+  /// A full-width page that can scroll vertically when needed.
+  single,
+
+  /// Two facing pages when the reading area is wide enough.
+  spread,
 }
 
 /// Printed Mushaf editions the printed reader can show.

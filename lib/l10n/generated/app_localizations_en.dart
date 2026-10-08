@@ -310,6 +310,18 @@ class AppLocalizationsEn extends AppLocalizations {
       'The printed Mushaf downloads page by page and is kept on the device.';
 
   @override
+  String get readerPageLayout => 'Page layout';
+
+  @override
+  String get readerPageLayoutAuto => 'Automatic';
+
+  @override
+  String get readerPageLayoutSingle => 'Single page';
+
+  @override
+  String get readerPageLayoutSpread => 'Two-page spread';
+
+  @override
   String get printedPageError =>
       'Couldn\'t load this page. Check your internet connection.';
 

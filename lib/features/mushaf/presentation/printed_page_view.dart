@@ -68,6 +68,7 @@ class PrintedPageView extends StatelessWidget {
     this.onAyahLongPress,
     this.bookmarked = const {},
     this.selected,
+    this.fillWidth = false,
     this.fallbackBuilder,
     this.fallbackAfter = const Duration(seconds: 30),
   });
@@ -101,6 +102,10 @@ class PrintedPageView extends StatelessWidget {
   /// The ayah to highlight.
   final AyahRef? selected;
 
+  /// Whether this is the single-page reader: it uses the available width and
+  /// lets a tall printed page scroll vertically instead of shrinking it.
+  final bool fillWidth;
+
   @override
   Widget build(BuildContext context) => MushafPageFrame(
     metadata: metadata,
@@ -129,6 +134,7 @@ class PrintedPageView extends StatelessWidget {
             bookmarked: bookmarked,
             selected: selected,
             fallbackBuilder: fallbackBuilder,
+            fillWidth: fillWidth,
             slow: slow,
             onRetry: restart,
           ),
@@ -187,6 +193,7 @@ class _SlowGateState extends State<_SlowGate> {
 class _PrintedBody extends ConsumerWidget {
   const _PrintedBody({
     required this.fallbackBuilder,
+    required this.fillWidth,
     required this.slow,
     required this.onRetry,
     required this.metadata,
@@ -201,6 +208,7 @@ class _PrintedBody extends ConsumerWidget {
   });
 
   final WidgetBuilder? fallbackBuilder;
+  final bool fillWidth;
   final bool slow;
   final VoidCallback onRetry;
   final QuranMetadata metadata;
@@ -247,7 +255,7 @@ class _PrintedBody extends ConsumerWidget {
     final still = MediaQuery.disableAnimationsOf(context);
     final l10n = context.l10n;
 
-    final spread = geometry == null
+    final spread = fillWidth || geometry == null
         ? null
         : LineSpread.fit(
             cuts: geometry.lineCuts,
@@ -255,7 +263,7 @@ class _PrintedBody extends ConsumerWidget {
             aspect: edition.width / edition.height,
             area: area,
           );
-    final crop = edition.ink == PageInk.onPaper && geometry != null
+    final crop = !fillWidth && edition.ink == PageInk.onPaper && geometry != null
         ? printedCropFor(
             edition,
             inkTop: geometry.inkTop,
@@ -293,6 +301,7 @@ class _PrintedBody extends ConsumerWidget {
           edition: edition,
           image: value,
           crop: spread == null ? crop : edition.crop,
+          fillWidth: fillWidth,
           spread: spread,
           dark: dark,
           geometry: geometry,
@@ -342,6 +351,17 @@ class _PrintedBody extends ConsumerWidget {
         edition.width /
         ((crop.bottom - crop.top) * edition.height);
     final size = applyBoxFit(BoxFit.contain, Size(aspect, 1), area).destination;
+    if (image.fillWidth) {
+      final height = area.width / aspect;
+      return SingleChildScrollView(
+        child: SizedBox(
+          key: image.key,
+          width: area.width,
+          height: height,
+          child: image,
+        ),
+      );
+    }
     return Center(
       key: image.key,
       child: SizedBox.fromSize(size: size, child: image),
@@ -355,6 +375,7 @@ class _PrintedImage extends StatefulWidget {
     required this.edition,
     required this.image,
     required this.crop,
+    required this.fillWidth,
     required this.spread,
     required this.dark,
     required this.geometry,
@@ -370,6 +391,8 @@ class _PrintedImage extends StatefulWidget {
   final MushafEdition edition;
   final ui.Image image;
   final FractionRect crop;
+
+  final bool fillWidth;
 
   /// How the page's rows are laid apart, or null when the page is drawn whole.
   final LineSpread? spread;

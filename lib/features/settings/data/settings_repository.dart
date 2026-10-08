@@ -22,6 +22,7 @@ class LocalSettingsRepository implements SettingsRepository {
   static const _readerFontScaleKey = 'settings.reader_font_scale';
   static const _realisticTurnKey = 'settings.realistic_page_turn';
   static const _readerModeKey = 'settings.reader_mode';
+  static const _readerPageLayoutKey = 'settings.reader_page_layout';
   static const _mushafStyleKey = 'settings.mushaf_style';
   static const _introSeenKey = 'settings.editions_intro_seen';
 
@@ -48,6 +49,9 @@ class LocalSettingsRepository implements SettingsRepository {
       _preferences.getBool(_realisticTurnKey),
       _preferences.getString(_readerModeKey),
     ).wait;
+    final readerPageLayout = await _preferences.getString(
+      _readerPageLayoutKey,
+    );
     final mushafStyle = await _preferences.getString(_mushafStyleKey);
     final introSeen = await _preferences.getBool(_introSeenKey);
     return AppSettings(
@@ -69,6 +73,10 @@ class LocalSettingsRepository implements SettingsRepository {
         (item) => item.name == readerMode,
         orElse: () => ReaderMode.printed,
       ),
+      readerPageLayout: ReaderPageLayout.values.firstWhere(
+        (item) => item.name == readerPageLayout,
+        orElse: () => ReaderPageLayout.auto,
+      ),
       mushafStyle: MushafStyle.values.firstWhere(
         (item) => item.name == mushafStyle,
         orElse: () => MushafStyle.madinah,
@@ -89,6 +97,10 @@ class LocalSettingsRepository implements SettingsRepository {
       _preferences.setDouble(_readerFontScaleKey, settings.readerFontScale),
       _preferences.setBool(_realisticTurnKey, settings.realisticPageTurn),
       _preferences.setString(_readerModeKey, settings.readerMode.name),
+      _preferences.setString(
+        _readerPageLayoutKey,
+        settings.readerPageLayout.name,
+      ),
       _preferences.setString(_mushafStyleKey, settings.mushafStyle.name),
       _preferences.setBool(_introSeenKey, settings.editionsIntroSeen),
     ]);

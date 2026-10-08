@@ -38,11 +38,9 @@ class MushafPager extends StatelessWidget {
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) {
-      final spread = constraints.maxWidth >= mushafSpreadMinWidth;
       return _PagerBody(
-        key: ValueKey<bool>(spread),
         text: text,
-        spread: spread,
+        availableWidth: constraints.maxWidth,
         initialPage: initialPage,
       );
     },
@@ -51,14 +49,13 @@ class MushafPager extends StatelessWidget {
 
 class _PagerBody extends ConsumerStatefulWidget {
   const _PagerBody({
-    super.key,
     required this.text,
-    required this.spread,
+    required this.availableWidth,
     required this.initialPage,
   });
 
   final QuranText text;
-  final bool spread;
+  final double availableWidth;
   final int initialPage;
 
   @override
@@ -113,6 +110,16 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
         (s) => s.value?.mushafStyle ?? MushafStyle.madinah,
       ),
     );
+    final layout = ref.watch(
+      settingsProvider.select(
+        (s) => s.value?.readerPageLayout ?? ReaderPageLayout.auto,
+      ),
+    );
+    final spread = switch (layout) {
+      ReaderPageLayout.auto => widget.availableWidth >= mushafSpreadMinWidth,
+      ReaderPageLayout.single => false,
+      ReaderPageLayout.spread => widget.availableWidth >= mushafSpreadMinWidth,
+    };
     if (mode == ReaderMode.printed) {
       _prefetch(style, page, Theme.of(context).brightness == Brightness.dark);
     }
@@ -123,8 +130,9 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
       // The Mushaf turns right to left in every app language.
       textDirection: TextDirection.rtl,
       child: BookFlip(
+        key: ValueKey<bool>(spread),
         pageCount: _pageCount,
-        spread: widget.spread,
+        spread: spread,
         realistic: realistic,
         page: page,
         nextLabel: l10n.nextPage,
@@ -147,6 +155,7 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
             metadata: widget.text.metadata,
             style: style,
             page: number,
+            fillWidth: !spread,
             bookmarked: bookmarked,
             selected: _selected ?? highlighted,
             onAyahLongPress: _showActions,
