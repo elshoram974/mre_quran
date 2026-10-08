@@ -69,6 +69,7 @@ class PrintedPageView extends StatelessWidget {
     this.bookmarked = const {},
     this.selected,
     this.fillWidth = false,
+    this.digits,
     this.fallbackBuilder,
     this.fallbackAfter = const Duration(seconds: 30),
   });
@@ -106,6 +107,9 @@ class PrintedPageView extends StatelessWidget {
   /// lets a tall printed page scroll vertically instead of shrinking it.
   final bool fillWidth;
 
+  /// Formats page and banner labels using the saved digit preference.
+  final String Function(int)? digits;
+
   @override
   Widget build(BuildContext context) => MushafPageFrame(
     metadata: metadata,
@@ -135,6 +139,7 @@ class PrintedPageView extends StatelessWidget {
             selected: selected,
             fallbackBuilder: fallbackBuilder,
             fillWidth: fillWidth,
+            digits: digits ?? (value) => formatDigits(value, arabic: true),
             slow: slow,
             onRetry: restart,
           ),
@@ -194,6 +199,7 @@ class _PrintedBody extends ConsumerWidget {
   const _PrintedBody({
     required this.fallbackBuilder,
     required this.fillWidth,
+    required this.digits,
     required this.slow,
     required this.onRetry,
     required this.metadata,
@@ -209,6 +215,7 @@ class _PrintedBody extends ConsumerWidget {
 
   final WidgetBuilder? fallbackBuilder;
   final bool fillWidth;
+  final String Function(int) digits;
   final bool slow;
   final VoidCallback onRetry;
   final QuranMetadata metadata;
@@ -263,7 +270,8 @@ class _PrintedBody extends ConsumerWidget {
             aspect: edition.width / edition.height,
             area: area,
           );
-    final crop = !fillWidth && edition.ink == PageInk.onPaper && geometry != null
+    final crop =
+        !fillWidth && edition.ink == PageInk.onPaper && geometry != null
         ? printedCropFor(
             edition,
             inkTop: geometry.inkTop,
@@ -280,18 +288,13 @@ class _PrintedBody extends ConsumerWidget {
               BannerDetails(
                 top: banner.top,
                 bottom: banner.bottom,
-                startMain: formatDigits(
-                  metadata.surah(banner.surah).ayahCount,
-                  arabic: true,
-                ),
+                startMain: digits(metadata.surah(banner.surah).ayahCount),
                 startCaption: l10n.surahAyahsCaption,
                 endMain:
                     metadata.surah(banner.surah).revelation == Revelation.meccan
                     ? l10n.revelationMeccan
                     : l10n.revelationMedinan,
-                endCaption: l10n.surahOrderLabel(
-                  formatDigits(banner.surah, arabic: true),
-                ),
+                endCaption: l10n.surahOrderLabel(digits(banner.surah)),
               ),
           ];
     final Widget child = switch (image) {
@@ -310,7 +313,7 @@ class _PrintedBody extends ConsumerWidget {
           selected: selected,
           onTap: onTap,
           onAyahLongPress: onAyahLongPress,
-          label: l10n.printedPageLabel(formatDigits(page, arabic: true)),
+          label: l10n.printedPageLabel(digits(page)),
         ),
       ),
       // The image cannot be had, or is taking too long: show the page as

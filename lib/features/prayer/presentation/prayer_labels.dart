@@ -19,9 +19,14 @@ String prayerMethodLabel(AppLocalizations l10n, PrayerMethod method) =>
     };
 
 /// A time of day as the device formats it.
-String formatPrayerTime(BuildContext context, DateTime time) =>
-    MaterialLocalizations.of(context)
-        .formatTimeOfDay(TimeOfDay(hour: time.hour, minute: time.minute));
+String formatPrayerTime(
+  BuildContext context,
+  DateTime time,
+  String Function(String) formatDigits,
+) => formatDigits(
+  MaterialLocalizations.of(context)
+      .formatTimeOfDay(TimeOfDay(hour: time.hour, minute: time.minute)),
+);
 
 /// How long until [at], like "2 h 15 min" or "40 min".
 String formatUntil(

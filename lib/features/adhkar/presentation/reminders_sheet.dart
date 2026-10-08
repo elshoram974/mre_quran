@@ -29,9 +29,14 @@ abstract final class RemindersSheet {
 }
 
 /// The time of day as the device formats it.
-String formatReminderTime(BuildContext context, int minutes) =>
-    MaterialLocalizations.of(context)
-        .formatTimeOfDay(TimeOfDay(hour: minutes ~/ 60, minute: minutes % 60));
+String formatReminderTime(
+  BuildContext context,
+  int minutes,
+  String Function(String) formatDigits,
+) => formatDigits(
+  MaterialLocalizations.of(context)
+      .formatTimeOfDay(TimeOfDay(hour: minutes ~/ 60, minute: minutes % 60)),
+);
 
 /// Why a switch stayed off.
 enum _Notice { notifications, location }
@@ -91,6 +96,7 @@ class _RemindersBodyState extends ConsumerState<_RemindersBody> {
     final settings =
         ref.watch(remindersProvider).value ?? const <String, ReminderSetting>{};
     final digits = ref.watch(digitsFormatterProvider);
+    final formatDisplayDigits = ref.watch(displayDigitsFormatterProvider);
     final prayer =
         ref.watch(prayerProvider).value ??
         const PrayerState(settings: PrayerSettings());
@@ -119,6 +125,7 @@ class _RemindersBodyState extends ConsumerState<_RemindersBody> {
               subtitle: formatReminderTime(
                 context,
                 settings[collection.id]!.minutes,
+                formatDisplayDigits,
               ),
               icon: Icons.notifications_outlined,
             ),
@@ -126,7 +133,11 @@ class _RemindersBodyState extends ConsumerState<_RemindersBody> {
               ListTile(
                 title: Text(l10n.adhkarReminderTime),
                 trailing: Text(
-                  formatReminderTime(context, settings[collection.id]!.minutes),
+                  formatReminderTime(
+                    context,
+                    settings[collection.id]!.minutes,
+                    formatDisplayDigits,
+                  ),
                   style: theme.textTheme.titleMedium?.copyWith(
                     color: theme.colorScheme.primary,
                   ),

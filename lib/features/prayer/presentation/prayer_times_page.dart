@@ -120,7 +120,7 @@ class _Content extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final theme = Theme.of(context);
-    final digits = ref.watch(digitsFormatterProvider);
+    final formatDisplayDigits = ref.watch(displayDigitsFormatterProvider);
     final day = ref.watch(prayerDayProvider);
     final next = ref.watch(nextPrayerProvider);
     final notifier = ref.read(prayerProvider.notifier);
@@ -141,7 +141,11 @@ class _Content extends ConsumerWidget {
               children: [
                 _TimeRow(
                   name: l10n.prayerFajr,
-                  time: formatPrayerTime(context, day.fajr),
+                  time: formatPrayerTime(
+                    context,
+                    day.fajr,
+                    formatDisplayDigits,
+                  ),
                   alert: settings.alerts.contains(DailyPrayer.fajr),
                   highlighted: next?.prayer == DailyPrayer.fajr,
                   onAlert: (on) =>
@@ -149,13 +153,21 @@ class _Content extends ConsumerWidget {
                 ),
                 _TimeRow(
                   name: l10n.prayerSunrise,
-                  time: formatPrayerTime(context, day.sunrise),
+                  time: formatPrayerTime(
+                    context,
+                    day.sunrise,
+                    formatDisplayDigits,
+                  ),
                   muted: true,
                 ),
                 for (final prayer in DailyPrayer.values.skip(1))
                   _TimeRow(
                     name: prayerName(l10n, prayer),
-                    time: formatPrayerTime(context, day.of(prayer)),
+                    time: formatPrayerTime(
+                      context,
+                      day.of(prayer),
+                      formatDisplayDigits,
+                    ),
                     alert: settings.alerts.contains(prayer),
                     highlighted: next?.prayer == prayer,
                     onAlert: (on) => onRun(() => notifier.setAlert(prayer, on)),
@@ -240,8 +252,8 @@ class _Content extends ConsumerWidget {
             Expanded(
               child: Text(
                 l10n.prayerPlaceLine(
-                  _coordinate(place.latitude, digits),
-                  _coordinate(place.longitude, digits),
+                  _coordinate(place.latitude, formatDisplayDigits),
+                  _coordinate(place.longitude, formatDisplayDigits),
                 ),
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
@@ -271,13 +283,16 @@ class _Content extends ConsumerWidget {
 
   static const String _auto = 'auto';
 
-  static String _coordinate(double value, String Function(int) digits) {
+  static String _coordinate(
+    double value,
+    String Function(String) formatDigits,
+  ) {
     final whole = value.truncate().abs();
     final fraction = ((value.abs() - whole) * 100).round().toString().padLeft(
       2,
       '0',
     );
-    return '${value < 0 ? '-' : ''}${digits(whole)}.$fraction';
+    return formatDigits('${value < 0 ? '-' : ''}$whole.$fraction');
   }
 }
 
@@ -292,6 +307,7 @@ class _NextCard extends ConsumerWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final digits = ref.watch(digitsFormatterProvider);
+    final formatDisplayDigits = ref.watch(displayDigitsFormatterProvider);
     final now = ref.watch(tickingNowProvider);
     final until = next.at.difference(now);
     return Container(
@@ -318,7 +334,7 @@ class _NextCard extends ConsumerWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            '${formatPrayerTime(context, next.at)} · '
+            '${formatPrayerTime(context, next.at, formatDisplayDigits)} · '
             '${l10n.prayerIn(formatUntil(l10n, until, digits))}',
             style: theme.textTheme.titleMedium?.copyWith(
               color: scheme.onPrimaryContainer,

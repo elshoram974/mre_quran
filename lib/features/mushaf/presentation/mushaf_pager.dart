@@ -5,6 +5,7 @@ import '../../bookmarks/application/bookmarks_provider.dart';
 import '../../quran_index/domain/quran_metadata.dart';
 import '../../quran_text/domain/quran_text.dart';
 import '../../settings/application/settings_provider.dart';
+import '../../settings/application/digits_provider.dart';
 import '../../settings/domain/app_settings.dart';
 import '../application/reader_immersive_provider.dart';
 import '../application/reading_position_provider.dart';
@@ -99,6 +100,7 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
     final fontScale = ref.watch(
       settingsProvider.select((s) => s.value?.readerFontScale ?? 1),
     );
+    final digits = ref.watch(digitsFormatterProvider);
     final realistic = ref.watch(
       settingsProvider.select((s) => s.value?.realisticPageTurn ?? false),
     );
@@ -146,6 +148,7 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
             text: widget.text,
             page: number,
             fontScale: fontScale,
+            digits: digits,
             bookmarked: bookmarked,
             selected: _selected ?? highlighted,
             onAyahLongPress: _showActions,
@@ -165,6 +168,7 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
               text: widget.text,
               page: number,
               fontScale: fontScale,
+              digits: digits,
               bookmarked: bookmarked,
               selected: _selected ?? highlighted,
               onAyahLongPress: _showActions,

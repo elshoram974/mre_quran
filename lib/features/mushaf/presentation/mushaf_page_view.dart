@@ -22,6 +22,7 @@ class MushafPageView extends StatefulWidget {
     required this.page,
     required this.fontScale,
     required this.onTap,
+    this.digits = _defaultDigits,
     this.onAyahLongPress,
     this.bookmarked = const {},
     this.selected,
@@ -39,6 +40,11 @@ class MushafPageView extends StatefulWidget {
 
   /// Called when the page is tapped.
   final VoidCallback onTap;
+
+  /// Formats reader labels using the saved digit preference.
+  final String Function(int) digits;
+
+  static String _defaultDigits(int value) => formatDigits(value, arabic: true);
 
   /// Called with the ayah that was pressed and held.
   final ValueChanged<AyahRef>? onAyahLongPress;
@@ -70,7 +76,7 @@ class _MushafPageViewState extends State<MushafPageView> {
 
   QuranText get text => widget.text;
 
-  String _n(int value) => formatDigits(value, arabic: true);
+  String _n(int value) => widget.digits(value);
 
   @override
   void dispose() {
