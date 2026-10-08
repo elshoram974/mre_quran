@@ -6,6 +6,7 @@ import '../../../app/router.dart';
 
 import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_tokens.dart';
+import '../../../core/widgets/app_notice.dart';
 import '../../../core/widgets/app_select_field.dart';
 import '../../../core/widgets/app_sheet.dart';
 import '../../../core/widgets/app_switch_tile.dart';
@@ -173,13 +174,11 @@ class _RemindersBodyState extends ConsumerState<_RemindersBody> {
           if (_notice != null)
             Padding(
               padding: const EdgeInsets.only(top: 12),
-              child: Text(
+              child: AppNotice(
                 _notice == _Notice.location
                     ? l10n.adhkarLocationDenied
                     : l10n.adhkarPermissionDenied,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.error,
-                ),
+                error: true,
               ),
             ),
         ],

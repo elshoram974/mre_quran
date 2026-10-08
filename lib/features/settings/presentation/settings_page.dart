@@ -4,12 +4,16 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/router.dart';
 import '../../../core/haptics/haptics.dart';
+import '../../../core/haptics/haptics_provider.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/layout/adaptive_layout.dart';
-import '../../../core/widgets/app_card.dart';
+import '../../../core/widgets/app_group_card.dart';
+import '../../../core/widgets/app_section_header.dart';
 import '../../../core/widgets/app_select_field.dart';
 import '../../../core/widgets/app_switch_tile.dart';
+import '../../../core/widgets/app_tile_card.dart';
 
+import '../../adhkar/presentation/reminders_sheet.dart';
 import '../application/settings_provider.dart';
 import '../../mushaf/presentation/mushaf_style_field.dart';
 import '../../mushaf/presentation/reader_page_layout_field.dart';
@@ -56,15 +60,18 @@ class _SettingsContent extends ConsumerWidget {
   const _SettingsContent({required this.settings});
   final AppSettings settings;
 
+  static const double _gap = 12;
+  static const double _sectionGap = 28;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final notifier = ref.read(settingsProvider.notifier);
+    final hapticsSupported = ref.watch(hapticsSupportedProvider).value ?? true;
     return ListView(
       padding: pagePadding(context),
       children: [
-        Text(l10n.appearance, style: Theme.of(context).textTheme.titleLarge),
-        const SizedBox(height: 12),
+        AppSectionHeader(title: l10n.appearance),
         AppSelectField<AppThemePreference>(
           label: l10n.theme,
           value: settings.theme,
@@ -92,18 +99,48 @@ class _SettingsContent extends ConsumerWidget {
           ],
           onChanged: (value) => notifier.save(settings.copyWith(theme: value)),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: _gap),
         AppSelectField<String>(
           label: l10n.language,
           value: settings.localeCode,
           options: [
-            AppSelectOption(value: 'ar', label: l10n.languageArabic),
-            AppSelectOption(value: 'en', label: l10n.languageEnglish),
+            AppSelectOption(
+              value: 'ar',
+              label: l10n.languageArabic,
+              icon: Icons.translate,
+            ),
+            AppSelectOption(
+              value: 'en',
+              label: l10n.languageEnglish,
+              icon: Icons.translate,
+            ),
           ],
           onChanged: (value) =>
               notifier.save(settings.copyWith(localeCode: value)),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: _gap),
+        AppGroupCard(
+          children: [
+            AppSwitchTile(
+              value: settings.useArabicDigits,
+              onChanged: (value) =>
+                  notifier.save(settings.copyWith(useArabicDigits: value)),
+              icon: Icons.onetwothree,
+              title: l10n.arabicDigits,
+              subtitle: l10n.arabicDigitsDescription,
+            ),
+            AppSwitchTile(
+              value: settings.reduceMotion,
+              onChanged: (value) =>
+                  notifier.save(settings.copyWith(reduceMotion: value)),
+              icon: Icons.motion_photos_off_outlined,
+              title: l10n.reduceMotion,
+              subtitle: l10n.reduceMotionDescription,
+            ),
+          ],
+        ),
+        const SizedBox(height: _sectionGap),
+        AppSectionHeader(title: l10n.settingsReading),
         AppSelectField<StartupBehavior>(
           label: l10n.startup,
           value: settings.startupBehavior,
@@ -122,7 +159,7 @@ class _SettingsContent extends ConsumerWidget {
           onChanged: (value) =>
               notifier.save(settings.copyWith(startupBehavior: value)),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: _gap),
         AppSelectField<ReaderMode>(
           label: l10n.readerMode,
           value: settings.readerMode,
@@ -141,89 +178,81 @@ class _SettingsContent extends ConsumerWidget {
           onChanged: (value) =>
               notifier.save(settings.copyWith(readerMode: value)),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: _gap),
         const MushafStyleField(),
-        const SizedBox(height: 12),
+        const SizedBox(height: _gap),
         const ReaderPageLayoutField(),
-        const SizedBox(height: 28),
+        const SizedBox(height: _gap),
+        AppGroupCard(
+          children: [
+            AppSwitchTile(
+              value: settings.realisticPageTurn,
+              onChanged: (value) =>
+                  notifier.save(settings.copyWith(realisticPageTurn: value)),
+              icon: Icons.auto_stories_outlined,
+              title: l10n.realisticPageTurn,
+              subtitle: l10n.realisticPageTurnDescription,
+            ),
+          ],
+        ),
+        const SizedBox(height: _sectionGap),
         const OfflinePacksSection(),
-        const SizedBox(height: 28),
-        _SettingsCard(
-          child: AppSwitchTile(
-            value: settings.realisticPageTurn,
-            onChanged: (value) =>
-                notifier.save(settings.copyWith(realisticPageTurn: value)),
-            icon: Icons.auto_stories_outlined,
-            title: l10n.realisticPageTurn,
-            subtitle: l10n.realisticPageTurnDescription,
-          ),
+        const SizedBox(height: _sectionGap),
+        AppSectionHeader(title: l10n.settingsAlerts),
+        AppTileCard(
+          icon: Icons.access_time_rounded,
+          title: l10n.prayerTimesTitle,
+          onTap: () => context.push(AppRoute.prayerTimes.path),
         ),
-        const SizedBox(height: 12),
-        _SettingsCard(
-          child: AppSwitchTile(
-            value: settings.reduceMotion,
-            onChanged: (value) =>
-                notifier.save(settings.copyWith(reduceMotion: value)),
-            title: l10n.reduceMotion,
-            subtitle: l10n.reduceMotionDescription,
-          ),
+        const SizedBox(height: _gap),
+        AppTileCard(
+          icon: Icons.notifications_none_outlined,
+          title: l10n.adhkarReminders,
+          onTap: () => RemindersSheet.show(context),
         ),
-        const SizedBox(height: 12),
-        _SettingsCard(
-          child: AppSwitchTile(
-            value: settings.hapticsEnabled,
-            onChanged: (value) {
-              notifier.save(settings.copyWith(hapticsEnabled: value));
-              // Let the person feel what they just turned on.
-              Haptics.enabled = value;
-              if (value) Haptics.step();
-            },
-            icon: Icons.vibration,
-            title: l10n.settingsHaptics,
-            subtitle: l10n.settingsHapticsHint,
-          ),
+        const SizedBox(height: _gap),
+        AppGroupCard(
+          children: [
+            AppSwitchTile(
+              value: hapticsSupported && settings.hapticsEnabled,
+              // A device with no vibration motor gets a switch that says so.
+              onChanged: hapticsSupported
+                  ? (value) {
+                      notifier.save(settings.copyWith(hapticsEnabled: value));
+                      // Let the person feel what they just turned on.
+                      Haptics.enabled = value;
+                      if (value) Haptics.step();
+                    }
+                  : null,
+              icon: Icons.vibration,
+              title: l10n.settingsHaptics,
+              subtitle: hapticsSupported
+                  ? l10n.settingsHapticsHint
+                  : l10n.settingsHapticsUnsupported,
+            ),
+          ],
         ),
-        const SizedBox(height: 12),
-        _SettingsCard(
-          child: AppSwitchTile(
-            value: settings.useArabicDigits,
-            onChanged: (value) =>
-                notifier.save(settings.copyWith(useArabicDigits: value)),
-            title: l10n.arabicDigits,
-            subtitle: l10n.arabicDigitsDescription,
-          ),
+        const SizedBox(height: _sectionGap),
+        AppSectionHeader(title: l10n.privacy),
+        AppGroupCard(
+          children: [
+            AppSwitchTile(
+              value: settings.crashReportsEnabled,
+              onChanged: (value) =>
+                  notifier.save(settings.copyWith(crashReportsEnabled: value)),
+              icon: Icons.shield_outlined,
+              title: l10n.crashReports,
+              subtitle: l10n.crashReportsDescription,
+            ),
+          ],
         ),
-        const SizedBox(height: 28),
-        Text(l10n.privacy, style: Theme.of(context).textTheme.titleLarge),
-        const SizedBox(height: 12),
-        _SettingsCard(
-          child: AppSwitchTile(
-            value: settings.crashReportsEnabled,
-            onChanged: (value) =>
-                notifier.save(settings.copyWith(crashReportsEnabled: value)),
-            icon: Icons.shield_outlined,
-            title: l10n.crashReports,
-            subtitle: l10n.crashReportsDescription,
-          ),
-        ),
-        const SizedBox(height: 12),
-        _SettingsCard(
-          child: ListTile(
-            leading: const Icon(Icons.info_outline),
-            title: Text(l10n.about),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => context.push(AppRoute.about.path),
-          ),
+        const SizedBox(height: _gap),
+        AppTileCard(
+          icon: Icons.info_outline,
+          title: l10n.about,
+          onTap: () => context.push(AppRoute.about.path),
         ),
       ],
     );
   }
-}
-
-class _SettingsCard extends StatelessWidget {
-  const _SettingsCard({required this.child});
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) => AppCard(child: child);
 }

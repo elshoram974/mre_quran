@@ -6,7 +6,8 @@ import '../../../app/router.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/layout/adaptive_layout.dart';
 import '../../../core/theme/app_tokens.dart';
-import '../../../core/widgets/app_card.dart';
+import '../../../core/widgets/app_section_header.dart';
+import '../../../core/widgets/app_tile_card.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../settings/application/digits_provider.dart';
@@ -71,7 +72,6 @@ class _Content extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final theme = Theme.of(context);
     final active = ref.watch(activeSessionProvider);
     final now = ref.watch(tickingNowProvider);
     final featured = active ?? catalog.suggestedAt(now.hour * 60 + now.minute);
@@ -90,17 +90,14 @@ class _Content extends ConsumerWidget {
           const PrayerTimesCard(),
           if (featured != null) ...[
             const SizedBox(height: 20),
-            Text(
-              active != null ? l10n.adhkarResume : l10n.adhkarSuggested,
-              style: theme.textTheme.titleMedium,
+            AppSectionHeader(
+              title: active != null ? l10n.adhkarResume : l10n.adhkarSuggested,
             ),
-            const SizedBox(height: 8),
             CollectionCard(collection: featured, featured: true),
           ],
           if (starred.isNotEmpty) ...[
             const SizedBox(height: 24),
-            Text(l10n.adhkarFavorites, style: theme.textTheme.titleMedium),
-            const SizedBox(height: 8),
+            AppSectionHeader(title: l10n.adhkarFavorites),
             _Grid(
               children: [
                 for (final collection in starred)
@@ -112,8 +109,7 @@ class _Content extends ConsumerWidget {
             ),
           ],
           const SizedBox(height: 24),
-          Text(l10n.adhkarSections, style: theme.textTheme.titleMedium),
-          const SizedBox(height: 8),
+          AppSectionHeader(title: l10n.adhkarSections),
           _Grid(
             children: [
               for (final group in catalog.groups)
@@ -211,34 +207,15 @@ class _RemindersTile extends ConsumerWidget {
             value.value?.values.where((setting) => setting.enabled).length ?? 0,
       ),
     );
-    return AppCard(
-      padding: EdgeInsets.zero,
-      child: Material(
-        type: MaterialType.transparency,
-        child: ListTile(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppTokens.radiusCard),
-          ),
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 4,
-          ),
-          leading: Icon(
-            enabled > 0
-                ? Icons.notifications_active_outlined
-                : Icons.notifications_none_outlined,
-            color: Theme.of(context).colorScheme.primary,
-          ),
-          title: Text(l10n.adhkarReminders),
-          subtitle: Text(
-            enabled > 0
-                ? l10n.adhkarRemindersSome(digits(enabled))
-                : l10n.adhkarRemindersNone,
-          ),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: () => RemindersSheet.show(context),
-        ),
-      ),
+    return AppTileCard(
+      icon: enabled > 0
+          ? Icons.notifications_active_outlined
+          : Icons.notifications_none_outlined,
+      title: l10n.adhkarReminders,
+      subtitle: enabled > 0
+          ? l10n.adhkarRemindersSome(digits(enabled))
+          : l10n.adhkarRemindersNone,
+      onTap: () => RemindersSheet.show(context),
     );
   }
 }

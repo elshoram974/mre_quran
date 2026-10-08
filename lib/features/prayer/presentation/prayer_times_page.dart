@@ -8,6 +8,7 @@ import '../../../core/theme/app_tokens.dart';
 import '../../../core/time/ticking_clock.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_page_scaffold.dart';
+import '../../../core/widgets/app_notice.dart';
 import '../../../core/widgets/app_select_field.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/widgets/app_switch_tile.dart';
@@ -180,10 +181,7 @@ class _Content extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        l10n.prayerExactNote,
-                        style: theme.textTheme.bodySmall,
-                      ),
+                      AppNotice(l10n.prayerExactNote),
                       TextButton(
                         onPressed: () async {
                           await notifier.allowExactAlarms();
@@ -260,13 +258,11 @@ class _Content extends ConsumerWidget {
         if (result != PrayerResult.ok)
           Padding(
             padding: const EdgeInsets.only(top: 8),
-            child: Text(
+            child: AppNotice(
               result == PrayerResult.locationDenied
                   ? l10n.adhkarLocationDenied
                   : l10n.adhkarPermissionDenied,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.error,
-              ),
+              error: true,
             ),
           ),
       ],

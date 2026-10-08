@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/app_shimmer.dart';
+import '../../../core/widgets/app_tag.dart';
 import '../../quran_text/application/quran_text_providers.dart';
 import '../../settings/application/digits_provider.dart';
 import '../application/adhkar_providers.dart';
@@ -171,7 +172,6 @@ class _OnlyAfterChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final scheme = Theme.of(context).colorScheme;
     final names = [
       for (final prayer in DailyPrayer.values)
         if (prayers.contains(prayer.name)) prayerName(l10n, prayer),
@@ -182,20 +182,7 @@ class _OnlyAfterChip extends StatelessWidget {
             names.sublist(0, names.length - 1).join('، '),
             names.last,
           );
-    return Flexible(
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        decoration: BoxDecoration(
-          color: scheme.tertiaryContainer,
-          borderRadius: BorderRadius.circular(AppTokens.radiusField),
-        ),
-        child: Text(
-          l10n.adhkarOnlyAfter(joined),
-          style: Theme.of(context).textTheme.labelMedium
-              ?.copyWith(color: scheme.onTertiaryContainer),
-        ),
-      ),
-    );
+    return Flexible(child: AppTag(l10n.adhkarOnlyAfter(joined)));
   }
 }
 

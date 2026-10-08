@@ -16,8 +16,8 @@ class AppSwitchTile extends StatelessWidget {
   /// Whether the switch is on.
   final bool value;
 
-  /// Called with the new value.
-  final ValueChanged<bool> onChanged;
+  /// Called with the new value. Null makes the row inert and greyed out.
+  final ValueChanged<bool>? onChanged;
 
   /// Row title.
   final String title;

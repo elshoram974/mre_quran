@@ -360,6 +360,15 @@ class AppLocalizationsAr extends AppLocalizations {
   String get adhkarShowList => 'عرض كقائمة';
 
   @override
+  String get settingsReading => 'القراءة';
+
+  @override
+  String get settingsAlerts => 'التنبيهات والاهتزاز';
+
+  @override
+  String get settingsHapticsUnsupported => 'هذا الجهاز لا يدعم الاهتزاز.';
+
+  @override
   String get adhkarResume => 'أكمل من حيث توقفت';
 
   @override

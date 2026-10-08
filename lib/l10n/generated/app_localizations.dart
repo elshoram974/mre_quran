@@ -728,6 +728,24 @@ abstract class AppLocalizations {
   /// **'Show as a list'**
   String get adhkarShowList;
 
+  /// No description provided for @settingsReading.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading'**
+  String get settingsReading;
+
+  /// No description provided for @settingsAlerts.
+  ///
+  /// In en, this message translates to:
+  /// **'Alerts and feedback'**
+  String get settingsAlerts;
+
+  /// No description provided for @settingsHapticsUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'This device cannot vibrate.'**
+  String get settingsHapticsUnsupported;
+
   /// No description provided for @adhkarResume.
   ///
   /// In en, this message translates to:

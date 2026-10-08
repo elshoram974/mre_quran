@@ -3,6 +3,9 @@ import 'platform_haptics.dart';
 /// What a device does for each kind of feedback. Tests replace it to record
 /// calls.
 abstract interface class HapticsBackend {
+  /// Whether this device can give feedback at all.
+  Future<bool> isSupported();
+
   /// A very light tap for a selection, such as a tab.
   Future<void> select();
 
@@ -26,6 +29,10 @@ abstract final class Haptics {
 
   /// How feedback is produced. Replaced in tests.
   static HapticsBackend backend = PlatformHaptics();
+
+  /// Whether this device can vibrate. False on a tablet or a phone without a
+  /// vibration motor, so Settings can say so instead of offering a dead switch.
+  static Future<bool> isSupported() => backend.isSupported();
 
   /// A very light tap for a selection.
   static Future<void> select() => enabled ? backend.select() : _done;

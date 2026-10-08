@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/l10n/l10n.dart';
 import '../../../core/widgets/app_card.dart';
+import '../../../core/widgets/app_section_header.dart';
 import '../../../core/widgets/app_sheet.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../settings/application/digits_provider.dart';
@@ -48,8 +49,7 @@ class _OfflinePacksSectionState extends ConsumerState<OfflinePacksSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(l10n.offlineMushaf, style: theme.textTheme.titleLarge),
-        const SizedBox(height: 8),
+        AppSectionHeader(title: l10n.offlineMushaf),
         Text(
           l10n.offlineMushafIntro,
           style: theme.textTheme.bodyMedium?.copyWith(

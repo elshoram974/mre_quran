@@ -314,6 +314,9 @@ class RecordingHaptics implements HapticsBackend {
   final List<String> calls = [];
 
   @override
+  Future<bool> isSupported() async => true;
+
+  @override
   Future<void> select() async => calls.add('select');
 
   @override

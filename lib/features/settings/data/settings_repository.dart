@@ -50,9 +50,7 @@ class LocalSettingsRepository implements SettingsRepository {
       _preferences.getBool(_realisticTurnKey),
       _preferences.getString(_readerModeKey),
     ).wait;
-    final readerPageLayout = await _preferences.getString(
-      _readerPageLayoutKey,
-    );
+    final readerPageLayout = await _preferences.getString(_readerPageLayoutKey);
     final mushafStyle = await _preferences.getString(_mushafStyleKey);
     final introSeen = await _preferences.getBool(_introSeenKey);
     final haptics = await _preferences.getBool(_hapticsKey);

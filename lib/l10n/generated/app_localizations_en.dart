@@ -363,6 +363,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adhkarShowList => 'Show as a list';
 
   @override
+  String get settingsReading => 'Reading';
+
+  @override
+  String get settingsAlerts => 'Alerts and feedback';
+
+  @override
+  String get settingsHapticsUnsupported => 'This device cannot vibrate.';
+
+  @override
   String get adhkarResume => 'Pick up where you left off';
 
   @override

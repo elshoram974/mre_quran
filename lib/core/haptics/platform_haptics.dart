@@ -21,6 +21,14 @@ class PlatformHaptics implements HapticsBackend {
 
   Future<bool> get _canVibrate => _hasVibrator ??= _check();
 
+  @override
+  Future<bool> isSupported() async => switch (defaultTargetPlatform) {
+    TargetPlatform.android => await _canVibrate,
+    // The system haptics of an iPhone; an iPad or a Mac simply does nothing.
+    TargetPlatform.iOS || TargetPlatform.macOS => true,
+    _ => false,
+  };
+
   Future<bool> _check() async {
     try {
       return await Vibration.hasVibrator();
