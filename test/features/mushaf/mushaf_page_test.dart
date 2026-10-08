@@ -178,16 +178,15 @@ void main() {
     expect(positions.page, 50);
   });
 
-  testWidgets('the page pill opens a slider and goes to the chosen page', (
+  testWidgets('the page pill accepts a typed page and goes to it', (
     tester,
   ) async {
     final (_, positions) = await _pump(tester, savedPage: 10);
     await tester.tap(find.byType(ReaderPagePill));
     await tester.pumpAndSettle();
     expect(find.text('صفحة ١٠ من ٦٠٤'), findsOneWidget);
-    // The slider runs right to left: the left end is the last page.
-    final slider = tester.getRect(find.byType(Slider));
-    await tester.tapAt(Offset(slider.left + 24, slider.center.dy));
+    final input = find.byType(TextField).first;
+    await tester.enterText(input, '600');
     await tester.pumpAndSettle();
     await tester.tap(find.text('انتقال'));
     await tester.pumpAndSettle();
