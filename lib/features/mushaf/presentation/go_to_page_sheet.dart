@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:mre_fields/mre_fields.dart';
 
 import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/app_sheet.dart';
 
-/// Asks which page to open, starting at [page], with a slider over the
-/// [pageCount] pages. Returns the chosen page, or null.
+/// Asks which page to open, starting at [page], with a field and slider over
+/// the [pageCount] pages. Returns the chosen page, or null.
 Future<int?> showGoToPage(
   BuildContext context, {
   required int page,
@@ -33,7 +35,16 @@ class _GoToPage extends StatefulWidget {
 }
 
 class _GoToPageState extends State<_GoToPage> {
+  late final TextEditingController _controller = TextEditingController(
+    text: widget.digits(widget.initial),
+  );
   late int _page = widget.initial;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,6 +63,16 @@ class _GoToPageState extends State<_GoToPage> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(l10n.goToPage, style: theme.textTheme.titleLarge),
+          const SizedBox(height: 16),
+          MRETextField(
+            controller: _controller,
+            labelText: l10n.goToPage,
+            keyboardType: TextInputType.number,
+            textInputAction: TextInputAction.go,
+            inputFormatters: [_PageNumberFormatter(widget.pageCount)],
+            onChanged: _onPageTextChanged,
+            onFieldSubmitted: (_) => _submit(context),
+          ),
           const SizedBox(height: 16),
           Text(
             digits(_page),
@@ -80,16 +101,76 @@ class _GoToPageState extends State<_GoToPage> {
                 digits(value.round()),
                 digits(widget.pageCount),
               ),
-              onChanged: (value) => setState(() => _page = value.round()),
+              onChanged: (value) => _setPage(value.round()),
             ),
           ),
           const SizedBox(height: 8),
           FilledButton(
-            onPressed: () => Navigator.of(context).pop(_page),
+            onPressed: _isValidInput ? () => _submit(context) : null,
             child: Text(l10n.goToPageAction),
           ),
         ],
       ),
     );
   }
+
+  bool get _isValidInput => _parsePage(_controller.text) != null;
+
+  void _onPageTextChanged(String value) {
+    final page = _parsePage(value);
+    setState(() {
+      if (page != null) _page = page;
+    });
+  }
+
+  void _setPage(int page) {
+    final text = widget.digits(page);
+    setState(() {
+      _page = page;
+      _controller.value = TextEditingValue(
+        text: text,
+        selection: TextSelection.collapsed(offset: text.length),
+      );
+    });
+  }
+
+  void _submit(BuildContext context) {
+    final page = _parsePage(_controller.text);
+    if (page != null) Navigator.of(context).pop(page);
+  }
+
+  int? _parsePage(String value) {
+    if (value.isEmpty) return null;
+    final page = int.tryParse(_normalizeDigits(value));
+    return page != null && page >= 1 && page <= widget.pageCount ? page : null;
+  }
 }
+
+class _PageNumberFormatter extends TextInputFormatter {
+  _PageNumberFormatter(this.maximum);
+
+  final int maximum;
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    if (newValue.text.isEmpty) return newValue;
+    final page = int.tryParse(_normalizeDigits(newValue.text));
+    if (page == null || page < 1 || page > maximum) return oldValue;
+    return newValue;
+  }
+}
+
+String _normalizeDigits(String value) => value
+    .replaceAllMapped(
+      RegExp('[٠-٩]'),
+      (match) =>
+          String.fromCharCode(match.group(0)!.codeUnitAt(0) - 0x630 + 0x30),
+    )
+    .replaceAllMapped(
+      RegExp('[۰-۹]'),
+      (match) =>
+          String.fromCharCode(match.group(0)!.codeUnitAt(0) - 0x6f0 + 0x30),
+    );

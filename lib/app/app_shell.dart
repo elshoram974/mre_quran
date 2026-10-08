@@ -104,7 +104,8 @@ class _KeepScreenAwakeState extends State<_KeepScreenAwake>
 
   void _update({bool? enabled}) {
     WakelockPlus.toggle(
-      enable: enabled ??
+      enable:
+          enabled ??
           (widget.enabled && _lifecycleState == AppLifecycleState.resumed),
     );
   }
