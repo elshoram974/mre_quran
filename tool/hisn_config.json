@@ -1,0 +1,219 @@
+{
+  "hisnIndexSha256": "ee0df147cc9fdcbc8bed542703ba2d43f70329baa4d8ee7a99adf7929112a65f",
+  "hisnIndexSource": "https://github.com/rn0x/Adhkar-json at 93dc3fc489e4291da8816265920b3cb7e2c3b569 (no licence declared; used as an index only)",
+  "skipChapters": [
+    1,
+    2,
+    3,
+    27
+  ],
+  "defaultGroup": "social",
+  "titles": {
+    "14": "دعاء لبس الثوب",
+    "15": "دعاء لبس الثوب الجديد"
+  },
+  "groups": {
+    "1": "daily",
+    "2": "daily",
+    "3": "daily",
+    "29": "daily",
+    "30": "daily",
+    "31": "daily",
+    "4": "home",
+    "5": "home",
+    "8": "home",
+    "9": "home",
+    "14": "home",
+    "15": "home",
+    "16": "home",
+    "17": "home",
+    "68": "home",
+    "69": "home",
+    "70": "home",
+    "71": "home",
+    "72": "home",
+    "73": "home",
+    "74": "home",
+    "75": "home",
+    "76": "home",
+    "6": "prayer",
+    "7": "prayer",
+    "10": "prayer",
+    "11": "prayer",
+    "12": "prayer",
+    "13": "prayer",
+    "18": "prayer",
+    "19": "prayer",
+    "20": "prayer",
+    "21": "prayer",
+    "22": "prayer",
+    "23": "prayer",
+    "24": "prayer",
+    "25": "prayer",
+    "26": "prayer",
+    "27": "prayer",
+    "28": "prayer",
+    "32": "prayer",
+    "33": "prayer",
+    "34": "worry",
+    "35": "worry",
+    "36": "worry",
+    "37": "worry",
+    "38": "worry",
+    "39": "worry",
+    "40": "worry",
+    "41": "worry",
+    "42": "worry",
+    "43": "worry",
+    "44": "worry",
+    "45": "worry",
+    "46": "worry",
+    "49": "worry",
+    "50": "worry",
+    "51": "worry",
+    "124": "worry",
+    "125": "worry",
+    "126": "worry",
+    "52": "janaza",
+    "53": "janaza",
+    "54": "janaza",
+    "55": "janaza",
+    "56": "janaza",
+    "57": "janaza",
+    "58": "janaza",
+    "59": "janaza",
+    "60": "janaza",
+    "61": "weather",
+    "62": "weather",
+    "63": "weather",
+    "64": "weather",
+    "65": "weather",
+    "66": "weather",
+    "67": "weather",
+    "47": "social",
+    "48": "social",
+    "77": "social",
+    "78": "social",
+    "79": "social",
+    "80": "social",
+    "81": "social",
+    "82": "social",
+    "83": "social",
+    "84": "social",
+    "85": "social",
+    "86": "social",
+    "87": "social",
+    "88": "social",
+    "89": "social",
+    "90": "social",
+    "91": "social",
+    "92": "social",
+    "93": "social",
+    "94": "social",
+    "106": "social",
+    "107": "virtue",
+    "108": "social",
+    "109": "social",
+    "110": "social",
+    "111": "social",
+    "112": "social",
+    "113": "social",
+    "114": "social",
+    "122": "social",
+    "123": "social",
+    "127": "social",
+    "95": "travel",
+    "96": "travel",
+    "97": "travel",
+    "98": "travel",
+    "99": "travel",
+    "100": "travel",
+    "101": "travel",
+    "102": "travel",
+    "103": "travel",
+    "104": "travel",
+    "105": "travel",
+    "115": "travel",
+    "116": "travel",
+    "117": "travel",
+    "118": "travel",
+    "119": "travel",
+    "120": "travel",
+    "121": "travel",
+    "129": "virtue",
+    "130": "virtue",
+    "131": "virtue",
+    "132": "virtue",
+    "128": "virtue"
+  },
+  "manual": [
+    {
+      "id": "hisn5-ghufranak",
+      "variant": 5,
+      "order": 1,
+      "count": 1,
+      "text": {
+        "from": {
+          "edition": "ara-abudawud",
+          "number": "30"
+        },
+        "start": "غفرانك",
+        "end": "غفرانك"
+      },
+      "evidence": [
+        {
+          "edition": "ara-abudawud",
+          "number": "30"
+        },
+        {
+          "edition": "ara-tirmidhi",
+          "number": "7"
+        }
+      ]
+    },
+    {
+      "id": "hisn28-istikhara",
+      "variant": 28,
+      "order": 1,
+      "count": 1,
+      "text": {
+        "from": {
+          "edition": "ara-bukhari",
+          "number": "6382"
+        },
+        "start": "اللهم إني أستخيرك بعلمك",
+        "end": "ثم رضني به"
+      },
+      "evidence": [
+        {
+          "edition": "ara-bukhari",
+          "number": "6382"
+        },
+        {
+          "edition": "ara-bukhari",
+          "number": "1166"
+        }
+      ]
+    },
+    {
+      "id": "hisn87-jazak",
+      "variant": 87,
+      "order": 1,
+      "count": 1,
+      "text": {
+        "from": {
+          "edition": "ara-tirmidhi",
+          "number": "2035"
+        },
+        "start": "جزاك الله خيرا",
+        "end": "جزاك الله خيرا"
+      },
+      "evidence": [
+        {
+          "edition": "ara-tirmidhi",
+          "number": "2035"
+        }
+      ]
+    }
+  ]
+}

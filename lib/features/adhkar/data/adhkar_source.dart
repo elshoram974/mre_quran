@@ -42,11 +42,27 @@ class AdhkarSource {
 
   /// Reads, verifies, and parses every collection.
   ///
-  /// The files are small (under 100 KB), so parsing stays on the main isolate.
+  /// The files are small (under 1 MB), so parsing stays on the main isolate.
   Future<AdhkarCatalog> load() async {
-    final specs = AdhkarParser.parseManifest(
+    final main = AdhkarParser.parseManifest(
       await _bundle.loadString(manifestAsset),
     );
+    final specs = [...main.specs];
+    for (final include in main.includes) {
+      final extra = AdhkarParser.parseManifest(
+        await _bundle.loadString('$folder/$include'),
+      );
+      specs.addAll(extra.specs);
+    }
+    final ids = specs.map((spec) => spec.id).toSet();
+    if (ids.length != specs.length) {
+      throw const AdhkarDataException('Duplicate collection id');
+    }
+    final groups = main.groups.isEmpty
+        ? const [
+            AdhkarGroup(id: 'all', titles: {'ar': 'الأذكار'}),
+          ]
+        : main.groups;
     final parsed = <String, List<Dhikr>>{};
     for (final spec in specs) {
       if (parsed.containsKey(spec.file)) continue;
@@ -60,8 +76,29 @@ class AdhkarSource {
       if (actual != spec.sha256) throw AdhkarIntegrityException(asset, actual);
       parsed[spec.file] = AdhkarParser.parseEntries(utf8.decode(bytes));
     }
-    return AdhkarCatalog([
-      for (final spec in specs) spec.build(parsed[spec.file]!),
-    ]);
+    final collections = [
+      for (final spec in specs)
+        spec.build(parsed[spec.file]!, _groupOf(spec, groups)),
+    ];
+    final used = {for (final collection in collections) collection.group};
+    return AdhkarCatalog(
+      collections,
+      groups: [
+        for (final group in groups)
+          if (used.contains(group)) group,
+      ],
+    );
+  }
+
+  static AdhkarGroup _groupOf(
+    AdhkarCollectionSpec spec,
+    List<AdhkarGroup> groups,
+  ) {
+    final id = spec.groupId;
+    if (id == null) return groups.first;
+    for (final group in groups) {
+      if (group.id == id) return group;
+    }
+    throw AdhkarDataException('Collection ${spec.id} is in unknown group $id');
   }
 }

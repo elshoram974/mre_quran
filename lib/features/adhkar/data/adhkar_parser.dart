@@ -27,7 +27,7 @@ class AdhkarCollectionSpec {
     required this.file,
     required this.sha256,
     required this.variants,
-    this.group = AdhkarGroup.daily,
+    this.groupId,
     this.sessionWindowMinutes,
     this.reminderMinutes,
   });
@@ -50,8 +50,8 @@ class AdhkarCollectionSpec {
   /// Entry variants to take from [file].
   final Set<int> variants;
 
-  /// Section of the tab the collection appears in.
-  final AdhkarGroup group;
+  /// Id of the group the collection appears in, or null for the first group.
+  final String? groupId;
 
   /// Minutes counts are kept after the last tap, or null for a whole day.
   final int? sessionWindowMinutes;
@@ -59,8 +59,8 @@ class AdhkarCollectionSpec {
   /// Default reminder time, if the collection has a reminder.
   final int? reminderMinutes;
 
-  /// Builds the collection from the entries of its file.
-  AdhkarCollection build(List<Dhikr> fileEntries) {
+  /// Builds the collection from the entries of its file, placed in [group].
+  AdhkarCollection build(List<Dhikr> fileEntries, AdhkarGroup group) {
     final entries = [
       for (final entry in fileEntries)
         if (variants.contains(entry.variant)) entry,
@@ -80,14 +80,33 @@ class AdhkarCollectionSpec {
   }
 }
 
+/// What a manifest file declares.
+class AdhkarManifest {
+  /// Creates the value.
+  const AdhkarManifest({
+    required this.groups,
+    required this.specs,
+    required this.includes,
+  });
+
+  /// Groups declared here, in display order.
+  final List<AdhkarGroup> groups;
+
+  /// Collections declared here, in display order.
+  final List<AdhkarCollectionSpec> specs;
+
+  /// Other manifest files (in the same folder) whose collections follow.
+  final List<String> includes;
+}
+
 /// Reads the manifest and the entry files. Pure Dart so it can run off the
 /// main isolate.
 abstract final class AdhkarParser {
   /// Highest manifest schema this build understands.
   static const int supportedSchema = 1;
 
-  /// Parses the manifest JSON into collection specs, in display order.
-  static List<AdhkarCollectionSpec> parseManifest(String json) {
+  /// Parses a manifest file: its groups, collections, and included files.
+  static AdhkarManifest parseManifest(String json) {
     final root = _map(jsonDecode(json), 'manifest');
     if (root['schema'] != supportedSchema) {
       throw AdhkarDataException(
@@ -95,15 +114,51 @@ abstract final class AdhkarParser {
       );
     }
     final raw = root['collections'];
-    if (raw is! List<Object?> || raw.isEmpty) {
+    final includes = root['includes'];
+    if ((raw is! List<Object?> || raw.isEmpty) &&
+        (includes is! List<Object?> || includes.isEmpty)) {
       throw const AdhkarDataException('Manifest has no collections');
     }
-    final specs = [for (final item in raw) _spec(_map(item, 'collection'))];
+    final specs = [
+      if (raw is List<Object?>)
+        for (final item in raw) _spec(_map(item, 'collection')),
+    ];
     final ids = specs.map((spec) => spec.id).toSet();
     if (ids.length != specs.length) {
       throw const AdhkarDataException('Duplicate collection id');
     }
-    return specs;
+    final groups = [
+      if (root['groups'] case final List<Object?> list)
+        for (final item in list) _group(_map(item, 'group')),
+    ];
+    if (groups.map((group) => group.id).toSet().length != groups.length) {
+      throw const AdhkarDataException('Duplicate group id');
+    }
+    return AdhkarManifest(
+      groups: groups,
+      specs: specs,
+      includes: [
+        if (includes is List<Object?>)
+          for (final item in includes)
+            if (item is String) item,
+      ],
+    );
+  }
+
+  static AdhkarGroup _group(Map<String, Object?> json) {
+    final id = _string(json, 'id');
+    final titles = _map(json['title'], 'title of group $id');
+    if (titles['ar'] is! String) {
+      throw AdhkarDataException('Group $id needs an Arabic title');
+    }
+    return AdhkarGroup(
+      id: id,
+      titles: {
+        for (final entry in titles.entries)
+          if (entry.value is String) entry.key: entry.value! as String,
+      },
+      icon: AdhkarIcon.parse(json['icon']),
+    );
   }
 
   /// Parses one entry file. Every entry must carry its evidence.
@@ -143,9 +198,7 @@ abstract final class AdhkarParser {
     }
     return AdhkarCollectionSpec(
       id: id,
-      group: json['group'] == null
-          ? AdhkarGroup.daily
-          : AdhkarGroup.parse(json['group']),
+      groupId: json['group'] as String?,
       sessionWindowMinutes: window as int?,
       titles: {
         for (final entry in titles.entries)

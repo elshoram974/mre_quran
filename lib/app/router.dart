@@ -6,6 +6,8 @@ import 'package:flutter/widgets.dart';
 import '../features/about/presentation/about_page.dart';
 import '../features/adhkar/application/reminders_provider.dart';
 import '../features/adhkar/domain/reminder_payload.dart';
+import '../features/adhkar/presentation/adhkar_group_page.dart';
+import '../features/adhkar/presentation/adhkar_search_page.dart';
 import '../features/adhkar/presentation/adhkar_session_page.dart';
 import '../features/adhkar/presentation/duas_page.dart';
 import '../features/bookmarks/presentation/bookmarks_page.dart';
@@ -68,8 +70,19 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AppRoute.adhkarSession.path,
+        builder: (context, state) => AdhkarSessionPage(
+          collectionId: state.pathParameters['id']!,
+          focusOrder: int.tryParse(state.uri.queryParameters['focus'] ?? ''),
+        ),
+      ),
+      GoRoute(
+        path: AppRoute.adhkarGroup.path,
         builder: (context, state) =>
-            AdhkarSessionPage(collectionId: state.pathParameters['id']!),
+            AdhkarGroupPage(groupId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: AppRoute.adhkarSearch.path,
+        builder: (context, state) => const AdhkarSearchPage(),
       ),
       GoRoute(
         path: AppRoute.about.path,
@@ -100,13 +113,20 @@ enum AppRoute {
   about('/about'),
   quranIndex('/quran-index'),
   quranSearch('/quran-search'),
-  adhkarSession('/adhkar/:id');
+  adhkarSession('/adhkar/:id'),
+  adhkarGroup('/adhkar-group/:id'),
+  adhkarSearch('/adhkar-search');
 
   const AppRoute(this.path);
   final String path;
 
-  /// Path that opens the adhkar collection [id].
-  static String adhkarSessionPath(String id) => '/adhkar/$id';
+  /// Path that opens the adhkar collection [id], scrolled to the dhikr whose
+  /// order is [focusOrder] when given.
+  static String adhkarSessionPath(String id, {int? focusOrder}) =>
+      focusOrder == null ? '/adhkar/$id' : '/adhkar/$id?focus=$focusOrder';
+
+  /// Path that opens the adhkar group [id].
+  static String adhkarGroupPath(String id) => '/adhkar-group/$id';
 
   /// Path a reminder notification opens, or null for a payload that is not ours.
   static String? fromReminderPayload(String payload) {

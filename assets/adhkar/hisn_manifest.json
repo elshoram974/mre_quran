@@ -1,0 +1,746 @@
+{
+  "schema": 1,
+  "collections": [
+    {
+      "id": "hisn_4",
+      "title": {
+        "ar": "دعاء دخول الخلاء"
+      },
+      "group": "home",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        4
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_5",
+      "title": {
+        "ar": "دعاء الخروج من الخلاء"
+      },
+      "group": "home",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        5
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_7",
+      "title": {
+        "ar": "الذكر بعد الفراغ من الوضوء"
+      },
+      "group": "prayer",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        7
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_8",
+      "title": {
+        "ar": "الذكر عند الخروج من المنزل"
+      },
+      "group": "home",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        8
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_11",
+      "title": {
+        "ar": "دعاء دخول المسجد"
+      },
+      "group": "prayer",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        11
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_13",
+      "title": {
+        "ar": "أذكار الآذان"
+      },
+      "group": "prayer",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        13
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_15",
+      "title": {
+        "ar": "دعاء لبس الثوب الجديد"
+      },
+      "group": "home",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        15
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_16",
+      "title": {
+        "ar": "الدعاء لمن لبس ثوبا جديدا"
+      },
+      "group": "home",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        16
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_18",
+      "title": {
+        "ar": "دعاء الاستفتاح"
+      },
+      "group": "prayer",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        18
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_19",
+      "title": {
+        "ar": "دعاء الركوع"
+      },
+      "group": "prayer",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        19
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_20",
+      "title": {
+        "ar": "دعاء الرفع من الركوع"
+      },
+      "group": "prayer",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        20
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_21",
+      "title": {
+        "ar": "دعاء السجود"
+      },
+      "group": "prayer",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        21
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_23",
+      "title": {
+        "ar": "دعاء سجود التلاوة"
+      },
+      "group": "prayer",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        23
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_24",
+      "title": {
+        "ar": "التشهد"
+      },
+      "group": "prayer",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        24
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_25",
+      "title": {
+        "ar": "الصلاة على النبي بعد التشهد"
+      },
+      "group": "prayer",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        25
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_26",
+      "title": {
+        "ar": "الدعاء بعد التشهد الأخير قبل السلام"
+      },
+      "group": "prayer",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        26
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_28",
+      "title": {
+        "ar": "دعاء صلاة الاستخارة"
+      },
+      "group": "prayer",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        28
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_30",
+      "title": {
+        "ar": "دعاء الفزع في النوم و من بلي بالوحشة"
+      },
+      "group": "daily",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        30
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_32",
+      "title": {
+        "ar": "دعاء قنوت الوتر"
+      },
+      "group": "prayer",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        32
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_34",
+      "title": {
+        "ar": "دعاء الهم والحزن"
+      },
+      "group": "worry",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        34
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_35",
+      "title": {
+        "ar": "دعاء الكرب"
+      },
+      "group": "worry",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        35
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_36",
+      "title": {
+        "ar": "دعاء لقاء العدو و ذي السلطان"
+      },
+      "group": "worry",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        36
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_38",
+      "title": {
+        "ar": "الدعاء على العدو"
+      },
+      "group": "worry",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        38
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_39",
+      "title": {
+        "ar": "ما يقول من خاف قوما"
+      },
+      "group": "worry",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        39
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_41",
+      "title": {
+        "ar": "دعاء قضاء الدين"
+      },
+      "group": "worry",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        41
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_46",
+      "title": {
+        "ar": "الدعاء حينما يقع ما لا يرضاه أو غلب على أمره"
+      },
+      "group": "worry",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        46
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_49",
+      "title": {
+        "ar": "الدعاء للمريض في عيادته"
+      },
+      "group": "worry",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        49
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_51",
+      "title": {
+        "ar": "دعاء المريض الذي يئس من حياته"
+      },
+      "group": "worry",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        51
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_53",
+      "title": {
+        "ar": "دعاء من أصيب بمصيبة"
+      },
+      "group": "janaza",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        53
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_55",
+      "title": {
+        "ar": "الدعاء للميت في الصلاة عليه"
+      },
+      "group": "janaza",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        55
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_58",
+      "title": {
+        "ar": "الدعاء عند إدخال الميت القبر"
+      },
+      "group": "janaza",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        58
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_60",
+      "title": {
+        "ar": "دعاء زيارة القبور"
+      },
+      "group": "janaza",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        60
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_63",
+      "title": {
+        "ar": "من أدعية الاستسقاء"
+      },
+      "group": "weather",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        63
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_65",
+      "title": {
+        "ar": "الذكر بعد نزول المطر"
+      },
+      "group": "weather",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        65
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_66",
+      "title": {
+        "ar": "من أدعية الاستصحاء"
+      },
+      "group": "weather",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        66
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_68",
+      "title": {
+        "ar": "الدعاء عند إفطار الصائم"
+      },
+      "group": "home",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        68
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_70",
+      "title": {
+        "ar": "الدعاء عند الفراغ من الطعام"
+      },
+      "group": "home",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        70
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_71",
+      "title": {
+        "ar": "دعاء الضيف لصاحب الطعام"
+      },
+      "group": "home",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        71
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_73",
+      "title": {
+        "ar": "الدعاء إذا أفطر عند أهل بيت"
+      },
+      "group": "home",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        73
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_76",
+      "title": {
+        "ar": "الدعاء عند رؤية باكورة الثمر"
+      },
+      "group": "home",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        76
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_78",
+      "title": {
+        "ar": "ما يقال للكافر إذا عطس فحمد الله"
+      },
+      "group": "social",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        78
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_79",
+      "title": {
+        "ar": "الدعاء للمتزوج"
+      },
+      "group": "social",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        79
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_81",
+      "title": {
+        "ar": "الدعاء قبل إتيان الزوجة"
+      },
+      "group": "social",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        81
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_82",
+      "title": {
+        "ar": "دعاء الغضب"
+      },
+      "group": "social",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        82
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_83",
+      "title": {
+        "ar": "دعاء من رأى مبتلى"
+      },
+      "group": "social",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        83
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_85",
+      "title": {
+        "ar": "كفارة المجلس"
+      },
+      "group": "social",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        85
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_87",
+      "title": {
+        "ar": "الدعاء لمن صنع إليك معروفا"
+      },
+      "group": "social",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        87
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_89",
+      "title": {
+        "ar": "الدعاء لمن قال إني أحبك في الله"
+      },
+      "group": "social",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        89
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_90",
+      "title": {
+        "ar": "الدعاء لمن عرض عليك ماله"
+      },
+      "group": "social",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        90
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_91",
+      "title": {
+        "ar": "الدعاء لمن أقرض عند القضاء"
+      },
+      "group": "social",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        91
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_98",
+      "title": {
+        "ar": "دعاء دخول السوق"
+      },
+      "group": "travel",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        98
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_101",
+      "title": {
+        "ar": "دعاء المقيم للمسافر"
+      },
+      "group": "travel",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        101
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_103",
+      "title": {
+        "ar": "دعاء المسافر إذا أسحر"
+      },
+      "group": "travel",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        103
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_104",
+      "title": {
+        "ar": "الدعاء إذا نزل مترلا في سفر أو غيره"
+      },
+      "group": "travel",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        104
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_115",
+      "title": {
+        "ar": "كيف يلبي المحرم في الحج أو العمرة ؟"
+      },
+      "group": "travel",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        115
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_117",
+      "title": {
+        "ar": "الدعاء بين الركن اليماني والحجر الأسود"
+      },
+      "group": "travel",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        117
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    },
+    {
+      "id": "hisn_124",
+      "title": {
+        "ar": "ما يقول من أحس وجعا في جسده"
+      },
+      "group": "worry",
+      "icon": "generic",
+      "file": "hisn.ar.json",
+      "variants": [
+        124
+      ],
+      "sha256": "61ebc0073516c0c66ba125cb1c8744a784f256b21c9948bdfb85bc87102e202c"
+    }
+  ]
+}

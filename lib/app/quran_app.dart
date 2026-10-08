@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/l10n/l10n.dart';
 import '../core/theme/app_theme.dart';
+import '../features/adhkar/application/prayer_reminders_provider.dart';
 import '../features/adhkar/application/reminders_provider.dart';
 import '../features/settings/application/settings_provider.dart';
 import '../features/settings/domain/app_settings.dart';
@@ -32,6 +33,7 @@ class QuranApp extends ConsumerWidget {
     // from the first frame, and opens the list of a tapped reminder.
     ref
       ..listen(remindersProvider, (_, _) {})
+      ..listen(prayerRemindersProvider, (_, _) {})
       ..listen(reminderTapsProvider, (_, next) {
         final path = next.value == null
             ? null

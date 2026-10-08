@@ -1,5 +1,79 @@
 {
   "schema": 1,
+  "groups": [
+    {
+      "id": "daily",
+      "title": {
+        "ar": "الأذكار اليومية",
+        "en": "Daily adhkar"
+      },
+      "icon": "sunrise"
+    },
+    {
+      "id": "prayer",
+      "title": {
+        "ar": "الصلاة والمسجد",
+        "en": "Prayer and the mosque"
+      },
+      "icon": "prayer"
+    },
+    {
+      "id": "home",
+      "title": {
+        "ar": "البيت واللباس والطعام",
+        "en": "Home, clothing, and food"
+      },
+      "icon": "home"
+    },
+    {
+      "id": "worry",
+      "title": {
+        "ar": "الهمّ والكرب والمرض",
+        "en": "Worry, hardship, and illness"
+      },
+      "icon": "worry"
+    },
+    {
+      "id": "janaza",
+      "title": {
+        "ar": "الجنائز والمصائب",
+        "en": "Funerals and loss"
+      },
+      "icon": "janaza"
+    },
+    {
+      "id": "weather",
+      "title": {
+        "ar": "الرياح والمطر والهلال",
+        "en": "Wind, rain, and the moon"
+      },
+      "icon": "weather"
+    },
+    {
+      "id": "social",
+      "title": {
+        "ar": "الآداب والمعاملات",
+        "en": "Manners and dealings"
+      },
+      "icon": "social"
+    },
+    {
+      "id": "travel",
+      "title": {
+        "ar": "السفر والحج",
+        "en": "Travel and Hajj"
+      },
+      "icon": "travel"
+    },
+    {
+      "id": "virtue",
+      "title": {
+        "ar": "الاستغفار والتسبيح",
+        "en": "Praise and forgiveness"
+      },
+      "icon": "virtue"
+    }
+  ],
   "collections": [
     {
       "id": "morning",
@@ -77,5 +151,8 @@
       ],
       "sessionWindowMinutes": 30
     }
+  ],
+  "includes": [
+    "hisn_manifest.json"
   ]
 }

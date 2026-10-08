@@ -47,18 +47,22 @@ void main() {
       'loads, verifies, and splits the shared file into collections',
       () async {
         final catalog = await AdhkarSource(bundle: _DiskBundle()).load();
-        expect(catalog.collections.map((c) => c.id), [
+        expect(catalog.collections.map((c) => c.id).take(5).toList(), [
           'morning',
           'evening',
           'sleep',
           'wake',
           'after_prayer',
         ]);
-        expect(catalog.byId('after_prayer')!.group.name, 'prayer');
+        // The Hisn chapters come from the included manifest.
+        expect(catalog.byId('hisn_4'), isNotNull);
+        expect(catalog.collections.length, greaterThan(40));
+        expect(catalog.groups.map((g) => g.id), contains('travel'));
+        expect(catalog.byId('after_prayer')!.group.id, 'prayer');
         expect(catalog.byId('after_prayer')!.sessionWindowMinutes, 30);
         final morning = catalog.byId('morning')!;
         final evening = catalog.byId('evening')!;
-        expect(morning.group.name, 'daily');
+        expect(morning.group.id, 'daily');
         expect(morning.entries, isNotEmpty);
         expect(evening.entries, isNotEmpty);
         // Variant 1 is morning only, 2 is evening only, 0 is both.
@@ -175,7 +179,10 @@ void main() {
         'collections': [c],
       });
 
-      expect(AdhkarParser.parseManifest(manifest(collection())), hasLength(1));
+      expect(
+        AdhkarParser.parseManifest(manifest(collection())).specs,
+        hasLength(1),
+      );
       for (final bad in [
         manifest(collection(), schema: 2),
         manifest(collection(time: '5:30')),
@@ -206,16 +213,9 @@ void main() {
 
       final spec = AdhkarParser.parseManifest(
         manifest(collection(window: 30, group: 'prayer')),
-      ).single;
-      expect(spec.group.name, 'prayer');
+      ).specs.single;
+      expect(spec.groupId, 'prayer');
       expect(spec.sessionWindowMinutes, 30);
-      expect(
-        AdhkarParser.parseManifest(manifest(collection(group: 'zzz')))
-            .single
-            .group
-            .name,
-        'duas',
-      );
       for (final bad in [0, -5, '30']) {
         expect(
           () => AdhkarParser.parseManifest(manifest(collection(window: bad))),
@@ -284,8 +284,8 @@ void main() {
           ],
         }),
       );
-      expect(specs.single.icon.name, 'generic');
-      expect(specs.single.reminderMinutes, isNull);
+      expect(specs.specs.single.icon.name, 'generic');
+      expect(specs.specs.single.reminderMinutes, isNull);
     });
   });
 }

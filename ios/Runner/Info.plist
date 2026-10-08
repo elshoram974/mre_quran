@@ -24,6 +24,8 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>يستخدم التطبيق موقعك التقريبي مرة واحدة لحساب مواقيت الصلاة على جهازك فقط، ولا يُرسَله إلى أي جهة. · Your approximate location is used once to work out prayer times on this device only. It is never sent anywhere.</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UIApplicationSceneManifest</key>

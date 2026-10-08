@@ -169,5 +169,15 @@ class _NoopReminderScheduler implements ReminderScheduler {
   }) async {}
 
   @override
+  Future<void> scheduleOnce({
+    required int id,
+    required DateTime at,
+    required String title,
+    required String body,
+    required String channelName,
+    required String payload,
+  }) async {}
+
+  @override
   Future<void> cancel(int id) async {}
 }

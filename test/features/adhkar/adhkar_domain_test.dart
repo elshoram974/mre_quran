@@ -161,6 +161,7 @@ void main() {
           id: 'a',
           titles: const {'ar': 'أ'},
           icon: AdhkarIcon.generic,
+          group: kDaily,
           entries: [dhikr(1)],
         ),
       ]);

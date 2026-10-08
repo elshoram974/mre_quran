@@ -344,23 +344,203 @@ abstract class AppLocalizations {
   /// **'Suggested now'**
   String get adhkarSuggested;
 
-  /// No description provided for @adhkarGroupDaily.
+  /// No description provided for @adhkarSearchHint.
   ///
   /// In en, this message translates to:
-  /// **'Daily adhkar'**
-  String get adhkarGroupDaily;
+  /// **'Search adhkar by name or words'**
+  String get adhkarSearchHint;
 
-  /// No description provided for @adhkarGroupPrayer.
+  /// No description provided for @adhkarSearchPrompt.
   ///
   /// In en, this message translates to:
-  /// **'Prayer adhkar'**
-  String get adhkarGroupPrayer;
+  /// **'Type a name, like \"sleep\", or words from a dua.'**
+  String get adhkarSearchPrompt;
 
-  /// No description provided for @adhkarGroupDuas.
+  /// No description provided for @adhkarSearchLists.
   ///
   /// In en, this message translates to:
-  /// **'Duas'**
-  String get adhkarGroupDuas;
+  /// **'Lists'**
+  String get adhkarSearchLists;
+
+  /// No description provided for @adhkarSearchMatches.
+  ///
+  /// In en, this message translates to:
+  /// **'Matching adhkar'**
+  String get adhkarSearchMatches;
+
+  /// No description provided for @adhkarFavorites.
+  ///
+  /// In en, this message translates to:
+  /// **'Favourites'**
+  String get adhkarFavorites;
+
+  /// No description provided for @adhkarSections.
+  ///
+  /// In en, this message translates to:
+  /// **'Sections'**
+  String get adhkarSections;
+
+  /// No description provided for @adhkarFavoriteAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to favourites'**
+  String get adhkarFavoriteAdd;
+
+  /// No description provided for @adhkarFavoriteRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from favourites'**
+  String get adhkarFavoriteRemove;
+
+  /// No description provided for @adhkarListCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} lists'**
+  String adhkarListCount(String count);
+
+  /// No description provided for @adhkarPrayerSection.
+  ///
+  /// In en, this message translates to:
+  /// **'After each prayer'**
+  String get adhkarPrayerSection;
+
+  /// No description provided for @adhkarPrayerSwitch.
+  ///
+  /// In en, this message translates to:
+  /// **'Remind me after each prayer'**
+  String get adhkarPrayerSwitch;
+
+  /// No description provided for @adhkarPrayerSwitchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Prayer times are worked out on your phone from your approximate location. Nothing is sent anywhere.'**
+  String get adhkarPrayerSwitchHint;
+
+  /// No description provided for @adhkarPrayerMethod.
+  ///
+  /// In en, this message translates to:
+  /// **'Calculation method'**
+  String get adhkarPrayerMethod;
+
+  /// No description provided for @adhkarPrayerAfter.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder after the prayer'**
+  String get adhkarPrayerAfter;
+
+  /// No description provided for @adhkarPrayerMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} minutes'**
+  String adhkarPrayerMinutes(String minutes);
+
+  /// No description provided for @adhkarLocationDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Location is off for this app, so prayer times cannot be worked out. Allow it in the system settings.'**
+  String get adhkarLocationDenied;
+
+  /// No description provided for @adhkarPrayerReminderTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Time for adhkar after prayer'**
+  String get adhkarPrayerReminderTitle;
+
+  /// No description provided for @adhkarPrayerReminderBody.
+  ///
+  /// In en, this message translates to:
+  /// **'After the {prayer} prayer. Tap to read.'**
+  String adhkarPrayerReminderBody(String prayer);
+
+  /// No description provided for @prayerFajr.
+  ///
+  /// In en, this message translates to:
+  /// **'Fajr'**
+  String get prayerFajr;
+
+  /// No description provided for @prayerDhuhr.
+  ///
+  /// In en, this message translates to:
+  /// **'Dhuhr'**
+  String get prayerDhuhr;
+
+  /// No description provided for @prayerAsr.
+  ///
+  /// In en, this message translates to:
+  /// **'Asr'**
+  String get prayerAsr;
+
+  /// No description provided for @prayerMaghrib.
+  ///
+  /// In en, this message translates to:
+  /// **'Maghrib'**
+  String get prayerMaghrib;
+
+  /// No description provided for @prayerIsha.
+  ///
+  /// In en, this message translates to:
+  /// **'Isha'**
+  String get prayerIsha;
+
+  /// No description provided for @methodEgyptian.
+  ///
+  /// In en, this message translates to:
+  /// **'Egyptian General Authority of Survey'**
+  String get methodEgyptian;
+
+  /// No description provided for @methodMuslimWorldLeague.
+  ///
+  /// In en, this message translates to:
+  /// **'Muslim World League'**
+  String get methodMuslimWorldLeague;
+
+  /// No description provided for @methodUmmAlQura.
+  ///
+  /// In en, this message translates to:
+  /// **'Umm al-Qura, Makkah'**
+  String get methodUmmAlQura;
+
+  /// No description provided for @methodKarachi.
+  ///
+  /// In en, this message translates to:
+  /// **'University of Islamic Sciences, Karachi'**
+  String get methodKarachi;
+
+  /// No description provided for @methodNorthAmerica.
+  ///
+  /// In en, this message translates to:
+  /// **'Islamic Society of North America'**
+  String get methodNorthAmerica;
+
+  /// No description provided for @methodDubai.
+  ///
+  /// In en, this message translates to:
+  /// **'Dubai'**
+  String get methodDubai;
+
+  /// No description provided for @methodKuwait.
+  ///
+  /// In en, this message translates to:
+  /// **'Kuwait'**
+  String get methodKuwait;
+
+  /// No description provided for @methodQatar.
+  ///
+  /// In en, this message translates to:
+  /// **'Qatar'**
+  String get methodQatar;
+
+  /// No description provided for @methodTurkey.
+  ///
+  /// In en, this message translates to:
+  /// **'Turkey (Diyanet)'**
+  String get methodTurkey;
+
+  /// No description provided for @methodSingapore.
+  ///
+  /// In en, this message translates to:
+  /// **'Singapore'**
+  String get methodSingapore;
 
   /// No description provided for @adhkarResume.
   ///

@@ -138,13 +138,111 @@ class AppLocalizationsAr extends AppLocalizations {
   String get adhkarSuggested => 'المقترح الآن';
 
   @override
-  String get adhkarGroupDaily => 'الأذكار اليومية';
+  String get adhkarSearchHint => 'ابحث في الأذكار بالاسم أو بالنص';
 
   @override
-  String get adhkarGroupPrayer => 'أذكار الصلاة';
+  String get adhkarSearchPrompt => 'اكتب اسمًا مثل «النوم» أو كلمات من الدعاء.';
 
   @override
-  String get adhkarGroupDuas => 'الأدعية';
+  String get adhkarSearchLists => 'القوائم';
+
+  @override
+  String get adhkarSearchMatches => 'أذكار مطابقة';
+
+  @override
+  String get adhkarFavorites => 'المفضلة';
+
+  @override
+  String get adhkarSections => 'الأقسام';
+
+  @override
+  String get adhkarFavoriteAdd => 'أضِف إلى المفضلة';
+
+  @override
+  String get adhkarFavoriteRemove => 'أزِل من المفضلة';
+
+  @override
+  String adhkarListCount(String count) {
+    return '$count قائمة';
+  }
+
+  @override
+  String get adhkarPrayerSection => 'بعد كل صلاة';
+
+  @override
+  String get adhkarPrayerSwitch => 'ذكّرني بعد كل صلاة';
+
+  @override
+  String get adhkarPrayerSwitchHint =>
+      'تُحسب مواقيت الصلاة على هاتفك من موقعك التقريبي. لا يُرسَل شيء إلى أي جهة.';
+
+  @override
+  String get adhkarPrayerMethod => 'طريقة الحساب';
+
+  @override
+  String get adhkarPrayerAfter => 'التذكير بعد الصلاة';
+
+  @override
+  String adhkarPrayerMinutes(String minutes) {
+    return '$minutes دقيقة';
+  }
+
+  @override
+  String get adhkarLocationDenied =>
+      'الموقع متوقف لهذا التطبيق فلا يمكن حساب مواقيت الصلاة. اسمح به من إعدادات الجهاز.';
+
+  @override
+  String get adhkarPrayerReminderTitle => 'حان وقت أذكار بعد الصلاة';
+
+  @override
+  String adhkarPrayerReminderBody(String prayer) {
+    return 'بعد صلاة $prayer. اضغط للقراءة.';
+  }
+
+  @override
+  String get prayerFajr => 'الفجر';
+
+  @override
+  String get prayerDhuhr => 'الظهر';
+
+  @override
+  String get prayerAsr => 'العصر';
+
+  @override
+  String get prayerMaghrib => 'المغرب';
+
+  @override
+  String get prayerIsha => 'العشاء';
+
+  @override
+  String get methodEgyptian => 'الهيئة المصرية العامة للمساحة';
+
+  @override
+  String get methodMuslimWorldLeague => 'رابطة العالم الإسلامي';
+
+  @override
+  String get methodUmmAlQura => 'أم القرى، مكة المكرمة';
+
+  @override
+  String get methodKarachi => 'جامعة العلوم الإسلامية، كراتشي';
+
+  @override
+  String get methodNorthAmerica => 'الجمعية الإسلامية لأمريكا الشمالية';
+
+  @override
+  String get methodDubai => 'دبي';
+
+  @override
+  String get methodKuwait => 'الكويت';
+
+  @override
+  String get methodQatar => 'قطر';
+
+  @override
+  String get methodTurkey => 'تركيا (الديانة)';
+
+  @override
+  String get methodSingapore => 'سنغافورة';
 
   @override
   String get adhkarResume => 'أكمل من حيث توقفت';

@@ -4,10 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/diagnostics/app_logger.dart';
+import '../../quran_index/domain/quran_metadata.dart';
+import '../../quran_text/application/quran_text_providers.dart';
+import '../../quran_text/domain/quran_text.dart';
 import '../data/adhkar_progress_repository.dart';
 import '../data/adhkar_source.dart';
 import '../domain/adhkar_collection.dart';
 import '../domain/adhkar_progress.dart';
+import '../domain/adhkar_search.dart';
 import '../domain/dhikr.dart';
 
 /// Provides the bundled adhkar source. Tests override it.
@@ -173,3 +177,29 @@ final nextCollectionProvider =
       }
       return null;
     });
+
+/// Search over list names and the words of every dhikr. The words of Quran
+/// dhikr join once the Quran text has loaded; until then they are left out.
+final adhkarSearchIndexProvider = FutureProvider<AdhkarSearchIndex>((
+  ref,
+) async {
+  final catalog = await ref.watch(adhkarCatalogProvider.future);
+  QuranText? quran;
+  try {
+    quran = await ref.watch(quranTextProvider.future);
+  } on Object catch (error) {
+    AppLogger.debug('Search without Quran text: ${error.runtimeType}');
+  }
+  return AdhkarSearchIndex(
+    catalog,
+    quranWords: (dhikr) {
+      final passage = dhikr.quran;
+      if (quran == null || passage == null) return null;
+      return [
+        for (final span in passage.spans)
+          for (var ayah = span.from; ayah <= span.to; ayah++)
+            quran.clean(AyahRef(span.surah, ayah)),
+      ].join(' ');
+    },
+  );
+});

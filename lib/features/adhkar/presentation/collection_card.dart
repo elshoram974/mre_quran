@@ -10,6 +10,7 @@ import '../../settings/application/digits_provider.dart';
 import '../application/adhkar_providers.dart';
 import '../domain/adhkar_collection.dart';
 import 'adhkar_icons.dart';
+import 'favorite_button.dart';
 import 'progress_ring.dart';
 
 /// A tappable card that opens one collection and shows today's progress.
@@ -75,6 +76,7 @@ class CollectionCard extends ConsumerWidget {
             ],
           ),
         ),
+        FavoriteButton(collectionId: collection.id),
         if (!featured) const Icon(Icons.chevron_right),
       ],
     );

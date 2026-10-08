@@ -2,13 +2,31 @@ import 'dart:async';
 
 import 'package:mre_quran/features/adhkar/data/adhkar_progress_repository.dart';
 import 'package:mre_quran/features/adhkar/data/adhkar_source.dart';
+import 'package:mre_quran/features/adhkar/data/favorites_repository.dart';
+import 'package:mre_quran/features/adhkar/data/location_source.dart';
+import 'package:mre_quran/features/adhkar/data/prayer_reminders_repository.dart';
 import 'package:mre_quran/features/adhkar/data/reminder_scheduler.dart';
 import 'package:mre_quran/features/adhkar/data/reminders_repository.dart';
 import 'package:mre_quran/features/adhkar/domain/adhkar_collection.dart';
 import 'package:mre_quran/features/adhkar/domain/adhkar_progress.dart';
 import 'package:mre_quran/features/adhkar/domain/dhikr.dart';
+import 'package:mre_quran/features/adhkar/domain/prayer_reminders.dart';
 import 'package:mre_quran/features/adhkar/domain/quran_passage.dart';
 import 'package:mre_quran/features/adhkar/domain/reminder_setting.dart';
+
+/// The two groups the fixtures use.
+const AdhkarGroup kDaily = AdhkarGroup(
+  id: 'daily',
+  titles: {'ar': 'الأذكار اليومية', 'en': 'Daily adhkar'},
+  icon: AdhkarIcon.sunrise,
+);
+
+/// Prayer group.
+const AdhkarGroup kPrayer = AdhkarGroup(
+  id: 'prayer',
+  titles: {'ar': 'الصلاة والمسجد', 'en': 'Prayer and the mosque'},
+  icon: AdhkarIcon.prayer,
+);
 
 /// A dhikr with the given repeat count and a source.
 Dhikr dhikr(int order, {int repeat = 1, int variant = 0, String? virtue}) =>
@@ -23,47 +41,56 @@ Dhikr dhikr(int order, {int repeat = 1, int variant = 0, String? virtue}) =>
     );
 
 /// Two small collections: morning at 05:30 and evening at 17:30.
-AdhkarCatalog fixtureCatalog() => AdhkarCatalog([
-  AdhkarCollection(
-    id: 'morning',
-    titles: const {'ar': 'أذكار الصباح', 'en': 'Morning adhkar'},
-    icon: AdhkarIcon.sunrise,
-    reminderMinutes: 330,
-    entries: [
-      dhikr(1, virtue: 'فضل'),
-      dhikr(2, repeat: 3),
-    ],
-  ),
-  AdhkarCollection(
-    id: 'evening',
-    titles: const {'ar': 'أذكار المساء', 'en': 'Evening adhkar'},
-    icon: AdhkarIcon.sunset,
-    reminderMinutes: 1050,
-    entries: [dhikr(1), dhikr(2, repeat: 2)],
-  ),
-]);
+AdhkarCatalog fixtureCatalog() => AdhkarCatalog(
+  [
+    AdhkarCollection(
+      id: 'morning',
+      titles: const {'ar': 'أذكار الصباح', 'en': 'Morning adhkar'},
+      icon: AdhkarIcon.sunrise,
+      group: kDaily,
+      reminderMinutes: 330,
+      entries: [
+        dhikr(1, virtue: 'فضل'),
+        dhikr(2, repeat: 3),
+      ],
+    ),
+    AdhkarCollection(
+      id: 'evening',
+      titles: const {'ar': 'أذكار المساء', 'en': 'Evening adhkar'},
+      icon: AdhkarIcon.sunset,
+      group: kDaily,
+      reminderMinutes: 1050,
+      entries: [dhikr(1), dhikr(2, repeat: 2)],
+    ),
+  ],
+  groups: [kDaily],
+);
 
 /// Morning and evening plus an after-prayer list that keeps its counts for
 /// 30 minutes.
 AdhkarCatalog fixtureCatalogWithPrayer() {
   final base = fixtureCatalog();
-  return AdhkarCatalog([
-    ...base.collections,
-    AdhkarCollection(
-      id: 'after_prayer',
-      titles: const {'ar': 'أذكار بعد الصلاة', 'en': 'After prayer'},
-      icon: AdhkarIcon.generic,
-      group: AdhkarGroup.prayer,
-      sessionWindowMinutes: 30,
-      entries: [dhikr(1, repeat: 3), dhikr(2)],
-    ),
-    AdhkarCollection(
-      id: 'sleep',
-      titles: const {'ar': 'أذكار النوم', 'en': 'Sleep'},
-      icon: AdhkarIcon.generic,
-      entries: [dhikr(1)],
-    ),
-  ]);
+  return AdhkarCatalog(
+    [
+      ...base.collections,
+      AdhkarCollection(
+        id: 'after_prayer',
+        titles: const {'ar': 'أذكار بعد الصلاة', 'en': 'After prayer'},
+        icon: AdhkarIcon.generic,
+        group: kPrayer,
+        sessionWindowMinutes: 30,
+        entries: [dhikr(1, repeat: 3), dhikr(2)],
+      ),
+      AdhkarCollection(
+        id: 'sleep',
+        titles: const {'ar': 'أذكار النوم', 'en': 'Sleep'},
+        icon: AdhkarIcon.generic,
+        group: kDaily,
+        entries: [dhikr(1)],
+      ),
+    ],
+    groups: [kDaily, kPrayer],
+  );
 }
 
 /// Serves [fixtureCatalog] without touching assets.
@@ -147,30 +174,106 @@ class FakeReminderScheduler implements ReminderScheduler {
     );
   }
 
+  final Map<int, ({DateTime at, String title, String body, String payload})>
+  once = {};
+
   @override
-  Future<void> cancel(int id) async => scheduled.remove(id);
+  Future<void> scheduleOnce({
+    required int id,
+    required DateTime at,
+    required String title,
+    required String body,
+    required String channelName,
+    required String payload,
+  }) async {
+    once[id] = (at: at, title: title, body: body, payload: payload);
+  }
+
+  @override
+  Future<void> cancel(int id) async {
+    scheduled.remove(id);
+    once.remove(id);
+  }
 }
 
 /// One list with an ayah (with the isti'adha) and a plain dhikr.
-AdhkarCatalog fixtureCatalogWithQuran() => AdhkarCatalog([
-  AdhkarCollection(
-    id: 'kursi',
-    titles: const {'ar': 'آية الكرسي', 'en': 'Ayat al-Kursi'},
-    icon: AdhkarIcon.generic,
-    entries: [
-      const Dhikr(
-        order: 1,
-        text: '',
-        repeat: 1,
-        repeatLabel: 'مرة',
-        source: 'رواه النسائي',
-        variant: 0,
-        quran: QuranPassage(
-          istiadha: true,
-          spans: [AyahSpan(surah: 2, from: 255, to: 255)],
+AdhkarCatalog fixtureCatalogWithQuran() => AdhkarCatalog(
+  [
+    AdhkarCollection(
+      id: 'kursi',
+      titles: const {'ar': 'آية الكرسي', 'en': 'Ayat al-Kursi'},
+      icon: AdhkarIcon.generic,
+      group: kDaily,
+      entries: [
+        const Dhikr(
+          order: 1,
+          text: '',
+          repeat: 1,
+          repeatLabel: 'مرة',
+          source: 'رواه النسائي',
+          variant: 0,
+          quran: QuranPassage(
+            istiadha: true,
+            spans: [AyahSpan(surah: 2, from: 255, to: 255)],
+          ),
         ),
-      ),
-      dhikr(2),
-    ],
-  ),
-]);
+        dhikr(2),
+      ],
+    ),
+  ],
+  groups: [kDaily],
+);
+
+class MemoryFavoritesRepository implements AdhkarFavoritesRepository {
+  List<String> saved = [];
+  bool fail = false;
+
+  @override
+  Future<List<String>> load() async => saved;
+
+  @override
+  Future<void> save(List<String> ids) async {
+    if (fail) throw StateError('Storage unavailable');
+    saved = ids;
+  }
+}
+
+class MemoryPrayerRemindersRepository implements PrayerRemindersRepository {
+  PrayerReminderSettings settings = const PrayerReminderSettings();
+  PrayerPlace? place;
+
+  @override
+  Future<PrayerReminderSettings> loadSettings() async => settings;
+
+  @override
+  Future<void> saveSettings(PrayerReminderSettings value) async =>
+      settings = value;
+
+  @override
+  Future<PrayerPlace?> loadPlace() async => place;
+
+  @override
+  Future<void> savePlace(PrayerPlace value) async => place = value;
+}
+
+/// Answers [request] and [quiet] with fixed places and counts the calls.
+class FakeLocationSource implements LocationSource {
+  FakeLocationSource({this.requestResult, this.quietResult});
+
+  PrayerPlace? requestResult;
+  PrayerPlace? quietResult;
+  int requests = 0;
+  int quietReads = 0;
+
+  @override
+  Future<PrayerPlace?> request() async {
+    requests++;
+    return requestResult;
+  }
+
+  @override
+  Future<PrayerPlace?> quiet() async {
+    quietReads++;
+    return quietResult;
+  }
+}

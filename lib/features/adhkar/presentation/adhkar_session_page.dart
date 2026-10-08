@@ -21,10 +21,17 @@ import 'dhikr_card.dart';
 /// Reads one collection and counts each dhikr as the person says it.
 class AdhkarSessionPage extends ConsumerWidget {
   /// Creates the page for the collection with [collectionId].
-  const AdhkarSessionPage({super.key, required this.collectionId});
+  const AdhkarSessionPage({
+    super.key,
+    required this.collectionId,
+    this.focusOrder,
+  });
 
   /// Id of the collection to show.
   final String collectionId;
+
+  /// Order of the dhikr to scroll to when the page opens, if any.
+  final int? focusOrder;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -46,7 +53,9 @@ class AdhkarSessionPage extends ConsumerWidget {
             );
           }
           if (collection == null) return const _Skeleton();
-          return ContentContainer(child: _Session(collection: collection));
+          return ContentContainer(
+            child: _Session(collection: collection, focusOrder: focusOrder),
+          );
         },
       ),
     );
@@ -73,9 +82,10 @@ class _Skeleton extends StatelessWidget {
 }
 
 class _Session extends ConsumerStatefulWidget {
-  const _Session({required this.collection});
+  const _Session({required this.collection, this.focusOrder});
 
   final AdhkarCollection collection;
+  final int? focusOrder;
 
   @override
   ConsumerState<_Session> createState() => _SessionState();
@@ -86,6 +96,22 @@ class _SessionState extends ConsumerState<_Session> {
     for (final _ in widget.collection.entries) GlobalKey(),
   ];
   final GlobalKey _completeKey = GlobalKey();
+
+  @override
+  void initState() {
+    super.initState();
+    final order = widget.focusOrder;
+    if (order == null) return;
+    final index = widget.collection.entries.indexWhere(
+      (entry) => entry.order == order,
+    );
+    if (index < 0) return;
+    // Bring the dhikr a search found into view once the list is laid out.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final target = _keys[index].currentContext;
+      if (target != null) Scrollable.ensureVisible(target, alignment: 0.05);
+    });
+  }
 
   Future<void> _count(int index) async {
     final collection = widget.collection;

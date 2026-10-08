@@ -204,10 +204,7 @@ void main() {
         final evening = catalog.byId('evening')!;
         await container.read(adhkarProgressProvider.future);
         expect(container.read(nextCollectionProvider(morning)), isNot(morning));
-        expect(
-          container.read(nextCollectionProvider(morning))!.group,
-          AdhkarGroup.daily,
-        );
+        expect(container.read(nextCollectionProvider(morning))!.group, kDaily);
         expect(container.read(nextCollectionProvider(evening))!.id, 'sleep');
         // A group of one has nothing to go on to.
         final prayer = catalog.byId('after_prayer')!;

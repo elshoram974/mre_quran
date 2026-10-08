@@ -5,12 +5,19 @@ import 'package:go_router/go_router.dart';
 import 'package:mre_quran/app/router.dart';
 import 'package:mre_quran/core/theme/app_theme.dart';
 import 'package:mre_quran/features/adhkar/application/adhkar_providers.dart';
+import 'package:mre_quran/features/adhkar/application/favorites_provider.dart';
+import 'package:mre_quran/features/adhkar/application/prayer_reminders_provider.dart';
 import 'package:mre_quran/features/adhkar/application/reminders_provider.dart';
+import 'package:mre_quran/features/adhkar/domain/prayer_reminders.dart';
 import 'package:mre_quran/features/quran_index/application/quran_metadata_provider.dart';
 import 'package:mre_quran/features/quran_index/domain/quran_metadata.dart';
 import 'package:mre_quran/features/quran_text/application/quran_text_providers.dart';
 import 'package:mre_quran/features/adhkar/domain/adhkar_collection.dart';
 import 'package:mre_quran/features/adhkar/domain/quran_passage.dart';
+import 'package:mre_quran/features/adhkar/presentation/adhkar_group_page.dart';
+import 'package:mre_quran/features/adhkar/presentation/collection_card.dart';
+import 'package:mre_quran/features/adhkar/presentation/favorite_button.dart';
+import 'package:mre_quran/features/adhkar/presentation/adhkar_search_page.dart';
 import 'package:mre_quran/features/adhkar/presentation/adhkar_session_page.dart';
 import 'package:mre_quran/features/adhkar/presentation/duas_page.dart';
 import 'package:mre_quran/features/settings/application/settings_provider.dart';
@@ -29,6 +36,8 @@ Future<FakeReminderScheduler> _pump(
   ThemeData? theme,
   bool allowNotifications = true,
   AdhkarCatalog? catalog,
+  MemoryFavoritesRepository? favorites,
+  FakeLocationSource? location,
 }) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
@@ -43,8 +52,19 @@ Future<FakeReminderScheduler> _pump(
       ),
       GoRoute(
         path: AppRoute.adhkarSession.path,
+        builder: (_, state) => AdhkarSessionPage(
+          collectionId: state.pathParameters['id']!,
+          focusOrder: int.tryParse(state.uri.queryParameters['focus'] ?? ''),
+        ),
+      ),
+      GoRoute(
+        path: AppRoute.adhkarGroup.path,
         builder: (_, state) =>
-            AdhkarSessionPage(collectionId: state.pathParameters['id']!),
+            AdhkarGroupPage(groupId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: AppRoute.adhkarSearch.path,
+        builder: (_, _) => const AdhkarSearchPage(),
       ),
     ],
   );
@@ -60,6 +80,16 @@ Future<FakeReminderScheduler> _pump(
           MemoryRemindersRepository(),
         ),
         reminderSchedulerProvider.overrideWithValue(scheduler),
+        adhkarFavoritesRepositoryProvider.overrideWithValue(
+          favorites ?? MemoryFavoritesRepository(),
+        ),
+        prayerRemindersRepositoryProvider.overrideWithValue(
+          MemoryPrayerRemindersRepository(),
+        ),
+        locationSourceProvider.overrideWithValue(
+          location ??
+              FakeLocationSource(requestResult: PrayerPlace(30.04, 31.24)),
+        ),
         quranMetadataSourceProvider.overrideWithValue(
           FakeQuranMetadataSource(),
         ),
@@ -87,6 +117,13 @@ Future<FakeReminderScheduler> _pump(
   return scheduler;
 }
 
+/// Taps [finder] after scrolling it into view, as a person would.
+Future<void> _tapVisible(WidgetTester tester, Finder finder) async {
+  await tester.ensureVisible(finder.first);
+  await tester.pumpAndSettle();
+  await tester.tap(finder.first);
+}
+
 void main() {
   group('home', () {
     testWidgets('Arabic RTL leads with the list for the time of day', (
@@ -99,13 +136,13 @@ void main() {
       );
       expect(find.text('المقترح الآن'), findsOneWidget);
       expect(find.text('أذكار الصباح'), findsOneWidget);
-      expect(find.text('أذكار المساء'), findsOneWidget);
       expect(find.text('ابدأ'), findsOneWidget);
+      expect(find.text('الأقسام'), findsOneWidget);
+      expect(find.text('الأذكار اليومية'), findsOneWidget);
       expect(find.text('لا يوجد تذكير مفعّل'), findsOneWidget);
-      // The morning list is the featured one at 09:00.
-      final featured = tester.getTopLeft(find.text('أذكار الصباح')).dy;
-      final other = tester.getTopLeft(find.text('أذكار المساء')).dy;
-      expect(featured, lessThan(other));
+      // The morning list is the featured one at 09:00; the evening list is
+      // inside its group.
+      expect(find.text('أذكار المساء'), findsNothing);
     });
 
     testWidgets('English LTR', (tester) async {
@@ -127,7 +164,7 @@ void main() {
       testWidgets('lays out without error when $name', (tester) async {
         await _pump(tester, size: size);
         expect(tester.takeException(), isNull);
-        expect(find.text('أذكار المساء'), findsOneWidget);
+        expect(find.text('الأقسام'), findsOneWidget);
       });
     }
 
@@ -142,21 +179,30 @@ void main() {
     testWidgets('lists each group under its own heading', (tester) async {
       await _pump(tester, catalog: fixtureCatalogWithPrayer());
       expect(find.text('المقترح الآن'), findsOneWidget);
+      expect(find.text('الأقسام'), findsOneWidget);
       expect(find.text('الأذكار اليومية'), findsOneWidget);
-      expect(find.text('أذكار الصلاة'), findsOneWidget);
+      expect(find.text('الصلاة والمسجد'), findsOneWidget);
+      // Each group opens its own lists.
+      await _tapVisible(tester, find.text('الصلاة والمسجد'));
+      await tester.pumpAndSettle();
       expect(find.text('أذكار بعد الصلاة'), findsOneWidget);
-      expect(find.text('أذكار النوم'), findsOneWidget);
-      // The featured list is not repeated in its group.
-      expect(find.text('أذكار الصباح'), findsOneWidget);
+      expect(find.text('أذكار النوم'), findsNothing);
     });
 
     testWidgets('a list in progress leads the tab', (tester) async {
       await _pump(tester, catalog: fixtureCatalogWithPrayer());
+      await _tapVisible(tester, find.text('الصلاة والمسجد'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('أذكار بعد الصلاة'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('٠ من ٣'));
       await tester.pumpAndSettle();
-      GoRouter.of(tester.element(find.byType(AdhkarSessionPage))).pop();
+      final router = GoRouter.of(
+        tester.element(find.byType(AdhkarSessionPage)),
+      );
+      router.pop();
+      await tester.pumpAndSettle();
+      router.pop();
       await tester.pumpAndSettle();
       expect(find.text('أكمل من حيث توقفت'), findsOneWidget);
       expect(find.text('المقترح الآن'), findsNothing);
@@ -165,7 +211,7 @@ void main() {
 
     testWidgets('finishing a list offers the next one', (tester) async {
       await _pump(tester, catalog: fixtureCatalogWithPrayer());
-      await tester.tap(find.text('ابدأ'));
+      await _tapVisible(tester, find.text('ابدأ'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('٠ من ١'));
       await tester.pumpAndSettle();
@@ -180,12 +226,156 @@ void main() {
     });
   });
 
+  group('favourites', () {
+    testWidgets('a starred list sits under "now" and is saved', (tester) async {
+      final favorites = MemoryFavoritesRepository();
+      await _pump(
+        tester,
+        catalog: fixtureCatalogWithPrayer(),
+        favorites: favorites,
+      );
+      expect(find.text('المفضلة'), findsNothing);
+      // Open the daily group and star the sleep list.
+      await _tapVisible(tester, find.text('الأذكار اليومية'));
+      await tester.pumpAndSettle();
+      final sleepCard = find.ancestor(
+        of: find.text('أذكار النوم'),
+        matching: find.byType(CollectionCard),
+      );
+      await tester.tap(
+        find.descendant(of: sleepCard, matching: find.byType(FavoriteButton)),
+      );
+      await tester.pumpAndSettle();
+      expect(favorites.saved, ['sleep']);
+
+      GoRouter.of(tester.element(find.byType(AdhkarGroupPage))).pop();
+      await tester.pumpAndSettle();
+      expect(find.text('المفضلة'), findsOneWidget);
+      final favoritesTop = tester.getTopLeft(find.text('المفضلة')).dy;
+      final nowTop = tester.getTopLeft(find.text('المقترح الآن')).dy;
+      final sectionsTop = tester.getTopLeft(find.text('الأقسام')).dy;
+      expect(nowTop, lessThan(favoritesTop));
+      expect(favoritesTop, lessThan(sectionsTop));
+      expect(find.text('أذكار النوم'), findsOneWidget);
+    });
+
+    testWidgets('the star on a starred list takes it out again', (
+      tester,
+    ) async {
+      final favorites = MemoryFavoritesRepository()..saved = ['sleep'];
+      await _pump(
+        tester,
+        catalog: fixtureCatalogWithPrayer(),
+        favorites: favorites,
+      );
+      expect(find.text('أذكار النوم'), findsOneWidget);
+      final card = find.ancestor(
+        of: find.text('أذكار النوم'),
+        matching: find.byType(CollectionCard),
+      );
+      await tester.tap(
+        find.descendant(of: card, matching: find.byType(FavoriteButton)),
+      );
+      await tester.pumpAndSettle();
+      expect(favorites.saved, isEmpty);
+      expect(find.text('المفضلة'), findsNothing);
+    });
+
+    testWidgets('a list that is no longer in the data is ignored', (
+      tester,
+    ) async {
+      await _pump(
+        tester,
+        favorites: MemoryFavoritesRepository()..saved = ['gone'],
+      );
+      expect(tester.takeException(), isNull);
+      expect(find.text('المفضلة'), findsNothing);
+    });
+  });
+
+  group('search', () {
+    testWidgets('names first, then words; a word opens its list at the dhikr', (
+      tester,
+    ) async {
+      await _pump(tester, catalog: fixtureCatalogWithPrayer());
+      await tester.tap(find.byType(InkWell).first);
+      await tester.pumpAndSettle();
+      expect(find.byType(AdhkarSearchPage), findsOneWidget);
+      expect(
+        find.text('اكتب اسمًا مثل «النوم» أو كلمات من الدعاء.'),
+        findsOneWidget,
+      );
+
+      await tester.enterText(find.byType(TextField), 'النوم');
+      await tester.pumpAndSettle();
+      expect(find.text('القوائم'), findsOneWidget);
+      await tester.tap(find.text('أذكار النوم').first);
+      await tester.pumpAndSettle();
+      expect(find.byType(AdhkarSessionPage), findsOneWidget);
+    });
+
+    testWidgets('says so when nothing matches', (tester) async {
+      await _pump(tester);
+      await tester.tap(find.byType(InkWell).first);
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), 'ززززز');
+      await tester.pumpAndSettle();
+      expect(find.text('لا توجد نتائج'), findsOneWidget);
+    });
+
+    testWidgets('a match inside a list is found by its words', (tester) async {
+      await _pump(tester, catalog: fixtureCatalogWithQuran());
+      await tester.tap(find.byType(InkWell).first);
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), 'ذكر 2');
+      await tester.pumpAndSettle();
+      expect(find.text('أذكار مطابقة'), findsOneWidget);
+      await tester.tap(find.textContaining('ذكر 2').last);
+      await tester.pumpAndSettle();
+      expect(find.byType(AdhkarSessionPage), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  });
+
+  group('after-prayer reminders in the sheet', () {
+    testWidgets('on: asks for notifications and location, then shows choices', (
+      tester,
+    ) async {
+      final location = FakeLocationSource(
+        requestResult: PrayerPlace(30.04, 31.24),
+      );
+      final scheduler = await _pump(tester, location: location);
+      await _tapVisible(tester, find.text('التذكيرات'));
+      await tester.pumpAndSettle();
+      expect(find.text('بعد كل صلاة'), findsOneWidget);
+      expect(find.text('طريقة الحساب'), findsNothing);
+
+      await tester.tap(find.byType(Switch).last);
+      await tester.pumpAndSettle();
+      expect(location.requests, 1);
+      expect(scheduler.once, isNotEmpty);
+      expect(find.text('طريقة الحساب'), findsOneWidget);
+      expect(find.text('التذكير بعد الصلاة'), findsOneWidget);
+    });
+
+    testWidgets('says why when location is refused', (tester) async {
+      final scheduler = await _pump(tester, location: FakeLocationSource());
+      await _tapVisible(tester, find.text('التذكيرات'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(Switch).last);
+      await tester.pumpAndSettle();
+      expect(scheduler.once, isEmpty);
+      expect(find.textContaining('الموقع متوقف'), findsOneWidget);
+      expect(find.text('طريقة الحساب'), findsNothing);
+    });
+  });
+
   group('Quran dhikr', () {
     testWidgets('shows the isti\'adha and the verified ayah, and cites it', (
       tester,
     ) async {
       await _pump(tester, catalog: fixtureCatalogWithQuran());
-      await tester.tap(find.text('ابدأ'));
+      await _tapVisible(tester, find.text('ابدأ'));
       await tester.pumpAndSettle();
       final words = tester.widget<Text>(
         find.textContaining('أَعُوذُ بِاللَّهِ مِنَ الشَّيْطَانِ الرَّجِيمِ'),
@@ -211,7 +401,7 @@ void main() {
     );
     expect(tester.takeException(), isNull);
     expect(find.text('أذكار الصباح'), findsOneWidget);
-    await tester.tap(find.text('ابدأ'));
+    await _tapVisible(tester, find.text('ابدأ'));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
   });
@@ -221,7 +411,7 @@ void main() {
       tester,
     ) async {
       await _pump(tester);
-      await tester.tap(find.text('ابدأ'));
+      await _tapVisible(tester, find.text('ابدأ'));
       await tester.pumpAndSettle();
 
       expect(find.text('ذكر 1'), findsOneWidget);
@@ -248,7 +438,7 @@ void main() {
 
     testWidgets('undo takes one repeat back', (tester) async {
       await _pump(tester);
-      await tester.tap(find.text('ابدأ'));
+      await _tapVisible(tester, find.text('ابدأ'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('٠ من ٣'));
       await tester.pumpAndSettle();
@@ -262,7 +452,7 @@ void main() {
       tester,
     ) async {
       await _pump(tester);
-      await tester.tap(find.text('ابدأ'));
+      await _tapVisible(tester, find.text('ابدأ'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('الدليل').first);
       await tester.pumpAndSettle();
@@ -289,7 +479,7 @@ void main() {
         textScale: 2,
         size: const Size(320, 640),
       );
-      await tester.tap(find.text('Start'));
+      await _tapVisible(tester, find.text('Start'));
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
       expect(find.text('Evidence'), findsWidgets);

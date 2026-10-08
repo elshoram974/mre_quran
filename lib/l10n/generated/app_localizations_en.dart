@@ -140,13 +140,112 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adhkarSuggested => 'Suggested now';
 
   @override
-  String get adhkarGroupDaily => 'Daily adhkar';
+  String get adhkarSearchHint => 'Search adhkar by name or words';
 
   @override
-  String get adhkarGroupPrayer => 'Prayer adhkar';
+  String get adhkarSearchPrompt =>
+      'Type a name, like \"sleep\", or words from a dua.';
 
   @override
-  String get adhkarGroupDuas => 'Duas';
+  String get adhkarSearchLists => 'Lists';
+
+  @override
+  String get adhkarSearchMatches => 'Matching adhkar';
+
+  @override
+  String get adhkarFavorites => 'Favourites';
+
+  @override
+  String get adhkarSections => 'Sections';
+
+  @override
+  String get adhkarFavoriteAdd => 'Add to favourites';
+
+  @override
+  String get adhkarFavoriteRemove => 'Remove from favourites';
+
+  @override
+  String adhkarListCount(String count) {
+    return '$count lists';
+  }
+
+  @override
+  String get adhkarPrayerSection => 'After each prayer';
+
+  @override
+  String get adhkarPrayerSwitch => 'Remind me after each prayer';
+
+  @override
+  String get adhkarPrayerSwitchHint =>
+      'Prayer times are worked out on your phone from your approximate location. Nothing is sent anywhere.';
+
+  @override
+  String get adhkarPrayerMethod => 'Calculation method';
+
+  @override
+  String get adhkarPrayerAfter => 'Reminder after the prayer';
+
+  @override
+  String adhkarPrayerMinutes(String minutes) {
+    return '$minutes minutes';
+  }
+
+  @override
+  String get adhkarLocationDenied =>
+      'Location is off for this app, so prayer times cannot be worked out. Allow it in the system settings.';
+
+  @override
+  String get adhkarPrayerReminderTitle => 'Time for adhkar after prayer';
+
+  @override
+  String adhkarPrayerReminderBody(String prayer) {
+    return 'After the $prayer prayer. Tap to read.';
+  }
+
+  @override
+  String get prayerFajr => 'Fajr';
+
+  @override
+  String get prayerDhuhr => 'Dhuhr';
+
+  @override
+  String get prayerAsr => 'Asr';
+
+  @override
+  String get prayerMaghrib => 'Maghrib';
+
+  @override
+  String get prayerIsha => 'Isha';
+
+  @override
+  String get methodEgyptian => 'Egyptian General Authority of Survey';
+
+  @override
+  String get methodMuslimWorldLeague => 'Muslim World League';
+
+  @override
+  String get methodUmmAlQura => 'Umm al-Qura, Makkah';
+
+  @override
+  String get methodKarachi => 'University of Islamic Sciences, Karachi';
+
+  @override
+  String get methodNorthAmerica => 'Islamic Society of North America';
+
+  @override
+  String get methodDubai => 'Dubai';
+
+  @override
+  String get methodKuwait => 'Kuwait';
+
+  @override
+  String get methodQatar => 'Qatar';
+
+  @override
+  String get methodTurkey => 'Turkey (Diyanet)';
+
+  @override
+  String get methodSingapore => 'Singapore';
 
   @override
   String get adhkarResume => 'Pick up where you left off';

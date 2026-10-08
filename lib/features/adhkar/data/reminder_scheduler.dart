@@ -30,6 +30,17 @@ abstract interface class ReminderScheduler {
     required String payload,
   });
 
+  /// Shows a notification once, at the local time [at]. Replaces any reminder
+  /// with the same [id].
+  Future<void> scheduleOnce({
+    required int id,
+    required DateTime at,
+    required String title,
+    required String body,
+    required String channelName,
+    required String payload,
+  });
+
   /// Removes the reminder [id], if any.
   Future<void> cancel(int id);
 }
@@ -140,6 +151,30 @@ class LocalReminderScheduler implements ReminderScheduler {
       ),
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       matchDateTimeComponents: DateTimeComponents.time,
+      payload: payload,
+    );
+  }
+
+  @override
+  Future<void> scheduleOnce({
+    required int id,
+    required DateTime at,
+    required String title,
+    required String body,
+    required String channelName,
+    required String payload,
+  }) async {
+    await _ensureZone();
+    await _plugin.zonedSchedule(
+      id: id,
+      title: title,
+      body: body,
+      scheduledDate: tz.TZDateTime.from(at, tz.local),
+      notificationDetails: NotificationDetails(
+        android: AndroidNotificationDetails(_channelId, channelName),
+        iOS: const DarwinNotificationDetails(),
+      ),
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       payload: payload,
     );
   }
