@@ -7,27 +7,17 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/diagnostics/app_logger.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../settings/application/settings_provider.dart';
-import '../data/reminder_scheduler.dart';
+import '../../../core/notifications/reminder_scheduler.dart';
 import '../data/reminders_repository.dart';
 import '../domain/adhkar_collection.dart';
-import '../domain/reminder_payload.dart';
+import '../../../core/notifications/reminder_payload.dart';
 import '../domain/reminder_setting.dart';
 import 'adhkar_providers.dart';
+import '../../../core/notifications/reminder_scheduler_provider.dart';
 
 /// Provides the reminder store.
 final remindersRepositoryProvider = Provider<RemindersRepository>(
   (ref) => LocalRemindersRepository(SharedPreferencesAsync()),
-);
-
-/// Provides the device scheduler. `main` overrides it with the started plugin;
-/// the default does nothing, which keeps tests off the platform.
-final reminderSchedulerProvider = Provider<ReminderScheduler>(
-  (ref) => const _NoopReminderScheduler(),
-);
-
-/// Notification payloads tapped while the app runs.
-final reminderTapsProvider = StreamProvider<String>(
-  (ref) => ref.watch(reminderSchedulerProvider).taps,
 );
 
 /// Outcome of turning a reminder on.
@@ -144,40 +134,4 @@ class RemindersNotifier extends AsyncNotifier<Map<String, ReminderSetting>> {
       AppLogger.debug('Reminder schedule failed: ${error.runtimeType}');
     }
   }
-}
-
-class _NoopReminderScheduler implements ReminderScheduler {
-  const _NoopReminderScheduler();
-
-  @override
-  String? get launchPayload => null;
-
-  @override
-  Stream<String> get taps => const Stream.empty();
-
-  @override
-  Future<bool> requestPermission() async => false;
-
-  @override
-  Future<void> schedule({
-    required int id,
-    required int minutes,
-    required String title,
-    required String body,
-    required String channelName,
-    required String payload,
-  }) async {}
-
-  @override
-  Future<void> scheduleOnce({
-    required int id,
-    required DateTime at,
-    required String title,
-    required String body,
-    required String channelName,
-    required String payload,
-  }) async {}
-
-  @override
-  Future<void> cancel(int id) async {}
 }

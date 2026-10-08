@@ -4,9 +4,9 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/haptics/haptics.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/app_shimmer.dart';
@@ -443,7 +443,7 @@ class _PrintedImageState extends State<_PrintedImage>
     final callback = widget.onAyahLongPress;
     final ayah = _ayahAt(local, size);
     if (callback == null || ayah == null) return;
-    HapticFeedback.selectionClick();
+    Haptics.select();
     callback(ayah);
   }
 

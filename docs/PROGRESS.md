@@ -52,6 +52,15 @@
   haptics, evidence sheet, groups, prayer windows, daily reminders (`docs/ADHKAR_SOURCES.md`). Smart back
   (other tab → Mushaf → close warning), keyboard-aware `AppSheet`, new expanding Android tab bar.
 
+- Adhkar, complete: every Hisn chapter that can be proved (92 duas in 57 chapters, plus sleep, waking, after prayer,
+  morning, evening), nine groups, favourites under "suggested now", search by name first then by words, group pages,
+  and after-prayer reminders with prayer times worked out on the device (`docs/ADHKAR_SOURCES.md`,
+  `docs/STORE_COMPLIANCE.md`).
+
+- Prayer times page (`lib/features/prayer`): today's times, next prayer with a countdown, an alert per prayer, the
+  calculation method chosen from the place, a vibration class with a Settings switch, and shared notification and clock code
+  in `lib/core`. The adhan recording waits for a licensed file (`docs/PERMISSION_REQUESTS.md`).
+
 ## In progress
 
 - Foundation migration: localization, typed routing, Riverpod, adaptive shell,

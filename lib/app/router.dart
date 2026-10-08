@@ -4,19 +4,20 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter/widgets.dart';
 
 import '../features/about/presentation/about_page.dart';
-import '../features/adhkar/application/reminders_provider.dart';
-import '../features/adhkar/domain/reminder_payload.dart';
+import '../core/notifications/reminder_payload.dart';
 import '../features/adhkar/presentation/adhkar_group_page.dart';
 import '../features/adhkar/presentation/adhkar_search_page.dart';
 import '../features/adhkar/presentation/adhkar_session_page.dart';
 import '../features/adhkar/presentation/duas_page.dart';
 import '../features/bookmarks/presentation/bookmarks_page.dart';
 import '../features/mushaf/presentation/mushaf_page.dart';
+import '../features/prayer/presentation/prayer_times_page.dart';
 import '../features/quran_index/presentation/quran_index_page.dart';
 import '../features/quran_text/presentation/quran_search_page.dart';
 import '../features/settings/presentation/settings_page.dart';
 import '../features/startup/application/startup_providers.dart';
 import 'app_shell.dart';
+import '../core/notifications/reminder_scheduler_provider.dart';
 
 /// App-wide declarative routes and persistent navigation branches.
 final routerProvider = Provider<GoRouter>((ref) {
@@ -81,6 +82,10 @@ final routerProvider = Provider<GoRouter>((ref) {
             AdhkarGroupPage(groupId: state.pathParameters['id']!),
       ),
       GoRoute(
+        path: AppRoute.prayerTimes.path,
+        builder: (context, state) => const PrayerTimesPage(),
+      ),
+      GoRoute(
         path: AppRoute.adhkarSearch.path,
         builder: (context, state) => const AdhkarSearchPage(),
       ),
@@ -115,7 +120,8 @@ enum AppRoute {
   quranSearch('/quran-search'),
   adhkarSession('/adhkar/:id'),
   adhkarGroup('/adhkar-group/:id'),
-  adhkarSearch('/adhkar-search');
+  adhkarSearch('/adhkar-search'),
+  prayerTimes('/prayer-times');
 
   const AppRoute(this.path);
   final String path;
@@ -130,6 +136,7 @@ enum AppRoute {
 
   /// Path a reminder notification opens, or null for a payload that is not ours.
   static String? fromReminderPayload(String payload) {
+    if (payload == ReminderPayload.prayerTimes) return prayerTimes.path;
     final id = ReminderPayload.collectionId(payload);
     return id == null ? null : adhkarSessionPath(id);
   }

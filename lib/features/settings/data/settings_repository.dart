@@ -16,6 +16,7 @@ class LocalSettingsRepository implements SettingsRepository {
   static const _themeKey = 'settings.theme';
   static const _localeKey = 'settings.locale';
   static const _reduceMotionKey = 'settings.reduce_motion';
+  static const _hapticsKey = 'settings.haptics';
   static const _arabicDigitsKey = 'settings.arabic_digits';
   static const _crashReportsKey = 'settings.crash_reports';
   static const _startupKey = 'settings.startup';
@@ -54,6 +55,7 @@ class LocalSettingsRepository implements SettingsRepository {
     );
     final mushafStyle = await _preferences.getString(_mushafStyleKey);
     final introSeen = await _preferences.getBool(_introSeenKey);
+    final haptics = await _preferences.getBool(_hapticsKey);
     return AppSettings(
       theme: AppThemePreference.values.firstWhere(
         (item) => item.name == theme,
@@ -61,6 +63,7 @@ class LocalSettingsRepository implements SettingsRepository {
       ),
       localeCode: locale == 'en' ? 'en' : 'ar',
       reduceMotion: reduceMotion ?? false,
+      hapticsEnabled: haptics ?? true,
       useArabicDigits: useArabicDigits ?? true,
       crashReportsEnabled: crashReports ?? false,
       startupBehavior: StartupBehavior.values.firstWhere(
@@ -91,6 +94,7 @@ class LocalSettingsRepository implements SettingsRepository {
       _preferences.setString(_themeKey, settings.theme.name),
       _preferences.setString(_localeKey, settings.localeCode),
       _preferences.setBool(_reduceMotionKey, settings.reduceMotion),
+      _preferences.setBool(_hapticsKey, settings.hapticsEnabled),
       _preferences.setBool(_arabicDigitsKey, settings.useArabicDigits),
       _preferences.setBool(_crashReportsKey, settings.crashReportsEnabled),
       _preferences.setString(_startupKey, settings.startupBehavior.name),

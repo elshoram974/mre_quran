@@ -14,9 +14,11 @@ import '../application/adhkar_providers.dart';
 import '../application/favorites_provider.dart';
 import '../application/reminders_provider.dart';
 import '../domain/adhkar_collection.dart';
+import '../../prayer/presentation/prayer_times_card.dart';
 import 'collection_card.dart';
 import 'group_card.dart';
 import 'reminders_sheet.dart';
+import '../../../core/time/ticking_clock.dart';
 
 /// The adhkar tab: search, the list for now, the favourites, the sections, and
 /// the reminders.
@@ -71,7 +73,7 @@ class _Content extends ConsumerWidget {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final active = ref.watch(activeSessionProvider);
-    final now = ref.watch(adhkarNowProvider);
+    final now = ref.watch(tickingNowProvider);
     final featured = active ?? catalog.suggestedAt(now.hour * 60 + now.minute);
     final starred = [
       for (final id
@@ -84,6 +86,8 @@ class _Content extends ConsumerWidget {
         padding: pagePadding(context),
         children: [
           const _SearchBar(),
+          const SizedBox(height: 12),
+          const PrayerTimesCard(),
           if (featured != null) ...[
             const SizedBox(height: 20),
             Text(

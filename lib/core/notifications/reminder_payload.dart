@@ -1,8 +1,11 @@
-/// The text carried by a reminder notification so a tap can open its list.
+/// The text carried by a notification so a tap can open the right screen.
 abstract final class ReminderPayload {
   static const String _prefix = 'adhkar:';
 
-  /// Payload that opens the collection [collectionId].
+  /// Payload that opens the prayer times.
+  static const String prayerTimes = 'prayer:times';
+
+  /// Payload that opens the adhkar collection [collectionId].
   static String forCollection(String collectionId) => '$_prefix$collectionId';
 
   /// The collection id inside [payload], or null for a foreign payload.

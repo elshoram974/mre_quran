@@ -13,13 +13,14 @@ import 'app/quran_app.dart';
 import 'core/crash/crash_reporter.dart';
 import 'core/dev/preview_platform_sync.dart';
 import 'core/diagnostics/app_logger.dart';
-import 'features/adhkar/application/reminders_provider.dart';
-import 'features/adhkar/data/reminder_scheduler.dart';
+import 'core/haptics/haptics.dart';
+import 'core/notifications/reminder_scheduler.dart';
 import 'firebase_options.dart';
 import 'features/settings/application/settings_provider.dart';
 import 'features/settings/data/settings_repository.dart';
 import 'features/startup/application/startup_providers.dart';
 import 'features/startup/data/last_tab_repository.dart';
+import 'core/notifications/reminder_scheduler_provider.dart';
 
 Future<void> main() async {
   // Device Preview replaces the binding, so it is skipped outside debug.
@@ -40,6 +41,7 @@ Future<void> main() async {
     LocalReminderScheduler.create(),
   ).wait;
   // Crashlytics exists only after Firebase is initialised above.
+  Haptics.enabled = settings.hapticsEnabled;
   final crashReporter = FirebaseCrashReporter();
   await crashReporter.setCollectionEnabled(settings.crashReportsEnabled);
   FlutterError.onError = (details) =>

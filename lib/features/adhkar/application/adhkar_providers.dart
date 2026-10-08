@@ -13,6 +13,7 @@ import '../domain/adhkar_collection.dart';
 import '../domain/adhkar_progress.dart';
 import '../domain/adhkar_search.dart';
 import '../domain/dhikr.dart';
+import '../../../core/time/ticking_clock.dart';
 
 /// Provides the bundled adhkar source. Tests override it.
 final adhkarSourceProvider = Provider<AdhkarSource>((ref) => AdhkarSource());
@@ -21,28 +22,6 @@ final adhkarSourceProvider = Provider<AdhkarSource>((ref) => AdhkarSource());
 final adhkarCatalogProvider = FutureProvider<AdhkarCatalog>(
   (ref) => ref.watch(adhkarSourceProvider).load(),
 );
-
-/// The current local time. Tests override it.
-final adhkarClockProvider = Provider<DateTime Function()>(
-  (ref) => DateTime.now,
-);
-
-/// The current time as the adhkar screens see it, re-read every 30 seconds so
-/// a prayer window that ends, or a day that turns, shows without a restart.
-final adhkarNowProvider = NotifierProvider<AdhkarNow, DateTime>(AdhkarNow.new);
-
-/// Holds [adhkarNowProvider]'s time.
-class AdhkarNow extends Notifier<DateTime> {
-  @override
-  DateTime build() {
-    final timer = Timer.periodic(const Duration(seconds: 30), (_) => refresh());
-    ref.onDispose(timer.cancel);
-    return ref.read(adhkarClockProvider)();
-  }
-
-  /// Reads the clock again.
-  void refresh() => state = ref.read(adhkarClockProvider)();
-}
 
 /// Provides the progress store.
 final adhkarProgressRepositoryProvider = Provider<AdhkarProgressRepository>(
@@ -61,7 +40,7 @@ class AdhkarProgressNotifier extends AsyncNotifier<AdhkarProgress> {
   AdhkarProgressRepository get _repository =>
       ref.read(adhkarProgressRepositoryProvider);
 
-  DateTime get _now => ref.read(adhkarClockProvider)();
+  DateTime get _now => ref.read(clockProvider)();
 
   String get _today => AdhkarProgress.dayOf(_now);
 
@@ -108,7 +87,7 @@ class AdhkarProgressNotifier extends AsyncNotifier<AdhkarProgress> {
 
 AdhkarProgress? _today(Ref ref) {
   final progress = ref.watch(adhkarProgressProvider).value;
-  final now = ref.watch(adhkarNowProvider);
+  final now = ref.watch(tickingNowProvider);
   if (progress == null || progress.day != AdhkarProgress.dayOf(now)) {
     return null;
   }
@@ -149,7 +128,7 @@ final activeSessionProvider = Provider<AdhkarCollection?>((ref) {
   final progress = _today(ref);
   final catalog = ref.watch(adhkarCatalogProvider).value;
   if (progress == null || catalog == null) return null;
-  final now = ref.watch(adhkarNowProvider);
+  final now = ref.watch(tickingNowProvider);
   for (final collection in catalog.collections) {
     if (progress.isSessionActive(collection, now) &&
         !progress.isComplete(collection)) {

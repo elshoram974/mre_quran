@@ -1,16 +1,18 @@
 import 'dart:async';
 
+import 'package:mre_quran/core/haptics/haptics.dart';
 import 'package:mre_quran/features/adhkar/data/adhkar_progress_repository.dart';
 import 'package:mre_quran/features/adhkar/data/adhkar_source.dart';
 import 'package:mre_quran/features/adhkar/data/favorites_repository.dart';
-import 'package:mre_quran/features/adhkar/data/location_source.dart';
-import 'package:mre_quran/features/adhkar/data/prayer_reminders_repository.dart';
-import 'package:mre_quran/features/adhkar/data/reminder_scheduler.dart';
+import 'package:mre_quran/features/prayer/data/location_source.dart';
+import 'package:mre_quran/features/prayer/data/prayer_repository.dart';
+import 'package:mre_quran/core/notifications/reminder_scheduler.dart';
 import 'package:mre_quran/features/adhkar/data/reminders_repository.dart';
 import 'package:mre_quran/features/adhkar/domain/adhkar_collection.dart';
 import 'package:mre_quran/features/adhkar/domain/adhkar_progress.dart';
 import 'package:mre_quran/features/adhkar/domain/dhikr.dart';
-import 'package:mre_quran/features/adhkar/domain/prayer_reminders.dart';
+import 'package:mre_quran/features/prayer/domain/prayer_alerts.dart';
+import 'package:mre_quran/features/prayer/domain/prayer_times.dart';
 import 'package:mre_quran/features/adhkar/domain/quran_passage.dart';
 import 'package:mre_quran/features/adhkar/domain/reminder_setting.dart';
 
@@ -174,8 +176,29 @@ class FakeReminderScheduler implements ReminderScheduler {
     );
   }
 
-  final Map<int, ({DateTime at, String title, String body, String payload})>
+  bool exactAllowed = true;
+  int exactRequests = 0;
+  final Map<
+    int,
+    ({
+      DateTime at,
+      String title,
+      String body,
+      String payload,
+      ReminderChannel channel,
+      bool exact,
+    })
+  >
   once = {};
+
+  @override
+  Future<bool> canScheduleExact() async => exactAllowed;
+
+  @override
+  Future<bool> requestExact() async {
+    exactRequests++;
+    return exactAllowed;
+  }
 
   @override
   Future<void> scheduleOnce({
@@ -183,10 +206,19 @@ class FakeReminderScheduler implements ReminderScheduler {
     required DateTime at,
     required String title,
     required String body,
+    required ReminderChannel channel,
     required String channelName,
     required String payload,
+    bool exact = false,
   }) async {
-    once[id] = (at: at, title: title, body: body, payload: payload);
+    once[id] = (
+      at: at,
+      title: title,
+      body: body,
+      payload: payload,
+      channel: channel,
+      exact: exact,
+    );
   }
 
   @override
@@ -238,16 +270,15 @@ class MemoryFavoritesRepository implements AdhkarFavoritesRepository {
   }
 }
 
-class MemoryPrayerRemindersRepository implements PrayerRemindersRepository {
-  PrayerReminderSettings settings = const PrayerReminderSettings();
+class MemoryPrayerRepository implements PrayerRepository {
+  PrayerSettings settings = const PrayerSettings();
   PrayerPlace? place;
 
   @override
-  Future<PrayerReminderSettings> loadSettings() async => settings;
+  Future<PrayerSettings> loadSettings() async => settings;
 
   @override
-  Future<void> saveSettings(PrayerReminderSettings value) async =>
-      settings = value;
+  Future<void> saveSettings(PrayerSettings value) async => settings = value;
 
   @override
   Future<PrayerPlace?> loadPlace() async => place;
@@ -276,4 +307,21 @@ class FakeLocationSource implements LocationSource {
     quietReads++;
     return quietResult;
   }
+}
+
+/// Records which feedback was asked for.
+class RecordingHaptics implements HapticsBackend {
+  final List<String> calls = [];
+
+  @override
+  Future<void> select() async => calls.add('select');
+
+  @override
+  Future<void> tick() async => calls.add('tick');
+
+  @override
+  Future<void> step() async => calls.add('step');
+
+  @override
+  Future<void> celebrate() async => calls.add('celebrate');
 }

@@ -1,7 +1,7 @@
 import 'package:geolocator/geolocator.dart';
 
 import '../../../core/diagnostics/app_logger.dart';
-import '../domain/prayer_reminders.dart';
+import '../domain/prayer_times.dart';
 
 /// Finds where the device is, only roughly, to work out prayer times.
 abstract interface class LocationSource {

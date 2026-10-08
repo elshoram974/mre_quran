@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/router.dart';
+import '../../../core/haptics/haptics.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/layout/adaptive_layout.dart';
 import '../../../core/widgets/app_card.dart';
@@ -165,6 +166,21 @@ class _SettingsContent extends ConsumerWidget {
                 notifier.save(settings.copyWith(reduceMotion: value)),
             title: l10n.reduceMotion,
             subtitle: l10n.reduceMotionDescription,
+          ),
+        ),
+        const SizedBox(height: 12),
+        _SettingsCard(
+          child: AppSwitchTile(
+            value: settings.hapticsEnabled,
+            onChanged: (value) {
+              notifier.save(settings.copyWith(hapticsEnabled: value));
+              // Let the person feel what they just turned on.
+              Haptics.enabled = value;
+              if (value) Haptics.step();
+            },
+            icon: Icons.vibration,
+            title: l10n.settingsHaptics,
+            subtitle: l10n.settingsHapticsHint,
           ),
         ),
         const SizedBox(height: 12),

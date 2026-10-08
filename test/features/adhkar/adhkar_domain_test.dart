@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mre_quran/app/router.dart';
 import 'package:mre_quran/features/adhkar/domain/adhkar_collection.dart';
 import 'package:mre_quran/features/adhkar/domain/adhkar_progress.dart';
-import 'package:mre_quran/features/adhkar/domain/reminder_payload.dart';
+import 'package:mre_quran/core/notifications/reminder_payload.dart';
 import 'package:mre_quran/features/adhkar/domain/reminder_setting.dart';
 
 import '../../helpers/adhkar_fixtures.dart';

@@ -7,6 +7,7 @@ class AppSettings {
     this.theme = AppThemePreference.sepia,
     this.localeCode = 'ar',
     this.reduceMotion = false,
+    this.hapticsEnabled = true,
     this.useArabicDigits = true,
     this.crashReportsEnabled = false,
     this.startupBehavior = StartupBehavior.lastTab,
@@ -21,6 +22,9 @@ class AppSettings {
   final AppThemePreference theme;
   final String localeCode;
   final bool reduceMotion;
+
+  /// Whether the app vibrates for counts and finished steps.
+  final bool hapticsEnabled;
   final bool useArabicDigits;
   final bool crashReportsEnabled;
 
@@ -57,6 +61,7 @@ class AppSettings {
     AppThemePreference? theme,
     String? localeCode,
     bool? reduceMotion,
+    bool? hapticsEnabled,
     bool? useArabicDigits,
     bool? crashReportsEnabled,
     StartupBehavior? startupBehavior,
@@ -70,6 +75,7 @@ class AppSettings {
     theme: theme ?? this.theme,
     localeCode: localeCode ?? this.localeCode,
     reduceMotion: reduceMotion ?? this.reduceMotion,
+    hapticsEnabled: hapticsEnabled ?? this.hapticsEnabled,
     useArabicDigits: useArabicDigits ?? this.useArabicDigits,
     crashReportsEnabled: crashReportsEnabled ?? this.crashReportsEnabled,
     startupBehavior: startupBehavior ?? this.startupBehavior,

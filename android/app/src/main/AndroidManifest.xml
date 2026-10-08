@@ -8,6 +8,11 @@
     <!-- Lets the scheduled adhkar reminders come back after a reboot. Reminders
          use inexact alarms, so no exact-alarm permission is declared. -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <!-- Lets the person allow alerts on the exact minute of a prayer. Without
+         it (denied by default on Android 14+) the alerts still come, a few
+         minutes late at worst. Google Play asks for a declaration for this
+         permission; see docs/STORE_COMPLIANCE.md. -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
     <!-- Approximate location, asked for only when the person turns on the
          after-prayer reminders, to work out prayer times on the device.
          Precise and background location are not used. -->

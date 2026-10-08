@@ -248,6 +248,97 @@ class AppLocalizationsEn extends AppLocalizations {
   String get methodSingapore => 'Singapore';
 
   @override
+  String get prayerTimesTitle => 'Prayer times';
+
+  @override
+  String get prayerSunrise => 'Sunrise';
+
+  @override
+  String get prayerNext => 'Next prayer';
+
+  @override
+  String prayerIn(String duration) {
+    return 'in $duration';
+  }
+
+  @override
+  String prayerDuration(String hours, String minutes) {
+    return '$hours h $minutes min';
+  }
+
+  @override
+  String prayerDurationMinutes(String minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String get prayerNoPlaceTitle => 'Find prayer times';
+
+  @override
+  String get prayerNoPlaceBody =>
+      'Share your approximate location once. The times are worked out on your phone and nothing is sent anywhere.';
+
+  @override
+  String get prayerLocate => 'Use my location';
+
+  @override
+  String get prayerUpdateLocation => 'Update my location';
+
+  @override
+  String prayerPlaceLine(String latitude, String longitude) {
+    return 'Approximate place: $latitude, $longitude';
+  }
+
+  @override
+  String get prayerMethodAuto => 'Automatic for your place';
+
+  @override
+  String prayerMethodAutoWith(String method) {
+    return 'Automatic: $method';
+  }
+
+  @override
+  String get prayerAlertsTitle => 'Alert at prayer time';
+
+  @override
+  String get prayerAlertsAll => 'Alert for all five';
+
+  @override
+  String get prayerAlertsHint =>
+      'A notification when the time comes. The adhan recording is added once a licensed one is approved; until then it uses your phone\'s notification sound.';
+
+  @override
+  String get prayerAlertOn => 'Alert on';
+
+  @override
+  String get prayerAlertOff => 'Alert off';
+
+  @override
+  String get prayerExactNote =>
+      'Android may delay the alert by a few minutes unless exact alarms are allowed.';
+
+  @override
+  String get prayerExactAllow => 'Allow exact timing';
+
+  @override
+  String prayerAlertTitle(String prayer) {
+    return 'Time for the $prayer prayer';
+  }
+
+  @override
+  String get prayerAlertBody => 'Tap to see the prayer times.';
+
+  @override
+  String get prayerChannelName => 'Prayer time alerts';
+
+  @override
+  String get settingsHaptics => 'Vibration';
+
+  @override
+  String get settingsHapticsHint =>
+      'A light tick for each count, a firmer one when a dhikr is done.';
+
+  @override
   String get adhkarResume => 'Pick up where you left off';
 
   @override

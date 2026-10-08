@@ -3,12 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mre_quran/app/router.dart';
+import 'package:mre_quran/core/haptics/haptics.dart';
 import 'package:mre_quran/core/theme/app_theme.dart';
 import 'package:mre_quran/features/adhkar/application/adhkar_providers.dart';
 import 'package:mre_quran/features/adhkar/application/favorites_provider.dart';
-import 'package:mre_quran/features/adhkar/application/prayer_reminders_provider.dart';
+import 'package:mre_quran/features/prayer/application/prayer_provider.dart';
+import 'package:mre_quran/features/prayer/domain/prayer_times.dart';
 import 'package:mre_quran/features/adhkar/application/reminders_provider.dart';
-import 'package:mre_quran/features/adhkar/domain/prayer_reminders.dart';
 import 'package:mre_quran/features/quran_index/application/quran_metadata_provider.dart';
 import 'package:mre_quran/features/quran_index/domain/quran_metadata.dart';
 import 'package:mre_quran/features/quran_text/application/quran_text_providers.dart';
@@ -27,6 +28,9 @@ import '../../helpers/adhkar_fixtures.dart';
 import '../../helpers/fake_quran_metadata_source.dart';
 import '../../helpers/fake_quran_text_source.dart';
 import '../../helpers/memory_settings_repository.dart';
+
+import 'package:mre_quran/core/time/ticking_clock.dart';
+import 'package:mre_quran/core/notifications/reminder_scheduler_provider.dart';
 
 Future<FakeReminderScheduler> _pump(
   WidgetTester tester, {
@@ -83,9 +87,7 @@ Future<FakeReminderScheduler> _pump(
         adhkarFavoritesRepositoryProvider.overrideWithValue(
           favorites ?? MemoryFavoritesRepository(),
         ),
-        prayerRemindersRepositoryProvider.overrideWithValue(
-          MemoryPrayerRemindersRepository(),
-        ),
+        prayerRepositoryProvider.overrideWithValue(MemoryPrayerRepository()),
         locationSourceProvider.overrideWithValue(
           location ??
               FakeLocationSource(requestResult: PrayerPlace(30.04, 31.24)),
@@ -97,7 +99,7 @@ Future<FakeReminderScheduler> _pump(
         settingsRepositoryProvider.overrideWithValue(
           MemorySettingsRepository(),
         ),
-        adhkarClockProvider.overrideWithValue(() => DateTime(2026, 10, 8, 9)),
+        clockProvider.overrideWithValue(() => DateTime(2026, 10, 8, 9)),
       ],
       child: MaterialApp.router(
         routerConfig: router,
@@ -348,14 +350,15 @@ void main() {
       await _tapVisible(tester, find.text('التذكيرات'));
       await tester.pumpAndSettle();
       expect(find.text('بعد كل صلاة'), findsOneWidget);
-      expect(find.text('طريقة الحساب'), findsNothing);
+      expect(find.text('التذكير بعد الصلاة'), findsNothing);
 
       await tester.tap(find.byType(Switch).last);
       await tester.pumpAndSettle();
       expect(location.requests, 1);
       expect(scheduler.once, isNotEmpty);
-      expect(find.text('طريقة الحساب'), findsOneWidget);
       expect(find.text('التذكير بعد الصلاة'), findsOneWidget);
+      // The method and the time alerts live on the prayer times page.
+      expect(find.text('طريقة الحساب'), findsNothing);
     });
 
     testWidgets('says why when location is refused', (tester) async {
@@ -404,6 +407,59 @@ void main() {
     await _tapVisible(tester, find.text('ابدأ'));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
+  });
+
+  group('vibration', () {
+    final original = Haptics.backend;
+    late RecordingHaptics recorder;
+
+    setUp(() {
+      recorder = RecordingHaptics();
+      Haptics.backend = recorder;
+      Haptics.enabled = true;
+    });
+
+    tearDown(() {
+      Haptics.backend = original;
+      Haptics.enabled = true;
+    });
+
+    testWidgets(
+      'a tick for a repeat, a firm pulse when a dhikr is done, two at the end',
+      (tester) async {
+        await _pump(tester);
+        await _tapVisible(tester, find.text('ابدأ'));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('٠ من ١'));
+        await tester.pumpAndSettle();
+        expect(recorder.calls, ['step']);
+
+        await tester.tap(find.text('٠ من ٣'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('١ من ٣'));
+        await tester.pumpAndSettle();
+        expect(recorder.calls, ['step', 'tick', 'tick']);
+
+        await tester.tap(find.text('٢ من ٣'));
+        await tester.pumpAndSettle();
+        expect(recorder.calls, ['step', 'tick', 'tick', 'celebrate']);
+      },
+    );
+
+    testWidgets('nothing when the person turned vibration off', (tester) async {
+      Haptics.enabled = false;
+      await _pump(tester);
+      await _tapVisible(tester, find.text('ابدأ'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('٠ من ١'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('٠ من ٣'));
+      await tester.pumpAndSettle();
+      expect(recorder.calls, isEmpty);
+      // The count still went up.
+      expect(find.text('١ من ٣'), findsOneWidget);
+    });
   });
 
   group('session', () {

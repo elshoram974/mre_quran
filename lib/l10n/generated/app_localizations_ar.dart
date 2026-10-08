@@ -245,6 +245,97 @@ class AppLocalizationsAr extends AppLocalizations {
   String get methodSingapore => 'سنغافورة';
 
   @override
+  String get prayerTimesTitle => 'مواقيت الصلاة';
+
+  @override
+  String get prayerSunrise => 'الشروق';
+
+  @override
+  String get prayerNext => 'الصلاة القادمة';
+
+  @override
+  String prayerIn(String duration) {
+    return 'بعد $duration';
+  }
+
+  @override
+  String prayerDuration(String hours, String minutes) {
+    return '$hours س $minutes د';
+  }
+
+  @override
+  String prayerDurationMinutes(String minutes) {
+    return '$minutes د';
+  }
+
+  @override
+  String get prayerNoPlaceTitle => 'اعرف مواقيت الصلاة';
+
+  @override
+  String get prayerNoPlaceBody =>
+      'شارك موقعك التقريبي مرة واحدة. تُحسب المواقيت على هاتفك ولا يُرسَل شيء إلى أي جهة.';
+
+  @override
+  String get prayerLocate => 'استخدم موقعي';
+
+  @override
+  String get prayerUpdateLocation => 'حدّث موقعي';
+
+  @override
+  String prayerPlaceLine(String latitude, String longitude) {
+    return 'المكان التقريبي: $latitude، $longitude';
+  }
+
+  @override
+  String get prayerMethodAuto => 'تلقائي حسب مكانك';
+
+  @override
+  String prayerMethodAutoWith(String method) {
+    return 'تلقائي: $method';
+  }
+
+  @override
+  String get prayerAlertsTitle => 'تنبيه عند دخول الوقت';
+
+  @override
+  String get prayerAlertsAll => 'تنبيه للصلوات الخمس';
+
+  @override
+  String get prayerAlertsHint =>
+      'إشعار عند دخول الوقت. يُضاف تسجيل الأذان بعد اعتماد تسجيل مرخّص، وحتى ذلك الحين يستخدم صوت إشعارات هاتفك.';
+
+  @override
+  String get prayerAlertOn => 'التنبيه مفعّل';
+
+  @override
+  String get prayerAlertOff => 'التنبيه متوقف';
+
+  @override
+  String get prayerExactNote =>
+      'قد يؤخّر أندرويد التنبيه بضع دقائق ما لم يُسمح بالمنبّهات الدقيقة.';
+
+  @override
+  String get prayerExactAllow => 'السماح بالتوقيت الدقيق';
+
+  @override
+  String prayerAlertTitle(String prayer) {
+    return 'حان وقت صلاة $prayer';
+  }
+
+  @override
+  String get prayerAlertBody => 'اضغط لعرض مواقيت الصلاة.';
+
+  @override
+  String get prayerChannelName => 'تنبيهات وقت الصلاة';
+
+  @override
+  String get settingsHaptics => 'الاهتزاز';
+
+  @override
+  String get settingsHapticsHint =>
+      'نبضة خفيفة مع كل عدّة، وأقوى عند اكتمال الذكر.';
+
+  @override
   String get adhkarResume => 'أكمل من حيث توقفت';
 
   @override

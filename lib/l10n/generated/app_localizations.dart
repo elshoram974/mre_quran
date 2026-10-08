@@ -542,6 +542,156 @@ abstract class AppLocalizations {
   /// **'Singapore'**
   String get methodSingapore;
 
+  /// No description provided for @prayerTimesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Prayer times'**
+  String get prayerTimesTitle;
+
+  /// No description provided for @prayerSunrise.
+  ///
+  /// In en, this message translates to:
+  /// **'Sunrise'**
+  String get prayerSunrise;
+
+  /// No description provided for @prayerNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next prayer'**
+  String get prayerNext;
+
+  /// No description provided for @prayerIn.
+  ///
+  /// In en, this message translates to:
+  /// **'in {duration}'**
+  String prayerIn(String duration);
+
+  /// No description provided for @prayerDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'{hours} h {minutes} min'**
+  String prayerDuration(String hours, String minutes);
+
+  /// No description provided for @prayerDurationMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} min'**
+  String prayerDurationMinutes(String minutes);
+
+  /// No description provided for @prayerNoPlaceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Find prayer times'**
+  String get prayerNoPlaceTitle;
+
+  /// No description provided for @prayerNoPlaceBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Share your approximate location once. The times are worked out on your phone and nothing is sent anywhere.'**
+  String get prayerNoPlaceBody;
+
+  /// No description provided for @prayerLocate.
+  ///
+  /// In en, this message translates to:
+  /// **'Use my location'**
+  String get prayerLocate;
+
+  /// No description provided for @prayerUpdateLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Update my location'**
+  String get prayerUpdateLocation;
+
+  /// No description provided for @prayerPlaceLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Approximate place: {latitude}, {longitude}'**
+  String prayerPlaceLine(String latitude, String longitude);
+
+  /// No description provided for @prayerMethodAuto.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic for your place'**
+  String get prayerMethodAuto;
+
+  /// No description provided for @prayerMethodAutoWith.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic: {method}'**
+  String prayerMethodAutoWith(String method);
+
+  /// No description provided for @prayerAlertsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Alert at prayer time'**
+  String get prayerAlertsTitle;
+
+  /// No description provided for @prayerAlertsAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Alert for all five'**
+  String get prayerAlertsAll;
+
+  /// No description provided for @prayerAlertsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'A notification when the time comes. The adhan recording is added once a licensed one is approved; until then it uses your phone\'s notification sound.'**
+  String get prayerAlertsHint;
+
+  /// No description provided for @prayerAlertOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Alert on'**
+  String get prayerAlertOn;
+
+  /// No description provided for @prayerAlertOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Alert off'**
+  String get prayerAlertOff;
+
+  /// No description provided for @prayerExactNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Android may delay the alert by a few minutes unless exact alarms are allowed.'**
+  String get prayerExactNote;
+
+  /// No description provided for @prayerExactAllow.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow exact timing'**
+  String get prayerExactAllow;
+
+  /// No description provided for @prayerAlertTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Time for the {prayer} prayer'**
+  String prayerAlertTitle(String prayer);
+
+  /// No description provided for @prayerAlertBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to see the prayer times.'**
+  String get prayerAlertBody;
+
+  /// No description provided for @prayerChannelName.
+  ///
+  /// In en, this message translates to:
+  /// **'Prayer time alerts'**
+  String get prayerChannelName;
+
+  /// No description provided for @settingsHaptics.
+  ///
+  /// In en, this message translates to:
+  /// **'Vibration'**
+  String get settingsHaptics;
+
+  /// No description provided for @settingsHapticsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'A light tick for each count, a firmer one when a dhikr is done.'**
+  String get settingsHapticsHint;
+
   /// No description provided for @adhkarResume.
   ///
   /// In en, this message translates to:

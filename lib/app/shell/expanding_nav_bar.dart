@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
+import '../../core/haptics/haptics.dart';
 import '../../core/theme/app_tokens.dart';
 import 'shell_destination.dart';
 
@@ -75,7 +75,7 @@ class ExpandingNavBar extends StatelessWidget {
                       duration: duration,
                       onTap: () {
                         if (i != index) {
-                          HapticFeedback.selectionClick();
+                          Haptics.select();
                           onSelected(i);
                         }
                       },

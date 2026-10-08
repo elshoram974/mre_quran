@@ -4,13 +4,16 @@ import 'package:mre_quran/features/adhkar/application/adhkar_providers.dart';
 import 'package:mre_quran/features/adhkar/application/reminders_provider.dart';
 import 'package:mre_quran/features/adhkar/domain/adhkar_collection.dart';
 import 'package:mre_quran/features/adhkar/domain/adhkar_progress.dart';
-import 'package:mre_quran/features/adhkar/domain/reminder_payload.dart';
+import 'package:mre_quran/core/notifications/reminder_payload.dart';
 import 'package:mre_quran/features/adhkar/domain/reminder_setting.dart';
 import 'package:mre_quran/features/settings/application/settings_provider.dart';
 import 'package:mre_quran/features/settings/domain/app_settings.dart';
 
 import '../../helpers/adhkar_fixtures.dart';
 import '../../helpers/memory_settings_repository.dart';
+
+import 'package:mre_quran/core/time/ticking_clock.dart';
+import 'package:mre_quran/core/notifications/reminder_scheduler_provider.dart';
 
 ProviderContainer _container({
   MemoryAdhkarProgressRepository? progress,
@@ -35,9 +38,7 @@ ProviderContainer _container({
       settingsRepositoryProvider.overrideWithValue(
         settings ?? MemorySettingsRepository(),
       ),
-      adhkarClockProvider.overrideWithValue(
-        clock ?? () => DateTime(2026, 10, 8, 9),
-      ),
+      clockProvider.overrideWithValue(clock ?? () => DateTime(2026, 10, 8, 9)),
     ],
   );
   addTearDown(container.dispose);
@@ -169,7 +170,7 @@ void main() {
       expect(container.read(activeSessionProvider), prayer);
 
       now = now.add(const Duration(minutes: 31));
-      container.read(adhkarNowProvider.notifier).refresh();
+      container.read(tickingNowProvider.notifier).refresh();
       expect(container.read(activeSessionProvider), isNull);
       expect(
         container.read(dhikrCountProvider((prayer, prayer.entries.first))),

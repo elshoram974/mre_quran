@@ -156,3 +156,22 @@ I could not find a licence per resource (the terms page returned an error).
 
 Jazakum Allahu khairan,
 [YOUR NAME] · [APP NAME] · [LINK] · [EMAIL]
+
+## Request 3: an adhan recording for prayer time alerts
+
+No adhan recording with a clear licence was found, so none is bundled (`docs/DECISIONS.md`, D-022). Candidates need written
+permission that covers the reciter and the recordist, and a clip short enough for an iOS notification (30 seconds at most).
+
+**To:** the Islamic Network (aladhan.com), or the mosque or reciter whose recording is wanted
+**Subject:** Permission to bundle a short adhan recording in a free Quran app
+
+Assalamu alaikum,
+
+I am building [APP NAME], a free, ad-free Quran app with no analytics or accounts. It works out prayer times on the
+phone and can alert at each prayer. May we bundle a short clip (30 seconds or less) of [RECORDING] as the alert sound,
+with credit to [NAME] in the app? Please confirm: the licence, the credit wanted, whether a shortened clip is acceptable,
+and who holds the rights to the reciter's performance.
+
+Keep the reply: it is the written approval `AGENTS.md` asks for. Then record the source, licence, SHA-256, and credit in
+`docs/ADHKAR_SOURCES.md` (or a new `docs/AUDIO_SOURCES.md`) before the file enters the repo.
+

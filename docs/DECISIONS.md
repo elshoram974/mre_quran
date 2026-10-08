@@ -157,3 +157,44 @@
   (`ExpandingNavBar`); iOS keeps the liquid glass tab bar.
 - **Reason:** A sheet under the keyboard hid its own button; the old bar looked like stock Material.
 
+## D-019: All of Hisn al-Muslim that can be checked, no more
+
+- **Decision:** The remaining Hisn chapters are built by `tool/build_hisn.py` from the Arabic hadith editions: a dua is kept only
+  when its words are found in a hadith (97% match, 85% of the entry) and the hadith has an acceptable grading. The
+  words shown come from the hadith. About two thirds of the book's entries pass; the rest are listed, not shown.
+- **Alternatives:** Copy the dataset's text (no licence, no evidence per entry); keep every entry with a note that it is unchecked.
+- **Reason:** The tab promises evidence for every dhikr. A smaller list that can be proved is better than a complete one that cannot.
+
+## D-020: After-prayer reminders use prayer times worked out on the device
+
+- **Decision:** `adhan` computes the five times from an approximate location read when the person turns the feature on
+  (and quietly at start-up when already allowed). Seven days of one-time notifications are scheduled each time the app opens.
+- **Alternatives:** A fixed daily time (wrong as the day moves); a server or API for times (sends the location away);
+  background location (store review and battery cost).
+- **Reason:** No network, only coarse foreground location, and the reminder follows the real prayer.
+
+## D-021: Vibration goes through one class, with a switch
+
+- **Decision:** `Haptics` (`lib/core/haptics`) has static `select`, `tick`, `step`, `celebrate`. On Android it drives the
+  vibrator directly with a short, strong pulse (the `vibration` plugin) and falls back to `HapticFeedback`; iOS uses the
+  system haptics. A Settings switch sets `Haptics.enabled`. Feedback fires when the finger lands, before anything is saved.
+- **Alternatives:** `HapticFeedback` at each call site.
+- **Reason:** `HapticFeedback` is silent on many phones when "touch feedback" is off in their settings, which is why
+  nothing was felt on a real device. One class keeps the patterns and the switch in one place.
+
+## D-022: Prayer time alerts use the notification sound until an adhan recording is licensed
+
+- **Decision:** The alert at each prayer is a high-importance notification on its own channel. It uses the phone's sound.
+  No adhan recording is bundled: none was found with a clear licence, and `AGENTS.md` forbids audio without source,
+  licence, checksum, and attribution. The channel is separate so a recording can be added later without touching the rest.
+- **Alternatives:** Bundle a recording from a site with unclear terms; a download pack from a third party.
+- **Reason:** A recording needs the reciter's and the recordist's permission, not only a file licence. A request is drafted
+  in `docs/PERMISSION_REQUESTS.md`. iOS notification sounds are limited to 30 seconds, so the recording must be a short clip
+  (kept in `Library/Sounds`, copied from a Flutter asset at start, so the Xcode project need not change); on Android it goes in `res/raw`.
+
+## D-023: The notification scheduler, the payloads, and the clock are shared
+
+- **Decision:** `lib/core/notifications` (scheduler, its provider, payloads) and `lib/core/time` (the ticking clock) serve
+  both the adhkar and the prayer features.
+- **Reason:** Two features used them; one should not import the other.
+

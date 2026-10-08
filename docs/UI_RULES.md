@@ -46,10 +46,11 @@ The single rule file for UI/UX. `AGENTS.md` points here. The design plan is in
 7. Show no loader for work under about 150 ms.
 8. Heavy parsing or search runs off the main isolate.
 
-## 6. Motion
+## 6. Motion and feedback
 
 1. Short, purposeful animations (200–300 ms). Implicit first. Respect `MediaQuery.disableAnimations`.
 2. Use the platform's own tab and sheet motion (glass pill physics on iOS, Material indicator on Android). Do not fake it.
+3. Vibration goes through the static functions of `Haptics` (`select`, `tick`, `step`, `celebrate`) in `lib/core/haptics`; never `HapticFeedback` or a plugin directly. The Settings switch turns it off for every call.
 
 ## 7. Navigation
 

@@ -1,12 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/router.dart';
 
+import '../../../core/haptics/haptics.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/layout/adaptive_layout.dart';
 import '../../../core/theme/app_tokens.dart';
@@ -115,24 +115,33 @@ class _SessionState extends ConsumerState<_Session> {
 
   Future<void> _count(int index) async {
     final collection = widget.collection;
-    final finished = await ref
+    final entry = collection.entries[index];
+    final count = ref.read(dhikrCountProvider((collection, entry)));
+    if (count >= entry.repeat) return;
+    final finishes = count + 1 >= entry.repeat;
+    // Feel it the moment the finger lands, before anything is saved: a light
+    // tick for a repeat, a firmer pulse when the dhikr is done and the next
+    // comes into view, a double pulse when the whole list is done.
+    final lastOne =
+        finishes &&
+        collection.entries.every(
+          (other) =>
+              other == entry ||
+              ref.read(dhikrCountProvider((collection, other))) >= other.repeat,
+        );
+    unawaited(
+      lastOne
+          ? Haptics.celebrate()
+          : finishes
+          ? Haptics.step()
+          : Haptics.tick(),
+    );
+    await ref
         .read(adhkarProgressProvider.notifier)
-        .increment(collection, collection.entries[index]);
-    if (!finished) {
-      // A light tick for each repeat.
-      unawaited(HapticFeedback.selectionClick());
-      return;
+        .increment(collection, entry);
+    if (finishes) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _advance(index));
     }
-    // A firmer pulse when a dhikr is done and the next comes into view, and
-    // two when the whole list is done.
-    unawaited(HapticFeedback.heavyImpact());
-    if (ref.read(collectionProgressProvider(collection)).complete) {
-      Future<void>.delayed(
-        const Duration(milliseconds: 160),
-        HapticFeedback.heavyImpact,
-      );
-    }
-    WidgetsBinding.instance.addPostFrameCallback((_) => _advance(index));
   }
 
   /// Brings the next unfinished dhikr into view, or the closing message when

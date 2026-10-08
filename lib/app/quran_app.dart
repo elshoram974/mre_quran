@@ -4,14 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../core/haptics/haptics.dart';
 import '../core/l10n/l10n.dart';
 import '../core/theme/app_theme.dart';
-import '../features/adhkar/application/prayer_reminders_provider.dart';
+import '../features/prayer/application/prayer_provider.dart';
 import '../features/adhkar/application/reminders_provider.dart';
 import '../features/settings/application/settings_provider.dart';
 import '../features/settings/domain/app_settings.dart';
 import '../l10n/generated/app_localizations.dart';
 import 'router.dart';
+import '../core/notifications/reminder_scheduler_provider.dart';
 
 class QuranApp extends ConsumerWidget {
   const QuranApp({super.key});
@@ -22,6 +24,7 @@ class QuranApp extends ConsumerWidget {
         ref.watch(settingsProvider).value ?? const AppSettings();
     ref.listen(settingsProvider, (_, next) {
       next.whenData((value) {
+        Haptics.enabled = value.hapticsEnabled;
         unawaited(
           ref
               .read(crashReporterProvider)
@@ -33,7 +36,7 @@ class QuranApp extends ConsumerWidget {
     // from the first frame, and opens the list of a tapped reminder.
     ref
       ..listen(remindersProvider, (_, _) {})
-      ..listen(prayerRemindersProvider, (_, _) {})
+      ..listen(prayerProvider, (_, _) {})
       ..listen(reminderTapsProvider, (_, next) {
         final path = next.value == null
             ? null

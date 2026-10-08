@@ -2,15 +2,16 @@ import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../domain/prayer_reminders.dart';
+import '../domain/prayer_alerts.dart';
+import '../domain/prayer_times.dart';
 
 /// Stores the after-prayer choices and the last place, on the device only.
-abstract interface class PrayerRemindersRepository {
+abstract interface class PrayerRepository {
   /// Returns the saved choices.
-  Future<PrayerReminderSettings> loadSettings();
+  Future<PrayerSettings> loadSettings();
 
   /// Replaces the saved choices.
-  Future<void> saveSettings(PrayerReminderSettings settings);
+  Future<void> saveSettings(PrayerSettings settings);
 
   /// Returns the last place worked out, if any.
   Future<PrayerPlace?> loadPlace();
@@ -19,14 +20,14 @@ abstract interface class PrayerRemindersRepository {
   Future<void> savePlace(PrayerPlace place);
 }
 
-/// SharedPreferences-backed [PrayerRemindersRepository].
-class LocalPrayerRemindersRepository implements PrayerRemindersRepository {
+/// SharedPreferences-backed [PrayerRepository].
+class LocalPrayerRepository implements PrayerRepository {
   /// Creates a repository over [preferences].
-  LocalPrayerRemindersRepository(this._preferences);
+  LocalPrayerRepository(this._preferences);
 
   final SharedPreferencesAsync _preferences;
-  static const _settingsKey = 'adhkar.prayer_reminders';
-  static const _placeKey = 'adhkar.prayer_place';
+  static const _settingsKey = 'prayer.settings';
+  static const _placeKey = 'prayer.place';
 
   Future<Object?> _read(String key) async {
     final raw = await _preferences.getString(key);
@@ -39,11 +40,11 @@ class LocalPrayerRemindersRepository implements PrayerRemindersRepository {
   }
 
   @override
-  Future<PrayerReminderSettings> loadSettings() async =>
-      PrayerReminderSettings.fromJson(await _read(_settingsKey));
+  Future<PrayerSettings> loadSettings() async =>
+      PrayerSettings.fromJson(await _read(_settingsKey));
 
   @override
-  Future<void> saveSettings(PrayerReminderSettings settings) =>
+  Future<void> saveSettings(PrayerSettings settings) =>
       _preferences.setString(_settingsKey, jsonEncode(settings.toJson()));
 
   @override
