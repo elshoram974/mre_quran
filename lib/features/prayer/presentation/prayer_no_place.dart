@@ -10,6 +10,7 @@ class PrayerNoPlace extends StatelessWidget {
     super.key,
     required this.denied,
     required this.onLocate,
+    required this.onChooseMap,
   });
 
   /// Whether the last request was refused.
@@ -18,15 +19,28 @@ class PrayerNoPlace extends StatelessWidget {
   /// Called to ask for the location.
   final VoidCallback onLocate;
 
+  /// Opens a map for choosing a location without device-location permission.
+  final VoidCallback onChooseMap;
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    return EmptyState(
-      icon: Icons.location_searching,
-      title: l10n.prayerNoPlaceTitle,
-      message: denied ? l10n.adhkarLocationDenied : l10n.prayerNoPlaceBody,
-      actionLabel: l10n.prayerLocate,
-      onAction: onLocate,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        EmptyState(
+          icon: Icons.location_searching,
+          title: l10n.prayerNoPlaceTitle,
+          message: denied ? l10n.adhkarLocationDenied : l10n.prayerNoPlaceBody,
+          actionLabel: l10n.prayerLocate,
+          onAction: onLocate,
+        ),
+        TextButton.icon(
+          onPressed: onChooseMap,
+          icon: const Icon(Icons.map_outlined),
+          label: Text(l10n.prayerChooseMap),
+        ),
+      ],
     );
   }
 }

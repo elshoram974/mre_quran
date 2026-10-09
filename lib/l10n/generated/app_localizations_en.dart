@@ -285,6 +285,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get prayerUpdateLocation => 'Update my location';
 
   @override
+  String get prayerChooseMap => 'Choose a place on the map';
+
+  @override
+  String get prayerChooseMapHint => 'Set your place manually with Google Maps';
+
+  @override
+  String get prayerMapTitle => 'Choose your place';
+
+  @override
+  String get prayerMapHint =>
+      'Tap the map to place the marker. This does not request your device location.';
+
+  @override
+  String get prayerMapCurrentLocation => 'Use my current location';
+
+  @override
+  String get prayerMapSave => 'Use this place';
+
+  @override
+  String get prayerMapSelect => 'Tap the map to choose a place';
+
+  @override
   String prayerPlaceLine(String latitude, String longitude) {
     return 'Approximate place: $latitude, $longitude';
   }

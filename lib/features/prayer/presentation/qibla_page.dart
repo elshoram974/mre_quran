@@ -2,7 +2,9 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../app/router.dart';
 import '../../../core/haptics/haptics.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/layout/adaptive_layout.dart';
@@ -66,6 +68,8 @@ class _QiblaPageState extends ConsumerState<QiblaPage> {
               child: PrayerNoPlace(
                 denied: _result == PrayerResult.locationDenied,
                 onLocate: _locate,
+                onChooseMap: () =>
+                    context.push(AppRoute.prayerLocationPicker.path),
               ),
             );
           }

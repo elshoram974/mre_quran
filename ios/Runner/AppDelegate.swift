@@ -1,4 +1,5 @@
 import Flutter
+import GoogleMaps
 import UIKit
 import UserNotifications
 import WidgetKit
@@ -9,6 +10,11 @@ import WidgetKit
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
+    if let key = Bundle.main.object(forInfoDictionaryKey: "GMSApiKey") as? String,
+       !key.isEmpty,
+       !key.hasPrefix("$(") {
+      GMSServices.provideAPIKey(key)
+    }
     // Download progress and adhkar reminder notifications. The permission is
     // asked for when a download starts or a reminder is turned on, not here.
     UNUserNotificationCenter.current().delegate = self as UNUserNotificationCenterDelegate
@@ -30,19 +36,12 @@ import WidgetKit
       let values = call.arguments as? [String: Any]
       let defaults = UserDefaults(suiteName: "group.net.mrecode.mreQuran")
       if let values {
-        defaults?.set(values["title"] as? String, forKey: "title")
-        defaults?.set(values["label"] as? String, forKey: "label")
-        defaults?.set(values["time"] as? String, forKey: "time")
-        defaults?.set(values["at"] as? NSNumber, forKey: "at")
-        defaults?.set(values["times"] as? [[String: String]], forKey: "times")
+        defaults?.set(values, forKey: "prayerWidgetPayload")
       } else {
-        defaults?.removeObject(forKey: "title")
-        defaults?.removeObject(forKey: "label")
-        defaults?.removeObject(forKey: "time")
-        defaults?.removeObject(forKey: "at")
-        defaults?.removeObject(forKey: "times")
+        defaults?.removeObject(forKey: "prayerWidgetPayload")
       }
       WidgetCenter.shared.reloadTimelines(ofKind: "NextPrayerWidget")
+      WidgetCenter.shared.reloadTimelines(ofKind: "PrayerScheduleWidget")
       callback(nil)
     }
   }

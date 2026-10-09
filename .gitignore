@@ -60,6 +60,8 @@ app.*.map.json
 *.keystore
 **/key.properties
 **/keystore/
+android/local.properties
+ios/Flutter/GoogleMaps.xcconfig
 
 # Local tooling and native build caches.
 android/.gradle/

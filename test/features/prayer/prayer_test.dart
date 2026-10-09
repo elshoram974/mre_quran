@@ -251,6 +251,28 @@ void main() {
       },
     );
 
+    test(
+      'a map-selected place saves without requesting device location',
+      () async {
+        final repo = MemoryPrayerRepository();
+        final location = FakeLocationSource();
+        final c = container(
+          scheduler: FakeReminderScheduler(),
+          location: location,
+          repository: repo,
+        );
+        await c.read(prayerProvider.future);
+
+        final selected = PrayerPlace(21.42, 39.83);
+        await c.read(prayerProvider.notifier).setPlace(selected);
+
+        expect(location.requests, 0);
+        expect(c.read(prayerProvider).value!.place, selected);
+        expect(repo.place, selected);
+        expect(c.read(prayerProvider).value!.method, PrayerMethod.ummAlQura);
+      },
+    );
+
     test('a refused location leaves everything as it was', () async {
       final c = container(
         scheduler: FakeReminderScheduler(),

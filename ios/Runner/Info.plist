@@ -28,6 +28,8 @@
 	<string>يستخدم التطبيق موقعك التقريبي مرة واحدة لحساب مواقيت الصلاة على جهازك فقط، ولا يُرسَله إلى أي جهة. · Your approximate location is used once to work out prayer times on this device only. It is never sent anywhere.</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>GMSApiKey</key>
+	<string>$(GOOGLE_MAPS_API_KEY)</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

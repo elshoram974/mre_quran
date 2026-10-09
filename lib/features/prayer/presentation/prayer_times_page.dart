@@ -80,6 +80,8 @@ class _PrayerTimesPageState extends ConsumerState<PrayerTimesPage> {
                       denied: _result == PrayerResult.locationDenied,
                       onLocate: () =>
                           _run(ref.read(prayerProvider.notifier).locate),
+                      onChooseMap: () =>
+                          context.push(AppRoute.prayerLocationPicker.path),
                     )
                   : _Content(state: data, result: _result, onRun: _run),
             ),
@@ -265,6 +267,13 @@ class _Content extends ConsumerWidget {
               label: Text(l10n.prayerUpdateLocation),
             ),
           ],
+        ),
+        const SizedBox(height: 8),
+        AppTileCard(
+          icon: Icons.map_outlined,
+          title: l10n.prayerChooseMap,
+          subtitle: l10n.prayerChooseMapHint,
+          onTap: () => context.push(AppRoute.prayerLocationPicker.path),
         ),
         if (result != PrayerResult.ok)
           Padding(

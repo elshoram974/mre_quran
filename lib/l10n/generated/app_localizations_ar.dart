@@ -282,6 +282,28 @@ class AppLocalizationsAr extends AppLocalizations {
   String get prayerUpdateLocation => 'حدّث موقعي';
 
   @override
+  String get prayerChooseMap => 'اختر موقعًا من الخريطة';
+
+  @override
+  String get prayerChooseMapHint => 'حدّد موقعك يدويًا من Google Maps';
+
+  @override
+  String get prayerMapTitle => 'اختر موقعك';
+
+  @override
+  String get prayerMapHint =>
+      'اضغط على الخريطة لوضع العلامة. لا يطلب هذا الإذن لموقع الجهاز.';
+
+  @override
+  String get prayerMapCurrentLocation => 'استخدم موقعي الحالي';
+
+  @override
+  String get prayerMapSave => 'استخدم هذا الموقع';
+
+  @override
+  String get prayerMapSelect => 'اضغط على الخريطة لتحديد موقع';
+
+  @override
   String prayerPlaceLine(String latitude, String longitude) {
     return 'المكان التقريبي: $latitude، $longitude';
   }

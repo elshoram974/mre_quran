@@ -135,6 +135,15 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
     return PrayerResult.ok;
   }
 
+  /// Saves a location selected manually on the map without requesting device
+  /// location permission.
+  Future<void> setPlace(PrayerPlace place) async {
+    final current = state.value;
+    if (current == null) return;
+    unawaited(_repository.savePlace(place));
+    await _apply(current.settings, place);
+  }
+
   /// Turns the alert at the time of [prayer] on or off.
   Future<PrayerResult> setAlert(DailyPrayer prayer, bool on) => setAlerts({
     for (final item in DailyPrayer.values)

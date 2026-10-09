@@ -602,6 +602,48 @@ abstract class AppLocalizations {
   /// **'Update my location'**
   String get prayerUpdateLocation;
 
+  /// No description provided for @prayerChooseMap.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a place on the map'**
+  String get prayerChooseMap;
+
+  /// No description provided for @prayerChooseMapHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Set your place manually with Google Maps'**
+  String get prayerChooseMapHint;
+
+  /// No description provided for @prayerMapTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your place'**
+  String get prayerMapTitle;
+
+  /// No description provided for @prayerMapHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the map to place the marker. This does not request your device location.'**
+  String get prayerMapHint;
+
+  /// No description provided for @prayerMapCurrentLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Use my current location'**
+  String get prayerMapCurrentLocation;
+
+  /// No description provided for @prayerMapSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Use this place'**
+  String get prayerMapSave;
+
+  /// No description provided for @prayerMapSelect.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the map to choose a place'**
+  String get prayerMapSelect;
+
   /// No description provided for @prayerPlaceLine.
   ///
   /// In en, this message translates to:
