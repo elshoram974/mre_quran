@@ -65,10 +65,9 @@ class _PrayerLocationPickerPageState
           ),
           const IgnorePointer(
             child: Center(
-              child: Padding(
-                padding: EdgeInsets.only(bottom: AppTokens.minTarget),
-                child: Icon(Icons.location_pin, size: 48),
-              ),
+              // The pin must sit on the camera target. Do not offset it for
+              // controls below: the selected coordinates would be inaccurate.
+              child: Icon(Icons.location_pin, size: AppTokens.minTarget),
             ),
           ),
           SafeArea(
