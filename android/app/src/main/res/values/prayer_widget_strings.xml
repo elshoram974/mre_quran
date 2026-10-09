@@ -3,4 +3,25 @@
     <string name="prayer_widget_remaining">%1$s remaining</string>
     <string name="prayer_widget_empty">Open MRE Quran to set your location</string>
     <string name="prayer_widget_name">Prayer times</string>
+    <string name="prayer_widget_next_description">The next prayer, its time and how long until it.</string>
+    <string name="prayer_schedule_widget_description">Today\'s five prayers and sunrise, with the Hijri date.</string>
+
+    <!-- The sample shown in the widget picker, before real times exist. -->
+    <string name="widget_preview_fajr">Fajr</string>
+    <string name="widget_preview_sunrise">Sunrise</string>
+    <string name="widget_preview_dhuhr">Dhuhr</string>
+    <string name="widget_preview_asr">Asr</string>
+    <string name="widget_preview_maghrib">Maghrib</string>
+    <string name="widget_preview_isha">Isha</string>
+    <string name="widget_preview_fajr_time">5:27 AM</string>
+    <string name="widget_preview_sunrise_time">6:54 AM</string>
+    <string name="widget_preview_dhuhr_time">12:44 PM</string>
+    <string name="widget_preview_asr_time">4:02 PM</string>
+    <string name="widget_preview_maghrib_time">6:32 PM</string>
+    <string name="widget_preview_isha_time">7:49 PM</string>
+    <string name="widget_preview_remaining">1 h 24 min remaining</string>
+    <string name="widget_preview_date">Thursday, 8 October</string>
+    <string name="widget_preview_hijri">27 Rabi\' al-Thani 1448</string>
+    <string name="prayer_widget_next_name">Next prayer</string>
+    <string name="prayer_schedule_widget_name">Today\'s prayer times</string>
 </resources>

@@ -3,4 +3,24 @@
     <string name="prayer_widget_remaining">متبقٍ %1$s</string>
     <string name="prayer_widget_empty">افتح مصحف MRE لتحديد موقعك</string>
     <string name="prayer_widget_name">مواقيت الصلاة</string>
+    <string name="prayer_widget_next_description">الصلاة القادمة ووقتها والمدة المتبقية عليها.</string>
+    <string name="prayer_schedule_widget_description">صلوات اليوم الخمس والشروق مع التاريخ الهجري.</string>
+
+    <string name="widget_preview_fajr">الفجر</string>
+    <string name="widget_preview_sunrise">الشروق</string>
+    <string name="widget_preview_dhuhr">الظهر</string>
+    <string name="widget_preview_asr">العصر</string>
+    <string name="widget_preview_maghrib">المغرب</string>
+    <string name="widget_preview_isha">العشاء</string>
+    <string name="widget_preview_fajr_time">٥:٢٧ ص</string>
+    <string name="widget_preview_sunrise_time">٦:٥٤ ص</string>
+    <string name="widget_preview_dhuhr_time">١٢:٤٤ م</string>
+    <string name="widget_preview_asr_time">٤:٠٢ م</string>
+    <string name="widget_preview_maghrib_time">٦:٣٢ م</string>
+    <string name="widget_preview_isha_time">٧:٤٩ م</string>
+    <string name="widget_preview_remaining">متبقٍ ١ س ٢٤ د</string>
+    <string name="widget_preview_date">الخميس ٨ أكتوبر</string>
+    <string name="widget_preview_hijri">٢٧ ربيع الآخر ١٤٤٨ هـ</string>
+    <string name="prayer_widget_next_name">الصلاة القادمة</string>
+    <string name="prayer_schedule_widget_name">مواقيت اليوم</string>
 </resources>

@@ -410,6 +410,50 @@ class AppLocalizationsAr extends AppLocalizations {
   String get compassLetterWest => 'غ';
 
   @override
+  String get hijriMonth1 => 'محرم';
+
+  @override
+  String get hijriMonth2 => 'صفر';
+
+  @override
+  String get hijriMonth3 => 'ربيع الأول';
+
+  @override
+  String get hijriMonth4 => 'ربيع الآخر';
+
+  @override
+  String get hijriMonth5 => 'جمادى الأولى';
+
+  @override
+  String get hijriMonth6 => 'جمادى الآخرة';
+
+  @override
+  String get hijriMonth7 => 'رجب';
+
+  @override
+  String get hijriMonth8 => 'شعبان';
+
+  @override
+  String get hijriMonth9 => 'رمضان';
+
+  @override
+  String get hijriMonth10 => 'شوال';
+
+  @override
+  String get hijriMonth11 => 'ذو القعدة';
+
+  @override
+  String get hijriMonth12 => 'ذو الحجة';
+
+  @override
+  String hijriDateLine(String day, String month, String year) {
+    return '$day $month $year هـ';
+  }
+
+  @override
+  String get prayerWidgetEmpty => 'افتح مصحف MRE لتحديد موقعك';
+
+  @override
   String get settingsHaptics => 'الاهتزاز';
 
   @override

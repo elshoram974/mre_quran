@@ -413,6 +413,50 @@ class AppLocalizationsEn extends AppLocalizations {
   String get compassLetterWest => 'W';
 
   @override
+  String get hijriMonth1 => 'Muharram';
+
+  @override
+  String get hijriMonth2 => 'Safar';
+
+  @override
+  String get hijriMonth3 => 'Rabi\' al-Awwal';
+
+  @override
+  String get hijriMonth4 => 'Rabi\' al-Thani';
+
+  @override
+  String get hijriMonth5 => 'Jumada al-Awwal';
+
+  @override
+  String get hijriMonth6 => 'Jumada al-Thani';
+
+  @override
+  String get hijriMonth7 => 'Rajab';
+
+  @override
+  String get hijriMonth8 => 'Sha\'ban';
+
+  @override
+  String get hijriMonth9 => 'Ramadan';
+
+  @override
+  String get hijriMonth10 => 'Shawwal';
+
+  @override
+  String get hijriMonth11 => 'Dhu al-Qi\'dah';
+
+  @override
+  String get hijriMonth12 => 'Dhu al-Hijjah';
+
+  @override
+  String hijriDateLine(String day, String month, String year) {
+    return '$day $month $year AH';
+  }
+
+  @override
+  String get prayerWidgetEmpty => 'Open MRE Quran to set your location';
+
+  @override
   String get settingsHaptics => 'Vibration';
 
   @override

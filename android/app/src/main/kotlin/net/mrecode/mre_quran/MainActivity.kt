@@ -17,14 +17,13 @@ class MainActivity : FlutterActivity() {
                     return@setMethodCallHandler
                 }
                 @Suppress("UNCHECKED_CAST")
-                PrayerWidgetProvider.save(this, call.arguments as? Map<String, Any?>)
+                PrayerWidgetRenderer.save(this, call.arguments as? Map<String, Any?>)
                 result.success(null)
             }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        PrayerWidgetProvider.refresh(this)
-        PrayerScheduleWidgetProvider.refresh(this)
+        PrayerWidgetRenderer.updateAll(this)
     }
 }

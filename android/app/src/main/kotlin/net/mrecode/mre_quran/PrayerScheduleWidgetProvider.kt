@@ -2,19 +2,12 @@ package net.mrecode.mre_quran
 
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
-import android.content.ComponentName
 import android.content.Context
-import android.widget.RemoteViews
 
+/** The widget with the day's times. [PrayerWidgetRenderer] draws it. */
 class PrayerScheduleWidgetProvider : AppWidgetProvider() {
-    override fun onUpdate(context: Context, manager: AppWidgetManager, ids: IntArray) {
-        PrayerWidgetProvider.updateSchedule(context, manager)
-    }
+    override fun onUpdate(context: Context, manager: AppWidgetManager, ids: IntArray) =
+        PrayerWidgetRenderer.updateAll(context)
 
-    companion object {
-        fun refresh(context: Context) = PrayerWidgetProvider.updateSchedule(
-            context,
-            AppWidgetManager.getInstance(context),
-        )
-    }
+    override fun onDisabled(context: Context) = PrayerWidgetRenderer.updateAll(context)
 }

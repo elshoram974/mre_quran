@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- An eight-pointed star: a square and a turned square drawn over each other. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="96dp"
+    android:height="96dp"
+    android:viewportWidth="100"
+    android:viewportHeight="100">
+    <path
+        android:pathData="M18,18 H82 V82 H18 Z"
+        android:strokeColor="@color/widget_star"
+        android:strokeWidth="2.5" />
+    <path
+        android:pathData="M50,2 L98,50 L50,98 L2,50 Z"
+        android:strokeColor="@color/widget_star"
+        android:strokeWidth="2.5" />
+    <path
+        android:pathData="M50,22 L78,50 L50,78 L22,50 Z"
+        android:strokeColor="@color/widget_star"
+        android:strokeWidth="2.5" />
+</vector>

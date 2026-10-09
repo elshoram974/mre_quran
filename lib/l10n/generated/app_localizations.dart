@@ -818,6 +818,90 @@ abstract class AppLocalizations {
   /// **'W'**
   String get compassLetterWest;
 
+  /// No description provided for @hijriMonth1.
+  ///
+  /// In en, this message translates to:
+  /// **'Muharram'**
+  String get hijriMonth1;
+
+  /// No description provided for @hijriMonth2.
+  ///
+  /// In en, this message translates to:
+  /// **'Safar'**
+  String get hijriMonth2;
+
+  /// No description provided for @hijriMonth3.
+  ///
+  /// In en, this message translates to:
+  /// **'Rabi\' al-Awwal'**
+  String get hijriMonth3;
+
+  /// No description provided for @hijriMonth4.
+  ///
+  /// In en, this message translates to:
+  /// **'Rabi\' al-Thani'**
+  String get hijriMonth4;
+
+  /// No description provided for @hijriMonth5.
+  ///
+  /// In en, this message translates to:
+  /// **'Jumada al-Awwal'**
+  String get hijriMonth5;
+
+  /// No description provided for @hijriMonth6.
+  ///
+  /// In en, this message translates to:
+  /// **'Jumada al-Thani'**
+  String get hijriMonth6;
+
+  /// No description provided for @hijriMonth7.
+  ///
+  /// In en, this message translates to:
+  /// **'Rajab'**
+  String get hijriMonth7;
+
+  /// No description provided for @hijriMonth8.
+  ///
+  /// In en, this message translates to:
+  /// **'Sha\'ban'**
+  String get hijriMonth8;
+
+  /// No description provided for @hijriMonth9.
+  ///
+  /// In en, this message translates to:
+  /// **'Ramadan'**
+  String get hijriMonth9;
+
+  /// No description provided for @hijriMonth10.
+  ///
+  /// In en, this message translates to:
+  /// **'Shawwal'**
+  String get hijriMonth10;
+
+  /// No description provided for @hijriMonth11.
+  ///
+  /// In en, this message translates to:
+  /// **'Dhu al-Qi\'dah'**
+  String get hijriMonth11;
+
+  /// No description provided for @hijriMonth12.
+  ///
+  /// In en, this message translates to:
+  /// **'Dhu al-Hijjah'**
+  String get hijriMonth12;
+
+  /// No description provided for @hijriDateLine.
+  ///
+  /// In en, this message translates to:
+  /// **'{day} {month} {year} AH'**
+  String hijriDateLine(String day, String month, String year);
+
+  /// No description provided for @prayerWidgetEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Open MRE Quran to set your location'**
+  String get prayerWidgetEmpty;
+
   /// No description provided for @settingsHaptics.
   ///
   /// In en, this message translates to:

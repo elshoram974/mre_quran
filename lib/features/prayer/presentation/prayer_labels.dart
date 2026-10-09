@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../l10n/generated/app_localizations.dart';
+import '../domain/hijri_date.dart';
 import '../domain/prayer_times.dart';
 import '../domain/qibla.dart';
 
@@ -53,3 +54,30 @@ String compassPointName(AppLocalizations l10n, CompassPoint point) =>
       CompassPoint.west => l10n.compassWest,
       CompassPoint.northWest => l10n.compassNorthWest,
     };
+
+/// A Hijri date like "27 Rabi' al-Thani 1448 AH".
+String hijriLabel(
+  AppLocalizations l10n,
+  HijriDate date,
+  String Function(String) digits,
+) => l10n.hijriDateLine(
+  digits('${date.day}'),
+  hijriMonthName(l10n, date.month),
+  digits('${date.year}'),
+);
+
+/// The name of Hijri month [month], 1 to 12.
+String hijriMonthName(AppLocalizations l10n, int month) => switch (month) {
+  1 => l10n.hijriMonth1,
+  2 => l10n.hijriMonth2,
+  3 => l10n.hijriMonth3,
+  4 => l10n.hijriMonth4,
+  5 => l10n.hijriMonth5,
+  6 => l10n.hijriMonth6,
+  7 => l10n.hijriMonth7,
+  8 => l10n.hijriMonth8,
+  9 => l10n.hijriMonth9,
+  10 => l10n.hijriMonth10,
+  11 => l10n.hijriMonth11,
+  _ => l10n.hijriMonth12,
+};

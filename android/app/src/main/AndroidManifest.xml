@@ -27,6 +27,7 @@
         android:icon="@mipmap/ic_launcher"
         android:fullBackupContent="@xml/backup_rules"
         android:dataExtractionRules="@xml/data_extraction_rules"
+        android:supportsRtl="true"
         android:enableOnBackInvokedCallback="true">
         <activity
             android:name=".MainActivity"
@@ -70,16 +71,23 @@
         </receiver>
         <receiver
             android:name=".PrayerWidgetProvider"
-            android:exported="false">
+            android:exported="false"
+            android:label="@string/prayer_widget_next_name">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
                 <action android:name="net.mrecode.mre_quran.PRAYER_WIDGET_REFRESH" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+                <action android:name="android.intent.action.DATE_CHANGED" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/prayer_widget_info" />
         </receiver>
-        <receiver android:name=".PrayerScheduleWidgetProvider" android:exported="false">
+        <receiver
+            android:name=".PrayerScheduleWidgetProvider"
+            android:exported="false"
+            android:label="@string/prayer_schedule_widget_name">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
