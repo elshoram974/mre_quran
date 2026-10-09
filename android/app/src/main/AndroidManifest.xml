@@ -13,6 +13,11 @@
          minutes late at worst. Google Play asks for a declaration for this
          permission; see docs/STORE_COMPLIANCE.md. -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
+    <!-- The adhan plays from a foreground service, so it keeps going when the
+         screen is off and shows its notice until stopped. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <!-- Approximate location, asked for only when the person turns on the
          after-prayer reminders, to work out prayer times on the device.
          Precise and background location are not used. -->
@@ -67,6 +72,19 @@
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
                 <action android:name="android.intent.action.QUICKBOOT_POWERON" />
                 <action android:name="com.htc.intent.action.QUICKBOOT_POWERON"/>
+            </intent-filter>
+        </receiver>
+        <service
+            android:name=".AdhanService"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback" />
+        <receiver
+            android:name=".AdhanAlarmReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="net.mrecode.mre_quran.ADHAN_ALARM" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
             </intent-filter>
         </receiver>
         <receiver

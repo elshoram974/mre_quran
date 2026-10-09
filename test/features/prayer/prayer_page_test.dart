@@ -197,7 +197,11 @@ void main() {
       await tester.pumpAndSettle();
       // Four prayers are left today, then five a day for six days.
       expect(harness.scheduler.once, hasLength(34));
+      // Back up to the day's times, which the page scrolled past.
+      await tester.drag(find.byType(Scrollable).first, const Offset(0, 1500));
+      await tester.pumpAndSettle();
       expect(find.byTooltip('التنبيه مفعّل'), findsNWidgets(5));
+      await _reveal(tester, find.textContaining('قد يؤخّر أندرويد'));
       expect(find.textContaining('قد يؤخّر أندرويد'), findsOneWidget);
 
       await tester.tap(find.text('السماح بالتوقيت الدقيق'));

@@ -12,6 +12,7 @@ import '../features/adhkar/presentation/adhkar_session_page.dart';
 import '../features/adhkar/presentation/duas_page.dart';
 import '../features/bookmarks/presentation/bookmarks_page.dart';
 import '../features/mushaf/presentation/mushaf_page.dart';
+import '../features/adhan/presentation/adhan_page.dart';
 import '../features/prayer/presentation/prayer_times_page.dart';
 import '../features/prayer/presentation/qibla_page.dart';
 import '../features/quran_index/presentation/quran_index_page.dart';
@@ -89,6 +90,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const PrayerTimesPage(),
       ),
       GoRoute(
+        path: AppRoute.adhan.path,
+        builder: (context, state) => const AdhanPage(),
+      ),
+      GoRoute(
         path: AppRoute.qibla.path,
         builder: (context, state) => const QiblaPage(),
       ),
@@ -127,7 +132,8 @@ enum AppRoute {
   adhkarGroup('/adhkar-group/:id'),
   adhkarSearch('/adhkar-search'),
   prayerTimes('/prayer-times'),
-  qibla('/qibla');
+  qibla('/qibla'),
+  adhan('/adhan');
 
   const AppRoute(this.path);
   final String path;

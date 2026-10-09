@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/notifications/reminder_payload.dart';
+import '../../../core/notifications/reminder_tap.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../data/adhan_catalog.dart';
 import '../data/adhan_platform.dart';
@@ -30,6 +32,15 @@ final voiceStoreProvider = Provider<VoiceStore>((ref) => FileVoiceStore());
 final adhanPlatformProvider = Provider<AdhanPlatform>(
   (ref) => ChannelAdhanPlatform(),
 );
+
+/// What the adhan's notice opens when it is tapped: the one that started the
+/// app (if any), then each tap while the app runs.
+final adhanTapsProvider = StreamProvider<ReminderTap>((ref) async* {
+  final platform = ref.watch(adhanPlatformProvider);
+  final launch = await platform.takeLaunchPayload();
+  if (launch != null) yield ReminderTap(launch);
+  yield* platform.taps.map(ReminderTap.new);
+});
 
 /// Whether this phone can play the adhan by itself.
 final adhanSupportedProvider = FutureProvider<bool>(
@@ -71,7 +82,10 @@ Future<AdhanAlertConfig> buildAdhanConfig({
   required AppLocalizations l10n,
 }) async {
   String? path;
-  if (settings.voiceId != AdhanVoice.defaultId) {
+  if (settings.voiceId == AdhanVoice.customId) {
+    final custom = settings.customPath;
+    if (custom != null && File(custom).existsSync()) path = custom;
+  } else if (settings.voiceId != AdhanVoice.defaultId) {
     for (final voice in voices) {
       if (voice.id == settings.voiceId) {
         path = (await store.fileOf(voice))?.path;
@@ -168,15 +182,18 @@ class AdhanVoicesNotifier extends AsyncNotifier<VoicesState> {
   Future<VoicesState> build() async {
     final voices = await ref.watch(adhanCatalogProvider.future);
     final ready = await _store.downloaded(voices);
-    final ended = _platform.previewEnded.listen(
+    // Taken now: a provider cannot be read inside the callbacks below.
+    final platform = _platform;
+    final tokens = _tokens;
+    final ended = platform.previewEnded.listen(
       (_) => _update((state) => state.copyWith(clearListening: true)),
     );
     ref.onDispose(() {
       unawaited(ended.cancel());
-      for (final token in _tokens.values) {
+      for (final token in tokens.values) {
         token.cancel();
       }
-      unawaited(_platform.stopPreview());
+      unawaited(platform.stopPreview());
     });
     return VoicesState(
       voices: voices,
@@ -262,6 +279,58 @@ class AdhanVoicesNotifier extends AsyncNotifier<VoicesState> {
     }
     _update((state) => state.copyWith(listening: voice.id));
     await _platform.preview(source);
+  }
+
+  /// Lets the person pick a recording from their phone, and uses it. Returns
+  /// the pick so the page can say if the file was too large.
+  Future<AudioPick?> pickCustom() async {
+    final pick = await _platform.pickAudioFile();
+    final path = pick?.path;
+    final name = pick?.name;
+    if (path != null && name != null) {
+      await ref
+          .read(adhanSettingsProvider.notifier)
+          .change(
+            (value) => value.copyWith(
+              voiceId: AdhanVoice.customId,
+              customPath: path,
+              customName: name,
+            ),
+          );
+    }
+    return pick;
+  }
+
+  /// Forgets the picked file and deletes its copy. If it was in use, the
+  /// bundled voice is used again.
+  Future<void> deleteCustom() async {
+    if (state.value?.listening == AdhanVoice.customId) await stopListening();
+    final settings = ref.read(adhanSettingsProvider).value;
+    final path = settings?.customPath;
+    if (path != null) {
+      final file = File(path);
+      if (await file.exists()) await file.delete();
+    }
+    await ref
+        .read(adhanSettingsProvider.notifier)
+        .change(
+          (value) => value.copyWith(
+            clearCustom: true,
+            voiceId: value.voiceId == AdhanVoice.customId
+                ? AdhanVoice.defaultId
+                : value.voiceId,
+          ),
+        );
+  }
+
+  /// Plays the picked file, or stops it when it is already playing.
+  Future<void> toggleListeningCustom() async {
+    final current = state.value;
+    final path = ref.read(adhanSettingsProvider).value?.customPath;
+    if (current == null || path == null) return;
+    if (current.listening == AdhanVoice.customId) return stopListening();
+    _update((state) => state.copyWith(listening: AdhanVoice.customId));
+    await _platform.preview(FilePreview(path));
   }
 
   /// Stops the preview.

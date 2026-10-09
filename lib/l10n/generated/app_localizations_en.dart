@@ -305,7 +305,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get prayerAlertsHint =>
-      'A notification when the time comes. The adhan recording is added once a licensed one is approved; until then it uses your phone\'s notification sound.';
+      'A notification when the time comes. With the Adhan settings on, the adhan plays by itself; otherwise it uses your phone\'s notification sound.';
 
   @override
   String get prayerAlertOn => 'Alert on';
@@ -559,6 +559,28 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get adhanDownloadIntegrity =>
       'The file was not what was expected, so it was not saved.';
+
+  @override
+  String get adhanDownloadBusy =>
+      'The server is busy right now. Try again in a few minutes.';
+
+  @override
+  String get adhanCustomTitle => 'From your phone';
+
+  @override
+  String get adhanCustomHint =>
+      'Pick an adhan recording you already have, such as the voice of a muezzin you love. It is copied into the app and stays on this phone. Use only recordings you have the right to use.';
+
+  @override
+  String get adhanCustomChoose => 'Choose a file';
+
+  @override
+  String get adhanCustomReplace => 'Choose another file';
+
+  @override
+  String adhanCustomTooLarge(String size) {
+    return 'That file is too large. Pick one under $size MB.';
+  }
 
   @override
   String get adhanUnsupported =>

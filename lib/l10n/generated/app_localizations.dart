@@ -635,7 +635,7 @@ abstract class AppLocalizations {
   /// No description provided for @prayerAlertsHint.
   ///
   /// In en, this message translates to:
-  /// **'A notification when the time comes. The adhan recording is added once a licensed one is approved; until then it uses your phone\'s notification sound.'**
+  /// **'A notification when the time comes. With the Adhan settings on, the adhan plays by itself; otherwise it uses your phone\'s notification sound.'**
   String get prayerAlertsHint;
 
   /// No description provided for @prayerAlertOn.
@@ -1075,6 +1075,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The file was not what was expected, so it was not saved.'**
   String get adhanDownloadIntegrity;
+
+  /// No description provided for @adhanDownloadBusy.
+  ///
+  /// In en, this message translates to:
+  /// **'The server is busy right now. Try again in a few minutes.'**
+  String get adhanDownloadBusy;
+
+  /// No description provided for @adhanCustomTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'From your phone'**
+  String get adhanCustomTitle;
+
+  /// No description provided for @adhanCustomHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick an adhan recording you already have, such as the voice of a muezzin you love. It is copied into the app and stays on this phone. Use only recordings you have the right to use.'**
+  String get adhanCustomHint;
+
+  /// No description provided for @adhanCustomChoose.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a file'**
+  String get adhanCustomChoose;
+
+  /// No description provided for @adhanCustomReplace.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose another file'**
+  String get adhanCustomReplace;
+
+  /// No description provided for @adhanCustomTooLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'That file is too large. Pick one under {size} MB.'**
+  String adhanCustomTooLarge(String size);
 
   /// No description provided for @adhanUnsupported.
   ///

@@ -69,6 +69,25 @@ class AdhanAlertConfig {
   };
 }
 
+/// The result of asking the person for an audio file.
+class AudioPick {
+  /// A file that was copied into the app.
+  const AudioPick.file({required String this.path, required String this.name})
+    : tooLarge = false;
+
+  /// A file that was refused for its size.
+  const AudioPick.tooLarge() : path = null, name = null, tooLarge = true;
+
+  /// Where the copy is.
+  final String? path;
+
+  /// The file's name.
+  final String? name;
+
+  /// Whether the file was bigger than the app keeps.
+  final bool tooLarge;
+}
+
 /// Where a preview comes from.
 sealed class AdhanPreviewSource {
   const AdhanPreviewSource();
@@ -142,27 +161,55 @@ abstract interface class AdhanPlatform {
 
   /// Fires when a preview ends on its own, or fails.
   Stream<void> get previewEnded;
+
+  /// Lets the person pick an audio file from their phone. It is copied into
+  /// the app, so it keeps working if the original moves. Null when they back
+  /// out.
+  Future<AudioPick?> pickAudioFile();
+
+  /// What the adhan's notice pointed at when it opened the app, if it did.
+  /// Call once, at start-up; after that taps arrive on [taps].
+  Future<String?> takeLaunchPayload();
+
+  /// Payloads of taps on the adhan's notice while the app is running.
+  Stream<String> get taps;
 }
 
 /// The Android implementation, over a method channel.
 class ChannelAdhanPlatform implements AdhanPlatform {
-  /// Creates the platform and starts listening for preview events.
-  ChannelAdhanPlatform() {
-    _channel.setMethodCallHandler((call) async {
-      if (call.method == 'previewEnded') _ended.add(null);
-    });
-  }
+  /// Creates the platform.
+  ChannelAdhanPlatform();
 
   static const _channel = MethodChannel('net.mrecode.mre_quran/adhan');
   final StreamController<void> _ended = StreamController<void>.broadcast();
+  final StreamController<String> _taps = StreamController<String>.broadcast();
+  bool _listening = false;
 
+  /// Starts hearing the platform's events, once, when first needed (so
+  /// creating the platform never touches the engine).
+  void _listen() {
+    if (_listening) return;
+    _listening = true;
+    _channel.setMethodCallHandler((call) async {
+      switch (call.method) {
+        case 'previewEnded':
+          _ended.add(null);
+        case 'tapped':
+          _taps.add(call.arguments! as String);
+      }
+    });
+  }
+
+  /// Calls the platform. A failure never reaches the caller: the adhan is an
+  /// extra, and the alerts must go on without it.
   Future<T?> _call<T>(String method, [Object? arguments]) async {
     try {
+      _listen();
       return await _channel.invokeMethod<T>(method, arguments);
     } on MissingPluginException {
       return null;
-    } on PlatformException catch (error) {
-      AppLogger.debug('Adhan $method failed: ${error.code}');
+    } on Object catch (error) {
+      AppLogger.debug('Adhan $method failed: ${error.runtimeType}');
       return null;
     }
   }
@@ -192,5 +239,28 @@ class ChannelAdhanPlatform implements AdhanPlatform {
   Future<void> stopPreview() => _call<void>('stopPreview');
 
   @override
-  Stream<void> get previewEnded => _ended.stream;
+  Future<AudioPick?> pickAudioFile() async {
+    final result = await _call<Map<Object?, Object?>>('pickAudioFile');
+    if (result == null) return null;
+    if (result['error'] == 'too_large') return const AudioPick.tooLarge();
+    final path = result['path'];
+    final name = result['name'];
+    if (path is! String || name is! String) return null;
+    return AudioPick.file(path: path, name: name);
+  }
+
+  @override
+  Future<String?> takeLaunchPayload() => _call<String>('takeLaunchPayload');
+
+  @override
+  Stream<String> get taps {
+    _listen();
+    return _taps.stream;
+  }
+
+  @override
+  Stream<void> get previewEnded {
+    _listen();
+    return _ended.stream;
+  }
 }

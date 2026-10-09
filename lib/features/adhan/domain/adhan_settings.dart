@@ -10,9 +10,11 @@ class AdhanSettings {
     this.voiceId = AdhanVoice.defaultId,
     this.playAdhan = true,
     this.stopWhenFlipped = true,
+    this.customPath,
+    this.customName,
   });
 
-  /// The chosen voice.
+  /// The chosen voice: a catalogue id, or [AdhanVoice.customId].
   final String voiceId;
 
   /// Whether the adhan plays on its own, with a notice that stays until it is
@@ -22,15 +24,29 @@ class AdhanSettings {
   /// Whether turning the phone face down stops the adhan.
   final bool stopWhenFlipped;
 
-  /// A copy with the given changes.
+  /// Where the file the person picked from their phone was copied to.
+  final String? customPath;
+
+  /// That file's name, as the person knows it.
+  final String? customName;
+
+  /// Whether the person has picked a file of their own.
+  bool get hasCustom => customPath != null;
+
+  /// A copy with the given changes. [clearCustom] forgets the picked file.
   AdhanSettings copyWith({
     String? voiceId,
     bool? playAdhan,
     bool? stopWhenFlipped,
+    String? customPath,
+    String? customName,
+    bool clearCustom = false,
   }) => AdhanSettings(
     voiceId: voiceId ?? this.voiceId,
     playAdhan: playAdhan ?? this.playAdhan,
     stopWhenFlipped: stopWhenFlipped ?? this.stopWhenFlipped,
+    customPath: clearCustom ? null : (customPath ?? this.customPath),
+    customName: clearCustom ? null : (customName ?? this.customName),
   );
 
   @override
@@ -38,8 +54,11 @@ class AdhanSettings {
       other is AdhanSettings &&
       other.voiceId == voiceId &&
       other.playAdhan == playAdhan &&
-      other.stopWhenFlipped == stopWhenFlipped;
+      other.stopWhenFlipped == stopWhenFlipped &&
+      other.customPath == customPath &&
+      other.customName == customName;
 
   @override
-  int get hashCode => Object.hash(voiceId, playAdhan, stopWhenFlipped);
+  int get hashCode =>
+      Object.hash(voiceId, playAdhan, stopWhenFlipped, customPath, customName);
 }

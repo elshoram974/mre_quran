@@ -302,7 +302,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get prayerAlertsHint =>
-      'إشعار عند دخول الوقت. يُضاف تسجيل الأذان بعد اعتماد تسجيل مرخّص، وحتى ذلك الحين يستخدم صوت إشعارات هاتفك.';
+      'إشعار عند دخول الوقت. إذا فعّلت إعدادات الأذان فسيُشغَّل الأذان تلقائيًا، وإلا فبصوت إشعارات هاتفك.';
 
   @override
   String get prayerAlertOn => 'التنبيه مفعّل';
@@ -554,6 +554,27 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get adhanDownloadIntegrity => 'الملف ليس هو المتوقع فلم يُحفظ.';
+
+  @override
+  String get adhanDownloadBusy => 'الخادم مشغول الآن. أعد المحاولة بعد دقائق.';
+
+  @override
+  String get adhanCustomTitle => 'من هاتفك';
+
+  @override
+  String get adhanCustomHint =>
+      'اختر تسجيل أذان لديك، كصوت مؤذن تحبه. يُنسخ داخل التطبيق ويبقى على هذا الهاتف. استخدم فقط تسجيلات يحق لك استخدامها.';
+
+  @override
+  String get adhanCustomChoose => 'اختيار ملف';
+
+  @override
+  String get adhanCustomReplace => 'اختيار ملف آخر';
+
+  @override
+  String adhanCustomTooLarge(String size) {
+    return 'الملف كبير جدًا. اختر ملفًا أقل من $size م.ب.';
+  }
 
   @override
   String get adhanUnsupported =>

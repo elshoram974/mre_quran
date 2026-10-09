@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/haptics/haptics.dart';
 import '../core/l10n/l10n.dart';
 import '../core/theme/app_theme.dart';
+import '../features/adhan/application/adhan_providers.dart';
 import '../features/prayer/application/prayer_provider.dart';
 import '../features/prayer/presentation/prayer_widget_sync_scope.dart';
 import '../features/adhkar/application/reminders_provider.dart';
@@ -40,9 +41,15 @@ class QuranApp extends ConsumerWidget {
       ..listen(remindersProvider, (_, _) {})
       ..listen(prayerProvider, (_, _) {})
       ..listen(reminderTapsProvider, (_, next) {
-        final payload = next.value;
-        if (payload != null) {
-          unawaited(openReminder(ref.read(routerProvider), payload));
+        final tap = next.value;
+        if (tap != null) {
+          unawaited(openReminder(ref.read(routerProvider), tap.payload));
+        }
+      })
+      ..listen(adhanTapsProvider, (_, next) {
+        final tap = next.value;
+        if (tap != null) {
+          unawaited(openReminder(ref.read(routerProvider), tap.payload));
         }
       });
     return MediaQuery(

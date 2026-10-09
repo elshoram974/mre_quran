@@ -37,6 +37,9 @@ class AdhanVoice {
   /// The id of the voice that ships with the app.
   static const String defaultId = 'default';
 
+  /// The id of the file the person chose from their own phone.
+  static const String customId = 'custom';
+
   /// A stable id, used in storage and file names.
   final String id;
 

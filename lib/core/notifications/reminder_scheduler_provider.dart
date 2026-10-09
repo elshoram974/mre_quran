@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'reminder_scheduler.dart';
+import 'reminder_tap.dart';
 
 /// Provides the device scheduler. `main` overrides it with the started plugin;
 /// the default does nothing, which keeps tests off the platform.
@@ -8,9 +9,9 @@ final reminderSchedulerProvider = Provider<ReminderScheduler>(
   (ref) => const _NoopReminderScheduler(),
 );
 
-/// Notification payloads tapped while the app runs.
-final reminderTapsProvider = StreamProvider<String>(
-  (ref) => ref.watch(reminderSchedulerProvider).taps,
+/// Notifications tapped while the app runs, one event per tap.
+final reminderTapsProvider = StreamProvider<ReminderTap>(
+  (ref) => ref.watch(reminderSchedulerProvider).taps.map(ReminderTap.new),
 );
 
 class _NoopReminderScheduler implements ReminderScheduler {

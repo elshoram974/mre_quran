@@ -168,6 +168,13 @@ class _Content extends ConsumerWidget {
           onTap: () => context.push(AppRoute.qibla.path),
         ),
         const SizedBox(height: 12),
+        AppTileCard(
+          icon: Icons.volume_up_outlined,
+          title: l10n.adhanTitle,
+          subtitle: l10n.adhanTileSubtitle,
+          onTap: () => context.push(AppRoute.adhan.path),
+        ),
+        const SizedBox(height: 12),
         AppCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

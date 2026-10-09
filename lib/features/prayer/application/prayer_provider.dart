@@ -12,7 +12,6 @@ import '../../../core/time/ticking_clock.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../adhan/application/adhan_providers.dart';
 import '../../adhan/data/adhan_platform.dart';
-import '../../adhan/domain/adhan_settings.dart';
 import '../../settings/application/settings_provider.dart';
 import '../data/location_source.dart';
 import '../data/prayer_repository.dart';
@@ -220,34 +219,38 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
     Iterable<PrayerAlert> atTime,
   ) async {
     final platform = ref.read(adhanPlatformProvider);
-    final settings = await ref
-        .read(adhanSettingsProvider.future)
-        .catchError((Object _) => const AdhanSettings());
-    final usable =
-        atTime.isNotEmpty &&
-        settings.playAdhan &&
-        await platform.isSupported() &&
-        await _scheduler.canScheduleExact();
-    if (!usable) {
-      await platform.cancelAll();
+    try {
+      final settings = await ref.read(adhanSettingsProvider.future);
+      final usable =
+          atTime.isNotEmpty &&
+          settings.playAdhan &&
+          await platform.isSupported() &&
+          await _scheduler.canScheduleExact();
+      if (!usable) {
+        await platform.cancelAll();
+        return false;
+      }
+      final config = await buildAdhanConfig(
+        settings: settings,
+        voices: await ref.read(adhanCatalogProvider.future),
+        store: ref.read(voiceStoreProvider),
+        l10n: l10n,
+      );
+      await platform.schedule([
+        for (final alert in atTime)
+          AdhanAlarm(
+            id: alert.id,
+            at: alert.at,
+            title: l10n.prayerAlertTitle(prayerName(l10n, alert.prayer)),
+            body: l10n.prayerAlertBody,
+          ),
+      ], config);
+      return true;
+    } on Object catch (error) {
+      // Whatever went wrong, the alerts stay: as normal notifications.
+      AppLogger.debug('Adhan schedule failed: ${error.runtimeType}');
       return false;
     }
-    final config = await buildAdhanConfig(
-      settings: settings,
-      voices: await ref.read(adhanCatalogProvider.future),
-      store: ref.read(voiceStoreProvider),
-      l10n: l10n,
-    );
-    await platform.schedule([
-      for (final alert in atTime)
-        AdhanAlarm(
-          id: alert.id,
-          at: alert.at,
-          title: l10n.prayerAlertTitle(prayerName(l10n, alert.prayer)),
-          body: l10n.prayerAlertBody,
-        ),
-    ], config);
-    return true;
   }
 
   Future<void> _schedule(PrayerSettings settings, PrayerPlace? place) async {

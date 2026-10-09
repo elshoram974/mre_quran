@@ -206,6 +206,13 @@ class _SettingsContent extends ConsumerWidget {
         ),
         const SizedBox(height: _gap),
         AppTileCard(
+          icon: Icons.volume_up_outlined,
+          title: l10n.adhanTitle,
+          subtitle: l10n.adhanTileSubtitle,
+          onTap: () => context.push(AppRoute.adhan.path),
+        ),
+        const SizedBox(height: _gap),
+        AppTileCard(
           icon: Icons.notifications_none_outlined,
           title: l10n.adhkarReminders,
           onTap: () => RemindersSheet.show(context),

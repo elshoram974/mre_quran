@@ -21,6 +21,8 @@ class LocalAdhanRepository implements AdhanRepository {
   static const _voiceKey = 'adhan.voice';
   static const _playKey = 'adhan.play';
   static const _flipKey = 'adhan.flip';
+  static const _customPathKey = 'adhan.customPath';
+  static const _customNameKey = 'adhan.customName';
 
   @override
   Future<AdhanSettings> load() async {
@@ -30,6 +32,8 @@ class LocalAdhanRepository implements AdhanRepository {
       playAdhan: await _preferences.getBool(_playKey) ?? defaults.playAdhan,
       stopWhenFlipped:
           await _preferences.getBool(_flipKey) ?? defaults.stopWhenFlipped,
+      customPath: await _preferences.getString(_customPathKey),
+      customName: await _preferences.getString(_customNameKey),
     );
   }
 
@@ -38,5 +42,14 @@ class LocalAdhanRepository implements AdhanRepository {
     await _preferences.setString(_voiceKey, settings.voiceId);
     await _preferences.setBool(_playKey, settings.playAdhan);
     await _preferences.setBool(_flipKey, settings.stopWhenFlipped);
+    final path = settings.customPath;
+    final name = settings.customName;
+    if (path == null) {
+      await _preferences.remove(_customPathKey);
+      await _preferences.remove(_customNameKey);
+    } else {
+      await _preferences.setString(_customPathKey, path);
+      if (name != null) await _preferences.setString(_customNameKey, name);
+    }
   }
 }

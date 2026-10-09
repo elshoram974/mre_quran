@@ -14,6 +14,9 @@ enum VoiceDownloadFailure {
   /// The file is not the one the catalogue describes (wrong SHA-256).
   integrity,
 
+  /// The server asked us to slow down (HTTP 429 or 503). Try again later.
+  busy,
+
   /// The person cancelled.
   cancelled,
 }
@@ -67,7 +70,12 @@ class HttpVoiceFetcher implements VoiceFetcher {
       final response = await request.close();
       if (response.statusCode != HttpStatus.ok) {
         await response.drain<void>();
-        throw const VoiceDownloadException(VoiceDownloadFailure.network);
+        final busy =
+            response.statusCode == HttpStatus.tooManyRequests ||
+            response.statusCode == HttpStatus.serviceUnavailable;
+        throw VoiceDownloadException(
+          busy ? VoiceDownloadFailure.busy : VoiceDownloadFailure.network,
+        );
       }
       yield* response;
     } on SocketException {
