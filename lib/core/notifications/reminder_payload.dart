@@ -5,6 +5,9 @@ abstract final class ReminderPayload {
   /// Payload that opens the prayer times.
   static const String prayerTimes = 'prayer:times';
 
+  /// Payload from the home-screen prayer widget that opens Adhan settings.
+  static const String adhanSettings = 'adhan:settings';
+
   /// Payload that opens the adhkar collection [collectionId].
   static String forCollection(String collectionId) => '$_prefix$collectionId';
 

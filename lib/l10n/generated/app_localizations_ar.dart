@@ -292,7 +292,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get prayerMapHint =>
-      'اضغط على الخريطة لوضع العلامة. لا يطلب هذا الإذن لموقع الجهاز.';
+      'حرّك الخريطة حتى تصبح العلامة فوق مكانك. لا يطلب هذا الإذن لموقع الجهاز.';
 
   @override
   String get prayerMapCurrentLocation => 'استخدم موقعي الحالي';

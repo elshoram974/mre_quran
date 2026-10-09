@@ -92,7 +92,7 @@
   "prayerChooseMap": "Choose a place on the map",
   "prayerChooseMapHint": "Set your place manually with Google Maps",
   "prayerMapTitle": "Choose your place",
-  "prayerMapHint": "Tap the map to place the marker. This does not request your device location.",
+  "prayerMapHint": "Move the map until the pin is over your place. This does not request your device location.",
   "prayerMapCurrentLocation": "Use my current location",
   "prayerMapSave": "Use this place",
   "prayerMapSelect": "Tap the map to choose a place",

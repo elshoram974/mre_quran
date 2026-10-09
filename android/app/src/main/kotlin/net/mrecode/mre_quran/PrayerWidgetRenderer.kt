@@ -75,7 +75,7 @@ internal object PrayerWidgetRenderer {
             views.setViewVisibility(R.id.prayer_widget_remaining, View.VISIBLE)
         }
         direction(views, R.id.prayer_widget_root, model)
-        views.setOnClickPendingIntent(R.id.prayer_widget_root, openApp(context))
+        views.setOnClickPendingIntent(R.id.prayer_widget_root, openAdhanSettings(context))
         return views
     }
 
@@ -101,7 +101,7 @@ internal object PrayerWidgetRenderer {
             }
         }
         direction(views, R.id.schedule_root, model)
-        views.setOnClickPendingIntent(R.id.schedule_root, openApp(context))
+        views.setOnClickPendingIntent(R.id.schedule_root, openAdhanSettings(context))
         return views
     }
 
@@ -136,11 +136,13 @@ internal object PrayerWidgetRenderer {
         context.getSystemService(AlarmManager::class.java).cancel(refreshIntent(context))
     }
 
-    private fun openApp(context: Context): PendingIntent = PendingIntent.getActivity(
+    /** Opens the settings that control the alert the widget reports. */
+    private fun openAdhanSettings(context: Context): PendingIntent = PendingIntent.getActivity(
         context,
         REQUEST_CODE,
         Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            putExtra(AdhanService.EXTRA_PAYLOAD, "adhan:settings")
         },
         PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
     )

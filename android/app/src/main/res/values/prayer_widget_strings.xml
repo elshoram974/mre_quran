@@ -24,4 +24,8 @@
     <string name="widget_preview_hijri">27 Rabi\' al-Thani 1448</string>
     <string name="prayer_widget_next_name">Next prayer</string>
     <string name="prayer_schedule_widget_name">Today\'s prayer times</string>
+    <string name="adhkar_widget_name">Suggested dhikr</string>
+    <string name="adhkar_widget_description">Suggested adhkar with your saved progress.</string>
+    <string name="adhkar_widget_empty">Open MRE Quran to load your adhkar.</string>
+    <string name="adhkar_widget_progress">%1$d of %2$d</string>
 </resources>

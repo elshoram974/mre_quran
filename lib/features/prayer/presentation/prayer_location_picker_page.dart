@@ -1,10 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../../../core/l10n/l10n.dart';
-import '../../../core/layout/adaptive_layout.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/app_notice.dart';
 import '../../../core/widgets/app_page_scaffold.dart';
@@ -25,7 +26,11 @@ class PrayerLocationPickerPage extends ConsumerStatefulWidget {
 
 class _PrayerLocationPickerPageState
     extends ConsumerState<PrayerLocationPickerPage> {
+  final Completer<GoogleMapController> _mapController =
+      Completer<GoogleMapController>();
   PrayerPlace? _selected;
+  LatLng? _cameraTarget;
+  bool _mapInteractionStarted = false;
   PrayerResult _locationResult = PrayerResult.ok;
 
   @override
@@ -39,84 +44,83 @@ class _PrayerLocationPickerPageState
         : LatLng(selected.latitude, selected.longitude);
     return AppPageScaffold(
       title: l10n.prayerMapTitle,
-      body: ContentContainer(
-        child: Padding(
-          padding: pagePadding(context),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              AppNotice(l10n.prayerMapHint),
-              const SizedBox(height: 12),
-              Expanded(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(AppTokens.radiusCard),
-                  child: GoogleMap(
-                    initialCameraPosition: CameraPosition(
-                      target: initial,
-                      zoom: selected == null ? 1.5 : 10,
-                    ),
-                    markers: selected == null
-                        ? const {}
-                        : {
-                            Marker(
-                              markerId: const MarkerId('prayer-place'),
-                              position: LatLng(
-                                selected.latitude,
-                                selected.longitude,
-                              ),
-                            ),
-                          },
-                    myLocationButtonEnabled: false,
-                    compassEnabled: true,
-                    onTap: (point) => setState(
-                      () => _selected = PrayerPlace(
-                        point.latitude,
-                        point.longitude,
-                      ),
-                    ),
-                  ),
-                ),
+      body: Stack(
+        children: [
+          RepaintBoundary(
+            child: GoogleMap(
+              initialCameraPosition: CameraPosition(
+                target: initial,
+                zoom: selected == null ? 1.5 : 14,
               ),
-              const SizedBox(height: 12),
-              if (selected == null)
-                Text(
-                  l10n.prayerMapSelect,
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodyMedium,
-                )
-              else
-                Text(
-                  l10n.prayerPlaceLine(
-                    _coordinate(selected.latitude, formatDigits),
-                    _coordinate(selected.longitude, formatDigits),
-                  ),
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-              if (_locationResult == PrayerResult.locationDenied) ...[
-                const SizedBox(height: 8),
-                AppNotice(l10n.adhkarLocationDenied, error: true),
-              ],
-              const SizedBox(height: 12),
-              Wrap(
-                alignment: WrapAlignment.spaceBetween,
-                runSpacing: 8,
-                spacing: 8,
-                children: [
-                  TextButton.icon(
-                    onPressed: _useDeviceLocation,
-                    icon: const Icon(Icons.my_location_outlined),
-                    label: Text(l10n.prayerMapCurrentLocation),
-                  ),
-                  FilledButton(
-                    onPressed: selected == null ? null : _save,
-                    child: Text(l10n.prayerMapSave),
-                  ),
-                ],
-              ),
-            ],
+              myLocationButtonEnabled: false,
+              compassEnabled: true,
+              onMapCreated: (controller) {
+                _mapController.complete(controller);
+                _cameraTarget ??= initial;
+              },
+              onCameraMoveStarted: () => _mapInteractionStarted = true,
+              onCameraMove: (position) => _cameraTarget = position.target,
+              onCameraIdle: _selectCameraTarget,
+            ),
           ),
-        ),
+          const IgnorePointer(
+            child: Center(
+              child: Padding(
+                padding: EdgeInsets.only(bottom: AppTokens.minTarget),
+                child: Icon(Icons.location_pin, size: 48),
+              ),
+            ),
+          ),
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsetsDirectional.all(AppTokens.gutterCompact),
+              child: Align(
+                alignment: AlignmentDirectional.topEnd,
+                child: IconButton.filledTonal(
+                  tooltip: l10n.prayerMapCurrentLocation,
+                  onPressed: _useDeviceLocation,
+                  icon: const Icon(Icons.my_location_outlined),
+                ),
+              ),
+            ),
+          ),
+          SafeArea(
+            child: Align(
+              alignment: AlignmentDirectional.bottomCenter,
+              child: Padding(
+                padding: const EdgeInsetsDirectional.fromSTEB(
+                  AppTokens.gutterCompact,
+                  AppTokens.spaceMedium,
+                  AppTokens.gutterCompact,
+                  AppTokens.spaceMedium,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    AppNotice(
+                      selected == null
+                          ? l10n.prayerMapHint
+                          : l10n.prayerPlaceLine(
+                              _coordinate(selected.latitude, formatDigits),
+                              _coordinate(selected.longitude, formatDigits),
+                            ),
+                    ),
+                    if (_locationResult == PrayerResult.locationDenied) ...[
+                      const SizedBox(height: AppTokens.spaceSmall),
+                      AppNotice(l10n.adhkarLocationDenied, error: true),
+                    ],
+                    const SizedBox(height: AppTokens.spaceSmall),
+                    FilledButton(
+                      onPressed: selected == null ? null : _save,
+                      child: Text(l10n.prayerMapSave),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -125,10 +129,25 @@ class _PrayerLocationPickerPageState
     final result = await ref.read(prayerProvider.notifier).locate();
     if (!mounted) return;
     if (result == PrayerResult.ok) {
-      context.pop();
+      final place = ref.read(prayerProvider).value?.place;
+      if (place == null) return;
+      final target = LatLng(place.latitude, place.longitude);
+      setState(() {
+        _selected = place;
+        _cameraTarget = target;
+        _locationResult = PrayerResult.ok;
+      });
+      final controller = await _mapController.future;
+      await controller.animateCamera(CameraUpdate.newLatLngZoom(target, 14));
     } else {
       setState(() => _locationResult = result);
     }
+  }
+
+  void _selectCameraTarget() {
+    final target = _cameraTarget;
+    if (target == null || !_mapInteractionStarted) return;
+    setState(() => _selected = PrayerPlace(target.latitude, target.longitude));
   }
 
   Future<void> _save() async {

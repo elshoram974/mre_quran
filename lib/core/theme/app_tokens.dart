@@ -38,6 +38,12 @@ abstract final class AppTokens {
   /// Page gutter on medium and expanded widths.
   static const double gutterWide = 24;
 
+  /// Small gaps between related controls.
+  static const double spaceSmall = 8;
+
+  /// Standard gap between adjacent sections.
+  static const double spaceMedium = 12;
+
   /// Height of the floating glass app bar, excluding the status bar.
   static const double appBarHeight = 44;
 

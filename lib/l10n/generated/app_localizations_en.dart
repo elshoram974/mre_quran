@@ -295,7 +295,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get prayerMapHint =>
-      'Tap the map to place the marker. This does not request your device location.';
+      'Move the map until the pin is over your place. This does not request your device location.';
 
   @override
   String get prayerMapCurrentLocation => 'Use my current location';

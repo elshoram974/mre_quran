@@ -23,4 +23,8 @@
     <string name="widget_preview_hijri">٢٧ ربيع الآخر ١٤٤٨ هـ</string>
     <string name="prayer_widget_next_name">الصلاة القادمة</string>
     <string name="prayer_schedule_widget_name">مواقيت اليوم</string>
+    <string name="adhkar_widget_name">ذكر مقترح</string>
+    <string name="adhkar_widget_description">ذكر مقترح مع تقدمك المحفوظ.</string>
+    <string name="adhkar_widget_empty">افتح مصحف MRE لتحميل أذكارك.</string>
+    <string name="adhkar_widget_progress">%1$d من %2$d</string>
 </resources>

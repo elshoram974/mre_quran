@@ -86,7 +86,7 @@
   "prayerChooseMap": "اختر موقعًا من الخريطة",
   "prayerChooseMapHint": "حدّد موقعك يدويًا من Google Maps",
   "prayerMapTitle": "اختر موقعك",
-  "prayerMapHint": "اضغط على الخريطة لوضع العلامة. لا يطلب هذا الإذن لموقع الجهاز.",
+  "prayerMapHint": "حرّك الخريطة حتى تصبح العلامة فوق مكانك. لا يطلب هذا الإذن لموقع الجهاز.",
   "prayerMapCurrentLocation": "استخدم موقعي الحالي",
   "prayerMapSave": "استخدم هذا الموقع",
   "prayerMapSelect": "اضغط على الخريطة لتحديد موقع",

@@ -623,7 +623,7 @@ abstract class AppLocalizations {
   /// No description provided for @prayerMapHint.
   ///
   /// In en, this message translates to:
-  /// **'Tap the map to place the marker. This does not request your device location.'**
+  /// **'Move the map until the pin is over your place. This does not request your device location.'**
   String get prayerMapHint;
 
   /// No description provided for @prayerMapCurrentLocation.

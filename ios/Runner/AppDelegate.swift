@@ -44,5 +44,24 @@ import WidgetKit
       WidgetCenter.shared.reloadTimelines(ofKind: "PrayerScheduleWidget")
       callback(nil)
     }
+    let adhkarWidgetChannel = FlutterMethodChannel(
+      name: "net.mrecode.mre_quran/adhkar_widget",
+      binaryMessenger: engineBridge.applicationRegistrar.messenger()
+    )
+    adhkarWidgetChannel.setMethodCallHandler { call, callback in
+      guard call.method == "update" else {
+        callback(FlutterMethodNotImplemented)
+        return
+      }
+      let values = call.arguments as? [String: Any]
+      let defaults = UserDefaults(suiteName: "group.net.mrecode.mreQuran")
+      if let values {
+        defaults?.set(values, forKey: "adhkarWidgetPayload")
+      } else {
+        defaults?.removeObject(forKey: "adhkarWidgetPayload")
+      }
+      WidgetCenter.shared.reloadTimelines(ofKind: "SuggestedDhikrWidget")
+      callback(nil)
+    }
   }
 }

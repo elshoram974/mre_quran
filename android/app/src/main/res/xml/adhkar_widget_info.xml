@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
-    android:description="@string/prayer_widget_next_description"
-    android:initialLayout="@layout/prayer_widget"
+    android:description="@string/adhkar_widget_description"
+    android:initialLayout="@layout/adhkar_widget"
     android:minWidth="110dp"
     android:minHeight="110dp"
-    android:previewImage="@drawable/prayer_widget_preview"
-    android:previewLayout="@layout/prayer_widget"
     android:resizeMode="horizontal|vertical"
     android:targetCellWidth="2"
     android:targetCellHeight="2"

@@ -8,10 +8,10 @@
     android:background="@drawable/widget_bg">
 
     <ImageView
-        android:layout_width="96dp"
-        android:layout_height="96dp"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
         android:layout_gravity="end|bottom"
-        android:layout_margin="6dp"
+        android:layout_margin="4dp"
         android:importantForAccessibility="no"
         android:src="@drawable/widget_star" />
 
@@ -20,7 +20,7 @@
         android:layout_height="match_parent"
         android:gravity="center_vertical"
         android:orientation="vertical"
-        android:padding="18dp">
+        android:padding="12dp">
 
         <TextView
             android:id="@+id/prayer_widget_label"
@@ -30,7 +30,7 @@
             android:text="@string/prayer_widget_label"
             android:textAlignment="viewStart"
             android:textColor="@color/widget_accent"
-            android:textSize="13sp"
+            android:textSize="12sp"
             android:textStyle="bold" />
 
         <TextView
@@ -42,15 +42,14 @@
             android:text="@string/widget_preview_fajr"
             android:textAlignment="viewStart"
             android:textColor="@color/widget_text"
-            android:textSize="30sp"
+            android:textSize="22sp"
             android:textStyle="bold" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
+            android:layout_marginTop="4dp"
+            android:orientation="vertical">
 
             <TextView
                 android:id="@+id/prayer_widget_time"
@@ -59,19 +58,19 @@
                 android:singleLine="true"
                 android:text="@string/widget_preview_fajr_time"
                 android:textColor="@color/widget_text"
-                android:textSize="18sp"
+                android:textSize="15sp"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/prayer_widget_remaining"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
+                android:layout_marginTop="4dp"
                 android:background="@drawable/widget_pill"
-                android:paddingStart="10dp"
-                android:paddingTop="3dp"
-                android:paddingEnd="10dp"
-                android:paddingBottom="3dp"
+                android:paddingStart="6dp"
+                android:paddingTop="2dp"
+                android:paddingEnd="6dp"
+                android:paddingBottom="2dp"
                 android:singleLine="true"
                 android:text="@string/widget_preview_remaining"
                 android:textColor="@color/widget_text"

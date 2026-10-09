@@ -192,14 +192,20 @@ class _CompassPainter extends CustomPainter {
     final dx = math.sin(angle);
     final dy = -math.cos(angle);
     final spot = Offset(dx * (radius - 62), dy * (radius - 62));
-    canvas.drawLine(
-      Offset.zero,
-      Offset(dx * (radius - 84), dy * (radius - 84)),
-      Paint()
-        ..color = accent.withValues(alpha: 0.5)
-        ..strokeWidth = 3
-        ..strokeCap = StrokeCap.round,
-    );
+    final tip = Offset(dx * (radius - 84), dy * (radius - 84));
+    final shaft = Paint()
+      ..color = accent.withValues(alpha: 0.5)
+      ..strokeWidth = 3
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(Offset.zero, tip, shaft);
+    // The arrowhead makes the physical direction to the Kaaba unmistakable.
+    final wing = 9.0;
+    final arrow = Path()
+      ..moveTo(tip.dx, tip.dy)
+      ..lineTo(tip.dx - dx * wing - dy * wing, tip.dy - dy * wing + dx * wing)
+      ..lineTo(tip.dx - dx * wing + dy * wing, tip.dy - dy * wing - dx * wing)
+      ..close();
+    canvas.drawPath(arrow, Paint()..color = accent);
     canvas.drawCircle(spot, 22, Paint()..color = accent);
     // The Kaaba: a small dark cube with a gold band.
     final cube = Rect.fromCenter(center: spot, width: 18, height: 18);

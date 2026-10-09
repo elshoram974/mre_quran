@@ -8,6 +8,7 @@ import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : FlutterActivity() {
     private val widgetChannel = "net.mrecode.mre_quran/prayer_widget"
+    private val adhkarWidgetChannel = "net.mrecode.mre_quran/adhkar_widget"
     private var adhan: AdhanChannel? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
@@ -20,6 +21,16 @@ class MainActivity : FlutterActivity() {
                 }
                 @Suppress("UNCHECKED_CAST")
                 PrayerWidgetRenderer.save(this, call.arguments as? Map<String, Any?>)
+                result.success(null)
+            }
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, adhkarWidgetChannel)
+            .setMethodCallHandler { call, result ->
+                if (call.method != "update") {
+                    result.notImplemented()
+                    return@setMethodCallHandler
+                }
+                @Suppress("UNCHECKED_CAST")
+                AdhkarWidgetRenderer.save(this, call.arguments as? Map<String, Any?>)
                 result.success(null)
             }
         adhan = AdhanChannel(this, flutterEngine.dartExecutor.binaryMessenger)

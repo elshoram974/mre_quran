@@ -36,6 +36,16 @@ private struct Payload {
   private func replace(_ text: String, _ values: [String:String]) -> String { values.reduce(text) { $0.replacingOccurrences(of: $1.key, with: $1.value) } }
 }
 private struct Entry: TimelineEntry { let date: Date; let payload: Payload? }
+private struct AdhkarPayload {
+  let label: String; let title: String; let done: Int; let total: Int; let payload: String
+  static func read() -> AdhkarPayload? {
+    guard let raw = UserDefaults(suiteName: appGroup)?.dictionary(forKey: "adhkarWidgetPayload"),
+      let label = raw["label"] as? String, let title = raw["title"] as? String,
+      let done = raw["done"] as? NSNumber, let total = raw["total"] as? NSNumber,
+      let payload = raw["payload"] as? String else { return nil }
+    return AdhkarPayload(label: label, title: title, done: done.intValue, total: total.intValue, payload: payload)
+  }
+}
 private struct Provider: TimelineProvider {
   func placeholder(in context: Context) -> Entry { Entry(date: .now, payload: nil) }
   func getSnapshot(in context: Context, completion: @escaping (Entry) -> Void) { completion(Entry(date: .now, payload: .read())) }
@@ -61,6 +71,28 @@ private struct ScheduleView: View {
     } else { Empty() }
   }
 }
+private struct AdhkarEntry: TimelineEntry { let date: Date; let payload: AdhkarPayload? }
+private struct AdhkarProvider: TimelineProvider {
+  func placeholder(in context: Context) -> AdhkarEntry { AdhkarEntry(date: .now, payload: nil) }
+  func getSnapshot(in context: Context, completion: @escaping (AdhkarEntry) -> Void) { completion(AdhkarEntry(date: .now, payload: .read())) }
+  func getTimeline(in context: Context, completion: @escaping (Timeline<AdhkarEntry>) -> Void) { completion(Timeline(entries: [AdhkarEntry(date: .now, payload: .read())], policy: .atEnd)) }
+}
+private struct SuggestedDhikrView: View {
+  let entry: AdhkarEntry
+  var body: some View {
+    if let data = entry.payload {
+      VStack(alignment:.leading,spacing:6) {
+        Text(data.label).font(.caption).foregroundStyle(.secondary)
+        Text(data.title).font(.headline).lineLimit(2)
+        ProgressView(value: Double(data.done), total: Double(max(data.total, 1)))
+        Text("\(data.done) / \(data.total)").font(.caption2).foregroundStyle(.secondary)
+      }.frame(maxWidth:.infinity,maxHeight:.infinity,alignment:.leading).background(Color(uiColor:.secondarySystemBackground)).widgetURL(URL(string:"mrequran://mre-quran/adhkar/\(data.payload.replacingOccurrences(of: "adhkar:", with: ""))"))
+    } else {
+      Text("Open MRE Quran to load your adhkar.").font(.caption).frame(maxWidth:.infinity,maxHeight:.infinity,alignment:.leading).background(Color(uiColor:.secondarySystemBackground))
+    }
+  }
+}
 struct PrayerWidget: Widget { let kind="NextPrayerWidget"; var body: some WidgetConfiguration { StaticConfiguration(kind:kind,provider:Provider()){NextView(entry:$0)}.configurationDisplayName("مواقيت الصلاة").description("الصلاة القادمة والوقت المتبقي").supportedFamilies([.systemSmall,.systemMedium]) } }
 struct PrayerScheduleWidget: Widget { let kind="PrayerScheduleWidget"; var body: some WidgetConfiguration { StaticConfiguration(kind:kind,provider:Provider()){ScheduleView(entry:$0)}.configurationDisplayName("مواقيت اليوم").description("مواقيت الصلوات الخمس").supportedFamilies([.systemMedium,.systemLarge]) } }
-@main struct PrayerWidgetBundle: WidgetBundle { var body: some Widget { PrayerWidget(); PrayerScheduleWidget() } }
+struct SuggestedDhikrWidget: Widget { let kind="SuggestedDhikrWidget"; var body: some WidgetConfiguration { StaticConfiguration(kind:kind,provider:AdhkarProvider()){SuggestedDhikrView(entry:$0)}.configurationDisplayName("ذكر مقترح").description("ذكر مقترح مع تقدمك المحفوظ").supportedFamilies([.systemSmall,.systemMedium]) } }
+@main struct PrayerWidgetBundle: WidgetBundle { var body: some Widget { PrayerWidget(); PrayerScheduleWidget(); SuggestedDhikrWidget() } }
