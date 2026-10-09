@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/app_card.dart';
+import '../../../core/widgets/app_directional_icon.dart';
 import '../../settings/application/digits_provider.dart';
 import '../application/adhkar_providers.dart';
 import '../domain/adhkar_collection.dart';
@@ -76,7 +77,7 @@ class CollectionCard extends ConsumerWidget {
           ),
         ),
         FavoriteButton(collectionId: collection.id),
-        if (!featured) const Icon(Icons.chevron_right),
+        if (!featured) const AppForwardChevron(),
       ],
     );
 

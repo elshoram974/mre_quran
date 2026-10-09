@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_tokens.dart';
 import 'app_card.dart';
+import 'app_directional_icon.dart';
 
 /// A card that is one tappable row: a leading icon, a title, a line under it,
 /// and a trailing arrow (or something else).
@@ -59,8 +60,7 @@ class AppTileCard extends StatelessWidget {
                 child: Icon(icon),
               )
             : Icon(icon, color: scheme.primary));
-    final end =
-        trailing ?? (onTap == null ? null : const Icon(Icons.chevron_right));
+    final end = trailing ?? (onTap == null ? null : const AppForwardChevron());
     return AppCard(
       padding: EdgeInsets.zero,
       child: Material(

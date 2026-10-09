@@ -43,8 +43,7 @@ dependencies:
   vibration: ^3.2.1
   wakelock_plus: ^1.5.2
   xml: ^7.1.0
-  google_maps_flutter_ios_sdk10: ^2.19.0
-
+  google_maps_flutter_ios_sdk9: ^2.19.0
 dev_dependencies:
   flutter_driver:
     sdk: flutter

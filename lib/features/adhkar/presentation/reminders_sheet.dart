@@ -7,6 +7,7 @@ import '../../../app/router.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/app_notice.dart';
+import '../../../core/widgets/app_directional_icon.dart';
 import '../../../core/widgets/app_select_field.dart';
 import '../../../core/widgets/app_sheet.dart';
 import '../../../core/widgets/app_switch_tile.dart';
@@ -34,8 +35,9 @@ String formatReminderTime(
   int minutes,
   String Function(String) formatDigits,
 ) => formatDigits(
-  MaterialLocalizations.of(context)
-      .formatTimeOfDay(TimeOfDay(hour: minutes ~/ 60, minute: minutes % 60)),
+  MaterialLocalizations.of(
+    context,
+  ).formatTimeOfDay(TimeOfDay(hour: minutes ~/ 60, minute: minutes % 60)),
 );
 
 /// Why a switch stayed off.
@@ -176,7 +178,7 @@ class _RemindersBodyState extends ConsumerState<_RemindersBody> {
             contentPadding: EdgeInsets.zero,
             leading: const Icon(Icons.access_time_rounded),
             title: Text(l10n.prayerTimesTitle),
-            trailing: const Icon(Icons.chevron_right),
+            trailing: const AppForwardChevron(),
             onTap: () {
               Navigator.of(context).pop();
               context.push(AppRoute.prayerTimes.path);

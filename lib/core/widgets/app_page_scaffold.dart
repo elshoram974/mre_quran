@@ -35,7 +35,7 @@ class AppPageScaffold extends StatelessWidget {
         appBar: GlassAppBar(
           title: Text(title),
           leading: GlassButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+            icon: const BackButtonIcon(),
             label: context.l10n.back,
             onTap: () => Navigator.of(context).maybePop(),
           ),

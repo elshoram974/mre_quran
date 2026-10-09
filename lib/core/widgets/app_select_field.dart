@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../l10n/l10n.dart';
+import '../theme/app_tokens.dart';
 import 'app_sheet.dart';
 
 /// Number of options above which [AppSelectField] shows a search field.
@@ -90,10 +91,10 @@ class AppSelectField<T extends Object> extends StatelessWidget {
       label: label,
       value: selected?.label,
       child: InkWell(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppTokens.radiusField),
         onTap: () => _open(context),
         child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: 56),
+          constraints: const BoxConstraints(minHeight: AppTokens.minTarget),
           child: InputDecorator(
             decoration: InputDecoration(
               labelText: label,

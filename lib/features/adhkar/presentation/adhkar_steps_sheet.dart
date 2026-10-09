@@ -8,6 +8,7 @@ import '../../../app/router.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/app_shimmer.dart';
+import '../../../core/widgets/app_directional_icon.dart';
 import '../../../core/widgets/app_sheet.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../settings/application/digits_provider.dart';
@@ -181,8 +182,9 @@ class _StepsBodyState extends ConsumerState<_StepsBody> {
                 onPressed: () {
                   final root = Navigator.of(context, rootNavigator: true);
                   root.pop();
-                  GoRouter.of(root.context)
-                      .push(AppRoute.adhkarSessionPath(collection.id));
+                  GoRouter.of(
+                    root.context,
+                  ).push(AppRoute.adhkarSessionPath(collection.id));
                 },
                 child: Text(l10n.adhkarShowList),
               ),
@@ -227,8 +229,7 @@ class _StepsBodyState extends ConsumerState<_StepsBody> {
                   onPressed: index == 0
                       ? null
                       : () => _go(collection, index - 1),
-                  // These two flip with the text direction.
-                  icon: const Icon(Icons.chevron_left),
+                  icon: const AppBackChevron(),
                 ),
                 Expanded(
                   child: Text(
@@ -245,7 +246,7 @@ class _StepsBodyState extends ConsumerState<_StepsBody> {
                   onPressed: index == collection.entries.length - 1
                       ? null
                       : () => _go(collection, index + 1),
-                  icon: const Icon(Icons.chevron_right),
+                  icon: const AppForwardChevron(),
                 ),
               ],
             ),
