@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../app/router.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/layout/adaptive_layout.dart';
 import '../../../core/notifications/reminder_scheduler_provider.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/time/ticking_clock.dart';
 import '../../../core/widgets/app_card.dart';
+import '../../../core/widgets/app_tile_card.dart';
 import '../../../core/widgets/app_page_scaffold.dart';
 import '../../../core/widgets/app_notice.dart';
 import '../../../core/widgets/app_select_field.dart';
@@ -17,6 +20,7 @@ import '../../settings/application/digits_provider.dart';
 import '../application/prayer_provider.dart';
 import '../domain/prayer_times.dart';
 import 'prayer_labels.dart';
+import 'prayer_no_place.dart';
 
 /// Whether exact alarms are allowed (always true off Android).
 final exactAlarmsAllowedProvider = FutureProvider.autoDispose<bool>(
@@ -72,7 +76,7 @@ class _PrayerTimesPageState extends ConsumerState<PrayerTimesPage> {
             ),
             data: (data) => ContentContainer(
               child: data.place == null
-                  ? _NoPlace(
+                  ? PrayerNoPlace(
                       denied: _result == PrayerResult.locationDenied,
                       onLocate: () =>
                           _run(ref.read(prayerProvider.notifier).locate),
@@ -82,25 +86,6 @@ class _PrayerTimesPageState extends ConsumerState<PrayerTimesPage> {
           );
         },
       ),
-    );
-  }
-}
-
-class _NoPlace extends StatelessWidget {
-  const _NoPlace({required this.denied, required this.onLocate});
-
-  final bool denied;
-  final VoidCallback onLocate;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    return EmptyState(
-      icon: Icons.location_searching,
-      title: l10n.prayerNoPlaceTitle,
-      message: denied ? l10n.adhkarLocationDenied : l10n.prayerNoPlaceBody,
-      actionLabel: l10n.prayerLocate,
-      onAction: onLocate,
     );
   }
 }
@@ -175,6 +160,13 @@ class _Content extends ConsumerWidget {
               ],
             ),
           ),
+        const SizedBox(height: 12),
+        AppTileCard(
+          icon: Icons.explore_outlined,
+          title: l10n.qiblaTitle,
+          subtitle: l10n.qiblaTileSubtitle,
+          onTap: () => context.push(AppRoute.qibla.path),
+        ),
         const SizedBox(height: 12),
         AppCard(
           child: Column(

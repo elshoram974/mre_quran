@@ -329,6 +329,87 @@ class AppLocalizationsAr extends AppLocalizations {
   String get prayerChannelName => 'تنبيهات وقت الصلاة';
 
   @override
+  String get qiblaTitle => 'القبلة';
+
+  @override
+  String get qiblaTileSubtitle => 'بوصلة تشير إلى الكعبة';
+
+  @override
+  String qiblaDirectionLine(String degrees, String direction) {
+    return 'القبلة: $degrees° · $direction';
+  }
+
+  @override
+  String qiblaSemantics(String degrees, String direction) {
+    return 'بوصلة القبلة. القبلة على $degrees درجة من الشمال، ناحية $direction.';
+  }
+
+  @override
+  String get qiblaAligned => 'أنت تواجه القبلة';
+
+  @override
+  String qiblaTurnRight(String degrees) {
+    return 'در يمينًا $degrees°';
+  }
+
+  @override
+  String qiblaTurnLeft(String degrees) {
+    return 'در يسارًا $degrees°';
+  }
+
+  @override
+  String get qiblaHintFlat =>
+      'أمسك الهاتف أفقيًا وبعيدًا عن المعادن والسماعات والأغطية المغناطيسية.';
+
+  @override
+  String get qiblaHintCalibrate =>
+      'إن اضطربت البوصلة فحرّك الهاتف على هيئة رقم ٨ لمعايرتها.';
+
+  @override
+  String get qiblaNoSensor =>
+      'لا يوجد في هذا الجهاز حساس بوصلة. تُظهر البوصلة زاوية القبلة من الشمال: حدّد الشمال ببوصلة أو بالشمس ثم در بهذه الزاوية.';
+
+  @override
+  String get qiblaPlaceNote =>
+      'تُحسب على هاتفك من موقعك التقريبي، ولا يُرسل شيء إلى أي جهة.';
+
+  @override
+  String get compassNorth => 'الشمال';
+
+  @override
+  String get compassNorthEast => 'الشمال الشرقي';
+
+  @override
+  String get compassEast => 'الشرق';
+
+  @override
+  String get compassSouthEast => 'الجنوب الشرقي';
+
+  @override
+  String get compassSouth => 'الجنوب';
+
+  @override
+  String get compassSouthWest => 'الجنوب الغربي';
+
+  @override
+  String get compassWest => 'الغرب';
+
+  @override
+  String get compassNorthWest => 'الشمال الغربي';
+
+  @override
+  String get compassLetterNorth => 'ش';
+
+  @override
+  String get compassLetterEast => 'ق';
+
+  @override
+  String get compassLetterSouth => 'ج';
+
+  @override
+  String get compassLetterWest => 'غ';
+
+  @override
   String get settingsHaptics => 'الاهتزاز';
 
   @override

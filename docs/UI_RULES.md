@@ -18,7 +18,7 @@ The single rule file for UI/UX. `AGENTS.md` points here. The design plan is in
 1. Reusable widgets live in `lib/core/widgets`. Look there before writing one. Extend instead of copying. A pattern used twice becomes a shared widget.
 2. Single choice: `AppSelectField` (search field above 5 options). Never `DropdownButton`, `DropdownButtonFormField`, or `DropdownMenu`.
 3. Bottom sheets: `AppSheet` only. It is draggable (medium and large on iOS glass, snap-drag on Android) and always sits above the keyboard. Never `showModalBottomSheet`, `GlassModalSheet`, or a hand-built sheet in a screen. Yes/no questions use `AppConfirmSheet`; times use `AppTimePicker`.
-4. Switches: `AppSwitchTile`. Cards: `AppCard`. Text inputs: `MRETextField` / `MRETextFormField` from `mre_fields`.
+4. Switches: `AppSwitchTile`. Cards: `AppCard`; a card that is one row: `AppTileCard`; a card of rows: `AppGroupCard`; headings between groups: `AppSectionHeader`; small labels: `AppTag`; a hint or error line: `AppNotice`. Text inputs: `MRETextField` / `MRETextFormField` from `mre_fields`.
 5. Do not restyle a field, button, or card per screen. Change the theme or the shared widget.
 
 ## 3. Colour, shape, spacing

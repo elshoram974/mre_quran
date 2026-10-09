@@ -11,6 +11,7 @@ What the app asks for, when, and why. Check this list before each release.
 | `RECEIVE_BOOT_COMPLETED` | Android | Not asked (normal permission) | Lets scheduled reminders survive a reboot | |
 | Exact alarms (`SCHEDULE_EXACT_ALARM`) | Android 12+ | The person taps "Allow exact timing" on the prayer times page; the system opens its own settings page | Alerts at the minute a prayer begins | **Google Play asks for a declaration** for this permission. Use: "notifies the person at the prayer times they chose". Without it the alerts still come, a few minutes late at worst. To avoid the declaration, delete the one `SCHEDULE_EXACT_ALARM` line in `AndroidManifest.xml`; the "Allow exact timing" button then has nothing to open. `USE_EXACT_ALARM` is not used (it is for alarm and calendar apps) |
 | Vibration (`VIBRATE`) | Android | Not asked (normal permission) | Counting adhkar, finishing a step | The person can switch it off in Settings |
+| Motion sensors (accelerometer, magnetometer) | Android, iOS | Only while the Qibla page is open; no permission is asked or declared | Shows which way the phone points | Read on the device, never stored or sent. `sensors_plus` declares no permission on Android |
 | Internet | Android | Normal permission | Downloading offline Mushaf packs | |
 
 The location plugin declares a foreground service the app never starts; `AndroidManifest.xml` removes it, so

@@ -217,7 +217,7 @@ void main() {
       await tester.tap(_counter('٠ من ٣'));
       await tester.pumpAndSettle();
       expect(_counter('١ من ٣'), findsOneWidget);
-      await tester.tap(find.byTooltip('تراجع عن مرة'));
+      await tester.tap(find.text('تراجع عن مرة'));
       await tester.pumpAndSettle();
       expect(_counter('٠ من ٣'), findsOneWidget);
     });

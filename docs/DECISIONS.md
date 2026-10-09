@@ -205,3 +205,18 @@
 - **Alternatives:** Only a long list of cards (the person scrolls to find where they are); a full-screen pager.
 - **Reason:** One thing to read and one big button to press, with the list one tap away. The sheet keeps the tab underneath.
 
+## D-025: A Qibla compass instead of a map
+
+- **Decision:** `/qibla` shows a compass card drawn on the phone: the bearing comes from the `adhan` package and the heading
+  from the accelerometer and magnetometer (`sensors_plus`), tilt-compensated and smoothed in `HeadingFilter`. A Kaaba marker
+  sits at the Qibla; the phone ticks once when it faces it. Without a sensor the card is fixed with north up and says so.
+- **Alternatives:** A map with tiles (needs the network and sends the person's place to a tile server; breaks the privacy
+  promise and offline use); only a bearing number.
+- **Reason:** It answers the same question, works offline, adds no permission, and keeps the location on the device.
+
+## D-026: Shared row, header, tag, notice and group widgets
+
+- **Decision:** `AppSectionHeader`, `AppTileCard`, `AppTag`, `AppNotice` and `AppGroupCard` in `lib/core/widgets` replace the
+  per-screen copies in Settings, Adhkar and Prayer. `PrayerNoPlace` is shared by the prayer and Qibla pages.
+- **Reason:** The same row, heading and message were written three or four times with small differences.
+

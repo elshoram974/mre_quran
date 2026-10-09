@@ -90,7 +90,6 @@ class HeadingFilter {
     hy /= east;
     hz /= east;
     final gx = ax / gravity;
-    final gy = ay / gravity;
     final gz = az / gravity;
     // north = gravity x east
     final ny = gz * hx - gx * hz;

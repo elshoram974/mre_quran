@@ -680,6 +680,144 @@ abstract class AppLocalizations {
   /// **'Prayer time alerts'**
   String get prayerChannelName;
 
+  /// No description provided for @qiblaTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Qibla'**
+  String get qiblaTitle;
+
+  /// No description provided for @qiblaTileSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A compass that points to the Kaaba'**
+  String get qiblaTileSubtitle;
+
+  /// No description provided for @qiblaDirectionLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Qibla: {degrees}° · {direction}'**
+  String qiblaDirectionLine(String degrees, String direction);
+
+  /// No description provided for @qiblaSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Qibla compass. The Qibla is {degrees} degrees from north, towards the {direction}.'**
+  String qiblaSemantics(String degrees, String direction);
+
+  /// No description provided for @qiblaAligned.
+  ///
+  /// In en, this message translates to:
+  /// **'You are facing the Qibla'**
+  String get qiblaAligned;
+
+  /// No description provided for @qiblaTurnRight.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn right {degrees}°'**
+  String qiblaTurnRight(String degrees);
+
+  /// No description provided for @qiblaTurnLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn left {degrees}°'**
+  String qiblaTurnLeft(String degrees);
+
+  /// No description provided for @qiblaHintFlat.
+  ///
+  /// In en, this message translates to:
+  /// **'Hold the phone flat, away from metal, speakers and magnetic cases.'**
+  String get qiblaHintFlat;
+
+  /// No description provided for @qiblaHintCalibrate.
+  ///
+  /// In en, this message translates to:
+  /// **'If the dial jumps, move the phone in a figure 8 to calibrate it.'**
+  String get qiblaHintCalibrate;
+
+  /// No description provided for @qiblaNoSensor.
+  ///
+  /// In en, this message translates to:
+  /// **'This device has no compass sensor. The dial shows the Qibla measured from north: find north with a compass or the sun, then turn by that angle.'**
+  String get qiblaNoSensor;
+
+  /// No description provided for @qiblaPlaceNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Worked out on your phone from your approximate place. Nothing is sent anywhere.'**
+  String get qiblaPlaceNote;
+
+  /// No description provided for @compassNorth.
+  ///
+  /// In en, this message translates to:
+  /// **'north'**
+  String get compassNorth;
+
+  /// No description provided for @compassNorthEast.
+  ///
+  /// In en, this message translates to:
+  /// **'north-east'**
+  String get compassNorthEast;
+
+  /// No description provided for @compassEast.
+  ///
+  /// In en, this message translates to:
+  /// **'east'**
+  String get compassEast;
+
+  /// No description provided for @compassSouthEast.
+  ///
+  /// In en, this message translates to:
+  /// **'south-east'**
+  String get compassSouthEast;
+
+  /// No description provided for @compassSouth.
+  ///
+  /// In en, this message translates to:
+  /// **'south'**
+  String get compassSouth;
+
+  /// No description provided for @compassSouthWest.
+  ///
+  /// In en, this message translates to:
+  /// **'south-west'**
+  String get compassSouthWest;
+
+  /// No description provided for @compassWest.
+  ///
+  /// In en, this message translates to:
+  /// **'west'**
+  String get compassWest;
+
+  /// No description provided for @compassNorthWest.
+  ///
+  /// In en, this message translates to:
+  /// **'north-west'**
+  String get compassNorthWest;
+
+  /// No description provided for @compassLetterNorth.
+  ///
+  /// In en, this message translates to:
+  /// **'N'**
+  String get compassLetterNorth;
+
+  /// No description provided for @compassLetterEast.
+  ///
+  /// In en, this message translates to:
+  /// **'E'**
+  String get compassLetterEast;
+
+  /// No description provided for @compassLetterSouth.
+  ///
+  /// In en, this message translates to:
+  /// **'S'**
+  String get compassLetterSouth;
+
+  /// No description provided for @compassLetterWest.
+  ///
+  /// In en, this message translates to:
+  /// **'W'**
+  String get compassLetterWest;
+
   /// No description provided for @settingsHaptics.
   ///
   /// In en, this message translates to:

@@ -85,3 +85,9 @@
 - Android build warning: `firebase_core`, `firebase_crashlytics`, and
   `mre_fields` transitively apply the legacy Kotlin Gradle Plugin. Track their
   releases before Flutter makes built-in Kotlin mandatory.
+- Qibla compass (`/qibla`, opened from Prayer times): bearing and heading maths unit-tested; widget tests cover Arabic RTL,
+  English dark, large text, compact/medium/expanded, no sensor, and the aligned tick. Seen working on the Android emulator
+  (virtual sensors); a real-device check of the live needle and of iOS is still to do.
+- UI audit: shared row, header, tag, notice and group widgets in `lib/core/widgets`; Settings regrouped; the vibration switch
+  is disabled with a reason when the device has no vibrator.
+

@@ -332,6 +332,87 @@ class AppLocalizationsEn extends AppLocalizations {
   String get prayerChannelName => 'Prayer time alerts';
 
   @override
+  String get qiblaTitle => 'Qibla';
+
+  @override
+  String get qiblaTileSubtitle => 'A compass that points to the Kaaba';
+
+  @override
+  String qiblaDirectionLine(String degrees, String direction) {
+    return 'Qibla: $degrees° · $direction';
+  }
+
+  @override
+  String qiblaSemantics(String degrees, String direction) {
+    return 'Qibla compass. The Qibla is $degrees degrees from north, towards the $direction.';
+  }
+
+  @override
+  String get qiblaAligned => 'You are facing the Qibla';
+
+  @override
+  String qiblaTurnRight(String degrees) {
+    return 'Turn right $degrees°';
+  }
+
+  @override
+  String qiblaTurnLeft(String degrees) {
+    return 'Turn left $degrees°';
+  }
+
+  @override
+  String get qiblaHintFlat =>
+      'Hold the phone flat, away from metal, speakers and magnetic cases.';
+
+  @override
+  String get qiblaHintCalibrate =>
+      'If the dial jumps, move the phone in a figure 8 to calibrate it.';
+
+  @override
+  String get qiblaNoSensor =>
+      'This device has no compass sensor. The dial shows the Qibla measured from north: find north with a compass or the sun, then turn by that angle.';
+
+  @override
+  String get qiblaPlaceNote =>
+      'Worked out on your phone from your approximate place. Nothing is sent anywhere.';
+
+  @override
+  String get compassNorth => 'north';
+
+  @override
+  String get compassNorthEast => 'north-east';
+
+  @override
+  String get compassEast => 'east';
+
+  @override
+  String get compassSouthEast => 'south-east';
+
+  @override
+  String get compassSouth => 'south';
+
+  @override
+  String get compassSouthWest => 'south-west';
+
+  @override
+  String get compassWest => 'west';
+
+  @override
+  String get compassNorthWest => 'north-west';
+
+  @override
+  String get compassLetterNorth => 'N';
+
+  @override
+  String get compassLetterEast => 'E';
+
+  @override
+  String get compassLetterSouth => 'S';
+
+  @override
+  String get compassLetterWest => 'W';
+
+  @override
   String get settingsHaptics => 'Vibration';
 
   @override

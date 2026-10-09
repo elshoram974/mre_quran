@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../l10n/generated/app_localizations.dart';
 import '../domain/prayer_times.dart';
+import '../domain/qibla.dart';
 
 /// The name of a calculation method.
 String prayerMethodLabel(AppLocalizations l10n, PrayerMethod method) =>
@@ -39,3 +40,16 @@ String formatUntil(
       ? l10n.prayerDurationMinutes(digits(minutes))
       : l10n.prayerDuration(digits(minutes ~/ 60), digits(minutes % 60));
 }
+
+/// The name of a compass point, like "north-east".
+String compassPointName(AppLocalizations l10n, CompassPoint point) =>
+    switch (point) {
+      CompassPoint.north => l10n.compassNorth,
+      CompassPoint.northEast => l10n.compassNorthEast,
+      CompassPoint.east => l10n.compassEast,
+      CompassPoint.southEast => l10n.compassSouthEast,
+      CompassPoint.south => l10n.compassSouth,
+      CompassPoint.southWest => l10n.compassSouthWest,
+      CompassPoint.west => l10n.compassWest,
+      CompassPoint.northWest => l10n.compassNorthWest,
+    };
