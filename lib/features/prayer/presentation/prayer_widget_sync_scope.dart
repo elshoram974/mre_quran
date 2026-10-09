@@ -50,7 +50,10 @@ class _PrayerWidgetSyncScopeState extends ConsumerState<PrayerWidgetSyncScope> {
       return PrayerWidgetSync.update(null);
     }
     final l10n = context.l10n;
-    final digits = ref.read(displayDigitsFormatterProvider);
+    // From the settings just read: the shared formatter provider can still hold
+    // the previous choice while this runs for a settings change.
+    String digits(String value) =>
+        formatDisplayDigits(value, arabic: settings.useArabicDigits);
     final state = ref.read(prayerProvider).value;
     final place = state?.place;
     final method = state?.method;

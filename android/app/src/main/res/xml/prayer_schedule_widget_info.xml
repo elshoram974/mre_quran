@@ -4,6 +4,7 @@
     android:initialLayout="@layout/prayer_schedule_widget"
     android:minWidth="250dp"
     android:minHeight="200dp"
+    android:previewImage="@drawable/prayer_schedule_widget_preview"
     android:previewLayout="@layout/prayer_schedule_widget"
     android:resizeMode="horizontal|vertical"
     android:targetCellWidth="4"

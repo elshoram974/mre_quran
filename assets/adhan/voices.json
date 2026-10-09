@@ -1,0 +1,64 @@
+{
+  "schema": 1,
+  "voices": [
+    {
+      "id": "default",
+      "builtIn": true,
+      "title": {"ar": "الأذان الافتراضي", "en": "Default adhan"},
+      "place": {"ar": "مسجد (غير محدد)", "en": "A mosque (not specified)"},
+      "bytes": 1229032,
+      "sha256": "35fe06b08fe80505c550c33fed8a783fa9901ddc81ac884958b4be048f5b2a79",
+      "source": "https://commons.wikimedia.org/wiki/File:Beautiful_adhan.ogg",
+      "license": {"name": "CC0 1.0", "url": "https://creativecommons.org/publicdomain/zero/1.0/"},
+      "credit": "Adam-synagda"
+    },
+    {
+      "id": "makkah",
+      "title": {"ar": "أذان المسجد الحرام", "en": "Adhan at the Grand Mosque, Makkah"},
+      "place": {"ar": "مكة المكرمة", "en": "Makkah"},
+      "bytes": 9359941,
+      "sha256": "f4acc1bcc6e7919fce60b21162a3c794952c562a6df7b6aa7971f80d191eb5f0",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/a/a7/Adhan%2C_Great_Mosque_of_Mecca_-_Jan_21%2C_2013.webm",
+      "extension": "webm",
+      "source": "https://commons.wikimedia.org/wiki/File:Adhan,_Great_Mosque_of_Mecca_-_Jan_21,_2013.webm",
+      "license": {"name": "CC BY 3.0", "url": "https://creativecommons.org/licenses/by/3.0/"},
+      "credit": "Seyfula Islam"
+    },
+    {
+      "id": "madinah",
+      "title": {"ar": "أذان المسجد النبوي", "en": "Adhan at the Prophet's Mosque, Madinah"},
+      "place": {"ar": "المدينة المنورة", "en": "Madinah"},
+      "bytes": 2974689,
+      "sha256": "4d0fabe0e0ef52186646a256220f74a972ba698ac269165fed5d52de3202d656",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/7/7c/33937_ejaz215_call-to-prayer-from-the-prophet-s-mo.ogg",
+      "extension": "ogg",
+      "source": "https://commons.wikimedia.org/wiki/File:33937_ejaz215_call-to-prayer-from-the-prophet-s-mo.ogg",
+      "license": {"name": "CC BY 3.0", "url": "https://creativecommons.org/licenses/by/3.0/"},
+      "credit": "ejaz215 (Freesound)"
+    },
+    {
+      "id": "aaqib_azeez",
+      "title": {"ar": "أذان بصوت عاقب عزيز", "en": "Adhan by Aaqib Azeez"},
+      "place": {"ar": "تسجيل قصير", "en": "A short recording"},
+      "bytes": 1448294,
+      "sha256": "0faa59e2028bbb2f60a670b53ec89ffcf628f3c195b43fb41d9bdbc99000c1b3",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/7/7d/The_Adhan_-_Muslim_Call_to_Prayer_-_Aaqib_Azeez.mp3",
+      "extension": "mp3",
+      "source": "https://commons.wikimedia.org/wiki/File:The_Adhan_-_Muslim_Call_to_Prayer_-_Aaqib_Azeez.mp3",
+      "license": {"name": "CC BY-SA 4.0", "url": "https://creativecommons.org/licenses/by-sa/4.0/"},
+      "credit": "Atcovi"
+    },
+    {
+      "id": "azan_andrewler",
+      "title": {"ar": "أذان (تسجيل أندرولر)", "en": "Adhan (Andrewler recording)"},
+      "place": {"ar": "مسجد (غير محدد)", "en": "A mosque (not specified)"},
+      "bytes": 1473809,
+      "sha256": "2163ceafb8a05064a5ea5e1e0a7fac5fff958a21fcf830844d557d496b9b23c3",
+      "url": "https://upload.wikimedia.org/wikipedia/commons/8/86/Azan.ogg",
+      "extension": "ogg",
+      "source": "https://commons.wikimedia.org/wiki/File:Azan.ogg",
+      "license": {"name": "CC BY-SA 4.0", "url": "https://creativecommons.org/licenses/by-sa/4.0/"},
+      "credit": "Andrewler"
+    }
+  ]
+}

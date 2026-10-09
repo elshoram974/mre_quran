@@ -457,6 +457,124 @@ class AppLocalizationsEn extends AppLocalizations {
   String get prayerWidgetEmpty => 'Open MRE Quran to set your location';
 
   @override
+  String get adhanTitle => 'Adhan';
+
+  @override
+  String get adhanTileSubtitle => 'The voice and how the alert behaves';
+
+  @override
+  String get adhanSectionAlert => 'Alert';
+
+  @override
+  String get adhanPlaySwitch => 'Play the adhan at prayer time';
+
+  @override
+  String get adhanPlayHint =>
+      'It starts by itself, with a notice that stays on screen until you stop it, like a call.';
+
+  @override
+  String get adhanFlipSwitch => 'Stop when the phone is turned face down';
+
+  @override
+  String get adhanFlipHint => 'Put the screen against the table to silence it.';
+
+  @override
+  String get adhanTest => 'Try the alert now';
+
+  @override
+  String get adhanTestHint => 'Plays the chosen voice and shows the notice.';
+
+  @override
+  String get adhanTestTitle => 'Test: time for prayer';
+
+  @override
+  String get adhanTestBody =>
+      'This is how the alert will look. Tap Stop to end it.';
+
+  @override
+  String get adhanVoices => 'Voices';
+
+  @override
+  String get adhanVoicesHint =>
+      'Listen before you download. A downloaded voice works without internet.';
+
+  @override
+  String get adhanListen => 'Listen';
+
+  @override
+  String get adhanStopListening => 'Stop listening';
+
+  @override
+  String adhanDownload(String size) {
+    return 'Download ($size)';
+  }
+
+  @override
+  String adhanDownloading(String percent) {
+    return 'Downloading $percent';
+  }
+
+  @override
+  String get adhanCancel => 'Cancel';
+
+  @override
+  String get adhanDelete => 'Delete download';
+
+  @override
+  String get adhanUse => 'Use this voice';
+
+  @override
+  String get adhanInUse => 'In use';
+
+  @override
+  String get adhanBuiltIn => 'Built in';
+
+  @override
+  String adhanSizeMb(String size) {
+    return '$size MB';
+  }
+
+  @override
+  String get adhanInfo => 'Source and licence';
+
+  @override
+  String adhanCreditLine(String credit) {
+    return 'Credit: $credit';
+  }
+
+  @override
+  String adhanLicenseLine(String license) {
+    return 'Licence: $license';
+  }
+
+  @override
+  String adhanSourceLine(String source) {
+    return 'Source: $source';
+  }
+
+  @override
+  String get adhanDownloadNetwork =>
+      'Could not download. Check your connection and try again.';
+
+  @override
+  String get adhanDownloadIntegrity =>
+      'The file was not what was expected, so it was not saved.';
+
+  @override
+  String get adhanUnsupported =>
+      'Playing the adhan by itself is available on Android. On this phone the alert is a normal notification.';
+
+  @override
+  String get adhanLicenseNote =>
+      'Recordings of well-known muezzins are not included because none is freely licensed. Every voice here is shared under the licence shown.';
+
+  @override
+  String get adhanStopAction => 'Stop the adhan';
+
+  @override
+  String get adhanChannelName => 'Adhan';
+
+  @override
   String get settingsHaptics => 'Vibration';
 
   @override

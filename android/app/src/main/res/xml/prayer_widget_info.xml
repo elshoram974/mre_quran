@@ -4,6 +4,7 @@
     android:initialLayout="@layout/prayer_widget"
     android:minWidth="180dp"
     android:minHeight="110dp"
+    android:previewImage="@drawable/prayer_widget_preview"
     android:previewLayout="@layout/prayer_widget"
     android:resizeMode="horizontal|vertical"
     android:targetCellWidth="3"

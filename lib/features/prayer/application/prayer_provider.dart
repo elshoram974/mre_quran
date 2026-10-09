@@ -10,6 +10,9 @@ import '../../../core/notifications/reminder_scheduler.dart';
 import '../../../core/notifications/reminder_scheduler_provider.dart';
 import '../../../core/time/ticking_clock.dart';
 import '../../../l10n/generated/app_localizations.dart';
+import '../../adhan/application/adhan_providers.dart';
+import '../../adhan/data/adhan_platform.dart';
+import '../../adhan/domain/adhan_settings.dart';
 import '../../settings/application/settings_provider.dart';
 import '../data/location_source.dart';
 import '../data/prayer_repository.dart';
@@ -101,6 +104,13 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
     ref.watch(
       settingsProvider.select((value) => value.value?.localeCode ?? 'ar'),
     );
+    // The adhan's voice or style changing moves the alerts without rebuilding
+    // this (which would blink the page).
+    ref.listen(adhanSettingsProvider, (previous, next) {
+      final current = state.value;
+      if (previous?.value == next.value || current == null) return;
+      unawaited(_schedule(current.settings, current.place));
+    });
     final settings = await _repository.loadSettings();
     var place = await _repository.loadPlace();
     if (settings.needsSchedule) {
@@ -202,12 +212,53 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
     }
   }
 
+  /// Hands [atTime] to the adhan player. Returns whether it took them: it
+  /// needs the style switched on, a platform that can play by itself, and
+  /// exact alarms (a late adhan is worse than a normal notification).
+  Future<bool> _scheduleAdhan(
+    AppLocalizations l10n,
+    Iterable<PrayerAlert> atTime,
+  ) async {
+    final platform = ref.read(adhanPlatformProvider);
+    final settings = await ref
+        .read(adhanSettingsProvider.future)
+        .catchError((Object _) => const AdhanSettings());
+    final usable =
+        atTime.isNotEmpty &&
+        settings.playAdhan &&
+        await platform.isSupported() &&
+        await _scheduler.canScheduleExact();
+    if (!usable) {
+      await platform.cancelAll();
+      return false;
+    }
+    final config = await buildAdhanConfig(
+      settings: settings,
+      voices: await ref.read(adhanCatalogProvider.future),
+      store: ref.read(voiceStoreProvider),
+      l10n: l10n,
+    );
+    await platform.schedule([
+      for (final alert in atTime)
+        AdhanAlarm(
+          id: alert.id,
+          at: alert.at,
+          title: l10n.prayerAlertTitle(prayerName(l10n, alert.prayer)),
+          body: l10n.prayerAlertBody,
+        ),
+    ], config);
+    return true;
+  }
+
   Future<void> _schedule(PrayerSettings settings, PrayerPlace? place) async {
     try {
       for (final id in PrayerAlertPlan.allIds) {
         await _scheduler.cancel(id);
       }
-      if (!settings.needsSchedule || place == null) return;
+      if (!settings.needsSchedule || place == null) {
+        await ref.read(adhanPlatformProvider).cancelAll();
+        return;
+      }
       final language = ref.read(settingsProvider).value?.localeCode ?? 'ar';
       final l10n = lookupAppLocalizations(Locale(language));
       final alerts = PrayerAlertPlan.compute(
@@ -215,7 +266,14 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
         settings: settings,
         now: ref.read(clockProvider)(),
       );
+      // The adhan that plays by itself takes the at-time alerts when the phone
+      // can; otherwise they stay normal notifications.
+      final byAdhan = await _scheduleAdhan(
+        l10n,
+        alerts.where((alert) => alert.kind == PrayerAlertKind.atTime),
+      );
       for (final alert in alerts) {
+        if (byAdhan && alert.kind == PrayerAlertKind.atTime) continue;
         final prayer = prayerName(l10n, alert.prayer);
         switch (alert.kind) {
           case PrayerAlertKind.atTime:

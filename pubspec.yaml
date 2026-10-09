@@ -67,6 +67,7 @@ flutter:
     - assets/adhkar/curated.ar.json
     - assets/adhkar/hisn.ar.json
     - assets/adhkar/hisn_manifest.json
+    - assets/adhan/voices.json
     - assets/adhkar/LICENSE.seen-arabic.txt
   fonts:
     - family: AmiriQuran

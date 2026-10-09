@@ -902,6 +902,204 @@ abstract class AppLocalizations {
   /// **'Open MRE Quran to set your location'**
   String get prayerWidgetEmpty;
 
+  /// No description provided for @adhanTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Adhan'**
+  String get adhanTitle;
+
+  /// No description provided for @adhanTileSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'The voice and how the alert behaves'**
+  String get adhanTileSubtitle;
+
+  /// No description provided for @adhanSectionAlert.
+  ///
+  /// In en, this message translates to:
+  /// **'Alert'**
+  String get adhanSectionAlert;
+
+  /// No description provided for @adhanPlaySwitch.
+  ///
+  /// In en, this message translates to:
+  /// **'Play the adhan at prayer time'**
+  String get adhanPlaySwitch;
+
+  /// No description provided for @adhanPlayHint.
+  ///
+  /// In en, this message translates to:
+  /// **'It starts by itself, with a notice that stays on screen until you stop it, like a call.'**
+  String get adhanPlayHint;
+
+  /// No description provided for @adhanFlipSwitch.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop when the phone is turned face down'**
+  String get adhanFlipSwitch;
+
+  /// No description provided for @adhanFlipHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Put the screen against the table to silence it.'**
+  String get adhanFlipHint;
+
+  /// No description provided for @adhanTest.
+  ///
+  /// In en, this message translates to:
+  /// **'Try the alert now'**
+  String get adhanTest;
+
+  /// No description provided for @adhanTestHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Plays the chosen voice and shows the notice.'**
+  String get adhanTestHint;
+
+  /// No description provided for @adhanTestTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Test: time for prayer'**
+  String get adhanTestTitle;
+
+  /// No description provided for @adhanTestBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This is how the alert will look. Tap Stop to end it.'**
+  String get adhanTestBody;
+
+  /// No description provided for @adhanVoices.
+  ///
+  /// In en, this message translates to:
+  /// **'Voices'**
+  String get adhanVoices;
+
+  /// No description provided for @adhanVoicesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Listen before you download. A downloaded voice works without internet.'**
+  String get adhanVoicesHint;
+
+  /// No description provided for @adhanListen.
+  ///
+  /// In en, this message translates to:
+  /// **'Listen'**
+  String get adhanListen;
+
+  /// No description provided for @adhanStopListening.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop listening'**
+  String get adhanStopListening;
+
+  /// No description provided for @adhanDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Download ({size})'**
+  String adhanDownload(String size);
+
+  /// No description provided for @adhanDownloading.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading {percent}'**
+  String adhanDownloading(String percent);
+
+  /// No description provided for @adhanCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get adhanCancel;
+
+  /// No description provided for @adhanDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete download'**
+  String get adhanDelete;
+
+  /// No description provided for @adhanUse.
+  ///
+  /// In en, this message translates to:
+  /// **'Use this voice'**
+  String get adhanUse;
+
+  /// No description provided for @adhanInUse.
+  ///
+  /// In en, this message translates to:
+  /// **'In use'**
+  String get adhanInUse;
+
+  /// No description provided for @adhanBuiltIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Built in'**
+  String get adhanBuiltIn;
+
+  /// No description provided for @adhanSizeMb.
+  ///
+  /// In en, this message translates to:
+  /// **'{size} MB'**
+  String adhanSizeMb(String size);
+
+  /// No description provided for @adhanInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Source and licence'**
+  String get adhanInfo;
+
+  /// No description provided for @adhanCreditLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Credit: {credit}'**
+  String adhanCreditLine(String credit);
+
+  /// No description provided for @adhanLicenseLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Licence: {license}'**
+  String adhanLicenseLine(String license);
+
+  /// No description provided for @adhanSourceLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Source: {source}'**
+  String adhanSourceLine(String source);
+
+  /// No description provided for @adhanDownloadNetwork.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not download. Check your connection and try again.'**
+  String get adhanDownloadNetwork;
+
+  /// No description provided for @adhanDownloadIntegrity.
+  ///
+  /// In en, this message translates to:
+  /// **'The file was not what was expected, so it was not saved.'**
+  String get adhanDownloadIntegrity;
+
+  /// No description provided for @adhanUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'Playing the adhan by itself is available on Android. On this phone the alert is a normal notification.'**
+  String get adhanUnsupported;
+
+  /// No description provided for @adhanLicenseNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Recordings of well-known muezzins are not included because none is freely licensed. Every voice here is shared under the licence shown.'**
+  String get adhanLicenseNote;
+
+  /// No description provided for @adhanStopAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop the adhan'**
+  String get adhanStopAction;
+
+  /// No description provided for @adhanChannelName.
+  ///
+  /// In en, this message translates to:
+  /// **'Adhan'**
+  String get adhanChannelName;
+
   /// No description provided for @settingsHaptics.
   ///
   /// In en, this message translates to:

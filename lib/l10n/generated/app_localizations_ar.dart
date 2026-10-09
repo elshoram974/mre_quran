@@ -454,6 +454,122 @@ class AppLocalizationsAr extends AppLocalizations {
   String get prayerWidgetEmpty => 'افتح مصحف MRE لتحديد موقعك';
 
   @override
+  String get adhanTitle => 'الأذان';
+
+  @override
+  String get adhanTileSubtitle => 'الصوت وطريقة عمل التنبيه';
+
+  @override
+  String get adhanSectionAlert => 'التنبيه';
+
+  @override
+  String get adhanPlaySwitch => 'تشغيل الأذان وقت الصلاة';
+
+  @override
+  String get adhanPlayHint =>
+      'يبدأ من تلقاء نفسه مع إشعار يبقى ظاهرًا حتى توقفه، كأنه مكالمة.';
+
+  @override
+  String get adhanFlipSwitch => 'إيقاف الأذان عند قلب الهاتف';
+
+  @override
+  String get adhanFlipHint => 'ضع الشاشة على السطح ليسكت الصوت.';
+
+  @override
+  String get adhanTest => 'جرّب التنبيه الآن';
+
+  @override
+  String get adhanTestHint => 'يشغّل الصوت المختار ويُظهر الإشعار.';
+
+  @override
+  String get adhanTestTitle => 'تجربة: حان وقت الصلاة';
+
+  @override
+  String get adhanTestBody => 'هكذا سيظهر التنبيه. اضغط إيقاف لإنهائه.';
+
+  @override
+  String get adhanVoices => 'الأصوات';
+
+  @override
+  String get adhanVoicesHint =>
+      'استمع قبل التنزيل. الصوت المنزَّل يعمل بدون إنترنت.';
+
+  @override
+  String get adhanListen => 'استماع';
+
+  @override
+  String get adhanStopListening => 'إيقاف الاستماع';
+
+  @override
+  String adhanDownload(String size) {
+    return 'تنزيل ($size)';
+  }
+
+  @override
+  String adhanDownloading(String percent) {
+    return 'جارٍ التنزيل $percent';
+  }
+
+  @override
+  String get adhanCancel => 'إلغاء';
+
+  @override
+  String get adhanDelete => 'حذف التنزيل';
+
+  @override
+  String get adhanUse => 'استخدام هذا الصوت';
+
+  @override
+  String get adhanInUse => 'قيد الاستخدام';
+
+  @override
+  String get adhanBuiltIn => 'مدمج';
+
+  @override
+  String adhanSizeMb(String size) {
+    return '$size م.ب';
+  }
+
+  @override
+  String get adhanInfo => 'المصدر والترخيص';
+
+  @override
+  String adhanCreditLine(String credit) {
+    return 'النسبة: $credit';
+  }
+
+  @override
+  String adhanLicenseLine(String license) {
+    return 'الترخيص: $license';
+  }
+
+  @override
+  String adhanSourceLine(String source) {
+    return 'المصدر: $source';
+  }
+
+  @override
+  String get adhanDownloadNetwork =>
+      'تعذّر التنزيل. تحقق من الاتصال وأعد المحاولة.';
+
+  @override
+  String get adhanDownloadIntegrity => 'الملف ليس هو المتوقع فلم يُحفظ.';
+
+  @override
+  String get adhanUnsupported =>
+      'تشغيل الأذان تلقائيًا متاح على أندرويد. على هذا الهاتف يكون التنبيه إشعارًا عاديًا.';
+
+  @override
+  String get adhanLicenseNote =>
+      'لا تتوفر هنا تسجيلات لمؤذنين مشهورين لأن أيًّا منها ليس مرخَّصًا للاستخدام الحر. كل صوت هنا مشارَك بالترخيص المذكور.';
+
+  @override
+  String get adhanStopAction => 'إيقاف الأذان';
+
+  @override
+  String get adhanChannelName => 'الأذان';
+
+  @override
   String get settingsHaptics => 'الاهتزاز';
 
   @override
