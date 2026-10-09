@@ -42,6 +42,7 @@ class MushafPager extends StatelessWidget {
       return _PagerBody(
         text: text,
         availableWidth: constraints.maxWidth,
+        availableHeight: constraints.maxHeight,
         initialPage: initialPage,
       );
     },
@@ -52,11 +53,13 @@ class _PagerBody extends ConsumerStatefulWidget {
   const _PagerBody({
     required this.text,
     required this.availableWidth,
+    required this.availableHeight,
     required this.initialPage,
   });
 
   final QuranText text;
   final double availableWidth;
+  final double availableHeight;
   final int initialPage;
 
   @override
@@ -118,9 +121,12 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
       ),
     );
     final spread = switch (layout) {
-      ReaderPageLayout.auto => widget.availableWidth >= mushafSpreadMinWidth,
+      ReaderPageLayout.auto =>
+        widget.availableWidth >= mushafSpreadMinWidth &&
+            widget.availableWidth > widget.availableHeight,
       ReaderPageLayout.single => false,
-      ReaderPageLayout.spread => widget.availableWidth >= mushafSpreadMinWidth,
+      // A person can explicitly choose a spread even on a narrow window.
+      ReaderPageLayout.spread => true,
     };
     if (mode == ReaderMode.printed) {
       _prefetch(style, page, Theme.of(context).brightness == Brightness.dark);

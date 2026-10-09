@@ -43,13 +43,15 @@ class ReaderPageLayoutField extends ConsumerWidget {
 
 /// A quick wide-reader control between a focused page and a facing spread.
 class ReaderPageLayoutToggle extends ConsumerWidget {
-  const ReaderPageLayoutToggle({super.key});
+  const ReaderPageLayoutToggle({super.key, required this.spread});
+
+  /// Resolved layout, after automatic width and height rules are applied.
+  final bool spread;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final settings = ref.watch(settingsProvider).value ?? const AppSettings();
-    final spread = settings.readerPageLayout != ReaderPageLayout.single;
     final next = spread ? ReaderPageLayout.single : ReaderPageLayout.spread;
     return IconButton(
       icon: Icon(spread ? Icons.article_outlined : Icons.menu_book_outlined),

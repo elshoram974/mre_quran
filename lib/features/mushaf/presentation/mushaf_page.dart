@@ -10,6 +10,8 @@ import '../../../core/widgets/empty_state.dart';
 import '../../bookmarks/application/bookmarks_provider.dart';
 import '../../quran_text/application/quran_text_providers.dart';
 import '../../settings/application/digits_provider.dart';
+import '../../settings/application/settings_provider.dart';
+import '../../settings/domain/app_settings.dart';
 import '../application/reader_immersive_provider.dart';
 import '../application/reading_position_provider.dart';
 import 'display_options_sheet.dart';
@@ -19,6 +21,7 @@ import 'go_to_page_sheet.dart';
 import 'reader_bar.dart';
 import 'reader_navigation.dart';
 import 'reader_page_layout_field.dart';
+import 'reader_orientation_toggle.dart';
 
 /// The Mushaf tab: the pages, labelled like a printed Mushaf (surah and juz
 /// above, page number below, arrows onward). A tap on the page or an ayah
@@ -98,6 +101,18 @@ class MushafPage extends ConsumerWidget {
     }
 
     final hideBars = ref.read(readerImmersiveProvider.notifier).hide;
+    final window = MediaQuery.sizeOf(context);
+    final layout = ref.watch(
+      settingsProvider.select(
+        (s) => s.value?.readerPageLayout ?? ReaderPageLayout.auto,
+      ),
+    );
+    final spread = switch (layout) {
+      ReaderPageLayout.auto =>
+        window.width >= mushafSpreadMinWidth && window.width > window.height,
+      ReaderPageLayout.single => false,
+      ReaderPageLayout.spread => true,
+    };
 
     // Shown on a tap: a toolbar at the top and controls at the bottom,
     // floating over the page.
@@ -148,10 +163,17 @@ class MushafPage extends ConsumerWidget {
           ),
         ),
         const SizedBox(width: 8),
-        if (MediaQuery.sizeOf(context).width >= mushafSpreadMinWidth) ...[
-          const ReaderFloatingSurface(
+        const ReaderFloatingSurface(
+          padding: EdgeInsets.zero,
+          child: ReaderOrientationToggle(),
+        ),
+        const SizedBox(width: 8),
+        // This is always available: a person may deliberately choose a
+        // facing spread on a compact window or one page on a wide tablet.
+        ...[
+          ReaderFloatingSurface(
             padding: EdgeInsets.zero,
-            child: ReaderPageLayoutToggle(),
+            child: ReaderPageLayoutToggle(spread: spread),
           ),
           const SizedBox(width: 8),
         ],

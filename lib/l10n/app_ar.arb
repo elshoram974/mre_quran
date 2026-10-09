@@ -186,6 +186,8 @@
   "readerPageLayoutAuto": "تلقائي",
   "readerPageLayoutSingle": "صفحة واحدة",
   "readerPageLayoutSpread": "صفحتان متقابلتان",
+  "readerLandscape": "قراءة أفقية",
+  "readerPortrait": "قراءة رأسية",
   "printedPageError": "تعذّر تحميل الصفحة. تأكد من الاتصال بالإنترنت.",
   "printedPageLabel": "الصفحة {number} من المصحف المطبوع",
   "mushafStyle": "شكل المصحف",

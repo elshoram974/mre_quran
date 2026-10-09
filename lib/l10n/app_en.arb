@@ -278,6 +278,8 @@
   "readerPageLayoutAuto": "Automatic",
   "readerPageLayoutSingle": "Single page",
   "readerPageLayoutSpread": "Two-page spread",
+  "readerLandscape": "Landscape reading",
+  "readerPortrait": "Portrait reading",
   "printedPageError": "Couldn't load this page. Check your internet connection.",
   "printedPageLabel": "Page {number} of the printed Mushaf",
   "@printedPageLabel": {"placeholders": {"number": {"type": "String"}}},

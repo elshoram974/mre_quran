@@ -1220,6 +1220,18 @@ abstract class AppLocalizations {
   /// **'Two-page spread'**
   String get readerPageLayoutSpread;
 
+  /// No description provided for @readerLandscape.
+  ///
+  /// In en, this message translates to:
+  /// **'Landscape reading'**
+  String get readerLandscape;
+
+  /// No description provided for @readerPortrait.
+  ///
+  /// In en, this message translates to:
+  /// **'Portrait reading'**
+  String get readerPortrait;
+
   /// No description provided for @printedPageError.
   ///
   /// In en, this message translates to:

@@ -657,6 +657,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get readerPageLayoutSpread => 'صفحتان متقابلتان';
 
   @override
+  String get readerLandscape => 'قراءة أفقية';
+
+  @override
+  String get readerPortrait => 'قراءة رأسية';
+
+  @override
   String get printedPageError =>
       'تعذّر تحميل الصفحة. تأكد من الاتصال بالإنترنت.';
 

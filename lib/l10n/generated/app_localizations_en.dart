@@ -656,6 +656,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get readerPageLayoutSpread => 'Two-page spread';
 
   @override
+  String get readerLandscape => 'Landscape reading';
+
+  @override
+  String get readerPortrait => 'Portrait reading';
+
+  @override
   String get printedPageError =>
       'Couldn\'t load this page. Check your internet connection.';
 
