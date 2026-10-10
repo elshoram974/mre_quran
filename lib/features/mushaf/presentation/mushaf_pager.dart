@@ -20,6 +20,27 @@ import 'printed_page_view.dart';
 /// Window width from which two pages are shown side by side.
 const double mushafSpreadMinWidth = 700;
 
+/// Shortest side a screen needs before "automatic" may choose two pages. A
+/// phone turned on its side is wide enough for two pages and far too small to
+/// read them, so it keeps one; tablets start at 600.
+const double mushafSpreadMinShortestSide = 600;
+
+/// Whether the reader shows two facing pages in a window of [size].
+///
+/// Automatic is for a tablet held wide: the screen is wider than tall and big
+/// enough to read two pages. A tall window (a portrait tablet, a phone) shows
+/// one page that fills it. A person's own choice always wins, so a facing
+/// spread can be asked for on a small screen and a single page on a large one.
+bool resolveMushafSpread(ReaderPageLayout layout, Size size) =>
+    switch (layout) {
+      ReaderPageLayout.auto =>
+        size.width >= mushafSpreadMinWidth &&
+            size.shortestSide >= mushafSpreadMinShortestSide &&
+            size.width > size.height,
+      ReaderPageLayout.single => false,
+      ReaderPageLayout.spread => true,
+    };
+
 /// The Mushaf as a book that turns its pages (see [BookFlip]).
 ///
 /// Wide windows show a two-page spread: an odd page on the right and the even
@@ -120,14 +141,9 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
         (s) => s.value?.readerPageLayout ?? ReaderPageLayout.auto,
       ),
     );
-    final spread = switch (layout) {
-      ReaderPageLayout.auto =>
-        widget.availableWidth >= mushafSpreadMinWidth &&
-            widget.availableWidth > widget.availableHeight,
-      ReaderPageLayout.single => false,
-      // A person can explicitly choose a spread even on a narrow window.
-      ReaderPageLayout.spread => true,
-    };
+    // Decided on the whole window, as the toolbar's toggle is, so the two
+    // never disagree; the rail or bar beside the pages does not change it.
+    final spread = resolveMushafSpread(layout, MediaQuery.sizeOf(context));
     if (mode == ReaderMode.printed) {
       _prefetch(style, page, Theme.of(context).brightness == Brightness.dark);
     }
@@ -159,12 +175,14 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
             selected: _selected ?? highlighted,
             onAyahLongPress: _showActions,
             onTap: _onTap,
+            spread: spread,
           ),
           ReaderMode.printed => PrintedPageView(
             metadata: widget.text.metadata,
             style: style,
             page: number,
             fillWidth: !spread,
+            spread: spread,
             bookmarked: bookmarked,
             selected: _selected ?? highlighted,
             onAyahLongPress: _showActions,
@@ -180,6 +198,7 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
               onAyahLongPress: _showActions,
               onTap: _onTap,
               framed: false,
+              spread: spread,
             ),
           ),
         },

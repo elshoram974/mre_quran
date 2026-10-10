@@ -21,6 +21,7 @@ class ReaderPageLabels extends ConsumerWidget {
     super.key,
     required this.metadata,
     required this.page,
+    this.spread = false,
   });
 
   /// Quran structure, for the surah and juz of the page.
@@ -28,6 +29,12 @@ class ReaderPageLabels extends ConsumerWidget {
 
   /// Page number, 1–604.
   final int page;
+
+  /// Whether this page faces another. The arrows then stay on the outer edges
+  /// only: an odd page sits on the right and keeps "back", an even page sits
+  /// on the left and keeps "onward". The arrow in the middle of the book
+  /// would only point at the other page.
+  final bool spread;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -105,7 +112,7 @@ class ReaderPageLabels extends ConsumerWidget {
             ReaderFooter(
               children: [
                 // Fixed sides: back to the right, onward to the left.
-                if (page > 1)
+                if (page > 1 && !(spread && page.isEven))
                   ReaderChip(
                     icon: Icons.chevron_right_rounded,
                     tooltip: l10n.previousPage,
@@ -118,7 +125,7 @@ class ReaderPageLabels extends ConsumerWidget {
                   tooltip: l10n.goToPage,
                   onPressed: goToPage,
                 ),
-                if (page < metadata.pageCount)
+                if (page < metadata.pageCount && !(spread && page.isOdd))
                   ReaderChip(
                     icon: Icons.chevron_left_rounded,
                     tooltip: l10n.nextPage,

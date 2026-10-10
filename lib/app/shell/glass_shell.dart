@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
 import '../../core/layout/adaptive_layout.dart';
-import '../../core/theme/app_tokens.dart';
 import '../../core/widgets/app_card.dart';
 import '../../core/widgets/app_page_scaffold.dart';
 import 'shell_destination.dart';
@@ -44,7 +43,10 @@ class GlassShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final compact = size == WindowSize.compact;
+    final bottomBar = size.usesBottomBar;
+    final extended =
+        MediaQuery.sizeOf(context).width >=
+        ShellNavigation.extendedRailMinWidth;
     final scheme = Theme.of(context).colorScheme;
     return Material(
       type: MaterialType.transparency,
@@ -53,47 +55,52 @@ class GlassShell extends StatelessWidget {
         appBar: showAppBar
             ? GlassAppBar(title: Text(destinations[index].label))
             : null,
-        bottomBar: compact && showNavigation
-            ? GlassTabBar.bottom(
-                selectedIndex: index,
-                onTabSelected: onSelected,
-                quality: GlassQuality.premium,
-                selectedIconColor: scheme.primary,
-                selectedLabelColor: scheme.primary,
-                unselectedIconColor: scheme.onSurfaceVariant,
-                unselectedLabelColor: scheme.onSurfaceVariant,
-                tabs: [
-                  for (final item in destinations)
-                    GlassTab(
-                      icon: Icon(item.icon),
-                      activeIcon: Icon(item.activeIcon),
-                      label: item.label,
-                    ),
-                ],
+        bottomBar: bottomBar && showNavigation
+            ? _CenteredBar(
+                child: GlassTabBar.bottom(
+                  selectedIndex: index,
+                  onTabSelected: onSelected,
+                  quality: GlassQuality.premium,
+                  selectedIconColor: scheme.primary,
+                  selectedLabelColor: scheme.primary,
+                  unselectedIconColor: scheme.onSurfaceVariant,
+                  unselectedLabelColor: scheme.onSurfaceVariant,
+                  tabs: [
+                    for (final item in destinations)
+                      GlassTab(
+                        icon: Icon(item.icon),
+                        activeIcon: Icon(item.activeIcon),
+                        label: item.label,
+                      ),
+                  ],
+                ),
               )
             : null,
         body: GlassInsetBody(
-          compact: compact && showNavigation,
+          compact: bottomBar && showNavigation,
           hasAppBar: showAppBar,
-          child: compact || !showNavigation
+          child: bottomBar || !showNavigation
               ? ContentContainer(child: child)
               : Row(
                   children: [
                     Padding(
-                      padding: const EdgeInsetsDirectional.fromSTEB(
+                      // The shell already publishes the bar and system insets
+                      // through MediaQuery, so the rail follows them instead of
+                      // guessing a height.
+                      padding: EdgeInsetsDirectional.fromSTEB(
                         12,
-                        AppTokens.appBarHeight + 48,
+                        MediaQuery.paddingOf(context).top + 12,
                         0,
-                        12,
+                        MediaQuery.paddingOf(context).bottom + 12,
                       ),
                       child: AppCard(
                         child: NavigationRail(
-                          extended: size == WindowSize.expanded,
+                          extended: extended,
                           selectedIndex: index,
                           onDestinationSelected: onSelected,
-                          labelType: size == WindowSize.medium
-                              ? NavigationRailLabelType.all
-                              : NavigationRailLabelType.none,
+                          labelType: extended
+                              ? NavigationRailLabelType.none
+                              : NavigationRailLabelType.all,
                           destinations: [
                             for (final item in destinations)
                               NavigationRailDestination(
@@ -112,4 +119,27 @@ class GlassShell extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Keeps a floating bar a thumb's reach wide on a tablet instead of stretching
+/// it across the whole window. It reports the bar's own height, which the glass
+/// scaffold reads to keep the page clear of it.
+class _CenteredBar extends StatelessWidget implements PreferredSizeWidget {
+  const _CenteredBar({required this.child});
+
+  final GlassTabBar child;
+
+  @override
+  Size get preferredSize => child.preferredSize;
+
+  @override
+  Widget build(BuildContext context) => Center(
+    heightFactor: 1,
+    child: ConstrainedBox(
+      constraints: const BoxConstraints(
+        maxWidth: ShellNavigation.bottomBarMaxWidth,
+      ),
+      child: child,
+    ),
+  );
 }

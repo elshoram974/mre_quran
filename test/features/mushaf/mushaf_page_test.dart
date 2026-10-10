@@ -8,6 +8,7 @@ import 'package:mre_quran/features/mushaf/presentation/flip/book_flip.dart';
 import 'package:mre_quran/features/mushaf/presentation/reader_bar.dart';
 import 'package:mre_quran/features/mushaf/presentation/reader_page_labels.dart';
 import 'package:mre_quran/features/mushaf/presentation/mushaf_page.dart';
+import 'package:mre_quran/features/mushaf/presentation/mushaf_pager.dart';
 import 'package:mre_quran/features/quran_index/application/quran_metadata_provider.dart';
 import 'package:mre_quran/features/bookmarks/application/bookmarks_provider.dart';
 import 'package:mre_quran/features/quran_text/application/quran_text_providers.dart';
@@ -27,11 +28,12 @@ Future<(ProviderContainer, MemoryReadingPositionRepository)> _pump(
   int? savedPage,
   String locale = 'ar',
   double width = 390,
+  double height = 844,
   double textScale = 1,
   bool realistic = false,
   ReaderPageLayout layout = ReaderPageLayout.auto,
 }) async {
-  tester.view.physicalSize = Size(width, 844);
+  tester.view.physicalSize = Size(width, height);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
@@ -270,7 +272,62 @@ void main() {
     expect(right, greaterThan(left));
   });
 
-  testWidgets('single-page layout stays single on a wide window', (tester) async {
+  test('automatic layout picks two pages only for a wide tablet', () {
+    bool auto(Size size) => resolveMushafSpread(ReaderPageLayout.auto, size);
+    expect(auto(const Size(1194, 834)), isTrue, reason: 'iPad held wide');
+    expect(auto(const Size(834, 1194)), isFalse, reason: 'iPad held tall');
+    expect(auto(const Size(932, 430)), isFalse, reason: 'phone on its side');
+    expect(auto(const Size(390, 844)), isFalse, reason: 'phone');
+    expect(
+      resolveMushafSpread(ReaderPageLayout.spread, const Size(390, 844)),
+      isTrue,
+      reason: 'a person may ask for two pages on a phone',
+    );
+    expect(
+      resolveMushafSpread(ReaderPageLayout.single, const Size(1194, 834)),
+      isFalse,
+      reason: 'and for one on a big tablet',
+    );
+  });
+
+  testWidgets('a tall tablet shows one page, a wide one two', (tester) async {
+    await _pump(tester, width: 834, height: 1194, savedPage: 3);
+    expect(find.byKey(const ValueKey<int>(3)).hitTestable(), findsOneWidget);
+    expect(find.byKey(const ValueKey<int>(4)).hitTestable(), findsNothing);
+  });
+
+  testWidgets('a phone on its side keeps one page', (tester) async {
+    await _pump(tester, width: 844, height: 390, savedPage: 3);
+    expect(find.byKey(const ValueKey<int>(3)).hitTestable(), findsOneWidget);
+    expect(find.byKey(const ValueKey<int>(4)).hitTestable(), findsNothing);
+  });
+
+  testWidgets('a spread keeps only the arrows on its outer edges', (
+    tester,
+  ) async {
+    await _pump(tester, width: 1194, height: 834, savedPage: 3);
+    // The footer of one page: its arrows are the chevrons inside ReaderFooter.
+    Finder arrow(int page, IconData icon) => find.descendant(
+      of: find.descendant(
+        of: find.byWidgetPredicate(
+          (w) => w is ReaderPageLabels && w.page == page,
+        ),
+        matching: find.byType(ReaderFooter),
+      ),
+      matching: find.byIcon(icon),
+    );
+    expect(find.byType(ReaderPageLabels), findsNWidgets(2));
+    // Page 3 is on the right: "back" stays, "onward" (towards page 4) goes.
+    expect(arrow(3, Icons.chevron_right_rounded), findsOneWidget);
+    expect(arrow(3, Icons.chevron_left_rounded), findsNothing);
+    // Page 4 is on the left: the other way round.
+    expect(arrow(4, Icons.chevron_left_rounded), findsOneWidget);
+    expect(arrow(4, Icons.chevron_right_rounded), findsNothing);
+  });
+
+  testWidgets('single-page layout stays single on a wide window', (
+    tester,
+  ) async {
     await _pump(
       tester,
       width: 1000,

@@ -61,6 +61,26 @@ fails when a dhikr has no source, a repeat count below one, or an ayah that does
   istikhara hadith).
 - Rebuild: `python3 tool/build_hisn.py --cache <folder with the editions> --hisn <adhkar.json>`; check with `--check`.
 
+## Duas from the Quran, comprehensive duas, and ruqyah
+
+Added to `tool/adhkar_spec.json` (variants 40, 60, 70), so they go through the same checks as the rest.
+
+- **Duas of the Quran (variant 40, 28 entries):** surah and ayah numbers only; the words come from the verified Tanzil text.
+  The source line says which surah and ayah, and whose dua it is (Ibrahim, Yunus, Ayyub, the people of the Cave, and so on).
+  Whole ayahs are shown, so a few carry a line of the story before the dua. The ayah choice is editorial: have a scholar read it.
+- **Comprehensive duas (variant 60, 5 entries):** each cut out of its own hadith (Muslim 2720 and 2722, Abu Dawud 1516 and 1522,
+  Tirmidhi 2140) with the Albani grading where the data has one.
+- **Ruqyah and healing (variant 70, 4 entries and 2 Quran entries):** al-Fatiha (Bukhari 5736), Ikhlas and the two Mu'awwidhat
+  (Bukhari 5017), "أذهب الباس" (Bukhari 5675), "باسم الله أرقيك" (Muslim 2186). Placed under "Worry, hardship, and illness".
+- **More sunnah duas (variants 80–150), each cut from its own hadith:** food and drink (Abu Dawud 3767, Tirmidhi 3455), the crescent,
+  rain and wind (Tirmidhi 3451, Bukhari 1032, Muslim 899), protecting children (Abu Dawud 4737), riding and travelling (Muslim 1342),
+  one in distress (Abu Dawud 5090, graded "hasan al-isnad"), leaving the mosque (Muslim 713), sneezing (Bukhari 6224), and tasbih,
+  tahlil and istighfar (Bukhari 6682, 6405, 6307, 6384; Muslim 2691). Five more comprehensive duas join variant 60 and one health dua joins
+  variant 70. The tool now accepts the gradings "Sahih Isnaad" and "Hasan Isnaad".
+- **`label`:** an optional line the card shows above the words ("when he sneezes", "the dua of Yunus") for entries whose words alone would
+  not say when they are used. Quran duas use it for whose dua it is.
+- New groups `quran` and `duas`, placed after "Prayer and the mosque" in `manifest.json`.
+
 ## How a list is read
 
 - Tapping a list opens it as **steps in a bottom sheet** (`AdhkarSteps`): one dhikr at a time, a counter, and previous

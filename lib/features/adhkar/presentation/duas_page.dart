@@ -18,6 +18,7 @@ import '../domain/adhkar_collection.dart';
 import '../../prayer/presentation/prayer_times_card.dart';
 import 'collection_card.dart';
 import 'group_card.dart';
+import 'quick_access_row.dart';
 import 'reminders_sheet.dart';
 import '../../../core/time/ticking_clock.dart';
 
@@ -87,6 +88,8 @@ class _Content extends ConsumerWidget {
         children: [
           const _SearchBar(),
           const SizedBox(height: 12),
+          QuickAccessRow(catalog: catalog, except: featured?.id),
+          const SizedBox(height: 12),
           const PrayerTimesCard(),
           if (featured != null) ...[
             const SizedBox(height: 20),
@@ -110,7 +113,13 @@ class _Content extends ConsumerWidget {
           ],
           const SizedBox(height: 24),
           AppSectionHeader(title: l10n.adhkarSections),
+          // Tiles, two across on a phone, so many sections show at once.
           _Grid(
+            columns: (size) => switch (size) {
+              WindowSize.compact => 2,
+              WindowSize.medium => 3,
+              WindowSize.expanded => 4,
+            },
             children: [
               for (final group in catalog.groups)
                 GroupCard(
@@ -127,19 +136,22 @@ class _Content extends ConsumerWidget {
   }
 }
 
-/// Lays [children] out in one column on compact widths, two otherwise.
+/// Lays [children] out in columns that depend on the width.
 class _Grid extends StatelessWidget {
-  const _Grid({required this.children});
+  const _Grid({required this.children, this.columns = _singleOrDouble});
 
   final List<Widget> children;
+
+  /// How many columns a window of this size gets.
+  final int Function(WindowSize size) columns;
+
+  static int _singleOrDouble(WindowSize size) =>
+      size == WindowSize.compact ? 1 : 2;
 
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) {
-      final columns =
-          WindowSize.fromWidth(constraints.maxWidth) == WindowSize.compact
-          ? 1
-          : 2;
+      final columns = this.columns(WindowSize.fromWidth(constraints.maxWidth));
       const gap = 12.0;
       final width = (constraints.maxWidth - gap * (columns - 1)) / columns;
       return Wrap(

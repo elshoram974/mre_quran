@@ -23,17 +23,28 @@ class AdhkarWidgetSyncScope extends ConsumerStatefulWidget {
 }
 
 class _AdhkarWidgetSyncScopeState extends ConsumerState<AdhkarWidgetSyncScope> {
+  final List<ProviderSubscription<dynamic>> _subscriptions = [];
+
   @override
   void initState() {
     super.initState();
-    ref.listenManual(adhkarCatalogProvider, (_, _) => _scheduleSync());
-    ref.listenManual(adhkarProgressProvider, (_, _) => _scheduleSync());
-    ref.listenManual(tickingNowProvider, (_, _) => _scheduleSync());
-    ref.listenManual(
-      settingsProvider.select((value) => value.value?.localeCode),
-      (_, _) => _scheduleSync(),
-    );
+    _subscriptions.addAll([
+      ref.listenManual(adhkarCatalogProvider, (_, _) => _scheduleSync()),
+      ref.listenManual(adhkarProgressProvider, (_, _) => _scheduleSync()),
+      ref.listenManual(
+        settingsProvider.select((value) => value.value?.localeCode),
+        (_, _) => _scheduleSync(),
+      ),
+    ]);
     WidgetsBinding.instance.addPostFrameCallback((_) => _scheduleSync());
+  }
+
+  @override
+  void dispose() {
+    for (final subscription in _subscriptions) {
+      subscription.close();
+    }
+    super.dispose();
   }
 
   void _scheduleSync() => unawaited(_sync());
@@ -41,7 +52,7 @@ class _AdhkarWidgetSyncScopeState extends ConsumerState<AdhkarWidgetSyncScope> {
   Future<void> _sync() {
     final catalog = ref.read(adhkarCatalogProvider).value;
     final progress = ref.read(adhkarProgressProvider).value;
-    final now = ref.read(tickingNowProvider);
+    final now = ref.read(clockProvider)();
     final settings = ref.read(settingsProvider).value;
     if (catalog == null || progress == null || settings == null) {
       return AdhkarWidgetSync.update(null);

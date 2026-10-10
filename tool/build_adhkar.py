@@ -53,6 +53,8 @@ GRADES = {
     "Hasan Sahih": "حسن صحيح",
     "Sahih Lighairihi": "صحيح لغيره",
     "Hasan Lighairihi": "حسن لغيره",
+    "Sahih Isnaad": "صحيح الإسناد",
+    "Hasan Isnaad": "حسن الإسناد",
 }
 EDITION_LABEL = re.compile(r"^ara-(\w+)$")
 
@@ -196,6 +198,8 @@ def entry_for(editions, spec, item, order):
     }
     if "when" in item:
         out["when"] = item["when"]
+    if "label" in item:
+        out["label"] = item["label"]
     if "quran" in item:
         out["quran"] = item["quran"]
         if not item["quran"]["ranges"]:

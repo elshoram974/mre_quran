@@ -16,7 +16,8 @@
     "33": "ثَلَاثًا وَثَلَاثِينَ مَرَّةً",
     "100": "مِائَةُ مَرَّةٍ",
     "34": "أَرْبَعًا وَثَلَاثِينَ مَرَّةً",
-    "4": "أَرْبَعُ مَرَّاتٍ"
+    "4": "أَرْبَعُ مَرَّاتٍ",
+    "70": "سَبعُونَ مَرَّةً"
   },
   "entries": [
     {
@@ -773,6 +774,1506 @@
           "phrase": "عشر مرات على إثر المغرب"
         }
       ]
+    },
+    {
+      "id": "quran-baqara-127",
+      "variant": 40,
+      "order": 1,
+      "count": 1,
+      "quran": {
+        "istiadha": true,
+        "ranges": [
+          {
+            "surah": 2,
+            "from": 127,
+            "to": 128
+          }
+        ]
+      },
+      "note": "من القرآن الكريم: سورة البقرة، الآيتان 127–128. دعاء إبراهيم وإسماعيل عليهما السلام عند رفع قواعد البيت.",
+      "verified": "quran reference; the words come from the verified Tanzil text",
+      "label": "دعاء إبراهيم وإسماعيل عليهما السلام عند رفع قواعد البيت"
+    },
+    {
+      "id": "quran-baqara-201",
+      "variant": 40,
+      "order": 2,
+      "count": 1,
+      "quran": {
+        "istiadha": false,
+        "ranges": [
+          {
+            "surah": 2,
+            "from": 201,
+            "to": 201
+          }
+        ]
+      },
+      "note": "من القرآن الكريم: سورة البقرة، الآية 201. من الدعاء الجامع لخيري الدنيا والآخرة.",
+      "verified": "quran reference; the words come from the verified Tanzil text",
+      "label": "من الدعاء الجامع لخيري الدنيا والآخرة"
+    },
+    {
+      "id": "quran-baqara-250",
+      "variant": 40,
+      "order": 3,
+      "count": 1,
+      "quran": {
+        "istiadha": false,
+        "ranges": [
+          {
+            "surah": 2,
+            "from": 250,
+            "to": 250
+          }
+        ]
+      },
+      "note": "من القرآن الكريم: سورة البقرة، الآية 250. دعاء جنود طالوت عند لقاء العدو.",
+      "verified": "quran reference; the words come from the verified Tanzil text",
+      "label": "دعاء جنود طالوت عند لقاء العدو"
+    },
+    {
+      "id": "quran-baqara-286",
+      "variant": 40,
+      "order": 4,
+      "count": 1,
+      "quran": {
+        "istiadha": false,
+        "ranges": [
+          {
+            "surah": 2,
+            "from": 286,
+            "to": 286
+          }
+        ]
+      },
+      "note": "من القرآن الكريم: سورة البقرة، الآية 286. خاتمة سورة البقرة.",
+      "verified": "quran reference; the words come from the verified Tanzil text",
+      "label": "خاتمة سورة البقرة"
+    },
+    {
+      "id": "quran-imran-8",
+      "variant": 40,
+      "order": 5,
+      "count": 1,
+      "quran": {
+        "istiadha": false,
+        "ranges": [
+          {
+            "surah": 3,
+            "from": 8,
+            "to": 9
+          }
+        ]
+      },
+      "note": "من القرآن الكريم: سورة آل عمران، الآيتان 8–9. دعاء الراسخين في العلم.",
+      "verified": "quran reference; the words come from the verified Tanzil text",
+      "label": "دعاء الراسخين في العلم"
+    },
+    {
+      "id": "quran-imran-16",
+      "variant": 40,
+      "order": 6,
+      "count": 1,
+      "quran": {
+        "istiadha": false,
+        "ranges": [
+          {
+            "surah": 3,
+            "from": 16,
+            "to": 16
+          }
+        ]
+      },
+      "note": "من القرآن الكريم: سورة آل عمران، الآية 16. دعاء المتقين.",
+      "verified": "quran reference; the words come from the verified Tanzil text",
+      "label": "دعاء المتقين"
+    },
+    {
+      "id": "quran-imran-147",
+      "variant": 40,
+      "order": 7,
+      "count": 1,
+      "quran": {
+        "istiadha": false,
+        "ranges": [
+          {
+            "surah": 3,
+            "from": 147,
+            "to": 147
+          }
+        ]
+      },
+      "note": "من القرآن الكريم: سورة آل عمران، الآية 147. دعاء أصحاب الأنبياء.",
+      "verified": "quran reference; the words come from the verified Tanzil text",
+      "label": "دعاء أصحاب الأنبياء"
+    },
+    {
+      "id": "quran-imran-191",
+      "variant": 40,
+      "order": 8,
+      "count": 1,
+      "quran": {
+        "istiadha": false,
+        "ranges": [
+          {
+            "surah": 3,
+            "from": 191,
+            "to": 194
+          }
+        ]
+      },
+      "note": "من القرآن الكريم: سورة آل عمران، الآيات 191–194. دعاء أولي الألباب.",
+      "verified": "quran reference; the words come from the verified Tanzil text",
+      "label": "دعاء أولي الألباب"
+    },
+    {
+      "id": "quran-araf-23",
+      "variant": 40,
+      "order": 9,
+      "count": 1,
+      "quran": {
+        "istiadha": false,
+        "ranges": [
+          {
+            "surah": 7,
+            "from": 23,
+            "to": 23
+          }
+        ]
+      },
+      "note": "من القرآن الكريم: سورة الأعراف، الآية 23. دعاء آدم وحواء عليهما السلام.",
+      "verified": "quran reference; the words come from the verified Tanzil text",
+      "label": "دعاء آدم وحواء عليهما السلام"
+    },
+    {
+      "id": "quran-araf-126",
+      "variant": 40,
+      "order": 10,
+      "count": 1,
+      "quran": {
+        "istiadha": false,
+        "ranges": [
+          {
+            "surah": 7,
+            "from": 126,
+            "to": 126
+          }
+        ]
+      },
+      "note": "من القرآن الكريم: سورة الأعراف، الآية 126. دعاء سحرة فرعون حين آمنوا.",
+      "verified": "quran reference; the words come from the verified Tanzil text",
+      "label": "دعاء سحرة فرعون حين آمنوا"
+    },
+    {
+      "id": "quran-yunus-85",
+      "variant": 40,
+      "order": 11,
+      "count": 1,
+      "quran": {
+        "istiadha": false,
+        "ranges": [
+          {
+            "surah": 10,
+            "from": 85,
+            "to": 86
+          }
+        ]
+      },
+      "note": "من القرآن الكريم: سورة يونس، الآيتان 85–86. دعاء أصحاب موسى عليه السلام.",
+      "verified": "quran reference; the words come from the verified Tanzil text",
+      "label": "دعاء أصحاب موسى عليه السلام"
+    },
+    {
+      "id": "quran-yusuf-101",
+      "variant": 40,
+      "order": 12,
+      "count": 1,
+      "quran": {
+        "istiadha": false,
+        "ranges": [
+          {
+            "surah": 12,
+            "from": 101,
+            "to": 101
+          }
+        ]
+      },
+      "note": "من القرآن الكريم: سورة يوسف، الآية 101. دعاء يوسف عليه السلام.",
+      "verified": "quran reference; the words come from the verified Tanzil text",
+      "label": "دعاء يوسف عليه السلام"
+    },
+    {
+      "id": "quran-ibrahim-40",
+      "variant": 40,
+      "order": 13,
+      "count": 1,
+      "quran": {
+        "istiadha": false,
+        "ranges": [
+          {
+            "surah": 14,
+            "from": 40,
+            "to": 41
+          }
+        ]
+      },
+      "note": "من القرآن الكريم: سورة إبراهيم، الآيتان 40–41. دعاء إبراهيم عليه السلام.",
+      "verified": "quran reference; the words come from the verified Tanzil text",
+      "label": "دعاء إبراهيم عليه السلام"
+    },
+    {
+      "id": "quran-isra-24",
+      "variant": 40,
+      "order": 14,
+      "count": 1,
+      "quran": {
+        "istiadha": false,
+        "ranges": [
+          {
+            "surah": 17,
+            "from": 24,
+            "to": 24
+          }
+        ]
+      },
+      "note": "من القرآن الكريم: سورة الإسراء، الآية 24. الدعاء للوالدين.",
+      "verified": "quran reference; the words come from the verified Tanzil text",
+      "label": "الدعاء للوالدين"
+    },
+    {
+      "id": "quran-kahf-10",
+      "variant": 40,
+      "order": 15,
+      "count": 1,
+      "quran": {
+        "istiadha": false,
+        "ranges": [
+          {
+            "surah": 18,
+            "from": 10,
+            "to": 10
+          }
+        ]
+      },
+      "note": "من القرآن الكريم: سورة الكهف، الآية 10. دعاء أهل الكهف.",
+      "verified": "quran reference; the words come from the verified Tanzil text",
+      "label": "دعاء أهل الكهف"
+    },
+    {
+      "id": "quran-taha-25",
+      "variant": 40,
+      "order": 16,
+      "count": 1,
+      "quran": {
+        "istiadha": false,
+        "ranges": [
+          {
+            "surah": 20,
+            "from": 25,
+            "to": 28
+          }
+        ]
+      },
+      "note": "من القرآن الكريم: سورة طه، الآيات 25–28. دعاء موسى عليه السلام.",
+      "verified": "quran reference; the words come from the verified Tanzil text",
+      "label": "دعاء موسى عليه السلام"
+    },
+    {
+      "id": "quran-taha-114",
+      "variant": 40,
+      "order": 17,
+      "count": 1,
+      "quran": {
+        "istiadha": false,
+        "ranges": [
+          {
+            "surah": 20,
+            "from": 114,
+            "to": 114
+          }
+        ]
+      },
+      "note": "من القرآن الكريم: سورة طه، الآية 114. طلب الزيادة في العلم.",
+      "verified": "quran reference; the words come from the verified Tanzil text",
+      "label": "طلب الزيادة في العلم"
+    },
+    {
+      "id": "quran-anbiya-83",
+      "variant": 40,
+      "order": 18,
+      "count": 1,
+      "quran": {
+        "istiadha": false,
+        "ranges": [
+          {
+            "surah": 21,
+            "from": 83,
+            "to": 83
+          }
+        ]
+      },
+      "note": "من القرآن الكريم: سورة الأنبياء، الآية 83. دعاء أيوب عليه السلام.",
+      "verified": "quran reference; the words come from the verified Tanzil text",
+      "label": "دعاء أيوب عليه السلام"
+    },
+    {
+      "id": "quran-anbiya-87",
+      "variant": 40,
+      "order": 19,
+      "count": 1,
+      "quran": {
+        "istiadha": false,
+        "ranges": [
+          {
+            "surah": 21,
+            "from": 87,
+            "to": 87
+          }
+        ]
+      },
+      "note": "من القرآن الكريم: سورة الأنبياء، الآية 87. دعاء يونس عليه السلام.",
+      "verified": "quran reference; the words come from the verified Tanzil text",
+      "label": "دعاء يونس عليه السلام"
+    },
+    {
+      "id": "quran-anbiya-89",
+      "variant": 40,
+      "order": 20,
+      "count": 1,
+      "quran": {
+        "istiadha": false,
+        "ranges": [
+          {
+            "surah": 21,
+            "from": 89,
+            "to": 89
+          }
+        ]
+      },
+      "note": "من القرآن الكريم: سورة الأنبياء، الآية 89. دعاء زكريا عليه السلام.",
+      "verified": "quran reference; the words come from the verified Tanzil text",
+      "label": "دعاء زكريا عليه السلام"
+    },
+    {
+      "id": "quran-muminun-97",
+      "variant": 40,
+      "order": 21,
+      "count": 1,
+      "quran": {
+        "istiadha": false,
+        "ranges": [
+          {
+            "surah": 23,
+            "from": 97,
+            "to": 98
+          }
+        ]
+      },
+      "note": "من القرآن الكريم: سورة المؤمنون، الآيتان 97–98. الاستعاذة من الشياطين.",
+      "verified": "quran reference; the words come from the verified Tanzil text",
+      "label": "الاستعاذة من الشياطين"
+    },
+    {
+      "id": "quran-muminun-118",
+      "variant": 40,
+      "order": 22,
+      "count": 1,
+      "quran": {
+        "istiadha": false,
+        "ranges": [
+          {
+            "surah": 23,
+            "from": 118,
+            "to": 118
+          }
+        ]
+      },
+      "note": "من القرآن الكريم: سورة المؤمنون، الآية 118. طلب المغفرة والرحمة.",
+      "verified": "quran reference; the words come from the verified Tanzil text",
+      "label": "طلب المغفرة والرحمة"
+    },
+    {
+      "id": "quran-furqan-74",
+      "variant": 40,
+      "order": 23,
+      "count": 1,
+      "quran": {
+        "istiadha": false,
+        "ranges": [
+          {
+            "surah": 25,
+            "from": 74,
+            "to": 74
+          }
+        ]
+      },
+      "note": "من القرآن الكريم: سورة الفرقان، الآية 74. دعاء عباد الرحمن.",
+      "verified": "quran reference; the words come from the verified Tanzil text",
+      "label": "دعاء عباد الرحمن"
+    },
+    {
+      "id": "quran-qasas-16",
+      "variant": 40,
+      "order": 24,
+      "count": 1,
+      "quran": {
+        "istiadha": false,
+        "ranges": [
+          {
+            "surah": 28,
+            "from": 16,
+            "to": 16
+          }
+        ]
+      },
+      "note": "من القرآن الكريم: سورة القصص، الآية 16. دعاء موسى عليه السلام.",
+      "verified": "quran reference; the words come from the verified Tanzil text",
+      "label": "دعاء موسى عليه السلام"
+    },
+    {
+      "id": "quran-qasas-24",
+      "variant": 40,
+      "order": 25,
+      "count": 1,
+      "quran": {
+        "istiadha": false,
+        "ranges": [
+          {
+            "surah": 28,
+            "from": 24,
+            "to": 24
+          }
+        ]
+      },
+      "note": "من القرآن الكريم: سورة القصص، الآية 24. دعاء موسى عليه السلام.",
+      "verified": "quran reference; the words come from the verified Tanzil text",
+      "label": "دعاء موسى عليه السلام"
+    },
+    {
+      "id": "quran-ahqaf-15",
+      "variant": 40,
+      "order": 26,
+      "count": 1,
+      "quran": {
+        "istiadha": false,
+        "ranges": [
+          {
+            "surah": 46,
+            "from": 15,
+            "to": 15
+          }
+        ]
+      },
+      "note": "من القرآن الكريم: سورة الأحقاف، الآية 15. دعاء الشكر وصلاح الذرية.",
+      "verified": "quran reference; the words come from the verified Tanzil text",
+      "label": "دعاء الشكر وصلاح الذرية"
+    },
+    {
+      "id": "quran-hashr-10",
+      "variant": 40,
+      "order": 27,
+      "count": 1,
+      "quran": {
+        "istiadha": false,
+        "ranges": [
+          {
+            "surah": 59,
+            "from": 10,
+            "to": 10
+          }
+        ]
+      },
+      "note": "من القرآن الكريم: سورة الحشر، الآية 10. دعاء من جاؤوا بعد الصحابة.",
+      "verified": "quran reference; the words come from the verified Tanzil text",
+      "label": "دعاء من جاؤوا بعد الصحابة"
+    },
+    {
+      "id": "quran-tahrim-8",
+      "variant": 40,
+      "order": 28,
+      "count": 1,
+      "quran": {
+        "istiadha": false,
+        "ranges": [
+          {
+            "surah": 66,
+            "from": 8,
+            "to": 8
+          }
+        ]
+      },
+      "note": "من القرآن الكريم: سورة التحريم، الآية 8. دعاء المؤمنين يوم القيامة.",
+      "verified": "quran reference; the words come from the verified Tanzil text",
+      "label": "دعاء المؤمنين يوم القيامة"
+    },
+    {
+      "id": "quran-nuh-28",
+      "variant": 40,
+      "order": 29,
+      "count": 1,
+      "quran": {
+        "istiadha": false,
+        "ranges": [
+          {
+            "surah": 71,
+            "from": 28,
+            "to": 28
+          }
+        ]
+      },
+      "note": "من القرآن الكريم: سورة نوح، الآية 28. دعاء نوح عليه السلام.",
+      "verified": "quran reference; the words come from the verified Tanzil text",
+      "label": "دعاء نوح عليه السلام"
+    },
+    {
+      "id": "dua-istighfar-100",
+      "variant": 60,
+      "order": 1,
+      "count": 100,
+      "text": {
+        "from": {
+          "edition": "ara-abudawud",
+          "number": "1516"
+        },
+        "start": "رب اغفر لي وتب علي",
+        "end": "التواب الرحيم"
+      },
+      "evidence": [
+        {
+          "edition": "ara-abudawud",
+          "number": "1516"
+        }
+      ]
+    },
+    {
+      "id": "dua-qulub",
+      "variant": 60,
+      "order": 2,
+      "count": 1,
+      "text": {
+        "from": {
+          "edition": "ara-tirmidhi",
+          "number": "2140"
+        },
+        "start": "يا مقلب القلوب",
+        "end": "ثبت قلبي على دينك"
+      },
+      "evidence": [
+        {
+          "edition": "ara-tirmidhi",
+          "number": "2140"
+        }
+      ],
+      "label": "كان النبي ﷺ يكثر منه"
+    },
+    {
+      "id": "dua-islah",
+      "variant": 60,
+      "order": 3,
+      "count": 1,
+      "text": {
+        "from": {
+          "edition": "ara-muslim",
+          "number": "2720"
+        },
+        "start": "اللهم أصلح لي ديني",
+        "end": "راحة لي من كل شر"
+      },
+      "evidence": [
+        {
+          "edition": "ara-muslim",
+          "number": "2720"
+        }
+      ]
+    },
+    {
+      "id": "dua-udhu",
+      "variant": 60,
+      "order": 4,
+      "count": 1,
+      "text": {
+        "from": {
+          "edition": "ara-muslim",
+          "number": "2722"
+        },
+        "start": "اللهم إني أعوذ بك من العجز",
+        "end": "دعوة لا يستجاب لها"
+      },
+      "evidence": [
+        {
+          "edition": "ara-muslim",
+          "number": "2722"
+        }
+      ]
+    },
+    {
+      "id": "dua-ianah",
+      "variant": 60,
+      "order": 5,
+      "count": 1,
+      "text": {
+        "from": {
+          "edition": "ara-abudawud",
+          "number": "1522"
+        },
+        "start": "اللهم أعني على ذكرك",
+        "end": "وحسن عبادتك"
+      },
+      "evidence": [
+        {
+          "edition": "ara-abudawud",
+          "number": "1522"
+        }
+      ]
+    },
+    {
+      "id": "ruqya-athhib",
+      "variant": 70,
+      "order": 3,
+      "count": 1,
+      "text": {
+        "from": {
+          "edition": "ara-bukhari",
+          "number": "5675"
+        },
+        "start": "أذهب الباس رب الناس",
+        "end": "لا يغادر سقما"
+      },
+      "evidence": [
+        {
+          "edition": "ara-bukhari",
+          "number": "5675"
+        }
+      ]
+    },
+    {
+      "id": "ruqya-bismillah",
+      "variant": 70,
+      "order": 4,
+      "count": 1,
+      "text": {
+        "from": {
+          "edition": "ara-muslim",
+          "number": "2186"
+        },
+        "start": "باسم الله أرقيك من كل شيء يؤذيك",
+        "end": "الله يشفيك باسم الله أرقيك"
+      },
+      "evidence": [
+        {
+          "edition": "ara-muslim",
+          "number": "2186"
+        }
+      ]
+    },
+    {
+      "id": "ruqya-fatiha",
+      "variant": 70,
+      "order": 1,
+      "count": 1,
+      "quran": {
+        "istiadha": false,
+        "ranges": [
+          {
+            "surah": 1,
+            "from": 1,
+            "to": 7
+          }
+        ]
+      },
+      "evidence": [
+        {
+          "edition": "ara-bukhari",
+          "number": "5736"
+        }
+      ],
+      "mustContain": [
+        {
+          "from": {
+            "edition": "ara-bukhari",
+            "number": "5736"
+          },
+          "phrase": "يقرأ بأم القرآن"
+        }
+      ]
+    },
+    {
+      "id": "ruqya-muawwidhat",
+      "variant": 70,
+      "order": 2,
+      "count": 1,
+      "quran": {
+        "istiadha": false,
+        "ranges": [
+          {
+            "surah": 112,
+            "from": 1,
+            "to": 4
+          },
+          {
+            "surah": 113,
+            "from": 1,
+            "to": 5
+          },
+          {
+            "surah": 114,
+            "from": 1,
+            "to": 6
+          }
+        ]
+      },
+      "evidence": [
+        {
+          "edition": "ara-bukhari",
+          "number": "5017"
+        }
+      ],
+      "mustContain": [
+        {
+          "from": {
+            "edition": "ara-bukhari",
+            "number": "5017"
+          },
+          "phrase": "قل هو الله أحد"
+        }
+      ]
+    },
+    {
+      "id": "dua-huda",
+      "variant": 60,
+      "order": 6,
+      "count": 1,
+      "text": {
+        "from": {
+          "edition": "ara-muslim",
+          "number": "2721.01"
+        },
+        "start": "اللهم إني أسألك الهدى",
+        "end": "والغنى"
+      },
+      "evidence": [
+        {
+          "edition": "ara-muslim",
+          "number": "2721.01"
+        },
+        {
+          "edition": "ara-tirmidhi",
+          "number": "3489"
+        },
+        {
+          "edition": "ara-ibnmajah",
+          "number": "3832"
+        }
+      ]
+    },
+    {
+      "id": "dua-musarrif",
+      "variant": 60,
+      "order": 7,
+      "count": 1,
+      "text": {
+        "from": {
+          "edition": "ara-muslim",
+          "number": "2655"
+        },
+        "start": "اللهم مصرف القلوب",
+        "end": "على طاعتك"
+      },
+      "evidence": [
+        {
+          "edition": "ara-muslim",
+          "number": "2655"
+        }
+      ]
+    },
+    {
+      "id": "dua-zawal",
+      "variant": 60,
+      "order": 8,
+      "count": 1,
+      "text": {
+        "from": {
+          "edition": "ara-muslim",
+          "number": "2739"
+        },
+        "start": "اللهم إني أعوذ بك من زوال نعمتك",
+        "end": "جميع سخطك"
+      },
+      "evidence": [
+        {
+          "edition": "ara-muslim",
+          "number": "2739"
+        },
+        {
+          "edition": "ara-abudawud",
+          "number": "1545"
+        }
+      ]
+    },
+    {
+      "id": "dua-ihdini",
+      "variant": 60,
+      "order": 9,
+      "count": 1,
+      "text": {
+        "from": {
+          "edition": "ara-muslim",
+          "number": "2725.01"
+        },
+        "start": "اللهم اهدني وسددني",
+        "end": "وسددني"
+      },
+      "evidence": [
+        {
+          "edition": "ara-muslim",
+          "number": "2725.01"
+        },
+        {
+          "edition": "ara-abudawud",
+          "number": "4225"
+        }
+      ]
+    },
+    {
+      "id": "dua-ilm",
+      "variant": 60,
+      "order": 10,
+      "count": 1,
+      "text": {
+        "from": {
+          "edition": "ara-tirmidhi",
+          "number": "3599"
+        },
+        "start": "اللهم انفعني بما علمتني",
+        "end": "وزدني علما"
+      },
+      "evidence": [
+        {
+          "edition": "ara-tirmidhi",
+          "number": "3599"
+        },
+        {
+          "edition": "ara-ibnmajah",
+          "number": "251"
+        }
+      ]
+    },
+    {
+      "id": "dua-arbaa",
+      "variant": 60,
+      "order": 11,
+      "count": 1,
+      "text": {
+        "from": {
+          "edition": "ara-abudawud",
+          "number": "1548"
+        },
+        "start": "اللهم إني أعوذ بك من الأربع",
+        "end": "دعاء لا يسمع"
+      },
+      "evidence": [
+        {
+          "edition": "ara-abudawud",
+          "number": "1548"
+        },
+        {
+          "edition": "ara-nasai",
+          "number": "5467"
+        },
+        {
+          "edition": "ara-ibnmajah",
+          "number": "3837"
+        }
+      ]
+    },
+    {
+      "id": "dua-afuw",
+      "variant": 60,
+      "order": 12,
+      "count": 1,
+      "text": {
+        "from": {
+          "edition": "ara-ibnmajah",
+          "number": "3850"
+        },
+        "start": "اللهم إنك عفو",
+        "end": "فاعف عني"
+      },
+      "evidence": [
+        {
+          "edition": "ara-ibnmajah",
+          "number": "3850"
+        }
+      ],
+      "label": "دعاء ليلة القدر"
+    },
+    {
+      "id": "ruqya-asqam",
+      "variant": 70,
+      "order": 5,
+      "count": 1,
+      "text": {
+        "from": {
+          "edition": "ara-abudawud",
+          "number": "1554"
+        },
+        "start": "اللهم إني أعوذ بك من البرص",
+        "end": "سيئ الأسقام"
+      },
+      "evidence": [
+        {
+          "edition": "ara-abudawud",
+          "number": "1554"
+        }
+      ],
+      "label": "الاستعاذة من الأسقام"
+    },
+    {
+      "id": "food-bismillah",
+      "variant": 80,
+      "order": 1,
+      "count": 1,
+      "text": {
+        "literal": "بِسْمِ اللَّهِ"
+      },
+      "evidence": [
+        {
+          "edition": "ara-abudawud",
+          "number": "3767"
+        }
+      ],
+      "mustContain": [
+        {
+          "from": {
+            "edition": "ara-abudawud",
+            "number": "3767"
+          },
+          "phrase": "فليذكر اسم الله"
+        }
+      ],
+      "verified": "narration",
+      "label": "عند البدء في الأكل"
+    },
+    {
+      "id": "food-forgot",
+      "variant": 80,
+      "order": 2,
+      "count": 1,
+      "text": {
+        "from": {
+          "edition": "ara-abudawud",
+          "number": "3767"
+        },
+        "start": "بسم الله أوله وآخره",
+        "end": "أوله وآخره"
+      },
+      "evidence": [
+        {
+          "edition": "ara-abudawud",
+          "number": "3767"
+        }
+      ],
+      "label": "إذا نسي التسمية في أول الطعام"
+    },
+    {
+      "id": "food-baraka",
+      "variant": 80,
+      "order": 3,
+      "count": 1,
+      "text": {
+        "from": {
+          "edition": "ara-tirmidhi",
+          "number": "3455"
+        },
+        "start": "اللهم بارك لنا فيه وأطعمنا خيرا منه",
+        "end": "خيرا منه"
+      },
+      "evidence": [
+        {
+          "edition": "ara-tirmidhi",
+          "number": "3455"
+        },
+        {
+          "edition": "ara-abudawud",
+          "number": "3730"
+        },
+        {
+          "edition": "ara-ibnmajah",
+          "number": "3322"
+        }
+      ],
+      "label": "إذا أُطعم طعامًا"
+    },
+    {
+      "id": "food-milk",
+      "variant": 80,
+      "order": 4,
+      "count": 1,
+      "text": {
+        "from": {
+          "edition": "ara-tirmidhi",
+          "number": "3455"
+        },
+        "start": "اللهم بارك لنا فيه وزدنا منه",
+        "end": "وزدنا منه"
+      },
+      "evidence": [
+        {
+          "edition": "ara-tirmidhi",
+          "number": "3455"
+        },
+        {
+          "edition": "ara-abudawud",
+          "number": "3730"
+        },
+        {
+          "edition": "ara-ibnmajah",
+          "number": "3322"
+        }
+      ],
+      "label": "إذا شرب لبنًا"
+    },
+    {
+      "id": "sky-hilal",
+      "variant": 90,
+      "order": 1,
+      "count": 1,
+      "text": {
+        "from": {
+          "edition": "ara-tirmidhi",
+          "number": "3451"
+        },
+        "start": "اللهم أهلله علينا",
+        "end": "ربي وربك الله"
+      },
+      "evidence": [
+        {
+          "edition": "ara-tirmidhi",
+          "number": "3451"
+        }
+      ],
+      "label": "عند رؤية الهلال"
+    },
+    {
+      "id": "sky-rain",
+      "variant": 90,
+      "order": 2,
+      "count": 1,
+      "text": {
+        "from": {
+          "edition": "ara-bukhari",
+          "number": "1032"
+        },
+        "start": "صيبا نافعا",
+        "end": "صيبا نافعا"
+      },
+      "evidence": [
+        {
+          "edition": "ara-bukhari",
+          "number": "1032"
+        },
+        {
+          "edition": "ara-nasai",
+          "number": "1523"
+        }
+      ],
+      "label": "عند نزول المطر"
+    },
+    {
+      "id": "sky-wind",
+      "variant": 90,
+      "order": 3,
+      "count": 1,
+      "text": {
+        "from": {
+          "edition": "ara-muslim",
+          "number": "899.02"
+        },
+        "start": "اللهم إني أسألك خيرها",
+        "end": "شر ما أرسلت به"
+      },
+      "evidence": [
+        {
+          "edition": "ara-muslim",
+          "number": "899.02"
+        }
+      ],
+      "label": "عند هبوب الريح"
+    },
+    {
+      "id": "kids-udhu",
+      "variant": 100,
+      "order": 1,
+      "count": 1,
+      "text": {
+        "from": {
+          "edition": "ara-abudawud",
+          "number": "4737"
+        },
+        "start": "أعيذكما بكلمات الله التامة",
+        "end": "عين لامة"
+      },
+      "evidence": [
+        {
+          "edition": "ara-abudawud",
+          "number": "4737"
+        },
+        {
+          "edition": "ara-tirmidhi",
+          "number": "2060"
+        }
+      ],
+      "label": "تعويذ الأبناء"
+    },
+    {
+      "id": "ride-subhana",
+      "variant": 110,
+      "order": 1,
+      "count": 1,
+      "text": {
+        "from": {
+          "edition": "ara-muslim",
+          "number": "1342"
+        },
+        "start": "سبحان الذي سخر لنا هذا",
+        "end": "لمنقلبون"
+      },
+      "evidence": [
+        {
+          "edition": "ara-muslim",
+          "number": "1342"
+        },
+        {
+          "edition": "ara-abudawud",
+          "number": "2602"
+        },
+        {
+          "edition": "ara-tirmidhi",
+          "number": "3446"
+        }
+      ],
+      "label": "عند الركوب، بعد التكبير ثلاثًا"
+    },
+    {
+      "id": "ride-safar",
+      "variant": 110,
+      "order": 2,
+      "count": 1,
+      "text": {
+        "from": {
+          "edition": "ara-muslim",
+          "number": "1342"
+        },
+        "start": "اللهم إنا نسألك في سفرنا هذا",
+        "end": "في المال والأهل"
+      },
+      "evidence": [
+        {
+          "edition": "ara-muslim",
+          "number": "1342"
+        },
+        {
+          "edition": "ara-abudawud",
+          "number": "2602"
+        },
+        {
+          "edition": "ara-tirmidhi",
+          "number": "3446"
+        }
+      ],
+      "label": "دعاء السفر"
+    },
+    {
+      "id": "ride-ayibun",
+      "variant": 110,
+      "order": 3,
+      "count": 1,
+      "text": {
+        "from": {
+          "edition": "ara-muslim",
+          "number": "1342"
+        },
+        "start": "آيبون تائبون عابدون",
+        "end": "لربنا حامدون"
+      },
+      "evidence": [
+        {
+          "edition": "ara-muslim",
+          "number": "1342"
+        },
+        {
+          "edition": "ara-bukhari",
+          "number": "1797"
+        }
+      ],
+      "label": "عند العودة من السفر، تقوله مع ما سبق"
+    },
+    {
+      "id": "karb-rahmataka",
+      "variant": 120,
+      "order": 1,
+      "count": 1,
+      "text": {
+        "from": {
+          "edition": "ara-abudawud",
+          "number": "5090"
+        },
+        "start": "اللهم رحمتك أرجو",
+        "end": "لا إله إلا أنت"
+      },
+      "evidence": [
+        {
+          "edition": "ara-abudawud",
+          "number": "5090"
+        }
+      ],
+      "label": "دعوات المكروب"
+    },
+    {
+      "id": "mosque-exit",
+      "variant": 130,
+      "order": 1,
+      "count": 1,
+      "text": {
+        "from": {
+          "edition": "ara-muslim",
+          "number": "713.01"
+        },
+        "start": "اللهم إني أسألك من فضلك",
+        "end": "من فضلك"
+      },
+      "evidence": [
+        {
+          "edition": "ara-muslim",
+          "number": "713.01"
+        },
+        {
+          "edition": "ara-abudawud",
+          "number": "465"
+        },
+        {
+          "edition": "ara-nasai",
+          "number": "729"
+        },
+        {
+          "edition": "ara-ibnmajah",
+          "number": "772"
+        }
+      ],
+      "label": "عند الخروج من المسجد"
+    },
+    {
+      "id": "sneeze-hamd",
+      "variant": 140,
+      "order": 1,
+      "count": 1,
+      "text": {
+        "from": {
+          "edition": "ara-bukhari",
+          "number": "6224"
+        },
+        "start": "الحمد لله",
+        "end": "الحمد لله"
+      },
+      "evidence": [
+        {
+          "edition": "ara-bukhari",
+          "number": "6224"
+        },
+        {
+          "edition": "ara-abudawud",
+          "number": "5033"
+        },
+        {
+          "edition": "ara-tirmidhi",
+          "number": "2739"
+        }
+      ],
+      "label": "إذا عطس"
+    },
+    {
+      "id": "sneeze-yarhamuk",
+      "variant": 140,
+      "order": 2,
+      "count": 1,
+      "text": {
+        "from": {
+          "edition": "ara-bukhari",
+          "number": "6224"
+        },
+        "start": "يرحمك الله",
+        "end": "يرحمك الله"
+      },
+      "evidence": [
+        {
+          "edition": "ara-bukhari",
+          "number": "6224"
+        },
+        {
+          "edition": "ara-abudawud",
+          "number": "5033"
+        },
+        {
+          "edition": "ara-tirmidhi",
+          "number": "2739"
+        }
+      ],
+      "label": "ويقول له أخوه"
+    },
+    {
+      "id": "sneeze-yahdikum",
+      "variant": 140,
+      "order": 3,
+      "count": 1,
+      "text": {
+        "from": {
+          "edition": "ara-bukhari",
+          "number": "6224"
+        },
+        "start": "يهديكم الله ويصلح بالكم",
+        "end": "ويصلح بالكم"
+      },
+      "evidence": [
+        {
+          "edition": "ara-bukhari",
+          "number": "6224"
+        },
+        {
+          "edition": "ara-abudawud",
+          "number": "5033"
+        },
+        {
+          "edition": "ara-tirmidhi",
+          "number": "2739"
+        }
+      ],
+      "label": "فيجيبه العاطس"
+    },
+    {
+      "id": "tasbih-azim",
+      "variant": 150,
+      "order": 1,
+      "count": 1,
+      "text": {
+        "from": {
+          "edition": "ara-bukhari",
+          "number": "6682"
+        },
+        "start": "سبحان الله وبحمده سبحان الله العظيم",
+        "end": "سبحان الله العظيم"
+      },
+      "evidence": [
+        {
+          "edition": "ara-bukhari",
+          "number": "6682"
+        },
+        {
+          "edition": "ara-muslim",
+          "number": "2694"
+        },
+        {
+          "edition": "ara-tirmidhi",
+          "number": "3467"
+        }
+      ],
+      "label": "كلمتان خفيفتان على اللسان"
+    },
+    {
+      "id": "tahlil-100",
+      "variant": 150,
+      "order": 2,
+      "count": 100,
+      "text": {
+        "from": {
+          "edition": "ara-muslim",
+          "number": "2691"
+        },
+        "start": "لا إله إلا الله وحده",
+        "end": "على كل شيء قدير"
+      },
+      "evidence": [
+        {
+          "edition": "ara-muslim",
+          "number": "2691"
+        },
+        {
+          "edition": "ara-bukhari",
+          "number": "6405"
+        }
+      ],
+      "label": "مائة مرة في اليوم"
+    },
+    {
+      "id": "tasbih-100",
+      "variant": 150,
+      "order": 3,
+      "count": 100,
+      "text": {
+        "from": {
+          "edition": "ara-muslim",
+          "number": "2691"
+        },
+        "start": "سبحان الله وبحمده",
+        "end": "وبحمده"
+      },
+      "evidence": [
+        {
+          "edition": "ara-muslim",
+          "number": "2691"
+        },
+        {
+          "edition": "ara-bukhari",
+          "number": "6405"
+        }
+      ],
+      "label": "مائة مرة في اليوم"
+    },
+    {
+      "id": "istighfar-70",
+      "variant": 150,
+      "order": 4,
+      "count": 70,
+      "text": {
+        "from": {
+          "edition": "ara-bukhari",
+          "number": "6307"
+        },
+        "start": "أستغفر الله وأتوب إليه",
+        "end": "وأتوب إليه"
+      },
+      "evidence": [
+        {
+          "edition": "ara-bukhari",
+          "number": "6307"
+        },
+        {
+          "edition": "ara-muslim",
+          "number": "484.04"
+        }
+      ],
+      "label": "كان النبي ﷺ يقوله في اليوم أكثر من سبعين مرة"
+    },
+    {
+      "id": "hawqala",
+      "variant": 150,
+      "order": 5,
+      "count": 1,
+      "text": {
+        "from": {
+          "edition": "ara-bukhari",
+          "number": "6384"
+        },
+        "start": "لا حول ولا قوة إلا بالله",
+        "end": "إلا بالله"
+      },
+      "evidence": [
+        {
+          "edition": "ara-bukhari",
+          "number": "6384"
+        }
+      ],
+      "label": "كنز من كنوز الجنة"
     }
   ]
 }

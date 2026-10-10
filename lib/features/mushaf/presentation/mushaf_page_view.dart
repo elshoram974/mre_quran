@@ -27,6 +27,7 @@ class MushafPageView extends StatefulWidget {
     this.bookmarked = const {},
     this.selected,
     this.framed = true,
+    this.spread = false,
   });
 
   /// The verified text.
@@ -58,6 +59,9 @@ class MushafPageView extends StatefulWidget {
   /// Whether to draw the page's own frame and labels. Off when the page is
   /// shown inside another frame, as the stand-in of a printed page.
   final bool framed;
+
+  /// Whether this page faces another, which keeps only its outer arrow.
+  final bool spread;
 
   static const double _minSize = 15;
   static const double _maxSize = 34;
@@ -273,6 +277,7 @@ class _MushafPageViewState extends State<MushafPageView> {
       metadata: text.metadata,
       page: widget.page,
       onTap: widget.onTap,
+      spread: widget.spread,
       child: body,
     );
   }

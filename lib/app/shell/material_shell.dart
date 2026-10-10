@@ -41,7 +41,10 @@ class MaterialShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final compact = size == WindowSize.compact;
+    final bottomBar = size.usesBottomBar;
+    final extended =
+        MediaQuery.sizeOf(context).width >=
+        ShellNavigation.extendedRailMinWidth;
     return Scaffold(
       // The tab bar floats; every page runs under it and keeps clear of it
       // through the bottom padding the Scaffold publishes.
@@ -49,19 +52,19 @@ class MaterialShell extends StatelessWidget {
       appBar: showAppBar
           ? AppBar(title: Text(destinations[index].label))
           : null,
-      body: compact || !showNavigation
+      body: bottomBar || !showNavigation
           ? ContentContainer(child: child)
           : Row(
               children: [
                 NavigationRail(
                   indicatorShape: const StadiumBorder(),
                   backgroundColor: Theme.of(context).colorScheme.surface,
-                  extended: size == WindowSize.expanded,
+                  extended: extended,
                   selectedIndex: index,
                   onDestinationSelected: onSelected,
-                  labelType: size == WindowSize.medium
-                      ? NavigationRailLabelType.all
-                      : NavigationRailLabelType.none,
+                  labelType: extended
+                      ? NavigationRailLabelType.none
+                      : NavigationRailLabelType.all,
                   destinations: [
                     for (final item in destinations)
                       NavigationRailDestination(
@@ -74,11 +77,19 @@ class MaterialShell extends StatelessWidget {
                 Expanded(child: ContentContainer(child: child)),
               ],
             ),
-      bottomNavigationBar: compact && showNavigation
-          ? ExpandingNavBar(
-              index: index,
-              onSelected: onSelected,
-              destinations: destinations,
+      bottomNavigationBar: bottomBar && showNavigation
+          ? Center(
+              heightFactor: 1,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  maxWidth: ShellNavigation.bottomBarMaxWidth,
+                ),
+                child: ExpandingNavBar(
+                  index: index,
+                  onSelected: onSelected,
+                  destinations: destinations,
+                ),
+              ),
             )
           : null,
     );

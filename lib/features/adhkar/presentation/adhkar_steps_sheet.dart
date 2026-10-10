@@ -21,8 +21,9 @@ import 'dhikr_card.dart';
 
 /// Reads a list one dhikr at a time, in a bottom sheet.
 ///
-/// Each dhikr is a step. When its count is done the next step comes by itself,
-/// and when the last one is done the sheet says so and offers the next list.
+/// Each dhikr is a page: swipe to the next or the previous, or use the arrows
+/// at the two ends. When its count is done the next page comes by itself, and
+/// when the last one is done the sheet says so and offers the next list.
 abstract final class AdhkarSteps {
   /// Opens the list [collectionId] as steps, starting at the dhikr whose order
   /// is [focusOrder] when given, else at the first one not yet finished.
@@ -51,12 +52,14 @@ class _StepsBody extends ConsumerStatefulWidget {
 
 class _StepsBodyState extends ConsumerState<_StepsBody> {
   int? _index;
+  PageController? _pages;
   bool _finished = false;
   Timer? _pending;
 
   @override
   void dispose() {
     _pending?.cancel();
+    _pages?.dispose();
     super.dispose();
   }
 
@@ -104,20 +107,41 @@ class _StepsBodyState extends ConsumerState<_StepsBody> {
       still ? Duration.zero : const Duration(milliseconds: 450),
       () {
         if (!mounted) return;
-        setState(() {
-          if (outcome == CountOutcome.finishedList) {
-            _finished = true;
-          } else {
-            _index = _firstOpen(collection, from: index + 1) ?? index;
-          }
-        });
+        if (outcome == CountOutcome.finishedList) {
+          setState(() => _finished = true);
+        } else {
+          _go(collection, _firstOpen(collection, from: index + 1) ?? index);
+        }
       },
     );
   }
 
+  /// Turns to page [to]. The page view reports the change back through
+  /// [_onPage], so a swipe and an arrow end up in the same place.
   void _go(AdhkarCollection collection, int to) {
     _pending?.cancel();
-    setState(() => _index = to.clamp(0, collection.entries.length - 1));
+    final target = to.clamp(0, collection.entries.length - 1);
+    final pages = _pages;
+    if (pages == null || !pages.hasClients) {
+      setState(() => _index = target);
+      return;
+    }
+    if (MediaQuery.disableAnimationsOf(context)) {
+      pages.jumpToPage(target);
+    } else {
+      pages.animateToPage(
+        target,
+        duration: const Duration(milliseconds: 280),
+        curve: Curves.easeOutCubic,
+      );
+    }
+  }
+
+  void _onPage(int page) {
+    if (page == _index) return;
+    // A swipe during the pause after a finished dhikr wins over the auto-turn.
+    _pending?.cancel();
+    setState(() => _index = page);
   }
 
   @override
@@ -152,11 +176,16 @@ class _StepsBodyState extends ConsumerState<_StepsBody> {
     final index = (_index ??= _start(
       collection,
     )).clamp(0, collection.entries.length - 1);
+    final pages = _pages ??= PageController(initialPage: index);
+    // Room for one dhikr: its own page scrolls when a long dua needs more.
+    final pageHeight = (MediaQuery.sizeOf(context).height * 0.52).clamp(
+      360.0,
+      620.0,
+    );
     final progress = ref.watch(collectionProgressProvider(collection));
     final digits = ref.watch(digitsFormatterProvider);
     final theme = Theme.of(context);
     final title = collection.title(language);
-    final still = MediaQuery.disableAnimationsOf(context);
     final complete = _finished || progress.complete && _pending == null;
     final next = complete
         ? ref.watch(nextCollectionProvider(collection))
@@ -182,9 +211,8 @@ class _StepsBodyState extends ConsumerState<_StepsBody> {
                 onPressed: () {
                   final root = Navigator.of(context, rootNavigator: true);
                   root.pop();
-                  GoRouter.of(
-                    root.context,
-                  ).push(AppRoute.adhkarSessionPath(collection.id));
+                  GoRouter.of(root.context)
+                      .push(AppRoute.adhkarSessionPath(collection.id));
                 },
                 child: Text(l10n.adhkarShowList),
               ),
@@ -208,6 +236,8 @@ class _StepsBodyState extends ConsumerState<_StepsBody> {
                 setState(() {
                   _finished = false;
                   _index = 0;
+                  _pages?.dispose();
+                  _pages = null;
                 });
               },
               nextTitle: next?.title(language),
@@ -250,19 +280,24 @@ class _StepsBodyState extends ConsumerState<_StepsBody> {
                 ),
               ],
             ),
-            AnimatedSwitcher(
-              duration: still
-                  ? Duration.zero
-                  : const Duration(milliseconds: 250),
-              child: DhikrCard(
-                key: ValueKey('${collection.id}:$index'),
-                collection: collection,
-                dhikr: collection.entries[index],
-                number: index + 1,
-                onCount: () => _count(collection, index),
-                onUndo: () => ref
-                    .read(adhkarProgressProvider.notifier)
-                    .decrement(collection, collection.entries[index]),
+            SizedBox(
+              height: pageHeight,
+              child: PageView.builder(
+                controller: pages,
+                itemCount: collection.entries.length,
+                onPageChanged: _onPage,
+                itemBuilder: (context, page) => SingleChildScrollView(
+                  child: DhikrCard(
+                    key: ValueKey('${collection.id}:$page'),
+                    collection: collection,
+                    dhikr: collection.entries[page],
+                    number: page + 1,
+                    onCount: () => _count(collection, page),
+                    onUndo: () => ref
+                        .read(adhkarProgressProvider.notifier)
+                        .decrement(collection, collection.entries[page]),
+                  ),
+                ),
               ),
             ),
           ],

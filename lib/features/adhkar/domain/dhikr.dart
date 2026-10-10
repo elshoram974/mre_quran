@@ -13,6 +13,7 @@ class Dhikr {
     required this.repeatLabel,
     required this.source,
     required this.variant,
+    this.label,
     this.virtue,
     this.hadithText,
     this.vocabulary,
@@ -39,6 +40,10 @@ class Dhikr {
   /// Which part of a shared file this belongs to. The collection filters by it
   /// (for the morning and evening file: 0 both, 1 morning only, 2 evening only).
   final int variant;
+
+  /// A short line above the words saying when or by whom they are said ("when
+  /// he sneezes", "the dua of Yunus"), when the words alone would not tell.
+  final String? label;
 
   /// The reward or benefit mentioned in the evidence, if the source states one.
   final String? virtue;

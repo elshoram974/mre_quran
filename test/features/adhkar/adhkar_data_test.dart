@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mre_quran/features/adhkar/data/adhkar_parser.dart';
 import 'package:mre_quran/features/adhkar/data/adhkar_source.dart';
 import 'package:mre_quran/features/adhkar/domain/quran_passage.dart';
+import 'package:mre_quran/features/adhkar/presentation/quick_access_row.dart';
 import 'package:mre_quran/features/quran_index/data/quran_metadata_parser.dart';
 import 'package:mre_quran/features/quran_index/data/quran_metadata_source.dart';
 
@@ -74,6 +75,35 @@ void main() {
         );
       },
     );
+
+    test('the popular lists are all in the bundled data', () async {
+      final catalog = await AdhkarSource(bundle: _DiskBundle()).load();
+      // Quick access, istikhara, a new garment, and the lists added from the
+      // sunnah; a missing id would leave a dead chip or a gap.
+      for (final id in [
+        ...QuickAccessRow.ids,
+        'hisn_15',
+        'food_duas',
+        'sky_duas',
+        'kids_duas',
+        'ride_duas',
+        'karb_duas',
+        'mosque_exit',
+        'sneeze_duas',
+        'tasbih',
+      ]) {
+        expect(catalog.byId(id), isNotNull, reason: id);
+      }
+      for (final id in ['quran', 'duas']) {
+        expect(catalog.groupById(id), isNotNull, reason: id);
+      }
+    });
+
+    test('a dhikr that needs a line of context carries one', () async {
+      final catalog = await AdhkarSource(bundle: _DiskBundle()).load();
+      final sneeze = catalog.byId('sneeze_duas')!.entries;
+      expect(sneeze.map((entry) => entry.label), everyElement(isNotNull));
+    });
 
     test('every dhikr has words, a repeat count, and its evidence', () async {
       final catalog = await AdhkarSource(bundle: _DiskBundle()).load();

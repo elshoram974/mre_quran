@@ -156,6 +156,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get adhkarSections => 'الأقسام';
 
   @override
+  String get adhkarQuickAccess => 'وصول سريع';
+
+  @override
   String get adhkarFavoriteAdd => 'أضِف إلى المفضلة';
 
   @override
@@ -296,6 +299,15 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get prayerMapCurrentLocation => 'استخدم موقعي الحالي';
+
+  @override
+  String get prayerMapSearchHint => 'ابحث عن مدينة أو عنوان';
+
+  @override
+  String get prayerMapSearch => 'ابحث عن المكان';
+
+  @override
+  String get prayerMapNoResults => 'لم نجد مكانًا بهذا الاسم.';
 
   @override
   String get prayerMapSave => 'استخدم هذا الموقع';

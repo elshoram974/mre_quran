@@ -69,6 +69,7 @@ class PrintedPageView extends StatelessWidget {
     this.bookmarked = const {},
     this.selected,
     this.fillWidth = false,
+    this.spread = false,
     this.digits,
     this.fallbackBuilder,
     this.fallbackAfter = const Duration(seconds: 30),
@@ -107,6 +108,9 @@ class PrintedPageView extends StatelessWidget {
   /// lets a tall printed page scroll vertically instead of shrinking it.
   final bool fillWidth;
 
+  /// Whether this page faces another, which keeps only its outer arrow.
+  final bool spread;
+
   /// Formats page and banner labels using the saved digit preference.
   final String Function(int)? digits;
 
@@ -115,6 +119,7 @@ class PrintedPageView extends StatelessWidget {
     metadata: metadata,
     page: page,
     onTap: onTap,
+    spread: spread,
     child: LayoutBuilder(
       builder: (context, constraints) {
         final edition = MushafEdition.of(style);
@@ -422,9 +427,24 @@ class _PrintedImageState extends State<_PrintedImage>
   );
   List<FractionRect> _flashRects = const [];
 
+  /// This page's own handle on the decoded image. The provider disposes its
+  /// image as soon as nothing watches it, which can happen while this page is
+  /// still painting (the fade between two pages), so the page keeps a clone.
+  late ui.Image _image = widget.image.clone();
+
+  @override
+  void didUpdateWidget(_PrintedImage old) {
+    super.didUpdateWidget(old);
+    if (old.image != widget.image) {
+      _image.dispose();
+      _image = widget.image.clone();
+    }
+  }
+
   @override
   void dispose() {
     _flash.dispose();
+    _image.dispose();
     super.dispose();
   }
 
@@ -529,7 +549,7 @@ class _PrintedImageState extends State<_PrintedImage>
             size: constraints.biggest,
             isComplex: true,
             painter: _PrintedPagePainter(
-              image: widget.image,
+              image: _image,
               crop: widget.crop,
               spread: widget.spread,
               paper: scheme.surface,

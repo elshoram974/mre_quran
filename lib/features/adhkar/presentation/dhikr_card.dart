@@ -116,6 +116,20 @@ class DhikrCard extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 8),
+            if (dhikr.label != null) ...[
+              // Arabic like the words it introduces, whatever the interface.
+              Directionality(
+                textDirection: TextDirection.rtl,
+                child: Text(
+                  dhikr.label!,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    color: scheme.primary,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+            ],
             _DhikrWords(collection: collection, dhikr: dhikr, done: done),
             const SizedBox(height: 16),
             Semantics(

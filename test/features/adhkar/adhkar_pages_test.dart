@@ -12,6 +12,7 @@ import 'package:mre_quran/features/adhkar/presentation/adhkar_group_page.dart';
 import 'package:mre_quran/features/adhkar/presentation/collection_card.dart';
 import 'package:mre_quran/features/adhkar/presentation/dhikr_card.dart';
 import 'package:mre_quran/features/adhkar/presentation/favorite_button.dart';
+import 'package:mre_quran/features/adhkar/presentation/group_card.dart';
 import 'package:mre_quran/features/adhkar/presentation/adhkar_search_page.dart';
 import 'package:mre_quran/features/adhkar/presentation/duas_page.dart';
 
@@ -35,8 +36,40 @@ void main() {
       expect(find.text('الأذكار اليومية'), findsOneWidget);
       expect(find.text('لا يوجد تذكير مفعّل'), findsOneWidget);
       // The morning list is the featured one at 09:00; the evening list is
-      // inside its group.
-      expect(find.text('أذكار المساء'), findsNothing);
+      // one tap away as a quick-access chip and has no card of its own.
+      expect(find.widgetWithText(ActionChip, 'أذكار المساء'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(CollectionCard),
+          matching: find.text('أذكار المساء'),
+        ),
+        findsNothing,
+      );
+    });
+
+    testWidgets('sections are tiles, two across on a phone', (tester) async {
+      await pumpAdhkarApp(tester, catalog: fixtureCatalogWithPrayer());
+      final tiles = find.byType(GroupCard);
+      expect(tiles, findsNWidgets(2));
+      expect(
+        tester.getTopLeft(tiles.at(0)).dy,
+        tester.getTopLeft(tiles.at(1)).dy,
+        reason: 'two tiles share a row',
+      );
+      // Right to left: the first section is on the right.
+      expect(
+        tester.getCenter(tiles.at(0)).dx,
+        greaterThan(tester.getCenter(tiles.at(1)).dx),
+      );
+    });
+
+    testWidgets('a quick-access chip opens its list in one tap', (
+      tester,
+    ) async {
+      await pumpAdhkarApp(tester, catalog: fixtureCatalogWithPrayer());
+      await tapVisible(tester, find.widgetWithText(ActionChip, 'أذكار النوم'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('الخطوة ١ من'), findsOneWidget);
     });
 
     testWidgets('English LTR', (tester) async {
@@ -113,7 +146,7 @@ void main() {
       }
       await tester.tap(find.text('التالي: أذكار المساء'));
       await tester.pumpAndSettle();
-      expect(find.text('أذكار المساء'), findsOneWidget);
+      expect(find.textContaining('الخطوة ١ من'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   });
@@ -148,7 +181,13 @@ void main() {
       final sectionsTop = tester.getTopLeft(find.text('الأقسام')).dy;
       expect(nowTop, lessThan(favoritesTop));
       expect(favoritesTop, lessThan(sectionsTop));
-      expect(find.text('أذكار النوم'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(CollectionCard),
+          matching: find.text('أذكار النوم'),
+        ),
+        findsOneWidget,
+      );
     });
 
     testWidgets('the star on a starred list takes it out again', (
@@ -160,9 +199,20 @@ void main() {
         catalog: fixtureCatalogWithPrayer(),
         favorites: favorites,
       );
-      expect(find.text('أذكار النوم'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(CollectionCard),
+          matching: find.text('أذكار النوم'),
+        ),
+        findsOneWidget,
+      );
       final card = find.ancestor(
-        of: find.text('أذكار النوم'),
+        of: find
+            .descendant(
+              of: find.byType(CollectionCard),
+              matching: find.text('أذكار النوم'),
+            )
+            .first,
         matching: find.byType(CollectionCard),
       );
       await tester.tap(

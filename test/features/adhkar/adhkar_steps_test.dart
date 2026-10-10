@@ -106,7 +106,10 @@ void main() {
       expect(
         tester
             .widget<IconButton>(
-              find.widgetWithIcon(IconButton, Icons.chevron_left),
+              find.ancestor(
+                of: find.byTooltip('السابق'),
+                matching: find.byType(IconButton),
+              ),
             )
             .onPressed,
         isNull,
@@ -119,6 +122,72 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('الخطوة ١ من ٣'), findsOneWidget);
       expect(_counter('٠ من ١'), findsOneWidget);
+    });
+
+    testWidgets('swiping turns the page the way the book turns', (
+      tester,
+    ) async {
+      await pumpAdhkarApp(tester, catalog: _steps());
+      await _open(tester);
+      // Right to left, like the Mushaf: the next page waits on the left, so a
+      // drag to the right brings it in.
+      await tester.fling(find.byType(PageView), const Offset(300, 0), 1500);
+      await tester.pumpAndSettle();
+      expect(find.text('الخطوة ٢ من ٣'), findsOneWidget);
+      await tester.fling(find.byType(PageView), const Offset(-300, 0), 1500);
+      await tester.pumpAndSettle();
+      expect(find.text('الخطوة ١ من ٣'), findsOneWidget);
+    });
+
+    testWidgets('in English the pages and the arrows turn the other way', (
+      tester,
+    ) async {
+      await pumpAdhkarApp(tester, locale: 'en', catalog: _steps());
+      await tapVisible(tester, find.text('Start'));
+      await tester.pumpAndSettle();
+      Finder arrow(String tooltip) => find.descendant(
+        of: find.ancestor(
+          of: find.byTooltip(tooltip),
+          matching: find.byType(IconButton),
+        ),
+        matching: find.byType(Icon),
+      );
+      final back = arrow('Previous');
+      final next = arrow('Next');
+      expect(
+        tester.widget<Icon>(back).icon,
+        Icons.chevron_left,
+        reason: 'back points left in a left-to-right app',
+      );
+      expect(tester.widget<Icon>(next).icon, Icons.chevron_right);
+      expect(
+        tester.getCenter(back).dx,
+        lessThan(tester.getCenter(next).dx),
+        reason: 'back sits at the start',
+      );
+      await tester.fling(find.byType(PageView), const Offset(-300, 0), 1500);
+      await tester.pumpAndSettle();
+      expect(find.text('Step ٢ of ٣'), findsOneWidget);
+    });
+
+    testWidgets('the arrows sit at the two ends and point the way', (
+      tester,
+    ) async {
+      await pumpAdhkarApp(tester, catalog: _steps());
+      await _open(tester);
+      Finder arrow(String tooltip) => find.descendant(
+        of: find.ancestor(
+          of: find.byTooltip(tooltip),
+          matching: find.byType(IconButton),
+        ),
+        matching: find.byType(Icon),
+      );
+      expect(tester.widget<Icon>(arrow('السابق')).icon, Icons.chevron_right);
+      expect(tester.widget<Icon>(arrow('التالي')).icon, Icons.chevron_left);
+      expect(
+        tester.getCenter(arrow('السابق')).dx,
+        greaterThan(tester.getCenter(arrow('التالي')).dx),
+      );
     });
 
     testWidgets('a dhikr said after one prayer says so', (tester) async {
@@ -164,7 +233,13 @@ void main() {
         await tester.tap(find.text('التالي: أذكار المساء'));
         await tester.pumpAndSettle();
         expect(find.text('الخطوة ١ من ٢'), findsOneWidget);
-        expect(find.text('أذكار المساء'), findsOneWidget);
+        expect(
+          find.descendant(
+            of: find.byType(BottomSheet),
+            matching: find.text('أذكار المساء'),
+          ),
+          findsOneWidget,
+        );
       },
     );
 
@@ -266,7 +341,13 @@ void main() {
       unawaited(openReminder(router, 'adhkar:evening'));
       await tester.pumpAndSettle();
       expect(find.text('الخطوة ١ من ٢'), findsOneWidget);
-      expect(find.text('أذكار المساء'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(BottomSheet),
+          matching: find.text('أذكار المساء'),
+        ),
+        findsOneWidget,
+      );
     });
 
     testWidgets('a payload that is not ours does nothing', (tester) async {

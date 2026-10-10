@@ -229,6 +229,7 @@ abstract final class AdhkarParser {
       repeatLabel: _optional(json['count_description']) ?? '',
       source: source,
       variant: variant,
+      label: _optional(json['label']),
       virtue: _optional(json['fadl']),
       hadithText: _optional(json['hadith_text']),
       vocabulary: _optional(json['explanation_of_hadith_vocabulary']),

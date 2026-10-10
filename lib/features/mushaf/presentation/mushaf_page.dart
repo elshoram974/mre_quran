@@ -107,12 +107,7 @@ class MushafPage extends ConsumerWidget {
         (s) => s.value?.readerPageLayout ?? ReaderPageLayout.auto,
       ),
     );
-    final spread = switch (layout) {
-      ReaderPageLayout.auto =>
-        window.width >= mushafSpreadMinWidth && window.width > window.height,
-      ReaderPageLayout.single => false,
-      ReaderPageLayout.spread => true,
-    };
+    final spread = resolveMushafSpread(layout, window);
 
     // Shown on a tap: a toolbar at the top and controls at the bottom,
     // floating over the page.
@@ -280,15 +275,20 @@ class _ReaderSkeleton extends StatelessWidget {
     child: Padding(
       padding: const EdgeInsets.all(20),
       child: AppShimmer(
-        child: Column(
-          children: [
-            const SkeletonBox(height: 48),
-            const SizedBox(height: 24),
-            for (var i = 0; i < 9; i++) ...[
-              const SkeletonBox(height: 22),
-              const SizedBox(height: 18),
+        // A phone on its side is shorter than the placeholder; clip it rather
+        // than overflow.
+        child: SingleChildScrollView(
+          physics: const NeverScrollableScrollPhysics(),
+          child: Column(
+            children: [
+              const SkeletonBox(height: 48),
+              const SizedBox(height: 24),
+              for (var i = 0; i < 9; i++) ...[
+                const SkeletonBox(height: 22),
+                const SizedBox(height: 18),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     ),

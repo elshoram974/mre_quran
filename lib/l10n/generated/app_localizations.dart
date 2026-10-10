@@ -380,6 +380,12 @@ abstract class AppLocalizations {
   /// **'Sections'**
   String get adhkarSections;
 
+  /// No description provided for @adhkarQuickAccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick access'**
+  String get adhkarQuickAccess;
+
   /// No description provided for @adhkarFavoriteAdd.
   ///
   /// In en, this message translates to:
@@ -631,6 +637,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Use my current location'**
   String get prayerMapCurrentLocation;
+
+  /// No description provided for @prayerMapSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search for a city or address'**
+  String get prayerMapSearchHint;
+
+  /// No description provided for @prayerMapSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search for a place'**
+  String get prayerMapSearch;
+
+  /// No description provided for @prayerMapNoResults.
+  ///
+  /// In en, this message translates to:
+  /// **'No place matched that name.'**
+  String get prayerMapNoResults;
 
   /// No description provided for @prayerMapSave.
   ///

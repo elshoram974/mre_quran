@@ -171,6 +171,36 @@ void main() {
     expect(find.bySemanticsLabel('الصفحة ١ من المصحف المطبوع'), findsOneWidget);
   });
 
+  testWidgets('the page keeps painting after the provider drops its image', (
+    tester,
+  ) async {
+    late ui.Image shared;
+    await pump(
+      tester,
+      online: () => true,
+      extra: [
+        pageDisplayImageProvider.overrideWith((ref, key) async {
+          shared = await decodeImageFromList(png);
+          return shared;
+        }),
+      ],
+    );
+    await settle(tester);
+    final painted = find.descendant(
+      of: find.bySemanticsLabel('الصفحة ١ من المصحف المطبوع'),
+      matching: find.byType(CustomPaint),
+    );
+    expect(painted, findsWidgets);
+
+    // The provider disposes its image once nothing watches it, which can
+    // happen while the outgoing page is still on screen.
+    shared.dispose();
+    tester.renderObject(painted.first).markNeedsPaint();
+    await tester.pump();
+
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('long press finds the ayah under the finger', (tester) async {
     final pressed = await pump(
       tester,

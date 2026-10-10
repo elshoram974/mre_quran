@@ -159,6 +159,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adhkarSections => 'Sections';
 
   @override
+  String get adhkarQuickAccess => 'Quick access';
+
+  @override
   String get adhkarFavoriteAdd => 'Add to favourites';
 
   @override
@@ -299,6 +302,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get prayerMapCurrentLocation => 'Use my current location';
+
+  @override
+  String get prayerMapSearchHint => 'Search for a city or address';
+
+  @override
+  String get prayerMapSearch => 'Search for a place';
+
+  @override
+  String get prayerMapNoResults => 'No place matched that name.';
 
   @override
   String get prayerMapSave => 'Use this place';

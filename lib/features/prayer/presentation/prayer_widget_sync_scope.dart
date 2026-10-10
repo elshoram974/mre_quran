@@ -26,21 +26,36 @@ class PrayerWidgetSyncScope extends ConsumerStatefulWidget {
 }
 
 class _PrayerWidgetSyncScopeState extends ConsumerState<PrayerWidgetSyncScope> {
+  final List<ProviderSubscription<dynamic>> _subscriptions = [];
+
   @override
   void initState() {
     super.initState();
-    ref.listenManual(nextPrayerProvider, (_, value) => unawaited(_sync(value)));
-    ref.listenManual(
-      settingsProvider.select((value) => value.value?.useArabicDigits),
-      (_, _) => unawaited(_sync(ref.read(nextPrayerProvider))),
-    );
-    ref.listenManual(
-      settingsProvider.select((value) => value.value?.localeCode),
-      (_, _) => unawaited(_sync(ref.read(nextPrayerProvider))),
-    );
+    _subscriptions.addAll([
+      ref.listenManual<NextPrayer?>(
+        nextPrayerProvider,
+        (_, NextPrayer? value) => unawaited(_sync(value)),
+      ),
+      ref.listenManual(
+        settingsProvider.select((value) => value.value?.useArabicDigits),
+        (_, _) => unawaited(_sync(ref.read(nextPrayerProvider))),
+      ),
+      ref.listenManual(
+        settingsProvider.select((value) => value.value?.localeCode),
+        (_, _) => unawaited(_sync(ref.read(nextPrayerProvider))),
+      ),
+    ]);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       unawaited(_sync(ref.read(nextPrayerProvider)));
     });
+  }
+
+  @override
+  void dispose() {
+    for (final subscription in _subscriptions) {
+      subscription.close();
+    }
+    super.dispose();
   }
 
   Future<void> _sync(NextPrayer? next) {

@@ -16,6 +16,7 @@ class MushafPageFrame extends StatelessWidget {
     required this.page,
     required this.onTap,
     required this.child,
+    this.spread = false,
   });
 
   /// Quran structure, for the labels.
@@ -29,6 +30,10 @@ class MushafPageFrame extends StatelessWidget {
 
   /// The page body.
   final Widget child;
+
+  /// Whether this page faces another. Its onward arrow then only shows on the
+  /// outer edge.
+  final bool spread;
 
   @override
   Widget build(BuildContext context) => GestureDetector(
@@ -48,7 +53,11 @@ class MushafPageFrame extends StatelessWidget {
           ),
         ),
         Positioned.fill(
-          child: ReaderPageLabels(metadata: metadata, page: page),
+          child: ReaderPageLabels(
+            metadata: metadata,
+            page: page,
+            spread: spread,
+          ),
         ),
       ],
     ),

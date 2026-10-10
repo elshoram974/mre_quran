@@ -62,13 +62,14 @@ void main() {
         Directionality.of(tester.element(find.byType(Scaffold).first)),
         TextDirection.rtl,
       );
+      // A bar up to 839 wide (phones and a portrait iPad), a rail from 840.
       expect(
         find.byType(ExpandingNavBar),
-        width < 600 ? findsOneWidget : findsNothing,
+        width < 840 ? findsOneWidget : findsNothing,
       );
       expect(
         find.byType(NavigationRail),
-        width < 600 ? findsNothing : findsOneWidget,
+        width < 840 ? findsNothing : findsOneWidget,
       );
 
       await tester.tap(find.byIcon(Icons.bookmarks_outlined).first);

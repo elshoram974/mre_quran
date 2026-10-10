@@ -4,12 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:mre_fields/mre_fields.dart';
 
 import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_tokens.dart';
+import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_notice.dart';
 import '../../../core/widgets/app_page_scaffold.dart';
 import '../../settings/application/digits_provider.dart';
+import '../application/place_search_provider.dart';
 import '../application/prayer_provider.dart';
 import '../domain/prayer_times.dart';
 
@@ -28,10 +31,21 @@ class _PrayerLocationPickerPageState
     extends ConsumerState<PrayerLocationPickerPage> {
   final Completer<GoogleMapController> _mapController =
       Completer<GoogleMapController>();
+  final TextEditingController _searchController = TextEditingController();
   PrayerPlace? _selected;
   LatLng? _cameraTarget;
+  List<PrayerPlace> _searchResults = const [];
   bool _mapInteractionStarted = false;
+  bool _restoredSavedPlace = false;
+  bool _searching = false;
+  bool _searched = false;
   PrayerResult _locationResult = PrayerResult.ok;
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,6 +56,12 @@ class _PrayerLocationPickerPageState
     final initial = selected == null
         ? _world
         : LatLng(selected.latitude, selected.longitude);
+    if (stored != null && !_restoredSavedPlace) {
+      _restoredSavedPlace = true;
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _restoreSavedPlace(stored),
+      );
+    }
     return AppPageScaffold(
       title: l10n.prayerMapTitle,
       body: Stack(
@@ -74,11 +94,74 @@ class _PrayerLocationPickerPageState
             child: Padding(
               padding: const EdgeInsetsDirectional.all(AppTokens.gutterCompact),
               child: Align(
-                alignment: AlignmentDirectional.topEnd,
-                child: IconButton.filledTonal(
-                  tooltip: l10n.prayerMapCurrentLocation,
-                  onPressed: _useDeviceLocation,
-                  icon: const Icon(Icons.my_location_outlined),
+                alignment: AlignmentDirectional.topCenter,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: MRETextField(
+                            controller: _searchController,
+                            hintText: l10n.prayerMapSearchHint,
+                            prefixIcon: const Icon(Icons.search),
+                            showClearButton: true,
+                            textInputAction: TextInputAction.search,
+                            onFieldSubmitted: (_) => _search(),
+                          ),
+                        ),
+                        const SizedBox(width: AppTokens.spaceSmall),
+                        IconButton.filledTonal(
+                          tooltip: l10n.prayerMapCurrentLocation,
+                          onPressed: _useDeviceLocation,
+                          icon: const Icon(Icons.my_location_outlined),
+                        ),
+                      ],
+                    ),
+                    if (_searching) const LinearProgressIndicator(),
+                    if (_searched && _searchResults.isEmpty && !_searching)
+                      Padding(
+                        padding: const EdgeInsetsDirectional.only(
+                          top: AppTokens.spaceSmall,
+                        ),
+                        child: AppCard(
+                          child: AppNotice(
+                            l10n.prayerMapNoResults,
+                            error: true,
+                          ),
+                        ),
+                      ),
+                    if (_searchResults.isNotEmpty && !_searching)
+                      Padding(
+                        padding: const EdgeInsetsDirectional.only(
+                          top: AppTokens.spaceSmall,
+                        ),
+                        child: AppCard(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              for (final result in _searchResults)
+                                TextButton(
+                                  onPressed: () => _selectSearchResult(result),
+                                  child: Text(
+                                    l10n.prayerPlaceLine(
+                                      _coordinate(
+                                        result.latitude,
+                                        formatDigits,
+                                      ),
+                                      _coordinate(
+                                        result.longitude,
+                                        formatDigits,
+                                      ),
+                                    ),
+                                    textAlign: TextAlign.start,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
             ),
@@ -136,11 +219,57 @@ class _PrayerLocationPickerPageState
         _cameraTarget = target;
         _locationResult = PrayerResult.ok;
       });
-      final controller = await _mapController.future;
-      await controller.animateCamera(CameraUpdate.newLatLngZoom(target, 14));
+      await _animateTo(target);
     } else {
       setState(() => _locationResult = result);
     }
+  }
+
+  Future<void> _restoreSavedPlace(PrayerPlace place) async {
+    if (!mounted || _mapInteractionStarted) return;
+    final target = LatLng(place.latitude, place.longitude);
+    setState(() {
+      _selected = place;
+      _cameraTarget = target;
+    });
+    await _animateTo(target);
+  }
+
+  Future<void> _search() async {
+    final query = _searchController.text;
+    if (query.trim().isEmpty || _searching) return;
+    FocusManager.instance.primaryFocus?.unfocus();
+    setState(() {
+      _searching = true;
+      _searched = false;
+      _searchResults = const [];
+    });
+    final results = await ref
+        .read(placeSearchSourceProvider)
+        .search(query, Localizations.localeOf(context));
+    if (!mounted) return;
+    setState(() {
+      _searching = false;
+      _searched = true;
+      _searchResults = results;
+    });
+    if (results.length == 1) await _selectSearchResult(results.single);
+  }
+
+  Future<void> _selectSearchResult(PrayerPlace place) async {
+    final target = LatLng(place.latitude, place.longitude);
+    setState(() {
+      _selected = place;
+      _cameraTarget = target;
+      _searchResults = const [];
+    });
+    await _animateTo(target);
+  }
+
+  Future<void> _animateTo(LatLng target) async {
+    final controller = await _mapController.future;
+    if (!mounted) return;
+    await controller.animateCamera(CameraUpdate.newLatLngZoom(target, 14));
   }
 
   void _selectCameraTarget() {
