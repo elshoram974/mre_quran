@@ -28,11 +28,15 @@ Corners are never mixed on one surface. New shapes add a token first.
 
 ## 3. Colour
 
-- Source: `ColorScheme` built by `AppTheme` from one seed per theme. Surface roles
-  are rebuilt around the page canvas so pages, cards, fields, and bars share one hue.
-- Themes: light, dark, sepia (reader). All three get every component theme.
-- Roles: page `surface`; cards `surfaceContainerLow`; filled fields
-  `surfaceContainerHighest`; selected state `secondaryContainer`; accent `primary`.
+- Source: hand-authored `ColorScheme`s in `AppPalette` (no seed), one per theme.
+  Every role is stated, so nothing is left to a seed's opinion.
+- Themes: light (warm paper, gold accent), dark (deep navy, gold accent), sepia
+  (reader). All three get every component theme and every extension.
+- Roles: page `surface`; filled fields `surfaceContainerHighest`; accent
+  `primary`; badges, hero panels and highlighted items `primaryContainer`.
+- Raised surfaces (card fill, hairline, soft shadows) come from the
+  `AppSurfaceStyle` theme extension, derived from the scheme.
+- `test/core/theme/app_palette_test.dart` checks every text pair for 4.5:1.
 - Never hard-code a colour. Contrast meets WCAG AA in all three themes.
 
 ## 4. Layout and responsiveness
@@ -56,7 +60,10 @@ Corners are never mixed on one surface. New shapes add a token first.
 
 | Component | Purpose |
 |---|---|
-| `AppCard` | Grouped content (glass / Material) |
+| `AppCard` | Grouped content (glass on iOS / `AppSurfaceCard` on Android); `onTap` makes it one target |
+| `AppSurfaceCard` | Opaque raised card; the only card for Quran text on every platform |
+| `AppHeroCard` | The one prominent gold panel at the top of a screen (next prayer, today's adhkar) |
+| `AppIconBadge` | Leading glyph on a tinted rounded square for rows, tiles, empty states |
 | `AppSelectField` | Single choice picker; search above 5 options |
 | `AppSheet` | Draggable bottom sheet (glass on iOS); every sheet uses it |
 | `AppSwitchTile` | On/off row, platform switch with app colours |

@@ -43,9 +43,14 @@ class AppTileCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final start = leading ?? (icon == null ? null : AppIconBadge(icon!));
     final end = trailing ?? (onTap == null ? null : const AppForwardChevron());
+    // With large text every pixel of width saves a line, so the leading mark
+    // moves above the title and the text takes the whole row.
+    final stacked =
+        start != null &&
+        MediaQuery.textScalerOf(context).scale(1) >= AppTokens.stackTextScale;
+    final text = _TileText(title: title, subtitle: subtitle);
     return AppCard(
       padding: const EdgeInsetsDirectional.symmetric(
         horizontal: AppTokens.cardPadding,
@@ -56,27 +61,21 @@ class AppTileCard extends StatelessWidget {
         constraints: const BoxConstraints(minHeight: AppTokens.minTarget),
         child: Row(
           children: [
-            if (start != null) ...[
+            if (start != null && !stacked) ...[
               start,
               const SizedBox(width: AppTokens.spaceMedium),
             ],
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(title, style: theme.textTheme.titleMedium),
-                  if (subtitle != null) ...[
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle!,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
+              child: stacked
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        start,
+                        const SizedBox(height: AppTokens.spaceSmall),
+                        text,
+                      ],
+                    )
+                  : text,
             ),
             if (end != null) ...[
               const SizedBox(width: AppTokens.spaceSmall),
@@ -85,6 +84,34 @@ class AppTileCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _TileText extends StatelessWidget {
+  const _TileText({required this.title, required this.subtitle});
+
+  final String title;
+  final String? subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(title, style: theme.textTheme.titleMedium),
+        if (subtitle != null) ...[
+          const SizedBox(height: 2),
+          Text(
+            subtitle!,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ],
     );
   }
 }

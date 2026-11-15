@@ -31,6 +31,10 @@ abstract final class AppTokens {
   /// Inner padding of hero panels.
   static const double heroPadding = 20;
 
+  /// Text scale from which a row's leading badge moves above its text, so
+  /// large text keeps the full width of the row.
+  static const double stackTextScale = 1.5;
+
   /// Duration of state changes on cards (highlight, completion).
   static const Duration motionMedium = Duration(milliseconds: 250);
 

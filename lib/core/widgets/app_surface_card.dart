@@ -53,16 +53,16 @@ class AppSurfaceCard extends StatelessWidget {
         ),
         boxShadow: surfaces.raisedShadow,
       ),
-      child: onTap == null
-          ? content
-          : Material(
-              type: MaterialType.transparency,
-              child: InkWell(
-                borderRadius: radius,
-                onTap: onTap,
-                child: content,
-              ),
-            ),
+      // Always a Material above the content, so rows inside (ListTile,
+      // switches) paint their ink on the card, not under its fill.
+      child: Material(
+        type: MaterialType.transparency,
+        borderRadius: radius,
+        clipBehavior: Clip.antiAlias,
+        child: onTap == null
+            ? content
+            : InkWell(borderRadius: radius, onTap: onTap, child: content),
+      ),
     );
   }
 }

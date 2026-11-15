@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mre_quran/core/notifications/reminder_scheduler_provider.dart';
 import 'package:mre_quran/core/theme/app_theme.dart';
+import 'package:mre_quran/core/widgets/app_card.dart';
 import 'package:mre_quran/features/adhan/application/adhan_providers.dart';
 import 'package:mre_quran/features/adhan/data/adhan_platform.dart';
 import 'package:mre_quran/features/adhan/data/voice_store.dart';
@@ -87,7 +88,7 @@ Future<void> _reveal(WidgetTester tester, Finder finder) async {
 
 /// The card of the voice titled [title].
 Finder _card(String title) =>
-    find.ancestor(of: find.text(title), matching: find.byType(Card));
+    find.ancestor(of: find.text(title), matching: find.byType(AppCard));
 
 Finder _inCard(String title, Finder inner) =>
     find.descendant(of: _card(title), matching: inner);
@@ -128,6 +129,7 @@ void main() {
     (tester) async {
       final h = await _pump(tester);
       // The bundled voice.
+      await _reveal(tester, _inCard('الأذان الافتراضي', find.text('استماع')));
       await tester.tap(_inCard('الأذان الافتراضي', find.text('استماع')));
       await tester.pumpAndSettle();
       expect(h.platform.previews.last, isA<BundledPreview>());
