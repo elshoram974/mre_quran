@@ -224,3 +224,36 @@ keeps whatever format the source serves (PNG or WebP, by header), so serving Web
 `tool/mushaf_pages_to_webp.sh OUT_DIR [light|dark|both] [FIRST] [LAST]` downloads the Sakina plain PNGs and
 writes near-lossless WebP (about 23% smaller) with a `SHA256SUMS` file. Upload the output and change the URL
 patterns in `MushafEdition`. Settle the licence first.
+
+## 13. King Fahd Complex Mushaf script and font (bundled, owner-approved 2026-11-15)
+
+The text reader draws the ayahs in the Complex's own script with its own font, and
+search gains the Complex's plain spelling as a third key. Tanzil stays the text for
+copying, sharing, adhkar passages, and the other two search keys.
+
+| File in the repo | Taken from | SHA-256 |
+|---|---|---|
+| `assets/quran/kfgqpc/tafseerMouaser_v03.txt` | `hafs_tafseerMouaser_v3.zip` → `hafs_tafseerMouaser_v3_data/` (KFGQPC Tafseer Mouaser Data, version 3.0, updated 2023-01-08) | `df92e4e2c86b0a57cf67c31e710b55db00f04ba0ee6f18c497bb5f8b1b1be0cc` |
+| `assets/quran/kfgqpc/read.me` | same folder; the Complex's own description of the columns | `0c9b42837edf0b138816193552a290fbdd85b727d4ff1bc278e9e40fbf2a3a54` |
+| `assets/fonts/kfgqpc_hafs/uthmanic_hafs_v20.ttf` | same zip → `hafs_tafseerMouaser_v3_fonts/` (KFGQPC Uthmanic Script Hafs, version 2.0) | `d560bbbc7a90a4f4d416d206a5ac48bd8a1ad00273d64d232f16ca54941bd041` |
+
+The zip itself: SHA-256 `443a6927dbbf9df0fb63792dc83b83511f7d308f3ec322c9230fbebfe3c69c86`, supplied by
+the project owner from <https://qurancomplex.gov.sa>.
+
+- **Unmodified.** All three files are byte-for-byte as in the zip. The data file's checksum is
+  verified at load (`QuranTextSource.mushafSha256`) and in tests; the font's in tests.
+- **What is read.** Columns `sura_no`, `aya_no`, `aya_text`, `aya_text_emlaey`. The ayah text is
+  only separated from its trailing ayah-number glyph at the no-break space the source puts
+  there (`KfgqpcHafsParser`); a test compares the two halves against the raw rows. The
+  `aya_tafseer` column is bundled with the file but not shown anywhere yet.
+- **Licence and the owner's decision.** The font's embedded notice says it "may not be
+  reproduced, modified without the express written approval" of the Complex (see section 3).
+  The Complex also publishes its digital Mushaf, font included, as free to use in "websites,
+  software, and other similar intermediates" (quoted in the `NOTICE.md` of
+  <https://github.com/quran-ws/quran-svg>). The project owner approved bundling on that
+  basis on 2026-11-15. The files are not modified, and the About screen credits the Complex
+  and states that all rights remain with it. If the Complex objects, remove the three files
+  and the reader falls back to the Tanzil text with Amiri Quran (`QuranText.hasMushafScript`).
+- **Not used.** `kfgqpc_hafs_smart_4.zip` (Hafs Smart font, version 0.8): its text is in
+  private glyph codes, not Unicode, so it cannot be searched, copied, or read by a screen
+  reader. Nothing from it is bundled.

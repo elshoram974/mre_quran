@@ -11,6 +11,7 @@ import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/widgets/app_directional_icon.dart';
 import '../../../core/widgets/app_sheet.dart';
 import '../../../core/widgets/empty_state.dart';
+import '../../../core/widgets/keep_screen_awake.dart';
 import '../../settings/application/digits_provider.dart';
 import '../application/adhkar_providers.dart';
 import '../application/dhikr_counter.dart';
@@ -35,8 +36,10 @@ abstract final class AdhkarSteps {
     context: context,
     expandable: true,
     initialSize: 0.88,
-    builder: (_) =>
-        _StepsBody(collectionId: collectionId, focusOrder: focusOrder),
+    // Counting is hands-busy; the screen must not sleep mid-list.
+    builder: (_) => KeepScreenAwake(
+      child: _StepsBody(collectionId: collectionId, focusOrder: focusOrder),
+    ),
   );
 }
 

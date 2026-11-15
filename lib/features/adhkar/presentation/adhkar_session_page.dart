@@ -12,6 +12,7 @@ import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/app_page_scaffold.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/widgets/empty_state.dart';
+import '../../../core/widgets/keep_screen_awake.dart';
 import '../application/adhkar_providers.dart';
 import '../application/dhikr_counter.dart';
 import '../domain/adhkar_collection.dart';
@@ -40,24 +41,27 @@ class AdhkarSessionPage extends ConsumerWidget {
     final language = Localizations.localeOf(context).languageCode;
     final catalog = ref.watch(adhkarCatalogProvider);
     final collection = catalog.value?.byId(collectionId);
-    return AppPageScaffold(
-      title: collection?.title(language) ?? l10n.duas,
-      body: Builder(
-        builder: (context) {
-          if (catalog.hasError || (catalog.hasValue && collection == null)) {
-            return EmptyState(
-              icon: Icons.error_outline,
-              title: l10n.adhkarLoadError,
-              message: '',
-              actionLabel: l10n.retry,
-              onAction: () => ref.invalidate(adhkarCatalogProvider),
+    // Counting is hands-busy; the screen must not sleep mid-list.
+    return KeepScreenAwake(
+      child: AppPageScaffold(
+        title: collection?.title(language) ?? l10n.duas,
+        body: Builder(
+          builder: (context) {
+            if (catalog.hasError || (catalog.hasValue && collection == null)) {
+              return EmptyState(
+                icon: Icons.error_outline,
+                title: l10n.adhkarLoadError,
+                message: '',
+                actionLabel: l10n.retry,
+                onAction: () => ref.invalidate(adhkarCatalogProvider),
+              );
+            }
+            if (collection == null) return const _Skeleton();
+            return ContentContainer(
+              child: _Session(collection: collection, focusOrder: focusOrder),
             );
-          }
-          if (collection == null) return const _Skeleton();
-          return ContentContainer(
-            child: _Session(collection: collection, focusOrder: focusOrder),
-          );
-        },
+          },
+        ),
       ),
     );
   }

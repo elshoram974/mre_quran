@@ -7,6 +7,11 @@ abstract final class AppTokens {
   /// `assets/fonts/amiri_quran`. See `docs/QURAN_SOURCES.md`.
   static const String quranFontFamily = 'AmiriQuran';
 
+  /// Font family for the Mushaf reader: KFGQPC Uthmanic Script Hafs, bundled
+  /// in `assets/fonts/kfgqpc_hafs`. It draws the King Fahd Complex text and
+  /// its ayah-number glyphs. See `docs/QURAN_SOURCES.md`.
+  static const String mushafFontFamily = 'KfgqpcHafs';
+
   /// Corner radius of fields, buttons, and list rows.
   static const double radiusField = 16;
 

@@ -41,13 +41,55 @@ class AppLocalizationsEn extends AppLocalizations {
   String get themeSystem => 'System';
 
   @override
-  String get themeLight => 'Light';
+  String get themeLight => 'Cream';
 
   @override
-  String get themeDark => 'Dark';
+  String get themeDark => 'Navy';
 
   @override
   String get themeSepia => 'Sepia';
+
+  @override
+  String get themeWhite => 'White';
+
+  @override
+  String get themeGreen => 'Green';
+
+  @override
+  String get themeBlack => 'Black';
+
+  @override
+  String get pageTheme => 'Page colour';
+
+  @override
+  String get accentColor => 'Accent colour';
+
+  @override
+  String get accentColorHint => 'For ayah numbers, highlights, and buttons';
+
+  @override
+  String get accentGold => 'Gold';
+
+  @override
+  String get accentEmerald => 'Emerald';
+
+  @override
+  String get accentTeal => 'Teal';
+
+  @override
+  String get accentBlue => 'Blue';
+
+  @override
+  String get accentIndigo => 'Indigo';
+
+  @override
+  String get accentRose => 'Rose';
+
+  @override
+  String get accentCrimson => 'Crimson';
+
+  @override
+  String get accentBrown => 'Brown';
 
   @override
   String get language => 'Language';
@@ -891,6 +933,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Quran font: Amiri Quran by Khaled Hosny and Sebastian Kosch, SIL Open Font License 1.1, https://github.com/aliftype/amiri.';
 
   @override
+  String get creditsMushafScript =>
+      'Mushaf script and font: King Fahd Glorious Quran Printing Complex, Madinah (KFGQPC Uthmanic Script Hafs font, version 2.0, and the Tafseer Mouaser data, version 3), https://qurancomplex.gov.sa. The files are bundled unmodified and verified by checksum. All rights remain with the Complex.';
+
+  @override
   String hizbTitle(String number) {
     return 'Hizb $number';
   }
@@ -1081,9 +1127,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get removePageBookmark => 'Remove this page\'s bookmark';
-
-  @override
-  String get hideBars => 'Hide the bars';
 
   @override
   String get surahOrderCaption => 'Order';

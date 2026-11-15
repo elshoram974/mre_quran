@@ -7,6 +7,8 @@ import '../../../core/haptics/haptics.dart';
 import '../../../core/haptics/haptics_provider.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/layout/adaptive_layout.dart';
+import '../../../core/theme/app_tokens.dart';
+import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_group_card.dart';
 import '../../../core/widgets/app_section_header.dart';
 import '../../../core/widgets/app_select_field.dart';
@@ -19,6 +21,7 @@ import '../../mushaf/presentation/mushaf_style_field.dart';
 import '../../mushaf/presentation/reader_page_layout_field.dart';
 import '../../mushaf/presentation/offline_packs_section.dart';
 import '../domain/app_settings.dart';
+import 'theme_pickers.dart';
 
 /// Allows readers to choose visual and language preferences.
 class SettingsPage extends ConsumerWidget {
@@ -72,32 +75,9 @@ class _SettingsContent extends ConsumerWidget {
       padding: pagePadding(context),
       children: [
         AppSectionHeader(title: l10n.appearance),
-        AppSelectField<AppThemePreference>(
-          label: l10n.theme,
-          value: settings.theme,
-          options: [
-            AppSelectOption(
-              value: AppThemePreference.system,
-              label: l10n.themeSystem,
-              icon: Icons.brightness_auto_outlined,
-            ),
-            AppSelectOption(
-              value: AppThemePreference.light,
-              label: l10n.themeLight,
-              icon: Icons.light_mode_outlined,
-            ),
-            AppSelectOption(
-              value: AppThemePreference.dark,
-              label: l10n.themeDark,
-              icon: Icons.dark_mode_outlined,
-            ),
-            AppSelectOption(
-              value: AppThemePreference.sepia,
-              label: l10n.themeSepia,
-              icon: Icons.auto_stories_outlined,
-            ),
-          ],
-          onChanged: (value) => notifier.save(settings.copyWith(theme: value)),
+        const AppCard(
+          padding: EdgeInsetsDirectional.all(AppTokens.cardPadding),
+          child: ThemePickers(),
         ),
         const SizedBox(height: _gap),
         AppSelectField<String>(

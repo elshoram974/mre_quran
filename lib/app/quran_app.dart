@@ -64,10 +64,10 @@ class QuranApp extends ConsumerWidget {
         locale: settings.locale,
         supportedLocales: AppLocalizations.supportedLocales,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
-        theme: settings.theme == AppThemePreference.sepia
-            ? AppTheme.sepia
-            : AppTheme.light,
-        darkTheme: AppTheme.dark,
+        // A change of paper or accent animates: MaterialApp interpolates
+        // the themes, extensions included.
+        theme: AppTheme.of(settings.theme.dayPaper, settings.accent),
+        darkTheme: AppTheme.of(settings.theme.nightPaper, settings.accent),
         themeMode: settings.materialThemeMode,
         routerConfig: ref.watch(routerProvider),
         builder: (context, child) => AdhkarWidgetSyncScope(

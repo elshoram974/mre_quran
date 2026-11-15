@@ -41,13 +41,55 @@ class AppLocalizationsAr extends AppLocalizations {
   String get themeSystem => 'حسب الجهاز';
 
   @override
-  String get themeLight => 'فاتح';
+  String get themeLight => 'كريمي';
 
   @override
-  String get themeDark => 'داكن';
+  String get themeDark => 'كحلي';
 
   @override
   String get themeSepia => 'ورقي';
+
+  @override
+  String get themeWhite => 'أبيض';
+
+  @override
+  String get themeGreen => 'أخضر';
+
+  @override
+  String get themeBlack => 'أسود';
+
+  @override
+  String get pageTheme => 'لون الصفحة';
+
+  @override
+  String get accentColor => 'اللون المميّز';
+
+  @override
+  String get accentColorHint => 'لأرقام الآيات والتظليل والأزرار';
+
+  @override
+  String get accentGold => 'ذهبي';
+
+  @override
+  String get accentEmerald => 'زمردي';
+
+  @override
+  String get accentTeal => 'فيروزي';
+
+  @override
+  String get accentBlue => 'أزرق';
+
+  @override
+  String get accentIndigo => 'نيلي';
+
+  @override
+  String get accentRose => 'وردي';
+
+  @override
+  String get accentCrimson => 'قرمزي';
+
+  @override
+  String get accentBrown => 'بني';
 
   @override
   String get language => 'اللغة';
@@ -889,6 +931,10 @@ class AppLocalizationsAr extends AppLocalizations {
       'خط القرآن: أميري قرآن، تصميم خالد حسني وسباستيان كوش، رخصة SIL المفتوحة للخطوط 1.1، https://github.com/aliftype/amiri.';
 
   @override
+  String get creditsMushafScript =>
+      'نص المصحف وخطه: مجمع الملك فهد لطباعة المصحف الشريف بالمدينة المنورة (خط النص العثماني لرواية حفص، الإصدار 2.0، وبيانات التفسير الميسر، الإصدار 3)، https://qurancomplex.gov.sa. الملفات مضمّنة كما هي دون تعديل، ويُتحقق منها بالمجموع الاختباري. جميع الحقوق محفوظة للمجمع.';
+
+  @override
   String hizbTitle(String number) {
     return 'الحزب $number';
   }
@@ -1078,9 +1124,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get removePageBookmark => 'إزالة علامة الصفحة';
-
-  @override
-  String get hideBars => 'إخفاء الأشرطة';
 
   @override
   String get surahOrderCaption => 'الترتيب';

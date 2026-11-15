@@ -7,10 +7,13 @@ import '../../../core/widgets/app_sheet.dart';
 import '../../../core/widgets/app_switch_tile.dart';
 import '../../settings/application/settings_provider.dart';
 import '../../settings/domain/app_settings.dart';
+import '../../settings/presentation/theme_pickers.dart';
 import 'mushaf_style_field.dart';
+import 'reader_orientation.dart';
 import 'reader_page_layout_field.dart';
 
-/// Opens the reading display options: text size and theme.
+/// Opens the reading display options: reading mode, text size or page
+/// layout, orientation, page turn, and theme.
 Future<void> showDisplayOptions(BuildContext context) => AppSheet.show<void>(
   context: context,
   builder: (_) => const _DisplayOptions(),
@@ -65,6 +68,8 @@ class _DisplayOptions extends ConsumerWidget {
                   )
                 : _TextSize(settings: settings),
           ),
+          const SizedBox(height: 12),
+          const ReaderOrientationTile(),
           const SizedBox(height: 4),
           AppSwitchTile(
             value: settings.realisticPageTurn,
@@ -74,19 +79,7 @@ class _DisplayOptions extends ConsumerWidget {
             subtitle: l10n.realisticPageTurnDescription,
           ),
           const SizedBox(height: 12),
-          Text(l10n.theme, style: Theme.of(context).textTheme.titleSmall),
-          const SizedBox(height: 8),
-          AppSegmentedControl<AppThemePreference>(
-            value: settings.theme,
-            onChanged: (value) =>
-                notifier.save(settings.copyWith(theme: value)),
-            segments: {
-              AppThemePreference.light: l10n.themeLight,
-              AppThemePreference.sepia: l10n.themeSepia,
-              AppThemePreference.dark: l10n.themeDark,
-              AppThemePreference.system: l10n.themeSystem,
-            },
-          ),
+          const ThemePickers(),
         ],
       ),
     );
@@ -117,8 +110,8 @@ class _TextSize extends ConsumerWidget {
               Expanded(
                 child: Slider.adaptive(
                   value: settings.readerFontScale,
-                  min: 0.8,
-                  max: 1.6,
+                  min: AppSettings.minReaderFontScale,
+                  max: AppSettings.maxReaderFontScale,
                   divisions: 8,
                   label: '${(settings.readerFontScale * 100).round()}%',
                   onChanged: (value) =>

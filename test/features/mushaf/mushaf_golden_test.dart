@@ -14,7 +14,8 @@ import 'package:mre_quran/l10n/generated/app_localizations.dart';
 import '../../helpers/fake_quran_text_source.dart';
 
 /// Golden pages from the plan: 1, 2, 42 (Ayat al-Kursi), and 604, in light
-/// and dark. Rendered with the bundled Amiri Quran font.
+/// and dark. Rendered in the King Fahd Complex script with its bundled font;
+/// Amiri Quran draws the surah banner.
 void main() {
   late QuranText text;
 
@@ -25,6 +26,11 @@ void main() {
         rootBundle.load('assets/fonts/amiri_quran/AmiriQuran-Regular.ttf'),
       );
     await loader.load();
+    final mushafFont = FontLoader('KfgqpcHafs')
+      ..addFont(
+        rootBundle.load('assets/fonts/kfgqpc_hafs/uthmanic_hafs_v20.ttf'),
+      );
+    await mushafFont.load();
     final metadata = QuranMetadataParser.parse(
       File('assets/quran/quran-data.xml').readAsStringSync(),
     );
@@ -37,6 +43,8 @@ void main() {
       clean: data.clean,
       basmala: data.basmala,
       prefixed: data.prefixed,
+      mushaf: data.mushaf,
+      marks: data.marks,
     );
   });
 

@@ -1,21 +1,38 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mre_fields/mre_fields.dart';
 
 import 'app_palette.dart';
 import 'app_surface_style.dart';
+import 'quran_colors.dart';
 import 'app_tokens.dart';
 
-/// Application themes, including a low-glare reader option. Colours come from
-/// the hand-authored schemes in [AppPalette].
+/// Application themes: one paper plus one accent, from [AppPalette].
 abstract final class AppTheme {
-  /// Warm paper with a gold accent.
-  static ThemeData get light => _build(AppPalette.light);
+  /// Cream paper, gold accent.
+  static ThemeData get light => of(AppPaper.cream, AppAccent.gold);
 
-  /// Deep navy with a gold accent.
-  static ThemeData get dark => _build(AppPalette.dark);
+  /// Navy paper, gold accent.
+  static ThemeData get dark => of(AppPaper.navy, AppAccent.gold);
 
-  /// Low-glare reader paper.
-  static ThemeData get sepia => _build(AppPalette.sepia);
+  /// Sepia paper, gold accent.
+  static ThemeData get sepia => of(AppPaper.sepia, AppAccent.gold);
+
+  static final Map<(AppPaper, AppAccent, TargetPlatform), ThemeData> _cache =
+      {};
+
+  /// The theme for [paper] with [accent]. Built once per pair, so switching
+  /// back and forth hands `MaterialApp` the same object and animates only
+  /// real changes.
+  ///
+  /// `ThemeData` records the platform it was built on, which decides glass
+  /// or Material chrome, so the platform is part of the key: Device Preview
+  /// and tests switch it at run time.
+  static ThemeData of(AppPaper paper, AppAccent accent) => _cache.putIfAbsent((
+    paper,
+    accent,
+    defaultTargetPlatform,
+  ), () => _build(AppPalette.scheme(paper, accent)));
 
   static ThemeData _build(ColorScheme scheme) {
     final surfaces = AppSurfaceStyle.from(scheme);
@@ -185,6 +202,7 @@ abstract final class AppTheme {
       ),
       extensions: [
         surfaces,
+        QuranColors.from(scheme),
         const MREFieldsTheme(
           fieldBorderRadius: AppTokens.radiusField,
           contentPadding: AppTokens.fieldPadding,

@@ -3,17 +3,21 @@ import 'package:flutter/material.dart';
 
 import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_tokens.dart';
+import '../../../core/theme/quran_colors.dart';
+import '../../../core/widgets/pinch_zoom.dart';
 import '../../quran_index/domain/quran_metadata.dart';
 import '../../quran_text/domain/quran_text.dart';
 import '../../settings/application/digits_provider.dart';
+import '../../settings/domain/app_settings.dart';
 import 'mushaf_ornaments.dart';
 import 'mushaf_page_frame.dart';
 
 /// One Mushaf page drawn like a printed copy: a banner at each surah opening,
 /// the basmala, and the ayahs with their markers, inside the reader's frame.
 ///
-/// The ayahs on a page follow the Madinah page starts. Line breaks come from
-/// the text layout, not the printed Mushaf, until layout data is approved.
+/// The ayahs on a page follow the Madinah page starts, in the King Fahd
+/// Complex script and font when the text holds them. Line breaks come from
+/// the text layout, not the printed Mushaf. Two fingers change the text size.
 class MushafPageView extends StatefulWidget {
   /// Creates page [page] of [text].
   const MushafPageView({
@@ -24,6 +28,7 @@ class MushafPageView extends StatefulWidget {
     required this.onTap,
     this.digits = _defaultDigits,
     this.onAyahLongPress,
+    this.onFontScaleChanged,
     this.bookmarked = const {},
     this.selected,
     this.framed = true,
@@ -49,6 +54,10 @@ class MushafPageView extends StatefulWidget {
 
   /// Called with the ayah that was pressed and held.
   final ValueChanged<AyahRef>? onAyahLongPress;
+
+  /// Called with the new text size after a two-finger pinch. Null turns
+  /// pinching off.
+  final ValueChanged<double>? onFontScaleChanged;
 
   /// Ayahs the reader bookmarked. Their markers are coloured differently.
   final Set<AyahRef> bookmarked;
@@ -98,8 +107,17 @@ class _MushafPageViewState extends State<MushafPageView> {
               ..onLongPress = () => widget.onAyahLongPress?.call(ref),
       );
 
+  /// The reader's font: the Mushaf's own when the text holds its script.
+  String get _fontFamily => text.hasMushafScript
+      ? AppTokens.mushafFontFamily
+      : AppTokens.quranFontFamily;
+
   /// The page's content in reading order.
-  List<_Segment> _segments(ColorScheme scheme, String Function(String) label) {
+  List<_Segment> _segments(
+    QuranColors colors,
+    Color bookmark,
+    String Function(String) label,
+  ) {
     final metadata = text.metadata;
     final segments = <_Segment>[];
     var spans = <InlineSpan>[];
@@ -114,20 +132,20 @@ class _MushafPageViewState extends State<MushafPageView> {
         flush();
         segments.add(_Banner(metadata.surah(ayah.ref.surah)));
         if (text.hasBasmala(ayah.ref.surah)) {
-          segments.add(_Basmala(text.basmala));
+          segments.add(_Basmala(text.mushafBasmala));
         }
       }
-      final highlight = ayah.ref == widget.selected
-          ? scheme.primary.withValues(alpha: 0.16)
-          : null;
+      final highlight = ayah.ref == widget.selected ? colors.highlight : null;
       final recognizer = widget.onAyahLongPress == null
           ? null
           : _recognizerFor(ayah.ref);
-      if (metadata.rubStartingAt(ayah.ref) != null) {
+      final marked = widget.bookmarked.contains(ayah.ref);
+      // The Mushaf script carries its own hizb marks, where print has them.
+      if (!text.hasMushafScript && metadata.rubStartingAt(ayah.ref) != null) {
         spans.add(
           TextSpan(
             text: '\u06DE ',
-            style: TextStyle(color: scheme.primary),
+            style: TextStyle(color: colors.ayahNumber),
           ),
         );
       }
@@ -141,15 +159,13 @@ class _MushafPageViewState extends State<MushafPageView> {
         )
         ..add(
           TextSpan(
-            text: '\u06DD${_n(ayah.ref.ayah)} ',
+            // The Mushaf font's own number glyph when held; otherwise the
+            // end-of-ayah sign around the digits.
+            text: '${ayah.mark ?? '\u06DD${_n(ayah.ref.ayah)}'} ',
             recognizer: recognizer,
             style: TextStyle(
-              color: widget.bookmarked.contains(ayah.ref)
-                  ? scheme.tertiary
-                  : scheme.primary,
-              fontWeight: widget.bookmarked.contains(ayah.ref)
-                  ? FontWeight.bold
-                  : null,
+              color: marked ? bookmark : colors.ayahNumber,
+              fontWeight: marked ? FontWeight.bold : null,
               backgroundColor: highlight,
             ),
             semanticsLabel: label('${ayah.ref.ayah}'),
@@ -161,10 +177,14 @@ class _MushafPageViewState extends State<MushafPageView> {
   }
 
   /// Largest font size at which every segment fits in [size].
-  static double _fittedSize(List<_Segment> segments, Size size) {
+  static double _fittedSize(
+    List<_Segment> segments,
+    Size size,
+    String fontFamily,
+  ) {
     double heightAt(double fontSize) {
       final style = TextStyle(
-        fontFamily: AppTokens.quranFontFamily,
+        fontFamily: fontFamily,
         fontSize: fontSize,
         height: MushafPageView._lineHeight,
       );
@@ -220,17 +240,21 @@ class _MushafPageViewState extends State<MushafPageView> {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final segments = _segments(scheme, context.l10n.ayahNumber);
+    final colors = QuranColors.of(context);
+    final segments = _segments(
+      colors,
+      Theme.of(context).colorScheme.tertiary,
+      context.l10n.ayahNumber,
+    );
 
-    final body = LayoutBuilder(
+    final page = LayoutBuilder(
       builder: (context, constraints) {
-        final fitted = _fittedSize(segments, constraints.biggest);
+        final fitted = _fittedSize(segments, constraints.biggest, _fontFamily);
         final quran = TextStyle(
-          fontFamily: AppTokens.quranFontFamily,
+          fontFamily: _fontFamily,
           fontSize: fitted * widget.fontScale,
           height: MushafPageView._lineHeight,
-          color: scheme.onSurface,
+          color: colors.ink,
         );
         // Quran text size follows the reader's own setting, so it is not
         // scaled again by the system. Larger text scrolls in the frame.
@@ -272,6 +296,16 @@ class _MushafPageViewState extends State<MushafPageView> {
         );
       },
     );
+    final resize = widget.onFontScaleChanged;
+    final body = resize == null
+        ? page
+        : PinchZoom(
+            value: widget.fontScale,
+            min: AppSettings.minReaderFontScale,
+            max: AppSettings.maxReaderFontScale,
+            onChanged: resize,
+            child: page,
+          );
     if (!widget.framed) return body;
     return MushafPageFrame(
       metadata: text.metadata,

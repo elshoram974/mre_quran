@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 
 import '../domain/ayah_search.dart';
 import '../domain/basmala_split.dart';
+import 'kfgqpc_hafs_parser.dart';
 import 'quran_text_parser.dart';
 
 /// Raised when a bundled text file does not match its recorded checksum.
@@ -34,6 +35,9 @@ class QuranTextData {
     required this.uthmaniKeys,
     required this.basmala,
     required this.prefixed,
+    required this.mushaf,
+    required this.marks,
+    required this.plainKeys,
   });
 
   /// The basmala as written in ayah 1:1.
@@ -54,14 +58,27 @@ class QuranTextData {
 
   /// Folded search keys built from [uthmani].
   final List<String> uthmaniKeys;
+
+  /// The ayahs in the King Fahd Complex Mushaf script, for the reader. Drawn
+  /// with the Complex's own font; one entry per ayah, no basmala prefix.
+  final List<String> mushaf;
+
+  /// The ayah-number glyph that ends each entry of [mushaf] in print.
+  final List<String> marks;
+
+  /// Folded search keys built from the Complex's plain spelling.
+  final List<String> plainKeys;
 }
 
-/// Loads the bundled Tanzil text after verifying both checksums.
+/// Loads the bundled Quran text after verifying every checksum: the Tanzil
+/// text (copying, sharing, adhkar, search) and the King Fahd Complex Mushaf
+/// script (the reader, and a third search spelling).
 ///
 /// Provenance: https://tanzil.net/download, texts "Uthmani" and "Simple
 /// Clean", format `txt-2`, version 1.1, Creative Commons Attribution 3.0,
 /// copyright Tanzil Project. Both files are bundled unmodified, copyright
-/// block included. See `docs/QURAN_SOURCES.md`.
+/// block included. The Mushaf script is the Complex's "Tafseer Mouaser"
+/// data, version 3, bundled unmodified. See `docs/QURAN_SOURCES.md`.
 class QuranTextSource {
   /// Creates a source reading from [bundle], the root bundle by default.
   QuranTextSource({AssetBundle? bundle}) : _bundle = bundle ?? rootBundle;
@@ -71,6 +88,14 @@ class QuranTextSource {
 
   /// Asset path of the text without diacritics.
   static const String cleanAsset = 'assets/quran/quran-simple-clean.txt';
+
+  /// Asset path of the King Fahd Complex Mushaf-script data.
+  static const String mushafAsset =
+      'assets/quran/kfgqpc/tafseerMouaser_v03.txt';
+
+  /// SHA-256 of [mushafAsset].
+  static const String mushafSha256 =
+      'df92e4e2c86b0a57cf67c31e710b55db00f04ba0ee6f18c497bb5f8b1b1be0cc';
 
   /// SHA-256 of [uthmaniAsset].
   static const String uthmaniSha256 =
@@ -88,9 +113,11 @@ class QuranTextSource {
   Future<QuranTextData> load(List<int> surahAyahCounts) async {
     final uthmani = await _verified(uthmaniAsset, uthmaniSha256);
     final clean = await _verified(cleanAsset, cleanSha256);
-    return compute(_parse, (
+    final mushaf = await _verified(mushafAsset, mushafSha256);
+    return compute(parse, (
       uthmani: uthmani,
       clean: clean,
+      mushaf: mushaf,
       counts: surahAyahCounts,
     ));
   }
@@ -106,8 +133,11 @@ class QuranTextSource {
     return bytes;
   }
 
-  static QuranTextData _parse(
-    ({Uint8List uthmani, Uint8List clean, List<int> counts}) input,
+  /// Parses the three verified files into text lists and search keys.
+  /// Public so tests can run it on the real files without an asset bundle.
+  static QuranTextData parse(
+    ({Uint8List uthmani, Uint8List clean, Uint8List mushaf, List<int> counts})
+    input,
   ) {
     final uthmani = QuranTextParser.parse(
       utf8.decode(input.uthmani),
@@ -119,6 +149,10 @@ class QuranTextSource {
       uthmani: uthmani,
       clean: clean,
     );
+    final mushaf = KfgqpcHafsParser.parse(
+      utf8.decode(input.mushaf),
+      input.counts,
+    );
     return QuranTextData(
       uthmani: split.uthmani,
       clean: split.clean,
@@ -126,6 +160,9 @@ class QuranTextSource {
       uthmaniKeys: AyahSearchIndex.buildKeys(split.uthmani),
       basmala: split.basmala,
       prefixed: split.prefixed,
+      mushaf: mushaf.text,
+      marks: mushaf.marks,
+      plainKeys: AyahSearchIndex.buildKeys(mushaf.plain),
     );
   }
 }

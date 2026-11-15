@@ -32,63 +32,89 @@ class AyahSearchResult {
 /// Searches the Quran text without needing tashkeel.
 ///
 /// The query and every ayah are folded with [normalizeSearchKey] (diacritics,
-/// alef, ya, ta marbuta, and digits). Each ayah has two folded keys: one from
-/// the plain spelling ("العالمين") and one from the Uthmani spelling, which
-/// writes some alefs as dagger alefs ("العلمين"). A query written either way
-/// matches. Keys are built once, off the main isolate, with [buildKeys].
+/// alef, ya, ta marbuta, and digits). Each ayah has up to three folded keys:
+/// the plain spelling ("العالمين"), the Uthmani spelling, which writes some
+/// alefs as dagger alefs ("العلمين"), and the King Fahd Complex's own plain
+/// spelling. A query written any of these ways matches. Keys are built once,
+/// off the main isolate, with [buildKeys].
 class AyahSearchIndex {
-  /// Creates an index over [text] using precomputed [keys].
+  /// Creates an index over [text] using precomputed keys. [plainKeys] is the
+  /// optional third spelling.
   AyahSearchIndex({
     required this.text,
     required List<String> keys,
     required List<String> uthmaniKeys,
-  }) : _keys = keys,
-       _uthmaniKeys = uthmaniKeys {
-    if (keys.length != text.length || uthmaniKeys.length != text.length) {
-      throw ArgumentError(
-        'Expected ${text.length} keys; got ${keys.length} and '
-        '${uthmaniKeys.length}.',
-      );
+    List<String>? plainKeys,
+  }) : _keys = [keys, uthmaniKeys, ?plainKeys] {
+    for (final list in _keys) {
+      if (list.length != text.length) {
+        throw ArgumentError(
+          'Expected ${text.length} keys; got ${list.length}.',
+        );
+      }
     }
   }
 
   /// The text being searched.
   final QuranText text;
 
-  final List<String> _keys;
-  final List<String> _uthmaniKeys;
+  /// One list of folded keys per spelling.
+  final List<List<String>> _keys;
 
-  /// Folded search keys for [lines] of Quran text.
+  static final RegExp _spaces = RegExp(r'\s+');
+
+  /// Folded search keys for [lines] of Quran text, single-spaced.
   static List<String> buildKeys(List<String> lines) => [
-    for (final line in lines) normalizeSearchKey(line),
+    for (final line in lines) normalizeSearchKey(line).replaceAll(_spaces, ' '),
   ];
 
-  /// Finds ayahs containing [query].
+  /// Finds ayahs containing [query], best matches first:
   ///
-  /// Ayahs that contain the words together, in order, come first. Ayahs that
-  /// contain every word anywhere come next. Both groups keep Quran order.
+  /// 1. the words together, in order, as whole words;
+  /// 2. the words together as part of longer words ("من" inside "المؤمنين");
+  /// 3. every word somewhere in the ayah.
+  ///
+  /// Each group keeps Quran order.
   AyahSearchResult search(String query, {int limit = 100}) {
-    final phrase = normalizeSearchKey(query);
+    final phrase = normalizeSearchKey(query).replaceAll(_spaces, ' ');
     if (phrase.isEmpty || limit <= 0) return AyahSearchResult.empty;
-    final words = phrase.split(RegExp(r'\s+'));
+    final words = phrase.split(' ');
+    final padded = ' $phrase ';
 
-    final exact = <int>[];
+    final whole = <int>[];
+    final partial = <int>[];
     final loose = <int>[];
-    for (var i = 0; i < _keys.length; i++) {
-      final plain = _keys[i];
-      final uthmani = _uthmaniKeys[i];
-      if (plain.contains(phrase) || uthmani.contains(phrase)) {
-        exact.add(i);
-      } else if (words.length > 1 &&
-          (words.every(plain.contains) || words.every(uthmani.contains))) {
-        loose.add(i);
+    for (var i = 0; i < text.length; i++) {
+      var best = _Rank.none;
+      for (final keys in _keys) {
+        final key = keys[i];
+        if (' $key '.contains(padded)) {
+          best = _Rank.whole;
+          break;
+        }
+        if (key.contains(phrase)) {
+          best = _Rank.partial;
+        } else if (best == _Rank.none &&
+            words.length > 1 &&
+            words.every(key.contains)) {
+          best = _Rank.loose;
+        }
+      }
+      switch (best) {
+        case _Rank.whole:
+          whole.add(i);
+        case _Rank.partial:
+          partial.add(i);
+        case _Rank.loose:
+          loose.add(i);
+        case _Rank.none:
       }
     }
-    final total = exact.length + loose.length;
     return AyahSearchResult(
-      total: total,
+      total: whole.length + partial.length + loose.length,
       matches: [
-        for (final index in [...exact, ...loose].take(limit)) _match(index),
+        for (final index in [...whole, ...partial, ...loose].take(limit))
+          _match(index),
       ],
     );
   }
@@ -98,3 +124,6 @@ class AyahSearchIndex {
     return AyahMatch(ref: ref, page: text.metadata.pageOf(ref.surah, ref.ayah));
   }
 }
+
+/// How well an ayah fits a query.
+enum _Rank { whole, partial, loose, none }

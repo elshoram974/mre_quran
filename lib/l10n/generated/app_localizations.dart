@@ -161,13 +161,13 @@ abstract class AppLocalizations {
   /// No description provided for @themeLight.
   ///
   /// In en, this message translates to:
-  /// **'Light'**
+  /// **'Cream'**
   String get themeLight;
 
   /// No description provided for @themeDark.
   ///
   /// In en, this message translates to:
-  /// **'Dark'**
+  /// **'Navy'**
   String get themeDark;
 
   /// No description provided for @themeSepia.
@@ -175,6 +175,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sepia'**
   String get themeSepia;
+
+  /// No description provided for @themeWhite.
+  ///
+  /// In en, this message translates to:
+  /// **'White'**
+  String get themeWhite;
+
+  /// No description provided for @themeGreen.
+  ///
+  /// In en, this message translates to:
+  /// **'Green'**
+  String get themeGreen;
+
+  /// No description provided for @themeBlack.
+  ///
+  /// In en, this message translates to:
+  /// **'Black'**
+  String get themeBlack;
+
+  /// No description provided for @pageTheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Page colour'**
+  String get pageTheme;
+
+  /// No description provided for @accentColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Accent colour'**
+  String get accentColor;
+
+  /// No description provided for @accentColorHint.
+  ///
+  /// In en, this message translates to:
+  /// **'For ayah numbers, highlights, and buttons'**
+  String get accentColorHint;
+
+  /// No description provided for @accentGold.
+  ///
+  /// In en, this message translates to:
+  /// **'Gold'**
+  String get accentGold;
+
+  /// No description provided for @accentEmerald.
+  ///
+  /// In en, this message translates to:
+  /// **'Emerald'**
+  String get accentEmerald;
+
+  /// No description provided for @accentTeal.
+  ///
+  /// In en, this message translates to:
+  /// **'Teal'**
+  String get accentTeal;
+
+  /// No description provided for @accentBlue.
+  ///
+  /// In en, this message translates to:
+  /// **'Blue'**
+  String get accentBlue;
+
+  /// No description provided for @accentIndigo.
+  ///
+  /// In en, this message translates to:
+  /// **'Indigo'**
+  String get accentIndigo;
+
+  /// No description provided for @accentRose.
+  ///
+  /// In en, this message translates to:
+  /// **'Rose'**
+  String get accentRose;
+
+  /// No description provided for @accentCrimson.
+  ///
+  /// In en, this message translates to:
+  /// **'Crimson'**
+  String get accentCrimson;
+
+  /// No description provided for @accentBrown.
+  ///
+  /// In en, this message translates to:
+  /// **'Brown'**
+  String get accentBrown;
 
   /// No description provided for @language.
   ///
@@ -1622,6 +1706,12 @@ abstract class AppLocalizations {
   /// **'Quran font: Amiri Quran by Khaled Hosny and Sebastian Kosch, SIL Open Font License 1.1, https://github.com/aliftype/amiri.'**
   String get creditsQuranFont;
 
+  /// No description provided for @creditsMushafScript.
+  ///
+  /// In en, this message translates to:
+  /// **'Mushaf script and font: King Fahd Glorious Quran Printing Complex, Madinah (KFGQPC Uthmanic Script Hafs font, version 2.0, and the Tafseer Mouaser data, version 3), https://qurancomplex.gov.sa. The files are bundled unmodified and verified by checksum. All rights remain with the Complex.'**
+  String get creditsMushafScript;
+
   /// No description provided for @hizbTitle.
   ///
   /// In en, this message translates to:
@@ -1945,12 +2035,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Remove this page\'s bookmark'**
   String get removePageBookmark;
-
-  /// No description provided for @hideBars.
-  ///
-  /// In en, this message translates to:
-  /// **'Hide the bars'**
-  String get hideBars;
 
   /// No description provided for @surahOrderCaption.
   ///

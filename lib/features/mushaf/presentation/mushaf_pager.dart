@@ -112,6 +112,15 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
     if (mounted) setState(() => _selected = null);
   }
 
+  /// Keeps the text size a pinch reached.
+  void _saveFontScale(double scale) {
+    final settings = ref.read(settingsProvider).value;
+    if (settings == null) return;
+    ref
+        .read(settingsProvider.notifier)
+        .save(settings.copyWith(readerFontScale: scale));
+  }
+
   void _onTap() {
     ref.read(highlightedAyahProvider.notifier).clear();
     ref.read(readerImmersiveProvider.notifier).toggle();
@@ -174,6 +183,7 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
             bookmarked: bookmarked,
             selected: _selected ?? highlighted,
             onAyahLongPress: _showActions,
+            onFontScaleChanged: _saveFontScale,
             onTap: _onTap,
             spread: spread,
           ),

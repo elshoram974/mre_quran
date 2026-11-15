@@ -1,5 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../core/theme/app_palette.dart';
 import '../domain/app_settings.dart';
 
 /// Stores application settings locally on the device.
@@ -14,6 +15,7 @@ class LocalSettingsRepository implements SettingsRepository {
 
   final SharedPreferencesAsync _preferences;
   static const _themeKey = 'settings.theme';
+  static const _accentKey = 'settings.accent';
   static const _localeKey = 'settings.locale';
   static const _reduceMotionKey = 'settings.reduce_motion';
   static const _hapticsKey = 'settings.haptics';
@@ -54,10 +56,15 @@ class LocalSettingsRepository implements SettingsRepository {
     final mushafStyle = await _preferences.getString(_mushafStyleKey);
     final introSeen = await _preferences.getBool(_introSeenKey);
     final haptics = await _preferences.getBool(_hapticsKey);
+    final accent = await _preferences.getString(_accentKey);
     return AppSettings(
       theme: AppThemePreference.values.firstWhere(
         (item) => item.name == theme,
         orElse: () => AppThemePreference.sepia,
+      ),
+      accent: AppAccent.values.firstWhere(
+        (item) => item.name == accent,
+        orElse: () => AppAccent.gold,
       ),
       localeCode: locale == 'en' ? 'en' : 'ar',
       reduceMotion: reduceMotion ?? false,
@@ -68,7 +75,9 @@ class LocalSettingsRepository implements SettingsRepository {
         (item) => item.name == startup,
         orElse: () => StartupBehavior.lastTab,
       ),
-      readerFontScale: (fontScale ?? 1).clamp(0.8, 1.6).toDouble(),
+      readerFontScale: (fontScale ?? 1)
+          .clamp(AppSettings.minReaderFontScale, AppSettings.maxReaderFontScale)
+          .toDouble(),
       realisticPageTurn: realisticTurn ?? false,
       readerMode: ReaderMode.values.firstWhere(
         (item) => item.name == readerMode,
@@ -90,6 +99,7 @@ class LocalSettingsRepository implements SettingsRepository {
   Future<void> save(AppSettings settings) async {
     await Future.wait([
       _preferences.setString(_themeKey, settings.theme.name),
+      _preferences.setString(_accentKey, settings.accent.name),
       _preferences.setString(_localeKey, settings.localeCode),
       _preferences.setBool(_reduceMotionKey, settings.reduceMotion),
       _preferences.setBool(_hapticsKey, settings.hapticsEnabled),

@@ -29,6 +29,8 @@ final quranTextProvider = FutureProvider<QuranText>((ref) async {
     clean: data.clean,
     basmala: data.basmala,
     prefixed: data.prefixed,
+    mushaf: data.mushaf,
+    marks: data.marks,
   );
 });
 
@@ -40,6 +42,7 @@ final ayahSearchIndexProvider = FutureProvider<AyahSearchIndex>((ref) async {
     text: text,
     keys: data.keys,
     uthmaniKeys: data.uthmaniKeys,
+    plainKeys: data.plainKeys,
   );
 });
 

@@ -86,9 +86,11 @@ void main() {
     expect(find.text('الفاتحة').hitTestable(), findsOneWidget);
     expect(find.text('صفحة ١'), findsOneWidget, reason: 'page pill');
     expect(find.bySemanticsLabel('ابحث في القرآن'), findsOneWidget);
-    for (final tip in ['إضافة علامة للصفحة', 'العرض', 'إخفاء الأشرطة']) {
-      expect(find.byTooltip(tip), findsOneWidget, reason: tip);
-    }
+    expect(find.byTooltip('إضافة علامة للصفحة'), findsOneWidget);
+    // Display options carry a visible label, not a bare icon; there is no
+    // separate hide button, since a tap on the page hides the bars.
+    expect(find.text('العرض').hitTestable(), findsOneWidget);
+    expect(find.byTooltip('إخفاء الأشرطة'), findsNothing);
     // The page's own labels step aside while the bars show.
     expect(find.text('الجزء ١').hitTestable(), findsNothing);
   });
@@ -116,7 +118,7 @@ void main() {
     tester,
   ) async {
     final (container, _) = await _pump(tester);
-    await tester.tap(find.byTooltip('إخفاء الأشرطة'));
+    await tester.tapAt(const Offset(195, 500));
     await tester.pumpAndSettle();
     expect(container.read(readerImmersiveProvider), isTrue);
     expect(find.text('الجزء ١').hitTestable(), findsOneWidget);
@@ -396,7 +398,7 @@ void main() {
   testWidgets('pressing and holding an ayah opens its actions', (tester) async {
     await _pump(tester);
     final paragraph = find.byWidgetPredicate(
-      (w) => w is RichText && w.text.toPlainText().contains('ٱلْحَمْدُ'),
+      (w) => w is RichText && w.text.toPlainText().contains('ٱلۡحَمۡدُ'),
     );
     expect(paragraph, findsOneWidget);
     // Press along the first column of the paragraph until a line of text is

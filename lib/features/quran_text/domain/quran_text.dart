@@ -18,7 +18,11 @@ class QuranText {
     required List<String> clean,
     required this.basmala,
     required List<bool> prefixed,
+    List<String>? mushaf,
+    List<String>? marks,
   }) : _prefixed = List.unmodifiable(prefixed),
+       _mushaf = mushaf == null ? null : List.unmodifiable(mushaf),
+       _marks = marks == null ? null : List.unmodifiable(marks),
        _uthmani = List.unmodifiable(uthmani),
        _clean = List.unmodifiable(clean),
        _offsets = _offsetsOf(metadata) {
@@ -27,6 +31,11 @@ class QuranText {
       throw ArgumentError(
         'Expected $total ayahs; got ${uthmani.length} and ${clean.length}.',
       );
+    }
+    if ((mushaf == null) != (marks == null) ||
+        (mushaf != null &&
+            (mushaf.length != total || marks!.length != total))) {
+      throw ArgumentError('The Mushaf script needs $total ayahs and marks.');
     }
   }
 
@@ -37,6 +46,8 @@ class QuranText {
   final String basmala;
 
   final List<bool> _prefixed;
+  final List<String>? _mushaf;
+  final List<String>? _marks;
   final List<String> _uthmani;
   final List<String> _clean;
   final List<int> _offsets;
@@ -87,6 +98,22 @@ class QuranText {
   /// Display text with tashkeel.
   String uthmani(AyahRef ref) => _uthmani[indexOf(ref)];
 
+  /// Whether the ayahs are also held in the printed Mushaf's own script, to
+  /// be drawn with the King Fahd Complex font.
+  bool get hasMushafScript => _mushaf != null;
+
+  /// The ayah as the reader shows it: the Mushaf script when held, else the
+  /// [uthmani] text.
+  String mushaf(AyahRef ref) => (_mushaf ?? _uthmani)[indexOf(ref)];
+
+  /// The Mushaf font's ayah-number glyph for [ref], or null without the
+  /// Mushaf script.
+  String? mark(AyahRef ref) => _marks?[indexOf(ref)];
+
+  /// The basmala as the reader shows it: ayah 1:1 of the Mushaf script when
+  /// held, else [basmala].
+  String get mushafBasmala => _mushaf?.first ?? basmala;
+
   /// Text without diacritics.
   String clean(AyahRef ref) => _clean[indexOf(ref)];
 
@@ -96,9 +123,10 @@ class QuranText {
     return _uthmani.sublist(start, start + metadata.surah(surah).ayahCount);
   }
 
-  /// Display text of the ayahs that start on [page].
-  List<({AyahRef ref, String text})> pageAyahs(int page) => [
+  /// Reader text of the ayahs that start on [page], each with its
+  /// ayah-number glyph when the Mushaf script is held.
+  List<({AyahRef ref, String text, String? mark})> pageAyahs(int page) => [
     for (final ref in metadata.ayahsOnPage(page))
-      (ref: ref, text: uthmani(ref)),
+      (ref: ref, text: mushaf(ref), mark: mark(ref)),
   ];
 }

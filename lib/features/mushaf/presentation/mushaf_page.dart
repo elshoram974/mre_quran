@@ -5,13 +5,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/router.dart';
 import '../../../core/l10n/l10n.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../bookmarks/application/bookmarks_provider.dart';
 import '../../quran_text/application/quran_text_providers.dart';
 import '../../settings/application/digits_provider.dart';
-import '../../settings/application/settings_provider.dart';
-import '../../settings/domain/app_settings.dart';
 import '../application/reader_immersive_provider.dart';
 import '../application/reading_position_provider.dart';
 import 'display_options_sheet.dart';
@@ -20,8 +19,7 @@ import 'editions_intro_sheet.dart';
 import 'go_to_page_sheet.dart';
 import 'reader_bar.dart';
 import 'reader_navigation.dart';
-import 'reader_page_layout_field.dart';
-import 'reader_orientation_toggle.dart';
+import 'reader_orientation.dart';
 
 /// The Mushaf tab: the pages, labelled like a printed Mushaf (surah and juz
 /// above, page number below, arrows onward). A tap on the page or an ayah
@@ -100,15 +98,6 @@ class MushafPage extends ConsumerWidget {
       if (chosen != null) goTo(chosen);
     }
 
-    final hideBars = ref.read(readerImmersiveProvider.notifier).hide;
-    final window = MediaQuery.sizeOf(context);
-    final layout = ref.watch(
-      settingsProvider.select(
-        (s) => s.value?.readerPageLayout ?? ReaderPageLayout.auto,
-      ),
-    );
-    final spread = resolveMushafSpread(layout, window);
-
     // Shown on a tap: a toolbar at the top and controls at the bottom,
     // floating over the page.
     final toolbar = ReaderToolbar(
@@ -127,6 +116,9 @@ class MushafPage extends ConsumerWidget {
         ),
       ],
     );
+    // Three plain parts: where you are (the surah, opening the index), the
+    // page (opening "go to page"), and the display options. Everything else
+    // lives in the display sheet; a tap on the page hides the bars.
     final controls = Row(
       children: [
         Flexible(
@@ -142,7 +134,7 @@ class MushafPage extends ConsumerWidget {
             ),
           ),
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: AppTokens.spaceSmall),
         Expanded(
           flex: 2,
           child: Center(
@@ -157,36 +149,19 @@ class MushafPage extends ConsumerWidget {
             ),
           ),
         ),
-        const SizedBox(width: 8),
-        const ReaderFloatingSurface(
-          padding: EdgeInsets.zero,
-          child: ReaderOrientationToggle(),
-        ),
-        const SizedBox(width: 8),
-        // This is always available: a person may deliberately choose a
-        // facing spread on a compact window or one page on a wide tablet.
-        ...[
-          ReaderFloatingSurface(
+        const SizedBox(width: AppTokens.spaceSmall),
+        Flexible(
+          child: ReaderFloatingSurface(
             padding: EdgeInsets.zero,
-            child: ReaderPageLayoutToggle(spread: spread),
-          ),
-          const SizedBox(width: 8),
-        ],
-        ReaderFloatingSurface(
-          padding: EdgeInsets.zero,
-          child: icon(
-            Icons.text_fields_rounded,
-            l10n.displayOptions,
-            () => showDisplayOptions(context),
-          ),
-        ),
-        const SizedBox(width: 8),
-        ReaderFloatingSurface(
-          padding: EdgeInsets.zero,
-          child: icon(
-            Icons.keyboard_arrow_down_rounded,
-            l10n.hideBars,
-            hideBars,
+            child: TextButton.icon(
+              onPressed: () => showDisplayOptions(context),
+              icon: const Icon(Icons.tune_rounded),
+              label: Text(
+                l10n.displayOptions,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           ),
         ),
       ],
@@ -225,42 +200,44 @@ class MushafPage extends ConsumerWidget {
             ),
           ),
         );
-    return ColoredBox(
-      color: scheme.surface,
-      child: Padding(
-        padding: safe,
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: MushafPager(text: data, initialPage: page),
-            ),
-            // Positioned, so it never gives the stack a size of its own.
-            const Positioned(
-              width: 0,
-              height: 0,
-              child: EditionsIntroTrigger(),
-            ),
-            PositionedDirectional(
-              top: 4,
-              start: 12,
-              end: 12,
-              child: appear(
-                toolbar,
-                shown: !immersive,
-                from: const Offset(0, -0.4),
+    return ReaderOrientationScope(
+      child: ColoredBox(
+        color: scheme.surface,
+        child: Padding(
+          padding: safe,
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: MushafPager(text: data, initialPage: page),
               ),
-            ),
-            PositionedDirectional(
-              bottom: barRoom + 10,
-              start: 12,
-              end: 12,
-              child: appear(
-                controls,
-                shown: !immersive,
-                from: const Offset(0, 0.4),
+              // Positioned, so it never gives the stack a size of its own.
+              const Positioned(
+                width: 0,
+                height: 0,
+                child: EditionsIntroTrigger(),
               ),
-            ),
-          ],
+              PositionedDirectional(
+                top: 4,
+                start: 12,
+                end: 12,
+                child: appear(
+                  toolbar,
+                  shown: !immersive,
+                  from: const Offset(0, -0.4),
+                ),
+              ),
+              PositionedDirectional(
+                bottom: barRoom + 10,
+                start: 12,
+                end: 12,
+                child: appear(
+                  controls,
+                  shown: !immersive,
+                  from: const Offset(0, 0.4),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

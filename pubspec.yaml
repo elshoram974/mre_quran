@@ -56,6 +56,7 @@ dev_dependencies:
   build_runner: ^2.16.1
   go_router_builder: ^4.5.0
   shared_preferences_platform_interface: ^2.4.2
+  wakelock_plus_platform_interface: ^1.7.0
 
 flutter:
   generate: true
@@ -64,6 +65,8 @@ flutter:
     - assets/quran/quran-data.xml
     - assets/quran/quran-uthmani.txt
     - assets/quran/quran-simple-clean.txt
+    - assets/quran/kfgqpc/tafseerMouaser_v03.txt
+    - assets/quran/kfgqpc/read.me
     - assets/fonts/amiri_quran/OFL.txt
     - assets/adhkar/manifest.json
     - assets/adhkar/morning_evening.ar.json
@@ -76,3 +79,6 @@ flutter:
     - family: AmiriQuran
       fonts:
         - asset: assets/fonts/amiri_quran/AmiriQuran-Regular.ttf
+    - family: KfgqpcHafs
+      fonts:
+        - asset: assets/fonts/kfgqpc_hafs/uthmanic_hafs_v20.ttf
