@@ -145,7 +145,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get creditsImages =>
-      'Images mode: not enabled. No page image has been downloaded or bundled.';
+      'Printed Mushaf pages: artwork from the digital Madinah Mushaf (Hafs, 1441 AH) of the King Fahd Glorious Quran Printing Complex, https://qurancomplex.gov.sa; all rights remain with the Complex. Vector pages and ayah positions: the Quran.ws project (quran-svg), CC BY 4.0, https://quran.ws. Pages are downloaded when needed, and every file is verified by checksum before it is shown.';
 
   @override
   String get done => 'Done';
@@ -1016,23 +1016,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get mushafStyle => 'Mushaf style';
-
-  @override
-  String get mushafStyleMadinah => 'Madinah Mushaf';
-
-  @override
-  String get mushafStyleTajweed => 'Tajweed Mushaf';
-
-  @override
-  String get mushafStyleMadinahHd => 'Madinah Mushaf, high resolution';
-
-  @override
   String get offlineMushaf => 'Offline Mushaf';
 
   @override
   String get offlineMushafIntro =>
-      'Download one or more editions to read without internet, then pick the one you want above. Downloads keep going when you close the app.';
+      'Download the printed Mushaf pages to read without internet. The download carries on after you close the app, and every page is verified before it is shown.';
 
   @override
   String packNotDownloaded(String size) {
@@ -1135,11 +1123,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get surahAyahsCaption => 'Ayahs';
 
   @override
-  String surahOrderLabel(String number) {
-    return 'Order $number';
-  }
-
-  @override
   String get packStorageInfo =>
       'Downloaded Mushafs are kept in the app\'s own private storage, not in the cache, so clearing the cache does not remove them. They stay out of backups, and are removed when you delete them here or uninstall the app.';
 
@@ -1155,7 +1138,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String packDeleteWarnBody(String pages, String size) {
-    return '$pages page images ($size MB) will be deleted permanently. This edition will not work without internet until you download it again.';
+    return '$pages files ($size MB) will be deleted for good. The printed Mushaf will not work offline until you download it again.';
   }
 
   @override
@@ -1165,16 +1148,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get packDeletePermanently => 'Delete permanently';
 
   @override
-  String get editionsIntroTitle => 'More Mushafs to choose from';
-
-  @override
-  String get editionsIntroBody =>
-      'You are reading the standard Madinah Mushaf. Other editions are available, such as the tajweed-coloured Mushaf. Pick the one you like, and download any of them to read without internet. You can change this later in Settings.';
-
-  @override
-  String get editionsIntroDone => 'Continue reading';
-
-  @override
   String get printedFallbackNotice =>
-      'The page image isn\'t available, so the text is shown.';
+      'The printed page is not available right now, so the text is shown.';
 }

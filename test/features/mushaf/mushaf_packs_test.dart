@@ -1,16 +1,14 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mre_quran/features/mushaf/application/mushaf_packs.dart';
-import 'package:mre_quran/features/mushaf/application/page_image_providers.dart';
+import 'package:mre_quran/features/mushaf/application/svg_page_providers.dart';
 import 'package:mre_quran/features/mushaf/data/pack_downloader.dart';
-import 'package:mre_quran/features/mushaf/data/page_asset_store.dart';
-import 'package:mre_quran/features/mushaf/domain/mushaf_edition.dart';
-import 'package:mre_quran/features/settings/domain/app_settings.dart';
+import 'package:mre_quran/features/mushaf/data/svg_page_store.dart';
 
 import '../../helpers/fake_pack_downloader.dart';
+import '../../helpers/svg_page_fixtures.dart';
 
 const _text = PackNotificationText(
   runningTitle: 'Downloading',
@@ -21,30 +19,22 @@ const _text = PackNotificationText(
   errorBody: 'Open settings',
 );
 
-final _png = Uint8List.fromList([
-  0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0, 0, 0, 0, //
-]);
-
-final _webp = Uint8List.fromList([
-  0x52, 0x49, 0x46, 0x46, 1, 2, 3, 4, 0x57, 0x45, 0x42, 0x50, //
-]);
-
 void main() {
-  final tajweed = MushafEdition.tajweed;
   late Directory root;
   late FakePackDownloader downloader;
   late ProviderContainer container;
 
   setUp(() {
-    MushafPacks.settleDelay = const Duration(milliseconds: 10);
-    root = Directory.systemTemp.createTempSync('mushaf_packs');
+    MushafPack.settleDelay = const Duration(milliseconds: 10);
+    root = Directory.systemTemp.createTempSync('mushaf_pack');
     downloader = FakePackDownloader();
     container = ProviderContainer(
       overrides: [
         packDownloaderProvider.overrideWithValue(downloader),
-        pageAssetStoreProvider.overrideWithValue(
-          PageAssetStore(
+        svgPageStoreProvider.overrideWithValue(
+          SvgPageStore(
             root: () async => root,
+            manifest: () async => fixtureManifest(),
             fetch: (_) async => throw StateError('no network in this test'),
           ),
         ),
@@ -56,97 +46,99 @@ void main() {
     root.deleteSync(recursive: true);
   });
 
-  File file(String path, List<int> bytes) => File('${root.path}/mushaf/$path')
-    ..createSync(recursive: true)
-    ..writeAsBytesSync(bytes);
+  /// Writes a file the way the system downloader does: as it came.
+  File downloaded(String name, String content) =>
+      File('${root.path}/mushaf/svg/hafs-kfqc/$name')
+        ..createSync(recursive: true)
+        ..writeAsStringSync(content);
 
-  Future<PackProgress> progress(MushafEdition edition) async =>
-      (await container.read(mushafPacksProvider.future))[edition.style]!;
+  Future<PackProgress> progress() => container.read(mushafPackProvider.future);
+
+  test('counts the sound files on the device, two per page', () async {
+    downloaded('001.svg', fixtureSvg);
+    downloaded('001.json', fixtureJson);
+    downloaded('002.svg', fixtureSvg);
+    final state = await progress();
+    expect(state.total, 6);
+    expect(state.done, 3);
+    expect(state.partial, isTrue);
+    expect(state.bytes, greaterThan(0));
+  });
 
   test(
-    'counts the files on disk; an edition with two themes needs both',
+    'a file that fails its checksum does not count and is removed',
     () async {
-      file(tajweed.imagePath(1, dark: false), _png);
-      file(tajweed.imagePath(1, dark: true), _png);
-      file(tajweed.imagePath(2, dark: false), _webp);
-      final packs = await container.read(mushafPacksProvider.future);
-      expect(packs[MushafStyle.tajweed]!.total, 1208);
-      expect(packs[MushafStyle.tajweed]!.done, 3);
-      expect(packs[MushafStyle.madinah]!.total, 604);
-      expect(packs[MushafStyle.madinah]!.done, 0);
-      expect(packs[MushafStyle.tajweed]!.partial, isTrue);
+      final bad = downloaded('001.svg', '<html>503</html>');
+      expect((await progress()).done, 0);
+      expect(bad.existsSync(), isFalse);
     },
   );
 
-  test('a broken file does not count', () async {
-    file(tajweed.imagePath(1, dark: false), '<html>503</html>'.codeUnits);
-    expect((await progress(tajweed)).done, 0);
-  });
-
   test('start downloads only what is missing, as one notified group', () async {
-    file(tajweed.imagePath(1, dark: false), _png);
-    await container.read(mushafPacksProvider.future);
-    await container.read(mushafPacksProvider.notifier).start(tajweed, _text);
+    downloaded('001.svg', fixtureSvg);
+    await progress();
+    await container.read(mushafPackProvider.notifier).start(_text);
     expect(downloader.notificationRequests, 1);
-    final files = downloader.enqueued['mushaf-tajweed']!;
-    expect(files, hasLength(1207));
-    expect(
-      files.map((f) => f.path),
-      isNot(contains('images/tajweed/light/p1.png')),
-    );
-    expect(downloader.texts['mushaf-tajweed'], _text);
-    final state = await progress(tajweed);
+    final files = downloader.enqueued[MushafPack.group]!;
+    expect(files, hasLength(5));
+    expect(files.map((f) => f.path), isNot(contains('svg/hafs-kfqc/001.svg')));
+    expect(downloader.texts[MushafPack.group], _text);
+    final state = await progress();
     expect((state.active, state.done), (true, 1));
   });
 
   test(
-    'a finished file is counted, and the last one ends the download',
+    'a finished file is checked, counted, and the last ends the download',
     () async {
-      await container.read(mushafPacksProvider.future);
-      final notifier = container.read(mushafPacksProvider.notifier);
-      await notifier.start(MushafEdition.madinahHd, _text);
-      final first = MushafEdition.madinahHd.packFiles.first;
-      file(first.path, _png);
+      await progress();
+      await container.read(mushafPackProvider.notifier).start(_text);
+      downloaded('001.svg', fixtureSvg);
       downloader
-        ..running['mushaf-madinahHd'] = 1
-        ..finish('mushaf-madinahHd', first.path);
+        ..running[MushafPack.group] = 1
+        ..finish(MushafPack.group, 'svg/hafs-kfqc/001.svg');
       await Future<void>.delayed(const Duration(milliseconds: 250));
-      final state = await progress(MushafEdition.madinahHd);
+      final state = await progress();
       expect(state.done, 1);
       expect(state.active, isFalse);
     },
   );
 
   test('an error page that came back as a file is dropped', () async {
-    await container.read(mushafPacksProvider.future);
-    final page = MushafEdition.madinahHd.packFiles.first;
-    final bad = file(page.path, '<html>503</html>'.codeUnits);
-    downloader.finish('mushaf-madinahHd', page.path);
+    await progress();
+    final bad = downloaded('001.svg', '<html>503</html>');
+    downloader.finish(MushafPack.group, 'svg/hafs-kfqc/001.svg');
     await Future<void>.delayed(const Duration(milliseconds: 250));
-    expect((await progress(MushafEdition.madinahHd)).done, 0);
+    expect((await progress()).done, 0);
     expect(bad.existsSync(), isFalse);
   });
 
+  test('files of another download group are ignored', () async {
+    final before = await progress();
+    downloader.finish('something-else', 'x');
+    await Future<void>.delayed(const Duration(milliseconds: 100));
+    expect(await progress(), before);
+  });
+
   test('cancel keeps the files; delete removes them', () async {
-    file(tajweed.imagePath(7, dark: false), _png);
-    await container.read(mushafPacksProvider.future);
-    final notifier = container.read(mushafPacksProvider.notifier);
-    await notifier.cancel(tajweed);
-    expect(downloader.cancelled, ['mushaf-tajweed']);
-    expect((await progress(tajweed)).done, 1);
-    await notifier.delete(tajweed);
-    expect((await progress(tajweed)).done, 0);
+    downloaded('002.json', fixtureJson);
+    await progress();
+    final notifier = container.read(mushafPackProvider.notifier);
+    await notifier.cancel();
+    expect(downloader.cancelled, [MushafPack.group]);
+    expect((await progress()).done, 1);
+    await notifier.delete();
+    expect((await progress()).done, 0);
     expect(
-      Directory('${root.path}/mushaf/images/tajweed').existsSync(),
+      Directory('${root.path}/mushaf/svg/hafs-kfqc').existsSync(),
       isFalse,
     );
   });
 
-  test('image paths keep the type of the source', () {
-    expect(tajweed.imagePath(5, dark: true), 'images/tajweed/dark/p5.png');
-    expect(
-      MushafEdition.madinah.imagePath(5, dark: true),
-      'images/madinah/light/p5.png',
-    );
+  test('coming back to the app collects what finished meanwhile', () async {
+    await progress();
+    downloaded('003.svg', fixtureSvg);
+    await container.read(mushafPackProvider.notifier).refresh();
+    expect(downloader.resumes, 1);
+    expect((await progress()).done, 1);
   });
 }

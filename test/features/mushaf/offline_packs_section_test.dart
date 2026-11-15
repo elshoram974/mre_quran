@@ -1,17 +1,16 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mre_quran/features/mushaf/application/mushaf_packs.dart';
-import 'package:mre_quran/features/mushaf/application/page_image_providers.dart';
-import 'package:mre_quran/features/mushaf/data/page_asset_store.dart';
-import 'package:mre_quran/features/mushaf/domain/mushaf_edition.dart';
+import 'package:mre_quran/features/mushaf/application/svg_page_providers.dart';
+import 'package:mre_quran/features/mushaf/data/svg_page_store.dart';
 import 'package:mre_quran/features/mushaf/presentation/offline_packs_section.dart';
 import 'package:mre_quran/l10n/generated/app_localizations.dart';
 
 import '../../helpers/fake_pack_downloader.dart';
+import '../../helpers/svg_page_fixtures.dart';
 
 void main() {
   late Directory root;
@@ -34,7 +33,7 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  /// Waits until the editions have loaded.
+  /// Waits until the pack's state has loaded.
   Future<void> settle(WidgetTester tester) => until(
     tester,
     () =>
@@ -57,10 +56,12 @@ void main() {
       ProviderScope(
         overrides: [
           packDownloaderProvider.overrideWithValue(downloader),
-          pageAssetStoreProvider.overrideWithValue(
-            PageAssetStore(
+          svgManifestProvider.overrideWith((ref) async => fixtureManifest()),
+          svgPageStoreProvider.overrideWithValue(
+            SvgPageStore(
               root: () async => root,
-              fetch: (_) async => Uint8List(0),
+              manifest: () async => fixtureManifest(),
+              fetch: (_) async => throw StateError('no network in this test'),
             ),
           ),
         ],
@@ -83,54 +84,55 @@ void main() {
     await settle(tester);
   }
 
-  testWidgets('lists every edition with its size, in Arabic', (tester) async {
+  testWidgets('shows the printed Mushaf with its size, in Arabic', (
+    tester,
+  ) async {
     await pump(tester);
     expect(find.text('المصحف دون اتصال'), findsOneWidget);
-    expect(find.text('مصحف المدينة'), findsOneWidget);
-    expect(find.text('مصحف التجويد'), findsOneWidget);
-    expect(find.text('غير محمّل · نحو ٨٠ ميجابايت'), findsOneWidget);
-    expect(find.text('تحميل'), findsNWidgets(3));
+    expect(find.text('المصحف المطبوع'), findsOneWidget);
+    expect(find.text('غير محمّل · نحو ٣ ميجابايت'), findsOneWidget);
+    expect(find.text('تحميل'), findsOneWidget);
   });
 
   testWidgets('download asks first, then starts one notified download', (
     tester,
   ) async {
     await pump(tester);
-    await tester.tap(find.text('تحميل').at(1));
+    await tester.tap(find.text('تحميل'));
     await tester.pumpAndSettle();
-    expect(find.text('تحميل مصحف التجويد؟'), findsOneWidget);
+    expect(find.text('تحميل المصحف المطبوع؟'), findsOneWidget);
     expect(downloader.enqueued, isEmpty, reason: 'nothing before the answer');
     await tester.tap(find.widgetWithText(FilledButton, 'تحميل').last);
     await until(tester, () => downloader.enqueued.isNotEmpty);
-    expect(downloader.enqueued['mushaf-tajweed'], hasLength(1208));
+    expect(downloader.enqueued[MushafPack.group], hasLength(6));
     expect(
-      downloader.texts['mushaf-tajweed']!.runningTitle,
-      'جارٍ تحميل مصحف التجويد',
+      downloader.texts[MushafPack.group]!.runningTitle,
+      'جارٍ تحميل المصحف المطبوع',
     );
     expect(find.text('جارٍ التحميل · ٠٪'), findsOneWidget);
     expect(find.byType(LinearProgressIndicator), findsOneWidget);
     await tester.tap(find.text('إلغاء'));
     await until(tester, () => downloader.cancelled.isNotEmpty);
-    expect(downloader.cancelled, ['mushaf-tajweed']);
+    expect(downloader.cancelled, [MushafPack.group]);
   });
 
-  Uint8List pngBytes() => Uint8List.fromList([
-    0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0, 0, 0, 0, //
-  ]);
-
-  void putFiles(MushafEdition edition, {int? count}) {
-    final files = edition.packFiles;
-    for (final f in count == null ? files : files.take(count)) {
-      File('${root.path}/mushaf/${f.path}')
+  /// Puts the files of the first [pages] pages on the device, as the system
+  /// downloader writes them.
+  void putFiles({int pages = 3}) {
+    for (var page = 1; page <= pages; page++) {
+      final name = page.toString().padLeft(3, '0');
+      File('${root.path}/mushaf/svg/hafs-kfqc/$name.svg')
         ..createSync(recursive: true)
-        ..writeAsBytesSync(pngBytes());
+        ..writeAsStringSync(fixtureSvg);
+      File('${root.path}/mushaf/svg/hafs-kfqc/$name.json')
+          .writeAsStringSync(fixtureJson);
     }
   }
 
-  testWidgets('a finished edition shows ready and its size on the device', (
+  testWidgets('a finished download shows ready and its size on the device', (
     tester,
   ) async {
-    putFiles(MushafEdition.madinah);
+    putFiles();
     await pump(tester);
     expect(find.textContaining('جاهز دون اتصال'), findsOneWidget);
     expect(find.textContaining('على الجهاز'), findsOneWidget);
@@ -140,12 +142,12 @@ void main() {
   testWidgets('deleting is strict: warning, ticked box, then it goes', (
     tester,
   ) async {
-    putFiles(MushafEdition.madinah);
+    putFiles();
     await pump(tester);
     await tester.tap(find.text('حذف'));
     await tester.pumpAndSettle();
-    expect(find.text('حذف مصحف المدينة من هذا الجهاز؟'), findsOneWidget);
-    expect(find.textContaining('٦٠٤ ملف صورة'), findsOneWidget);
+    expect(find.text('حذف المصحف المطبوع من هذا الجهاز؟'), findsOneWidget);
+    expect(find.textContaining('٦ ملف'), findsOneWidget);
     expect(find.textContaining('نهائيًا'), findsOneWidget);
     final delete = find.widgetWithText(FilledButton, 'حذف نهائي');
     // Not before the box is ticked.
@@ -161,31 +163,28 @@ void main() {
       tester,
       () => find.textContaining('جاهز دون اتصال').evaluate().isEmpty,
     );
-    expect(find.text('تحميل'), findsNWidgets(3));
+    expect(find.text('تحميل'), findsOneWidget);
     expect(
-      Directory('${root.path}/mushaf/images/madinah').existsSync(),
+      Directory('${root.path}/mushaf/svg/hafs-kfqc').existsSync(),
       isFalse,
     );
   });
 
   testWidgets('cancelling the warning deletes nothing', (tester) async {
-    putFiles(MushafEdition.madinah);
+    putFiles();
     await pump(tester);
     await tester.tap(find.text('حذف'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('إلغاء'));
     await tester.pumpAndSettle();
     expect(find.textContaining('جاهز دون اتصال'), findsOneWidget);
-    expect(
-      Directory('${root.path}/mushaf/images/madinah').existsSync(),
-      isTrue,
-    );
+    expect(Directory('${root.path}/mushaf/svg/hafs-kfqc').existsSync(), isTrue);
   });
 
   testWidgets('a partial download can be deleted to free space too', (
     tester,
   ) async {
-    putFiles(MushafEdition.madinah, count: 100);
+    putFiles(pages: 1);
     await pump(tester);
     expect(find.byTooltip('حذف'), findsOneWidget);
     expect(find.text('متابعة'), findsOneWidget);
@@ -199,7 +198,7 @@ void main() {
     tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
     tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
     tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
-    putFiles(MushafEdition.madinah);
+    putFiles();
     tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
     tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
     tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);

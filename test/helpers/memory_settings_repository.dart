@@ -2,12 +2,8 @@ import 'package:mre_quran/features/settings/data/settings_repository.dart';
 import 'package:mre_quran/features/settings/domain/app_settings.dart';
 
 class MemorySettingsRepository implements SettingsRepository {
-  /// Tests read the typeset text and have already seen the editions intro,
-  /// unless they say otherwise.
-  AppSettings settings = const AppSettings(
-    readerMode: ReaderMode.text,
-    editionsIntroSeen: true,
-  );
+  /// Tests read the typeset text unless they say otherwise.
+  AppSettings settings = const AppSettings(readerMode: ReaderMode.text);
   bool fail = false;
 
   @override

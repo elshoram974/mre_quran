@@ -144,7 +144,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get creditsImages =>
-      'وضع الصور: غير مفعّل. لم يتم تنزيل أو تضمين أي صورة صفحة.';
+      'صفحات المصحف المطبوع: رسومها من النسخة الرقمية لمصحف المدينة النبوية (حفص، 1441هـ) لمجمع الملك فهد لطباعة المصحف الشريف، https://qurancomplex.gov.sa، وجميع حقوقها محفوظة للمجمع. الصيغة المتجهة ومواضع الآيات: مشروع Quran.ws ‏(quran-svg)، رخصة CC BY 4.0، https://quran.ws. تُنزَّل الصفحات عند الحاجة، ويُتحقق من كل ملف بالمجموع الاختباري قبل عرضه.';
 
   @override
   String get done => 'تم';
@@ -1014,23 +1014,11 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get mushafStyle => 'شكل المصحف';
-
-  @override
-  String get mushafStyleMadinah => 'مصحف المدينة';
-
-  @override
-  String get mushafStyleTajweed => 'مصحف التجويد';
-
-  @override
-  String get mushafStyleMadinahHd => 'مصحف المدينة عالي الدقة';
-
-  @override
   String get offlineMushaf => 'المصحف دون اتصال';
 
   @override
   String get offlineMushafIntro =>
-      'نزّل نسخة أو أكثر لتقرأ بلا إنترنت، ثم اختر النسخة التي تريدها من الأعلى. يستمر التحميل حتى لو أغلقت التطبيق.';
+      'نزّل صفحات المصحف المطبوع لتقرأه بلا إنترنت. يستمر التحميل حتى لو أغلقت التطبيق، ويُتحقق من كل صفحة قبل عرضها.';
 
   @override
   String packNotDownloaded(String size) {
@@ -1132,11 +1120,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get surahAyahsCaption => 'آيات';
 
   @override
-  String surahOrderLabel(String number) {
-    return 'ترتيبها $number';
-  }
-
-  @override
   String get packStorageInfo =>
       'تُحفظ المصاحف المحمّلة في مساحة التطبيق الخاصة وليست في الذاكرة المؤقتة، فلا يمسحها تنظيف الذاكرة المؤقتة. ولا تدخل في النسخ الاحتياطي، وتُزال عند حذفها من هنا أو عند حذف التطبيق.';
 
@@ -1152,7 +1135,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String packDeleteWarnBody(String pages, String size) {
-    return 'سيُحذف $pages ملف صورة ($size ميجابايت) نهائيًا. لن تعمل هذه النسخة دون إنترنت حتى تحمّلها من جديد.';
+    return 'سيُحذف $pages ملف ($size ميجابايت) نهائيًا. لن يعمل المصحف المطبوع دون إنترنت حتى تحمّله من جديد.';
   }
 
   @override
@@ -1162,16 +1145,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get packDeletePermanently => 'حذف نهائي';
 
   @override
-  String get editionsIntroTitle => 'مصاحف متنوعة بين يديك';
-
-  @override
-  String get editionsIntroBody =>
-      'أنت تقرأ الآن مصحف المدينة المعتاد. وتوجد نسخ أخرى، مثل مصحف التجويد الملوّن. اختر ما يناسبك، ونزّل ما تشاء منها لتقرأ دون إنترنت. ويمكنك تغيير ذلك لاحقًا من الإعدادات.';
-
-  @override
-  String get editionsIntroDone => 'متابعة القراءة';
-
-  @override
   String get printedFallbackNotice =>
-      'صورة الصفحة غير متاحة الآن، فيُعرض النص.';
+      'صفحة المصحف المطبوع غير متاحة الآن، فيُعرض النص.';
 }

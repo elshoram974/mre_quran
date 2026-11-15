@@ -359,7 +359,7 @@ abstract class AppLocalizations {
   /// No description provided for @creditsImages.
   ///
   /// In en, this message translates to:
-  /// **'Images mode: not enabled. No page image has been downloaded or bundled.'**
+  /// **'Printed Mushaf pages: artwork from the digital Madinah Mushaf (Hafs, 1441 AH) of the King Fahd Glorious Quran Printing Complex, https://qurancomplex.gov.sa; all rights remain with the Complex. Vector pages and ayah positions: the Quran.ws project (quran-svg), CC BY 4.0, https://quran.ws. Pages are downloaded when needed, and every file is verified by checksum before it is shown.'**
   String get creditsImages;
 
   /// No description provided for @done.
@@ -1856,30 +1856,6 @@ abstract class AppLocalizations {
   /// **'Page {number} of the printed Mushaf'**
   String printedPageLabel(String number);
 
-  /// No description provided for @mushafStyle.
-  ///
-  /// In en, this message translates to:
-  /// **'Mushaf style'**
-  String get mushafStyle;
-
-  /// No description provided for @mushafStyleMadinah.
-  ///
-  /// In en, this message translates to:
-  /// **'Madinah Mushaf'**
-  String get mushafStyleMadinah;
-
-  /// No description provided for @mushafStyleTajweed.
-  ///
-  /// In en, this message translates to:
-  /// **'Tajweed Mushaf'**
-  String get mushafStyleTajweed;
-
-  /// No description provided for @mushafStyleMadinahHd.
-  ///
-  /// In en, this message translates to:
-  /// **'Madinah Mushaf, high resolution'**
-  String get mushafStyleMadinahHd;
-
   /// No description provided for @offlineMushaf.
   ///
   /// In en, this message translates to:
@@ -1889,7 +1865,7 @@ abstract class AppLocalizations {
   /// No description provided for @offlineMushafIntro.
   ///
   /// In en, this message translates to:
-  /// **'Download one or more editions to read without internet, then pick the one you want above. Downloads keep going when you close the app.'**
+  /// **'Download the printed Mushaf pages to read without internet. The download carries on after you close the app, and every page is verified before it is shown.'**
   String get offlineMushafIntro;
 
   /// No description provided for @packNotDownloaded.
@@ -2048,12 +2024,6 @@ abstract class AppLocalizations {
   /// **'Ayahs'**
   String get surahAyahsCaption;
 
-  /// No description provided for @surahOrderLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Order {number}'**
-  String surahOrderLabel(String number);
-
   /// No description provided for @packStorageInfo.
   ///
   /// In en, this message translates to:
@@ -2075,7 +2045,7 @@ abstract class AppLocalizations {
   /// No description provided for @packDeleteWarnBody.
   ///
   /// In en, this message translates to:
-  /// **'{pages} page images ({size} MB) will be deleted permanently. This edition will not work without internet until you download it again.'**
+  /// **'{pages} files ({size} MB) will be deleted for good. The printed Mushaf will not work offline until you download it again.'**
   String packDeleteWarnBody(String pages, String size);
 
   /// No description provided for @packDeleteAck.
@@ -2090,28 +2060,10 @@ abstract class AppLocalizations {
   /// **'Delete permanently'**
   String get packDeletePermanently;
 
-  /// No description provided for @editionsIntroTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'More Mushafs to choose from'**
-  String get editionsIntroTitle;
-
-  /// No description provided for @editionsIntroBody.
-  ///
-  /// In en, this message translates to:
-  /// **'You are reading the standard Madinah Mushaf. Other editions are available, such as the tajweed-coloured Mushaf. Pick the one you like, and download any of them to read without internet. You can change this later in Settings.'**
-  String get editionsIntroBody;
-
-  /// No description provided for @editionsIntroDone.
-  ///
-  /// In en, this message translates to:
-  /// **'Continue reading'**
-  String get editionsIntroDone;
-
   /// No description provided for @printedFallbackNotice.
   ///
   /// In en, this message translates to:
-  /// **'The page image isn\'t available, so the text is shown.'**
+  /// **'The printed page is not available right now, so the text is shown.'**
   String get printedFallbackNotice;
 }
 

@@ -15,7 +15,7 @@ import '../application/page_prefetcher.dart';
 import 'ayah_actions_sheet.dart';
 import 'flip/book_flip.dart';
 import 'mushaf_page_view.dart';
-import 'printed_page_view.dart';
+import 'svg_page_view.dart';
 
 /// Window width from which two pages are shown side by side.
 const double mushafSpreadMinWidth = 700;
@@ -89,18 +89,17 @@ class _PagerBody extends ConsumerStatefulWidget {
 
 class _PagerBodyState extends ConsumerState<_PagerBody> {
   AyahRef? _selected;
-  ({MushafStyle style, int page, bool dark})? _prefetched;
+  int? _prefetched;
 
   /// Starts downloading the printed pages around [page] once per change.
-  void _prefetch(MushafStyle style, int page, bool dark) {
-    final key = (style: style, page: page, dark: dark);
-    if (key == _prefetched) return;
-    _prefetched = key;
+  void _prefetch(int page) {
+    if (page == _prefetched) return;
+    _prefetched = page;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       ref
           .read(pagePrefetcherProvider)
-          .around(style: style, page: page, dark: dark, pageCount: _pageCount);
+          .around(page: page, pageCount: _pageCount);
     });
   }
 
@@ -140,11 +139,6 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
     final mode = ref.watch(
       settingsProvider.select((s) => s.value?.readerMode ?? ReaderMode.printed),
     );
-    final style = ref.watch(
-      settingsProvider.select(
-        (s) => s.value?.mushafStyle ?? MushafStyle.madinah,
-      ),
-    );
     final layout = ref.watch(
       settingsProvider.select(
         (s) => s.value?.readerPageLayout ?? ReaderPageLayout.auto,
@@ -154,7 +148,7 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
     // never disagree; the rail or bar beside the pages does not change it.
     final spread = resolveMushafSpread(layout, MediaQuery.sizeOf(context));
     if (mode == ReaderMode.printed) {
-      _prefetch(style, page, Theme.of(context).brightness == Brightness.dark);
+      _prefetch(page);
     }
     final bookmarked = ref.watch(bookmarkedRefsProvider);
     final highlighted = ref.watch(highlightedAyahProvider);
@@ -187,17 +181,17 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
             onTap: _onTap,
             spread: spread,
           ),
-          ReaderMode.printed => PrintedPageView(
+          ReaderMode.printed => SvgPageView(
             metadata: widget.text.metadata,
-            style: style,
             page: number,
+            digits: digits,
             fillWidth: !spread,
             spread: spread,
             bookmarked: bookmarked,
             selected: _selected ?? highlighted,
             onAyahLongPress: _showActions,
             onTap: _onTap,
-            // Without its image the page still reads, as text.
+            // Without its artwork the page still reads, as text.
             fallbackBuilder: (_) => MushafPageView(
               text: widget.text,
               page: number,

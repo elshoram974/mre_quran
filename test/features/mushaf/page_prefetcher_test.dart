@@ -4,10 +4,9 @@ import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mre_quran/features/mushaf/application/page_prefetcher.dart';
-import 'package:mre_quran/features/mushaf/data/page_asset_store.dart';
-import 'package:mre_quran/features/settings/domain/app_settings.dart';
+import 'package:mre_quran/features/mushaf/data/svg_page_store.dart';
 
-const _png = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0, 0, 0, 0];
+import '../../helpers/svg_page_fixtures.dart';
 
 void main() {
   late Directory root;
@@ -15,33 +14,44 @@ void main() {
   tearDown(() => root.deleteSync(recursive: true));
 
   PagePrefetcher prefetcher(Future<Uint8List> Function(Uri) fetch) =>
-      PagePrefetcher(PageAssetStore(root: () async => root, fetch: fetch));
+      PagePrefetcher(
+        SvgPageStore(
+          root: () async => root,
+          manifest: () async => fixtureManifest(pages: 604),
+          fetch: fetch,
+        ),
+      );
 
   Future<void> idle() => Future<void>.delayed(const Duration(milliseconds: 80));
+
+  /// The page a request is for, when it asks for the page's artwork.
+  int? artworkPage(Uri uri) {
+    final match = RegExp(r'(\d+)\.svg$').firstMatch(uri.path);
+    return match == null ? null : int.parse(match[1]!);
+  }
+
+  Uint8List answer(Uri uri) =>
+      bytesOf(uri.path.endsWith('.svg') ? fixtureSvg : fixtureJson);
 
   test('fetches several pages at once, nearest first', () async {
     final started = <int>[];
     final gates = <int, Completer<Uint8List>>{};
     final p = prefetcher((uri) {
-      final page = int.parse(RegExp(r'p(\d+)\.png').firstMatch('$uri')![1]!);
+      final page = artworkPage(uri);
+      if (page == null) return Future.value(answer(uri));
       started.add(page);
       return (gates[page] = Completer<Uint8List>()).future;
     });
-    p.around(
-      style: MushafStyle.madinahHd,
-      page: 10,
-      dark: false,
-      pageCount: 604,
-    );
+    p.around(page: 10, pageCount: 604);
     await idle();
     // Three at a time, the nearest ahead of the page first; nothing waits for
     // the first to finish.
     expect(started, [11, 12, 13]);
-    gates[11]!.complete(Uint8List.fromList(_png));
+    gates[11]!.complete(bytesOf(fixtureSvg));
     await idle();
     expect(started, [11, 12, 13, 14]);
     for (final gate in gates.values) {
-      if (!gate.isCompleted) gate.complete(Uint8List.fromList(_png));
+      if (!gate.isCompleted) gate.complete(bytesOf(fixtureSvg));
     }
     await idle();
   });
@@ -51,18 +61,16 @@ void main() {
     () async {
       final started = <int>[];
       final p = prefetcher((uri) async {
-        final page = int.parse(RegExp(r'p(\d+)\.png').firstMatch('$uri')![1]!);
-        started.add(page);
+        final page = artworkPage(uri);
+        if (page != null) started.add(page);
         if (page == 12) throw PageDownloadException(uri, 'HTTP 404');
-        return Uint8List.fromList(_png);
+        return answer(uri);
       });
-      p.around(
-        style: MushafStyle.madinahHd,
-        page: 10,
-        dark: false,
-        pageCount: 604,
-      );
-      await idle();
+      p.around(page: 10, pageCount: 604);
+      // Each page is checked and compressed as it lands; wait for them all.
+      for (var i = 0; i < 50 && started.length < 10; i++) {
+        await idle();
+      }
       expect(started, containsAll([11, 12, 13, 14, 15, 16, 17, 18, 9, 8]));
 
       started.clear();
@@ -70,12 +78,7 @@ void main() {
         started.add(1);
         throw PageDownloadException(uri, 'offline');
       });
-      offline.around(
-        style: MushafStyle.madinahHd,
-        page: 300,
-        dark: false,
-        pageCount: 604,
-      );
+      offline.around(page: 300, pageCount: 604);
       await idle();
       expect(started.length, lessThan(10), reason: 'gave up, not 10 tries');
     },
@@ -84,24 +87,28 @@ void main() {
   test('a newer request replaces an older one', () async {
     final started = <int>[];
     final p = prefetcher((uri) async {
-      started.add(int.parse(RegExp(r'p(\d+)\.png').firstMatch('$uri')![1]!));
+      final page = artworkPage(uri);
+      if (page != null) started.add(page);
       await Future<void>.delayed(const Duration(milliseconds: 20));
-      return Uint8List.fromList(_png);
+      return answer(uri);
     });
-    p.around(
-      style: MushafStyle.madinahHd,
-      page: 10,
-      dark: false,
-      pageCount: 604,
-    );
-    p.around(
-      style: MushafStyle.madinahHd,
-      page: 100,
-      dark: false,
-      pageCount: 604,
-    );
+    p
+      ..around(page: 10, pageCount: 604)
+      ..around(page: 100, pageCount: 604);
     await Future<void>.delayed(const Duration(milliseconds: 400));
     expect(started.where((page) => page > 90), isNotEmpty);
     expect(started.where((page) => page > 14 && page < 90), isEmpty);
+  });
+
+  test('stays inside the Mushaf at its first and last pages', () async {
+    final started = <int>[];
+    final p = prefetcher((uri) async {
+      final page = artworkPage(uri);
+      if (page != null) started.add(page);
+      return answer(uri);
+    });
+    p.around(page: 604, pageCount: 604);
+    await idle();
+    expect(started, unorderedEquals([603, 602]));
   });
 }

@@ -1,16 +1,14 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../settings/domain/app_settings.dart';
 import '../data/pack_downloader.dart';
-import '../data/page_asset_store.dart';
-import '../domain/mushaf_edition.dart';
-import 'page_image_providers.dart';
+import '../data/svg_page_store.dart';
+import 'svg_page_providers.dart';
 
-/// How much of an edition is on the device for reading without a connection.
+/// How much of the printed Mushaf is on the device for reading without a
+/// connection.
 @immutable
 class PackProgress {
   /// Creates the progress: [done] of [total] files, [active] while a
@@ -28,7 +26,7 @@ class PackProgress {
   /// Files on the device.
   final int done;
 
-  /// Files the edition needs.
+  /// Files the whole Mushaf needs.
   final int total;
 
   /// Whether a download is running.
@@ -67,30 +65,23 @@ final packDownloaderProvider = Provider<PackDownloader>(
   (ref) => BackgroundPackDownloader(),
 );
 
-/// The state of every edition's offline pack.
-final mushafPacksProvider =
-    AsyncNotifierProvider<MushafPacks, Map<MushafStyle, PackProgress>>(
-      MushafPacks.new,
-    );
+/// The state of the printed Mushaf's offline pack.
+final mushafPackProvider = AsyncNotifierProvider<MushafPack, PackProgress>(
+  MushafPack.new,
+);
 
-/// Downloads whole Mushaf editions so they work offline, keeps count of what
-/// is on the device, and deletes them.
+/// Downloads the whole printed Mushaf so it works offline, keeps count of
+/// what is on the device, and deletes it.
 ///
 /// The files go where the page reader looks for them, so a downloaded page
 /// opens at once. The system, not the app, keeps downloading when the app is
 /// closed; the counts are read back from disk the next time the app opens.
-class MushafPacks extends AsyncNotifier<Map<MushafStyle, PackProgress>> {
-  PageAssetStore get _store => ref.read(pageAssetStoreProvider);
+class MushafPack extends AsyncNotifier<PackProgress> {
+  SvgPageStore get _store => ref.read(svgPageStoreProvider);
   PackDownloader get _downloader => ref.read(packDownloaderProvider);
 
-  static String _group(MushafEdition edition) => 'mushaf-${edition.style.name}';
-
-  MushafEdition? _edition(String group) {
-    for (final edition in MushafEdition.all) {
-      if (_group(edition) == group) return edition;
-    }
-    return null;
-  }
+  /// Name of the download group.
+  static const String group = 'mushaf-svg';
 
   /// How long finished files are gathered before the counts are read again.
   /// Hundreds of files end within seconds; reading the disk for each one
@@ -98,73 +89,51 @@ class MushafPacks extends AsyncNotifier<Map<MushafStyle, PackProgress>> {
   @visibleForTesting
   static Duration settleDelay = const Duration(milliseconds: 1200);
 
-  final Set<MushafEdition> _dirty = {};
   Timer? _timer;
+  bool _dirty = false;
 
   @override
-  Future<Map<MushafStyle, PackProgress>> build() async {
+  Future<PackProgress> build() async {
     final sub = _downloader.results.listen(_onResult);
     ref.onDispose(() {
       sub.cancel();
       _timer?.cancel();
     });
-    return {
-      for (final edition in MushafEdition.all)
-        edition.style: await _read(edition),
-    };
+    return _read();
   }
 
-  Future<PackProgress> _read(MushafEdition edition) async {
-    final total = edition.packFiles.length;
-    final missing = (await _store.missingImages(edition)).length;
+  Future<PackProgress> _read() async {
+    // Files the system downloader wrote are checked against their checksums
+    // and compressed here; one that fails is deleted and counted as missing.
+    await _store.ingest();
+    final total = await _store.packFileCount();
+    final missing = (await _store.missing()).length;
     return PackProgress(
       done: total - missing,
       total: total,
-      active: await _downloader.pending(_group(edition)) > 0,
-      bytes: await _store.bytesOnDevice(edition),
+      active: await _downloader.pending(group) > 0,
+      bytes: await _store.bytesOnDevice(),
     );
   }
 
-  void _set(MushafStyle style, PackProgress progress) {
-    final current = state.value;
-    if (current == null) return;
-    state = AsyncData({...current, style: progress});
+  void _set(PackProgress progress) {
+    if (state.value == null) return;
+    state = AsyncData(progress);
   }
 
   /// A file ended: note it, and read the counts once things have settled.
   void _onResult(PackFileResult result) {
-    final edition = _edition(result.group);
-    if (edition == null) return;
-    _dirty.add(edition);
+    if (result.group != group) return;
+    _dirty = true;
     if (_timer?.isActive ?? false) return;
     _timer = Timer(settleDelay, _settle);
   }
 
   Future<void> _settle() async {
-    final editions = _dirty.toList();
-    _dirty.clear();
-    for (final edition in editions) {
-      var progress = await _read(edition);
-      if (!progress.active) {
-        // The download is over: clear out what came back broken, so the next
-        // attempt fetches it again, and count again.
-        await _dropBrokenFiles(edition);
-        progress = await _read(edition);
-      }
-      _set(edition.style, progress);
-    }
+    _dirty = false;
+    _set(await _read());
     // More may have ended while the disk was being read.
-    if (_dirty.isNotEmpty) _timer = Timer(settleDelay, _settle);
-  }
-
-  /// A CDN can answer 200 with an error page; drop such files so they are
-  /// fetched again, and never count them.
-  Future<void> _dropBrokenFiles(MushafEdition edition) async {
-    final base = (await _store.directory()).path;
-    for (final file in edition.packFiles) {
-      final f = File('$base/${file.path}');
-      if (await f.exists() && !await _store.isImageFile(f)) await f.delete();
-    }
+    if (_dirty) _timer = Timer(settleDelay, _settle);
   }
 
   /// Reads everything again and collects what finished while the app was
@@ -172,44 +141,39 @@ class MushafPacks extends AsyncNotifier<Map<MushafStyle, PackProgress>> {
   Future<void> refresh() async {
     if (state.value == null) return;
     await _downloader.resume();
-    for (final edition in MushafEdition.all) {
-      _set(edition.style, await _read(edition));
-    }
+    _set(await _read());
   }
 
-  /// Downloads what [edition] still lacks, with a notification described by
+  /// Downloads what is still missing, with a notification described by
   /// [text]. Safe to call again for a partial download: it carries on.
-  Future<void> start(MushafEdition edition, PackNotificationText text) async {
-    final current = state.value?[edition.style];
+  Future<void> start(PackNotificationText text) async {
+    final current = state.value;
     if (current == null || current.active) return;
-    _set(edition.style, current.copyWith(active: true));
+    _set(current.copyWith(active: true));
     try {
       await _downloader.requestNotifications();
-      if (edition.geometry == PageGeometrySource.glyphDatabase) {
-        await _store.ayahInfoDatabase();
-      }
-      final missing = await _store.missingImages(edition);
+      final missing = await _store.missing();
       if (missing.isEmpty) {
-        _set(edition.style, await _read(edition));
+        _set(await _read());
         return;
       }
-      await _downloader.enqueue(_group(edition), missing, text);
+      await _downloader.enqueue(group, missing, text);
     } on Object {
-      _set(edition.style, await _read(edition));
+      _set(await _read());
       rethrow;
     }
   }
 
-  /// Stops the download of [edition], keeping the files already fetched.
-  Future<void> cancel(MushafEdition edition) async {
-    await _downloader.cancel(_group(edition));
-    _set(edition.style, await _read(edition));
+  /// Stops the download, keeping the files already fetched.
+  Future<void> cancel() async {
+    await _downloader.cancel(group);
+    _set(await _read());
   }
 
-  /// Stops the download of [edition] and deletes its images.
-  Future<void> delete(MushafEdition edition) async {
-    await _downloader.cancel(_group(edition));
-    await _store.deleteImages(edition);
-    _set(edition.style, await _read(edition));
+  /// Stops the download and deletes the pages.
+  Future<void> delete() async {
+    await _downloader.cancel(group);
+    await _store.deleteAll();
+    _set(await _read());
   }
 }

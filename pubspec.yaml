@@ -39,12 +39,12 @@ dependencies:
   path_provider: ^2.1.6
   sensors_plus: ^7.1.1
   shared_preferences: ^2.5.3
-  sqlite3: ^3.7.0
   timezone: ^0.11.1
   vibration: ^3.2.1
   wakelock_plus: ^1.5.2
-  xml: ^7.1.0
+  xml: ^7.0.0
   google_maps_flutter_ios_sdk9: ^2.19.0
+  flutter_svg: ^2.4.0
 dev_dependencies:
   flutter_driver:
     sdk: flutter
@@ -67,6 +67,7 @@ flutter:
     - assets/quran/quran-simple-clean.txt
     - assets/quran/kfgqpc/tafseerMouaser_v03.txt
     - assets/quran/kfgqpc/read.me
+    - assets/quran/svg/hafs_kfqc_manifest.json
     - assets/fonts/amiri_quran/OFL.txt
     - assets/adhkar/manifest.json
     - assets/adhkar/morning_evening.ar.json

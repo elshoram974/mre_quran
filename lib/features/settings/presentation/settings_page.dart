@@ -17,7 +17,6 @@ import '../../../core/widgets/app_tile_card.dart';
 
 import '../../adhkar/presentation/reminders_sheet.dart';
 import '../application/settings_provider.dart';
-import '../../mushaf/presentation/mushaf_style_field.dart';
 import '../../mushaf/presentation/reader_page_layout_field.dart';
 import '../../mushaf/presentation/offline_packs_section.dart';
 import '../domain/app_settings.dart';
@@ -158,8 +157,6 @@ class _SettingsContent extends ConsumerWidget {
           onChanged: (value) =>
               notifier.save(settings.copyWith(readerMode: value)),
         ),
-        const SizedBox(height: _gap),
-        const MushafStyleField(),
         const SizedBox(height: _gap),
         const ReaderPageLayoutField(),
         const SizedBox(height: _gap),

@@ -2,19 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/l10n/l10n.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/app_card.dart';
+import '../../../core/widgets/app_icon_badge.dart';
 import '../../../core/widgets/app_section_header.dart';
 import '../../../core/widgets/app_sheet.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../settings/application/digits_provider.dart';
 import '../application/mushaf_packs.dart';
+import '../application/svg_page_providers.dart';
 import '../data/pack_downloader.dart';
-import '../domain/mushaf_edition.dart';
-import 'mushaf_style_field.dart';
 
-/// The settings section for reading the Mushaf without internet: every
-/// edition with what is on the device, and a button to download, stop, or
-/// delete it. Downloads run in the background and show a notification.
+/// The settings section for reading the printed Mushaf without internet:
+/// what is on the device, and a button to download, stop, or delete it. The
+/// download runs in the background and shows a notification.
 class OfflinePacksSection extends ConsumerStatefulWidget {
   /// Creates the section.
   const OfflinePacksSection({super.key});
@@ -32,7 +33,7 @@ class _OfflinePacksSectionState extends ConsumerState<OfflinePacksSection> {
     super.initState();
     _lifecycle = AppLifecycleListener(
       // Downloads go on while the app is away; collect what finished.
-      onResume: () => ref.read(mushafPacksProvider.notifier).refresh(),
+      onResume: () => ref.read(mushafPackProvider.notifier).refresh(),
     );
   }
 
@@ -63,40 +64,22 @@ class _OfflinePacksSectionState extends ConsumerState<OfflinePacksSection> {
             color: theme.colorScheme.onSurfaceVariant,
           ),
         ),
-        for (final edition in MushafEdition.all) ...[
-          const SizedBox(height: 12),
-          PackTile(edition: edition),
-        ],
+        const SizedBox(height: 12),
+        const PackTile(),
       ],
     );
   }
 }
 
-/// One edition with what is on the device and its download, stop, and delete
-/// buttons. With [onSelect], tapping it chooses the edition, and [selected]
-/// marks the one in use.
+/// The printed Mushaf with what is on the device and its download, stop,
+/// and delete buttons.
 class PackTile extends ConsumerWidget {
-  /// Creates the tile of [edition].
-  const PackTile({
-    super.key,
-    required this.edition,
-    this.selected = false,
-    this.onSelect,
-  });
-
-  /// The edition shown.
-  final MushafEdition edition;
-
-  /// Whether the edition is the one the reader shows.
-  final bool selected;
-
-  /// Called when the tile is tapped, to choose the edition; null when the tile
-  /// is not for choosing.
-  final VoidCallback? onSelect;
+  /// Creates the tile.
+  const PackTile({super.key});
 
   /// Words of the download's notification.
   PackNotificationText _text(AppLocalizations l10n) {
-    final name = mushafStyleLabel(l10n, edition.style);
+    final name = l10n.readerModePrinted;
     return PackNotificationText(
       runningTitle: l10n.packNotifyRunningTitle(name),
       // The downloader fills in the percentage.
@@ -112,18 +95,21 @@ class PackTile extends ConsumerWidget {
     final l10n = context.l10n;
     final digits = ref.read(digitsFormatterProvider);
     final messenger = ScaffoldMessenger.maybeOf(context);
-    final name = mushafStyleLabel(l10n, edition.style);
     final text = _text(l10n);
     final failed = l10n.packStartError;
+    final megabytes = _mb(
+      (await ref.read(svgManifestProvider.future)).packedBytes,
+    );
+    if (!context.mounted) return;
     final confirmed = await _confirm(
       context,
-      title: l10n.packDownloadTitle(name),
-      body: l10n.packDownloadBody(digits(_megabytes)),
+      title: l10n.packDownloadTitle(l10n.readerModePrinted),
+      body: l10n.packDownloadBody(digits(megabytes)),
       action: l10n.packDownload,
     );
     if (confirmed != true) return;
     try {
-      await ref.read(mushafPacksProvider.notifier).start(edition, text);
+      await ref.read(mushafPackProvider.notifier).start(text);
     } on Object {
       messenger?.showSnackBar(SnackBar(content: Text(failed)));
     }
@@ -132,23 +118,21 @@ class PackTile extends ConsumerWidget {
   Future<void> _delete(BuildContext context, WidgetRef ref) async {
     final l10n = context.l10n;
     final digits = ref.read(digitsFormatterProvider);
-    final notifier = ref.read(mushafPacksProvider.notifier);
-    final progress = ref.read(mushafPacksProvider).value?[edition.style];
+    final notifier = ref.read(mushafPackProvider.notifier);
+    final progress = ref.read(mushafPackProvider).value;
     if (progress == null) return;
-    final megabytes = (progress.bytes / (1024 * 1024)).ceil();
+    final megabytes = _mb(progress.bytes);
     final confirmed = await AppSheet.show<bool>(
       context: context,
       builder: (sheet) => _DeleteWarning(
-        title: l10n.packDeleteWarnTitle(mushafStyleLabel(l10n, edition.style)),
+        title: l10n.packDeleteWarnTitle(l10n.readerModePrinted),
         body: l10n.packDeleteWarnBody(digits(progress.done), digits(megabytes)),
       ),
     );
-    if (confirmed == true) await notifier.delete(edition);
+    if (confirmed == true) await notifier.delete();
   }
 
   static int _mb(int bytes) => (bytes / (1024 * 1024)).ceil();
-
-  int get _megabytes => (edition.approxBytes / (1024 * 1024)).round();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -156,9 +140,8 @@ class PackTile extends ConsumerWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final digits = ref.watch(digitsFormatterProvider);
-    final progress = ref.watch(
-      mushafPacksProvider.select((packs) => packs.value?[edition.style]),
-    );
+    final progress = ref.watch(mushafPackProvider).value;
+    final packed = ref.watch(svgManifestProvider).value?.packedBytes ?? 0;
     final percent = digits(((progress?.fraction ?? 0) * 100).floor());
     final subtitle = switch (progress) {
       null => '',
@@ -167,12 +150,12 @@ class PackTile extends ConsumerWidget {
         '${l10n.packReady} · ${l10n.packOnDevice(digits(_mb(progress.bytes)))}',
       PackProgress(partial: true) =>
         '${l10n.packPartial(percent)} · ${l10n.packOnDevice(digits(_mb(progress.bytes)))}',
-      _ => l10n.packNotDownloaded(digits(_megabytes)),
+      _ => l10n.packNotDownloaded(digits(_mb(packed))),
     };
     final Widget? action = switch (progress) {
       null => null,
       PackProgress(active: true) => TextButton(
-        onPressed: () => ref.read(mushafPacksProvider.notifier).cancel(edition),
+        onPressed: () => ref.read(mushafPackProvider.notifier).cancel(),
         child: Text(l10n.packCancel),
       ),
       PackProgress(complete: true) => TextButton(
@@ -201,61 +184,48 @@ class PackTile extends ConsumerWidget {
       ),
     };
     final showBar = progress != null && (progress.active || progress.partial);
-    final choosing = onSelect != null;
+    final ready = progress?.complete ?? false;
     return AppCard(
       padding: const EdgeInsetsDirectional.fromSTEB(16, 12, 8, 12),
-      child: InkWell(
-        onTap: onSelect,
-        borderRadius: BorderRadius.circular(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              children: [
-                if (choosing)
-                  Icon(
-                    selected
-                        ? Icons.radio_button_checked
-                        : Icons.radio_button_unchecked,
-                    color: selected ? scheme.primary : scheme.onSurfaceVariant,
-                  )
-                else
-                  Icon(
-                    progress?.complete ?? false
-                        ? Icons.download_done_outlined
-                        : Icons.cloud_download_outlined,
-                    color: progress?.complete ?? false
-                        ? scheme.primary
-                        : scheme.onSurfaceVariant,
-                  ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        mushafStyleLabel(l10n, edition.style),
-                        style: theme.textTheme.titleMedium,
-                      ),
-                      Text(
-                        subtitle,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: scheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                ?action,
-              ],
-            ),
-            if (showBar)
-              Padding(
-                padding: const EdgeInsetsDirectional.only(top: 10, end: 8),
-                child: LinearProgressIndicator(value: progress.fraction),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              AppIconBadge(
+                ready
+                    ? Icons.download_done_outlined
+                    : Icons.cloud_download_outlined,
+                size: AppIconBadgeSize.small,
+                emphasized: ready,
               ),
-          ],
-        ),
+              const SizedBox(width: AppTokens.spaceMedium),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.readerModePrinted,
+                      style: theme.textTheme.titleMedium,
+                    ),
+                    Text(
+                      subtitle,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: scheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              ?action,
+            ],
+          ),
+          if (showBar)
+            Padding(
+              padding: const EdgeInsetsDirectional.only(top: 10, end: 8),
+              child: LinearProgressIndicator(value: progress.fraction),
+            ),
+        ],
       ),
     );
   }

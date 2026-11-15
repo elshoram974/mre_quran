@@ -45,7 +45,6 @@ void main() {
       ..settings = const AppSettings(
         hapticsEnabled: false,
         readerMode: ReaderMode.text,
-        editionsIntroSeen: true,
       );
     final container = ProviderContainer(
       overrides: [

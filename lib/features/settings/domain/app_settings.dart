@@ -18,8 +18,6 @@ class AppSettings {
     this.realisticPageTurn = false,
     this.readerMode = ReaderMode.printed,
     this.readerPageLayout = ReaderPageLayout.auto,
-    this.mushafStyle = MushafStyle.madinah,
-    this.editionsIntroSeen = false,
   });
 
   /// The page theme (paper colour) of the app and the Mushaf.
@@ -57,12 +55,6 @@ class AppSettings {
   /// How the printed Mushaf uses the available reading area.
   final ReaderPageLayout readerPageLayout;
 
-  /// Which printed edition the printed reader shows.
-  final MushafStyle mushafStyle;
-
-  /// Whether the person has been told about the other Mushaf editions.
-  final bool editionsIntroSeen;
-
   Locale get locale => Locale(localeCode);
 
   /// Whether the app follows the system, or keeps the paper's brightness.
@@ -85,8 +77,6 @@ class AppSettings {
     bool? realisticPageTurn,
     ReaderMode? readerMode,
     ReaderPageLayout? readerPageLayout,
-    MushafStyle? mushafStyle,
-    bool? editionsIntroSeen,
   }) => AppSettings(
     theme: theme ?? this.theme,
     accent: accent ?? this.accent,
@@ -100,8 +90,6 @@ class AppSettings {
     realisticPageTurn: realisticPageTurn ?? this.realisticPageTurn,
     readerMode: readerMode ?? this.readerMode,
     readerPageLayout: readerPageLayout ?? this.readerPageLayout,
-    mushafStyle: mushafStyle ?? this.mushafStyle,
-    editionsIntroSeen: editionsIntroSeen ?? this.editionsIntroSeen,
   );
 }
 
@@ -165,17 +153,4 @@ enum ReaderPageLayout {
 
   /// Two facing pages when the reading area is wide enough.
   spread,
-}
-
-/// Printed Mushaf editions the printed reader can show.
-enum MushafStyle {
-  /// Madinah Mushaf pages as used by the Quran.com apps, with exact ayah
-  /// positions.
-  madinah,
-
-  /// Madinah Mushaf with tajweed colours.
-  tajweed,
-
-  /// Madinah Mushaf rendered from the KFGQPC V4 fonts at high resolution.
-  madinahHd,
 }

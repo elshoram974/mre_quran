@@ -88,7 +88,6 @@ void main() {
       ..settings = const AppSettings(
         localeCode: 'en',
         readerMode: ReaderMode.text,
-        editionsIntroSeen: true,
       );
     final container = ProviderContainer(
       overrides: [
