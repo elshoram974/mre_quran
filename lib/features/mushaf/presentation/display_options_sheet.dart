@@ -60,10 +60,7 @@ class _DisplayOptions extends ConsumerWidget {
                     padding: EdgeInsetsDirectional.only(top: 16, bottom: 4),
                     child: Column(
                       spacing: 12,
-                      children: [
-                        MushafStyleField(),
-                        ReaderPageLayoutField(),
-                      ],
+                      children: [MushafStyleField(), ReaderPageLayoutField()],
                     ),
                   )
                 : _TextSize(settings: settings),

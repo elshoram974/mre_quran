@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/haptics/haptics.dart';
+import '../../core/theme/app_surface_style.dart';
 import '../../core/theme/app_tokens.dart';
 import 'shell_destination.dart';
 
@@ -27,9 +28,9 @@ class ExpandingNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
+    final surfaces = AppSurfaceStyle.of(context);
     final still = MediaQuery.disableAnimationsOf(context);
-    final duration = still ? Duration.zero : const Duration(milliseconds: 280);
+    final duration = still ? Duration.zero : AppTokens.motionMedium;
     return SafeArea(
       top: false,
       minimum: const EdgeInsets.only(bottom: AppTokens.floatingBarGap),
@@ -41,18 +42,10 @@ class ExpandingNavBar extends StatelessWidget {
           height: AppTokens.floatingBarHeight,
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: scheme.surfaceContainerHigh,
+            color: surfaces.raised,
             borderRadius: BorderRadius.circular(AppTokens.floatingBarHeight),
-            border: Border.all(
-              color: scheme.outlineVariant.withValues(alpha: 0.5),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: scheme.shadow.withValues(alpha: 0.18),
-                blurRadius: 24,
-                offset: const Offset(0, 8),
-              ),
-            ],
+            border: Border.all(color: surfaces.hairline),
+            boxShadow: surfaces.floatingShadow,
           ),
           child: LayoutBuilder(
             builder: (context, constraints) {

@@ -81,3 +81,15 @@ String hijriMonthName(AppLocalizations l10n, int month) => switch (month) {
   11 => l10n.hijriMonth11,
   _ => l10n.hijriMonth12,
 };
+
+/// The glyph for [prayer], following the sun through the day.
+IconData prayerIcon(DailyPrayer prayer) => switch (prayer) {
+  DailyPrayer.fajr => Icons.wb_twilight_rounded,
+  DailyPrayer.dhuhr => Icons.light_mode_outlined,
+  DailyPrayer.asr => Icons.wb_sunny_outlined,
+  DailyPrayer.maghrib => Icons.nights_stay_outlined,
+  DailyPrayer.isha => Icons.bedtime_outlined,
+};
+
+/// The glyph for sunrise, which is listed with the prayers but is not one.
+const IconData sunriseIcon = Icons.wb_sunny_rounded;

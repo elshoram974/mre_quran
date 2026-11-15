@@ -13,6 +13,27 @@ abstract final class AppTokens {
   /// Corner radius of cards and glass panels.
   static const double radiusCard = 24;
 
+  /// Corner radius of a small icon badge.
+  static const double radiusBadge = 12;
+
+  /// Side of a small icon badge, as used in list rows.
+  static const double badgeSmall = 36;
+
+  /// Side of a standard icon badge, as used in tile cards.
+  static const double badgeMedium = 44;
+
+  /// Side of a large icon badge, as used in empty states.
+  static const double badgeLarge = 72;
+
+  /// Inner padding of cards that hold free content.
+  static const double cardPadding = 16;
+
+  /// Inner padding of hero panels.
+  static const double heroPadding = 20;
+
+  /// Duration of state changes on cards (highlight, completion).
+  static const Duration motionMedium = Duration(milliseconds: 250);
+
   /// Corner radius of bottom sheets.
   static const double radiusSheet = 28;
 

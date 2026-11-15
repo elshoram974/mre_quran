@@ -9,6 +9,8 @@ import '../../../core/notifications/reminder_scheduler_provider.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/time/ticking_clock.dart';
 import '../../../core/widgets/app_card.dart';
+import '../../../core/widgets/app_hero_card.dart';
+import '../../../core/widgets/app_icon_badge.dart';
 import '../../../core/widgets/app_tile_card.dart';
 import '../../../core/widgets/app_page_scaffold.dart';
 import '../../../core/widgets/app_notice.dart';
@@ -127,6 +129,7 @@ class _Content extends ConsumerWidget {
             child: Column(
               children: [
                 _TimeRow(
+                  icon: prayerIcon(DailyPrayer.fajr),
                   name: l10n.prayerFajr,
                   time: formatPrayerTime(
                     context,
@@ -139,6 +142,7 @@ class _Content extends ConsumerWidget {
                       onRun(() => notifier.setAlert(DailyPrayer.fajr, on)),
                 ),
                 _TimeRow(
+                  icon: sunriseIcon,
                   name: l10n.prayerSunrise,
                   time: formatPrayerTime(
                     context,
@@ -149,6 +153,7 @@ class _Content extends ConsumerWidget {
                 ),
                 for (final prayer in DailyPrayer.values.skip(1))
                   _TimeRow(
+                    icon: prayerIcon(prayer),
                     name: prayerName(l10n, prayer),
                     time: formatPrayerTime(
                       context,
@@ -312,41 +317,38 @@ class _NextCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
+    final text = Theme.of(context).textTheme;
     final digits = ref.watch(digitsFormatterProvider);
     final formatDisplayDigits = ref.watch(displayDigitsFormatterProvider);
     final now = ref.watch(tickingNowProvider);
     final until = next.at.difference(now);
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: scheme.primaryContainer,
-        borderRadius: BorderRadius.circular(AppTokens.radiusCard),
-      ),
+    return AppHeroCard(
+      watermark: Icons.mosque_outlined,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            l10n.prayerNext,
-            style: theme.textTheme.labelLarge?.copyWith(
-              color: scheme.onPrimaryContainer,
-            ),
+          Row(
+            children: [
+              AppIconBadge(
+                prayerIcon(next.prayer),
+                size: AppIconBadgeSize.small,
+                emphasized: true,
+              ),
+              const SizedBox(width: AppTokens.spaceMedium),
+              Expanded(child: Text(l10n.prayerNext, style: text.labelLarge)),
+            ],
           ),
+          const SizedBox(height: AppTokens.spaceMedium),
+          Text(prayerName(l10n, next.prayer), style: text.headlineMedium),
           const SizedBox(height: 4),
           Text(
-            prayerName(l10n, next.prayer),
-            style: theme.textTheme.headlineMedium?.copyWith(
-              color: scheme.onPrimaryContainer,
-            ),
+            l10n.prayerIn(formatUntil(l10n, until, digits)),
+            style: text.titleMedium,
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 2),
           Text(
-            '${formatPrayerTime(context, next.at, formatDisplayDigits)} · '
-            '${l10n.prayerIn(formatUntil(l10n, until, digits))}',
-            style: theme.textTheme.titleMedium?.copyWith(
-              color: scheme.onPrimaryContainer,
-            ),
+            formatPrayerTime(context, next.at, formatDisplayDigits),
+            style: text.bodyMedium,
           ),
         ],
       ),
@@ -356,6 +358,7 @@ class _NextCard extends ConsumerWidget {
 
 class _TimeRow extends StatelessWidget {
   const _TimeRow({
+    required this.icon,
     required this.name,
     required this.time,
     this.alert = false,
@@ -364,6 +367,7 @@ class _TimeRow extends StatelessWidget {
     this.onAlert,
   });
 
+  final IconData icon;
   final String name;
   final String time;
   final bool alert;
@@ -376,35 +380,51 @@ class _TimeRow extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final l10n = context.l10n;
-    final color = muted ? scheme.onSurfaceVariant : scheme.onSurface;
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      padding: const EdgeInsetsDirectional.only(start: 16, end: 4),
+    final color = muted
+        ? scheme.onSurfaceVariant
+        : highlighted
+        ? scheme.onPrimaryContainer
+        : scheme.onSurface;
+    final style = theme.textTheme.titleMedium?.copyWith(color: color);
+    return AnimatedContainer(
+      duration: MediaQuery.disableAnimationsOf(context)
+          ? Duration.zero
+          : AppTokens.motionMedium,
+      margin: const EdgeInsetsDirectional.symmetric(
+        horizontal: AppTokens.spaceSmall,
+        vertical: 2,
+      ),
+      padding: const EdgeInsetsDirectional.only(
+        start: AppTokens.spaceMedium,
+        end: 4,
+      ),
       constraints: const BoxConstraints(minHeight: AppTokens.minTarget),
       decoration: BoxDecoration(
-        color: highlighted ? scheme.secondaryContainer : null,
+        color: highlighted ? scheme.primaryContainer : null,
         borderRadius: BorderRadius.circular(AppTokens.radiusField),
       ),
       child: Row(
         children: [
+          AppIconBadge(
+            icon,
+            size: AppIconBadgeSize.small,
+            emphasized: highlighted,
+          ),
+          const SizedBox(width: AppTokens.spaceMedium),
           // A Wrap so the time drops under the name when large text leaves no
           // room beside it.
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
+              padding: const EdgeInsetsDirectional.symmetric(
+                vertical: AppTokens.spaceSmall,
+              ),
               child: Wrap(
                 alignment: WrapAlignment.spaceBetween,
                 crossAxisAlignment: WrapCrossAlignment.center,
-                spacing: 12,
+                spacing: AppTokens.spaceMedium,
                 children: [
-                  Text(
-                    name,
-                    style: theme.textTheme.titleMedium?.copyWith(color: color),
-                  ),
-                  Text(
-                    time,
-                    style: theme.textTheme.titleMedium?.copyWith(color: color),
-                  ),
+                  Text(name, style: style),
+                  Text(time, style: style),
                 ],
               ),
             ),
@@ -421,7 +441,7 @@ class _TimeRow extends StatelessWidget {
               onPressed: () => onAlert!(!alert),
             )
           else
-            const SizedBox(width: 48),
+            const SizedBox(width: AppTokens.minTarget),
         ],
       ),
     );

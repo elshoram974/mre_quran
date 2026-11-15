@@ -6,6 +6,7 @@ import '../../../app/router.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/app_card.dart';
+import '../../../core/widgets/app_icon_badge.dart';
 import '../../settings/application/digits_provider.dart';
 import '../domain/adhkar_collection.dart';
 import 'adhkar_icons.dart';
@@ -25,7 +26,6 @@ class GroupCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
     final digits = ref.watch(digitsFormatterProvider);
     final title = group.title(Localizations.localeOf(context).languageCode);
     final subtitle = context.l10n.adhkarListCount(digits(count));
@@ -34,41 +34,27 @@ class GroupCard extends ConsumerWidget {
       label: '$title, $subtitle',
       excludeSemantics: true,
       child: AppCard(
-        padding: EdgeInsets.zero,
-        child: Material(
-          type: MaterialType.transparency,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(AppTokens.radiusCard),
-            onTap: () => context.push(AppRoute.adhkarGroupPath(group.id)),
-            child: Padding(
-              padding: const EdgeInsets.all(14),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  CircleAvatar(
-                    radius: 22,
-                    backgroundColor: scheme.secondaryContainer,
-                    foregroundColor: scheme.onSecondaryContainer,
-                    child: Icon(adhkarIconData(group.icon)),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: scheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
+        padding: const EdgeInsetsDirectional.all(AppTokens.cardPadding),
+        onTap: () => context.push(AppRoute.adhkarGroupPath(group.id)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AppIconBadge(adhkarIconData(group.icon)),
+            const SizedBox(height: AppTokens.spaceMedium),
+            Text(
+              title,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.titleMedium,
+            ),
+            const SizedBox(height: 2),
+            Text(
+              subtitle,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
               ),
             ),
-          ),
+          ],
         ),
       ),
     );

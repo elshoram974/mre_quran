@@ -35,9 +35,8 @@ String formatReminderTime(
   int minutes,
   String Function(String) formatDigits,
 ) => formatDigits(
-  MaterialLocalizations.of(
-    context,
-  ).formatTimeOfDay(TimeOfDay(hour: minutes ~/ 60, minute: minutes % 60)),
+  MaterialLocalizations.of(context)
+      .formatTimeOfDay(TimeOfDay(hour: minutes ~/ 60, minute: minutes % 60)),
 );
 
 /// Why a switch stayed off.

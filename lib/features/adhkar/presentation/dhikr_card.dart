@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_tokens.dart';
+import '../../../core/widgets/app_icon_badge.dart';
 import '../../../core/widgets/app_shimmer.dart';
+import '../../../core/widgets/app_surface_card.dart';
 import '../../../core/widgets/app_tag.dart';
 import '../../quran_text/application/quran_text_providers.dart';
 import '../../settings/application/digits_provider.dart';
@@ -54,18 +56,11 @@ class DhikrCard extends ConsumerWidget {
     final done = count >= dhikr.repeat;
     final counter = l10n.adhkarProgress(digits(count), digits(dhikr.repeat));
 
+    // Opaque on every platform: the words may be Quran text, never on glass.
     return RepaintBoundary(
-      child: AnimatedContainer(
-        duration: MediaQuery.disableAnimationsOf(context)
-            ? Duration.zero
-            : const Duration(milliseconds: 250),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: done
-              ? scheme.primaryContainer.withValues(alpha: 0.45)
-              : scheme.surfaceContainerLow,
-          borderRadius: BorderRadius.circular(AppTokens.radiusCard),
-        ),
+      child: AppSurfaceCard(
+        highlighted: done,
+        padding: const EdgeInsetsDirectional.all(AppTokens.cardPadding),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -79,15 +74,7 @@ class DhikrCard extends ConsumerWidget {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    CircleAvatar(
-                      radius: 14,
-                      backgroundColor: scheme.secondaryContainer,
-                      foregroundColor: scheme.onSecondaryContainer,
-                      child: Text(
-                        digits(number),
-                        style: theme.textTheme.labelMedium,
-                      ),
-                    ),
+                    AppIconBadge.text(digits(number), emphasized: done),
                     if (dhikr.onlyAfter.isNotEmpty) ...[
                       const SizedBox(width: 8),
                       _OnlyAfterChip(prayers: dhikr.onlyAfter),

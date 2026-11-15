@@ -1,37 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:mre_fields/mre_fields.dart';
 
+import 'app_palette.dart';
+import 'app_surface_style.dart';
 import 'app_tokens.dart';
 
-/// Application themes, including a low-glare reader option.
+/// Application themes, including a low-glare reader option. Colours come from
+/// the hand-authored schemes in [AppPalette].
 abstract final class AppTheme {
-  static ThemeData get light => _build(
-    brightness: Brightness.light,
-    seed: const Color(0xFF176653),
-    canvas: const Color(0xFFF8F7F1),
-  );
+  /// Warm paper with a gold accent.
+  static ThemeData get light => _build(AppPalette.light);
 
-  static ThemeData get dark => _build(
-    brightness: Brightness.dark,
-    seed: const Color(0xFF79CDB4),
-    canvas: const Color(0xFF111513),
-  );
+  /// Deep navy with a gold accent.
+  static ThemeData get dark => _build(AppPalette.dark);
 
-  static ThemeData get sepia => _build(
-    brightness: Brightness.light,
-    seed: const Color(0xFF765A37),
-    canvas: const Color(0xFFF4EBD8),
-  );
+  /// Low-glare reader paper.
+  static ThemeData get sepia => _build(AppPalette.sepia);
 
-  static ThemeData _build({
-    required Brightness brightness,
-    required Color seed,
-    required Color canvas,
-  }) {
-    final scheme = _harmonize(
-      ColorScheme.fromSeed(seedColor: seed, brightness: brightness),
-      canvas,
-    );
+  static ThemeData _build(ColorScheme scheme) {
+    final surfaces = AppSurfaceStyle.from(scheme);
+    final text = _textTheme(scheme);
     WidgetStateProperty<Color?> byState({
       required Color selected,
       required Color unselected,
@@ -54,11 +42,33 @@ abstract final class AppTheme {
     return ThemeData(
       useMaterial3: true,
       colorScheme: scheme,
-      scaffoldBackgroundColor: canvas,
+      textTheme: text,
+      scaffoldBackgroundColor: scheme.surface,
       visualDensity: VisualDensity.standard,
+      appBarTheme: AppBarTheme(
+        backgroundColor: scheme.surface,
+        foregroundColor: scheme.onSurface,
+        surfaceTintColor: Colors.transparent,
+        scrolledUnderElevation: 0,
+        centerTitle: true,
+        titleTextStyle: text.titleLarge?.copyWith(color: scheme.onSurface),
+      ),
+      navigationRailTheme: NavigationRailThemeData(
+        backgroundColor: scheme.surface,
+        indicatorColor: scheme.primaryContainer,
+        selectedIconTheme: IconThemeData(color: scheme.onPrimaryContainer),
+        unselectedIconTheme: IconThemeData(color: scheme.onSurfaceVariant),
+        selectedLabelTextStyle: text.labelMedium?.copyWith(
+          color: scheme.primary,
+        ),
+        unselectedLabelTextStyle: text.labelMedium?.copyWith(
+          color: scheme.onSurfaceVariant,
+        ),
+      ),
+      iconTheme: IconThemeData(color: scheme.onSurfaceVariant),
       cardTheme: CardThemeData(
         elevation: 0,
-        color: scheme.surfaceContainerLow,
+        color: surfaces.raised,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppTokens.radiusCard),
         ),
@@ -167,14 +177,15 @@ abstract final class AppTheme {
         ),
       ),
       dialogTheme: DialogThemeData(
-        backgroundColor: scheme.surfaceContainerHigh,
+        backgroundColor: surfaces.raised,
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppTokens.radiusSheet),
         ),
       ),
-      extensions: const [
-        MREFieldsTheme(
+      extensions: [
+        surfaces,
+        const MREFieldsTheme(
           fieldBorderRadius: AppTokens.radiusField,
           contentPadding: AppTokens.fieldPadding,
           expandedContentPadding: AppTokens.fieldPadding,
@@ -183,23 +194,23 @@ abstract final class AppTheme {
     );
   }
 
-  /// Rebuilds the surface roles around [canvas] so cards, fields, and the page
-  /// share one hue instead of the seed's default tonal surfaces.
-  static ColorScheme _harmonize(ColorScheme base, Color canvas) {
-    final dark = base.brightness == Brightness.dark;
-    Color tint(double alpha) =>
-        Color.alphaBlend(base.primary.withValues(alpha: alpha), canvas);
+  /// Material 2021 type with firmer headings, so titles read clearly against
+  /// the soft card surfaces.
+  static TextTheme _textTheme(ColorScheme scheme) {
+    final base =
+        (scheme.brightness == Brightness.dark
+                ? Typography.material2021().white
+                : Typography.material2021().black)
+            .apply(bodyColor: scheme.onSurface, displayColor: scheme.onSurface);
+    TextStyle? firm(TextStyle? style) =>
+        style?.copyWith(fontWeight: FontWeight.w600);
     return base.copyWith(
-      surface: canvas,
-      surfaceContainerLowest: dark
-          ? Color.alphaBlend(Colors.black.withValues(alpha: 0.25), canvas)
-          : Color.alphaBlend(Colors.white.withValues(alpha: 0.6), canvas),
-      surfaceContainerLow: tint(0.04),
-      surfaceContainer: tint(0.07),
-      surfaceContainerHigh: tint(0.10),
-      surfaceContainerHighest: tint(0.14),
-      secondaryContainer: tint(0.20),
-      onSecondaryContainer: base.onSurface,
+      headlineLarge: firm(base.headlineLarge),
+      headlineMedium: firm(base.headlineMedium),
+      headlineSmall: firm(base.headlineSmall),
+      titleLarge: firm(base.titleLarge),
+      titleMedium: firm(base.titleMedium),
+      titleSmall: firm(base.titleSmall),
     );
   }
 }

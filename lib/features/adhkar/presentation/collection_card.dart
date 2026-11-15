@@ -5,6 +5,7 @@ import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_directional_icon.dart';
+import '../../../core/widgets/app_hero_card.dart';
 import '../../settings/application/digits_provider.dart';
 import '../application/adhkar_providers.dart';
 import '../domain/adhkar_collection.dart';
@@ -45,6 +46,12 @@ class CollectionCard extends ConsumerWidget {
       digits(progress.totalEntries),
     );
     void open() => AdhkarSteps.show(context, collectionId: collection.id);
+    // On the hero panel both lines take its own foreground.
+    final scheme = theme.colorScheme;
+    final titleColor = featured ? scheme.onPrimaryContainer : scheme.onSurface;
+    final lineColor = featured
+        ? scheme.onPrimaryContainer
+        : scheme.onSurfaceVariant;
 
     final header = Row(
       children: [
@@ -62,16 +69,16 @@ class CollectionCard extends ConsumerWidget {
             children: [
               Text(
                 title,
-                style: featured
-                    ? theme.textTheme.titleLarge
-                    : theme.textTheme.titleMedium,
+                style:
+                    (featured
+                            ? theme.textTheme.titleLarge
+                            : theme.textTheme.titleMedium)
+                        ?.copyWith(color: titleColor),
               ),
               const SizedBox(height: 2),
               Text(
                 progressText,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
+                style: theme.textTheme.bodyMedium?.copyWith(color: lineColor),
               ),
             ],
           ),
@@ -81,40 +88,36 @@ class CollectionCard extends ConsumerWidget {
       ],
     );
 
-    return AppCard(
-      padding: EdgeInsets.zero,
-      child: Material(
-        type: MaterialType.transparency,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(AppTokens.radiusCard),
-          onTap: open,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: featured
-                ? Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      header,
-                      const SizedBox(height: 16),
-                      progress.complete
-                          ? FilledButton.tonalIcon(
-                              onPressed: open,
-                              icon: const Icon(Icons.check_rounded),
-                              label: Text(l10n.adhkarDoneToday),
-                            )
-                          : FilledButton(
-                              onPressed: open,
-                              child: Text(
-                                progress.fraction == 0
-                                    ? l10n.adhkarStart
-                                    : l10n.adhkarContinue,
-                              ),
-                            ),
-                    ],
-                  )
-                : header,
-          ),
-        ),
+    if (!featured) {
+      return AppCard(
+        padding: const EdgeInsetsDirectional.all(AppTokens.cardPadding),
+        onTap: open,
+        child: header,
+      );
+    }
+    return AppHeroCard(
+      watermark: adhkarIconData(collection.icon),
+      onTap: open,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          header,
+          const SizedBox(height: AppTokens.cardPadding),
+          progress.complete
+              ? FilledButton.tonalIcon(
+                  onPressed: open,
+                  icon: const Icon(Icons.check_rounded),
+                  label: Text(l10n.adhkarDoneToday),
+                )
+              : FilledButton(
+                  onPressed: open,
+                  child: Text(
+                    progress.fraction == 0
+                        ? l10n.adhkarStart
+                        : l10n.adhkarContinue,
+                  ),
+                ),
+        ],
       ),
     );
   }

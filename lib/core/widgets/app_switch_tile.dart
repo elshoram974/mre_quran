@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'app_icon_badge.dart';
+
 /// Shared on/off row. Uses the platform switch (Cupertino on iOS, Material 3 on
 /// Android) with the app's colour roles so both match the theme.
 class AppSwitchTile extends StatelessWidget {
@@ -38,7 +40,9 @@ class AppSwitchTile extends StatelessWidget {
       inactiveTrackColor: scheme.surfaceContainerHighest,
       title: Text(title),
       subtitle: subtitle == null ? null : Text(subtitle!),
-      secondary: icon == null ? null : Icon(icon, color: scheme.primary),
+      secondary: icon == null
+          ? null
+          : AppIconBadge(icon!, size: AppIconBadgeSize.small),
     );
   }
 }
