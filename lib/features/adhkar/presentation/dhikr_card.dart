@@ -16,10 +16,11 @@ import '../../prayer/application/prayer_provider.dart';
 import '../../prayer/domain/prayer_times.dart';
 import '../domain/adhkar_layout.dart';
 import '../domain/dhikr.dart';
+import 'dhikr_counter.dart';
 import 'evidence_sheet.dart';
 
-/// One dhikr: its words, how many times to say it, a big tap-to-count button,
-/// and a way to read the evidence.
+/// One dhikr: its words, how many times to say it, a way to read the
+/// evidence, and, unless it is shown elsewhere, a big tap-to-count button.
 class DhikrCard extends ConsumerWidget {
   /// Creates the card for [dhikr], the [number]th of [collection].
   const DhikrCard({
@@ -29,7 +30,12 @@ class DhikrCard extends ConsumerWidget {
     required this.number,
     required this.onCount,
     required this.onUndo,
+    this.showCounter = true,
   });
+
+  /// Whether the card holds its own counter. A screen that pins the counter
+  /// somewhere else, clear of the scrolling words, turns this off.
+  final bool showCounter;
 
   /// The collection it belongs to.
   final AdhkarCollection collection;
@@ -54,7 +60,6 @@ class DhikrCard extends ConsumerWidget {
     final digits = ref.watch(digitsFormatterProvider);
     final count = ref.watch(dhikrCountProvider((collection, dhikr)));
     final done = count >= dhikr.repeat;
-    final counter = l10n.adhkarProgress(digits(count), digits(dhikr.repeat));
 
     // Opaque on every platform: the words may be Quran text, never on glass.
     return RepaintBoundary(
@@ -118,40 +123,15 @@ class DhikrCard extends ConsumerWidget {
               const SizedBox(height: 8),
             ],
             _DhikrWords(collection: collection, dhikr: dhikr, done: done),
-            const SizedBox(height: 16),
-            Semantics(
-              button: !done,
-              label: l10n.adhkarCounterLabel(
-                digits(count),
-                digits(dhikr.repeat),
+            if (showCounter) ...[
+              const SizedBox(height: 16),
+              DhikrCounter(
+                collection: collection,
+                dhikr: dhikr,
+                onCount: onCount,
+                onUndo: onUndo,
               ),
-              excludeSemantics: true,
-              child: done
-                  ? _DoneBadge(label: l10n.done)
-                  : FilledButton(
-                      onPressed: onCount,
-                      style: FilledButton.styleFrom(
-                        minimumSize: const Size.fromHeight(
-                          AppTokens.counterButtonHeight,
-                        ),
-                      ),
-                      child: Text(
-                        counter,
-                        style: theme.textTheme.titleLarge?.copyWith(
-                          color: scheme.onPrimary,
-                        ),
-                      ),
-                    ),
-            ),
-            if (count > 0 && !done)
-              Align(
-                alignment: AlignmentDirectional.centerEnd,
-                child: TextButton.icon(
-                  onPressed: onUndo,
-                  icon: const Icon(Icons.undo_rounded),
-                  label: Text(l10n.adhkarUndo),
-                ),
-              ),
+            ],
           ],
         ),
       ),
@@ -232,36 +212,5 @@ class _DhikrWords extends ConsumerWidget {
             ),
           ),
         );
-  }
-}
-
-class _DoneBadge extends StatelessWidget {
-  const _DoneBadge({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Container(
-      height: AppTokens.counterButtonHeight,
-      decoration: BoxDecoration(
-        color: scheme.primaryContainer,
-        borderRadius: BorderRadius.circular(AppTokens.radiusField),
-      ),
-      alignment: Alignment.center,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.check_rounded, color: scheme.onPrimaryContainer),
-          const SizedBox(width: 8),
-          Text(
-            label,
-            style: Theme.of(context).textTheme.titleMedium
-                ?.copyWith(color: scheme.onPrimaryContainer),
-          ),
-        ],
-      ),
-    );
   }
 }

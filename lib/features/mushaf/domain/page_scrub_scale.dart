@@ -32,11 +32,25 @@ class PageScrubScale {
     return PageScrubScale._(first, first + steps, fine: true);
   }
 
+  /// This scale moved [by] pages along the Mushaf, as far as its ends
+  /// allow. The reader pushes a fine scale along this way by holding the
+  /// thumb at one end of the track.
+  PageScrubScale shifted(int by, {required int pageCount}) {
+    final move = by.clamp(1 - first, pageCount - last);
+    return move == 0 ? this : PageScrubScale._(first + move, last + move, fine: fine);
+  }
+
+  /// Page steps between two ticks, and between two labelled ticks, for a
+  /// track that shows [pages] page steps: every page when few are shown,
+  /// every twentieth when the whole Mushaf is.
+  static ({int minor, int major}) ticksFor(double pages) => switch (pages) {
+    <= 40 => (minor: 1, major: 5),
+    <= 200 => (minor: 5, major: 25),
+    _ => (minor: 20, major: 100),
+  };
+
   /// Page steps a fine scale shows unless told otherwise.
   static const int defaultFineSpan = 20;
-
-  /// A fine scale labels the pages that divide by this.
-  static const int majorEvery = 5;
 
   /// First page of the scale.
   final int first;
@@ -55,9 +69,6 @@ class PageScrubScale {
   /// its nearer end.
   double fractionOf(int page) =>
       last == first ? 0 : ((page - first) / (last - first)).clamp(0.0, 1.0);
-
-  /// Whether [page] gets a long tick and a label on a fine scale.
-  bool isMajor(int page) => page % majorEvery == 0;
 
   @override
   bool operator ==(Object other) =>

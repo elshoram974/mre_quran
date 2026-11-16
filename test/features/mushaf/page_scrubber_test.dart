@@ -125,6 +125,32 @@ void main() {
     expect(find.text('Fine'), findsNothing);
   });
 
+  testWidgets('holding the thumb at an end of the fine scale rolls it on', (
+    tester,
+  ) async {
+    final picked = await _pump(tester);
+    final track = _track(tester);
+    final gesture = await tester.startGesture(track.center);
+    await tester.pump(const Duration(milliseconds: 600));
+    expect(find.text('Fine'), findsOneWidget);
+    // To the left end, where the later pages are, and wait there.
+    await gesture.moveTo(Offset(track.left + 2, track.center.dy));
+    await tester.pump();
+    final atEdge = _shownPage(tester);
+    await tester.pump(const Duration(milliseconds: 600));
+    await tester.pump();
+    expect(_shownPage(tester), greaterThan(atEdge + 2));
+    // Away from the end it stops.
+    await gesture.moveTo(track.center);
+    await tester.pump();
+    final resting = _shownPage(tester);
+    await tester.pump(const Duration(milliseconds: 600));
+    expect(_shownPage(tester), resting);
+    await gesture.up();
+    await tester.pump();
+    expect(picked, [resting]);
+  });
+
   testWidgets('a moving finger never opens the fine scale', (tester) async {
     await _pump(tester);
     final gesture = await tester.startGesture(_track(tester).center);

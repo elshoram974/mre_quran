@@ -167,7 +167,7 @@ String _normalizeDigits(String value) => value
     .replaceAllMapped(
       RegExp('[٠-٩]'),
       (match) =>
-          String.fromCharCode(match.group(0)!.codeUnitAt(0) - 0x630 + 0x30),
+          String.fromCharCode(match.group(0)!.codeUnitAt(0) - 0x660 + 0x30),
     )
     .replaceAllMapped(
       RegExp('[۰-۹]'),

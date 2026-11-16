@@ -56,10 +56,22 @@ void main() {
       expect(scale.last, 5);
     });
 
-    test('labels every fifth page', () {
+    test('rolls along the Mushaf and stops at its ends', () {
       final scale = PageScrubScale.fineAt(213, fraction: 0.5, pageCount: 604);
-      expect(scale.isMajor(210), isTrue);
-      expect(scale.isMajor(213), isFalse);
+      final onward = scale.shifted(3, pageCount: 604);
+      expect((onward.first, onward.last), (scale.first + 3, scale.last + 3));
+      expect(onward.fine, isTrue);
+      final start = scale.shifted(-900, pageCount: 604);
+      expect((start.first, start.last), (1, 21));
+      expect(start.shifted(-1, pageCount: 604), start);
+      final end = scale.shifted(900, pageCount: 604);
+      expect((end.first, end.last), (584, 604));
     });
+  });
+
+  test('the ruler is finer the fewer pages the track shows', () {
+    expect(PageScrubScale.ticksFor(20), (minor: 1, major: 5));
+    expect(PageScrubScale.ticksFor(120), (minor: 5, major: 25));
+    expect(PageScrubScale.ticksFor(603), (minor: 20, major: 100));
   });
 }

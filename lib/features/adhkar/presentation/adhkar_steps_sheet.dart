@@ -19,11 +19,12 @@ import '../domain/adhkar_collection.dart';
 import 'adhkar_complete_card.dart';
 import 'adhkar_progress_strip.dart';
 import 'dhikr_card.dart';
+import 'dhikr_counter.dart';
 
 /// Reads a list one dhikr at a time, in a bottom sheet.
 ///
 /// Each dhikr is a page: swipe to the next or the previous, or use the arrows
-/// at the two ends. When its count is done the next page comes by itself, and
+/// at the two ends. Its words scroll; its counter is pinned under them. When its count is done the next page comes by itself, and
 /// when the last one is done the sheet says so and offers the next list.
 abstract final class AdhkarSteps {
   /// Opens the list [collectionId] as steps, starting at the dhikr whose order
@@ -32,22 +33,32 @@ abstract final class AdhkarSteps {
     BuildContext context, {
     required String collectionId,
     int? focusOrder,
-  }) => AppSheet.show<void>(
+  }) => AppSheet.showFilling<void>(
     context: context,
-    expandable: true,
-    initialSize: 0.88,
     // Counting is hands-busy; the screen must not sleep mid-list.
-    builder: (_) => KeepScreenAwake(
-      child: _StepsBody(collectionId: collectionId, focusOrder: focusOrder),
+    builder: (_, scroll) => KeepScreenAwake(
+      child: _StepsBody(
+        collectionId: collectionId,
+        focusOrder: focusOrder,
+        scroll: scroll,
+      ),
     ),
   );
 }
 
 class _StepsBody extends ConsumerStatefulWidget {
-  const _StepsBody({required this.collectionId, this.focusOrder});
+  const _StepsBody({
+    required this.collectionId,
+    required this.scroll,
+    this.focusOrder,
+  });
 
   final String collectionId;
   final int? focusOrder;
+
+  /// The sheet's scroll controller: whatever scrolls with it drags the
+  /// sheet when it is at its top.
+  final ScrollController scroll;
 
   @override
   ConsumerState<_StepsBody> createState() => _StepsBodyState();
@@ -119,6 +130,10 @@ class _StepsBodyState extends ConsumerState<_StepsBody> {
     );
   }
 
+  void _undo(AdhkarCollection collection, int index) => ref
+      .read(adhkarProgressProvider.notifier)
+      .decrement(collection, collection.entries[index]);
+
   /// Turns to page [to]. The page view reports the change back through
   /// [_onPage], so a swipe and an arrow end up in the same place.
   void _go(AdhkarCollection collection, int to) {
@@ -154,24 +169,30 @@ class _StepsBodyState extends ConsumerState<_StepsBody> {
     final catalog = ref.watch(adhkarCatalogProvider);
     final collection = catalog.value?.byId(widget.collectionId);
     if (catalog.hasError || (catalog.hasValue && collection == null)) {
-      return EmptyState(
-        icon: Icons.error_outline,
-        title: l10n.adhkarLoadError,
-        message: '',
-        actionLabel: l10n.retry,
-        onAction: () => ref.invalidate(adhkarCatalogProvider),
+      return SingleChildScrollView(
+        controller: widget.scroll,
+        child: EmptyState(
+          icon: Icons.error_outline,
+          title: l10n.adhkarLoadError,
+          message: '',
+          actionLabel: l10n.retry,
+          onAction: () => ref.invalidate(adhkarCatalogProvider),
+        ),
       );
     }
     if (collection == null) {
-      return const Padding(
-        padding: EdgeInsets.all(AppTokens.gutterCompact),
-        child: AppShimmer(
-          child: Column(
-            children: [
-              SkeletonBox(height: 28, width: 160),
-              SizedBox(height: 16),
-              SkeletonBox(height: 220, radius: AppTokens.radiusCard),
-            ],
+      return SingleChildScrollView(
+        controller: widget.scroll,
+        child: const Padding(
+          padding: EdgeInsets.all(AppTokens.gutterCompact),
+          child: AppShimmer(
+            child: Column(
+              children: [
+                SkeletonBox(height: 28, width: 160),
+                SizedBox(height: 16),
+                SkeletonBox(height: 220, radius: AppTokens.radiusCard),
+              ],
+            ),
           ),
         ),
       );
@@ -180,11 +201,6 @@ class _StepsBodyState extends ConsumerState<_StepsBody> {
       collection,
     )).clamp(0, collection.entries.length - 1);
     final pages = _pages ??= PageController(initialPage: index);
-    // Room for one dhikr: its own page scrolls when a long dua needs more.
-    final pageHeight = (MediaQuery.sizeOf(context).height * 0.52).clamp(
-      360.0,
-      620.0,
-    );
     final progress = ref.watch(collectionProgressProvider(collection));
     final digits = ref.watch(digitsFormatterProvider);
     final theme = Theme.of(context);
@@ -203,56 +219,75 @@ class _StepsBodyState extends ConsumerState<_StepsBody> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // A Wrap so the button drops under the title when large text leaves
-          // no room beside it.
-          Wrap(
-            alignment: WrapAlignment.spaceBetween,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              Text(title, style: theme.textTheme.titleLarge),
-              TextButton(
-                onPressed: () {
-                  final root = Navigator.of(context, rootNavigator: true);
-                  root.pop();
-                  GoRouter.of(root.context)
-                      .push(AppRoute.adhkarSessionPath(collection.id));
-                },
-                child: Text(l10n.adhkarShowList),
-              ),
-            ],
+          // The header stays put; dragging it moves the sheet.
+          AppSheetDragArea(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // A Wrap so the button drops under the title when large text
+                // leaves no room beside it.
+                Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    Text(title, style: theme.textTheme.titleLarge),
+                    TextButton(
+                      onPressed: () {
+                        final root = Navigator.of(context, rootNavigator: true);
+                        root.pop();
+                        GoRouter.of(root.context)
+                            .push(AppRoute.adhkarSessionPath(collection.id));
+                      },
+                      child: Text(l10n.adhkarShowList),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppTokens.spaceSmall),
+                AdhkarProgressStrip(
+                  done: progress.doneEntries,
+                  total: progress.totalEntries,
+                  fraction: progress.fraction,
+                ),
+                const SizedBox(height: AppTokens.spaceSmall),
+              ],
+            ),
           ),
-          const SizedBox(height: 8),
-          AdhkarProgressStrip(
-            done: progress.doneEntries,
-            total: progress.totalEntries,
-            fraction: progress.fraction,
-          ),
-          const SizedBox(height: 12),
           if (complete)
-            AdhkarCompleteCard(
-              title: title,
-              onRestart: () async {
-                await ref
-                    .read(adhkarProgressProvider.notifier)
-                    .reset(collection);
-                if (!mounted) return;
-                setState(() {
-                  _finished = false;
-                  _index = 0;
-                  _pages?.dispose();
-                  _pages = null;
-                });
-              },
-              nextTitle: next?.title(language),
-              onNext: next == null
-                  ? null
-                  : () {
-                      final root = Navigator.of(context, rootNavigator: true);
-                      root.pop();
-                      unawaited(
-                        AdhkarSteps.show(root.context, collectionId: next.id),
-                      );
-                    },
+            Expanded(
+              child: SingleChildScrollView(
+                controller: widget.scroll,
+                child: AdhkarCompleteCard(
+                  title: title,
+                  onRestart: () async {
+                    await ref
+                        .read(adhkarProgressProvider.notifier)
+                        .reset(collection);
+                    if (!mounted) return;
+                    setState(() {
+                      _finished = false;
+                      _index = 0;
+                      _pages?.dispose();
+                      _pages = null;
+                    });
+                  },
+                  nextTitle: next?.title(language),
+                  onNext: next == null
+                      ? null
+                      : () {
+                          final root = Navigator.of(
+                            context,
+                            rootNavigator: true,
+                          );
+                          root.pop();
+                          unawaited(
+                            AdhkarSteps.show(
+                              root.context,
+                              collectionId: next.id,
+                            ),
+                          );
+                        },
+                ),
+              ),
             )
           else ...[
             Row(
@@ -283,25 +318,37 @@ class _StepsBodyState extends ConsumerState<_StepsBody> {
                 ),
               ],
             ),
-            SizedBox(
-              height: pageHeight,
+            // The words scroll in the room that is left; the counter below
+            // stays where the thumb is, however long the dhikr.
+            Expanded(
               child: PageView.builder(
                 controller: pages,
                 itemCount: collection.entries.length,
                 onPageChanged: _onPage,
                 itemBuilder: (context, page) => SingleChildScrollView(
+                  // Only the step on screen moves the sheet.
+                  controller: page == index ? widget.scroll : null,
+                  primary: false,
                   child: DhikrCard(
                     key: ValueKey('${collection.id}:$page'),
                     collection: collection,
                     dhikr: collection.entries[page],
                     number: page + 1,
+                    showCounter: false,
                     onCount: () => _count(collection, page),
-                    onUndo: () => ref
-                        .read(adhkarProgressProvider.notifier)
-                        .decrement(collection, collection.entries[page]),
+                    onUndo: () => _undo(collection, page),
                   ),
                 ),
               ),
+            ),
+            const SizedBox(height: AppTokens.spaceMedium),
+            DhikrCounter(
+              key: ValueKey('counter:${collection.id}:$index'),
+              collection: collection,
+              dhikr: collection.entries[index],
+              inline: true,
+              onCount: () => _count(collection, index),
+              onUndo: () => _undo(collection, index),
             ),
           ],
         ],

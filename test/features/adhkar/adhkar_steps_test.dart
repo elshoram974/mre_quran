@@ -9,6 +9,7 @@ import 'package:mre_quran/features/adhkar/domain/adhkar_collection.dart';
 import 'package:mre_quran/features/adhkar/domain/dhikr.dart';
 import 'package:mre_quran/features/adhkar/presentation/adhkar_session_page.dart';
 import 'package:mre_quran/features/adhkar/presentation/dhikr_card.dart';
+import 'package:mre_quran/features/adhkar/presentation/dhikr_counter.dart';
 import 'package:mre_quran/features/adhkar/presentation/duas_page.dart';
 
 import '../../helpers/adhkar_app.dart';
@@ -52,13 +53,13 @@ AdhkarCatalog _steps() => AdhkarCatalog(
 
 /// A counter whose text holds [part].
 Finder _counterContaining(String part) => find.descendant(
-  of: find.byType(DhikrCard),
+  of: find.byType(DhikrCounter),
   matching: find.textContaining(part),
 );
 
 /// The counter button of the step on screen.
 Finder _counter(String text) =>
-    find.descendant(of: find.byType(DhikrCard), matching: find.text(text));
+    find.descendant(of: find.byType(DhikrCounter), matching: find.text(text));
 
 Future<void> _open(WidgetTester tester) async {
   await tapVisible(tester, find.text('ابدأ'));
@@ -182,8 +183,17 @@ void main() {
         ),
         matching: find.byType(Icon),
       );
-      expect(tester.widget<Icon>(arrow('السابق')).icon, Icons.chevron_right);
-      expect(tester.widget<Icon>(arrow('التالي')).icon, Icons.chevron_left);
+      // The same icons as in English: each one is drawn mirrored in Arabic,
+      // so "back" points right and "next" points left.
+      expect(tester.widget<Icon>(arrow('السابق')).icon, Icons.chevron_left);
+      expect(tester.widget<Icon>(arrow('التالي')).icon, Icons.chevron_right);
+      for (final tooltip in ['السابق', 'التالي']) {
+        expect(
+          find.descendant(of: arrow(tooltip), matching: find.byType(Transform)),
+          findsOneWidget,
+          reason: '$tooltip is mirrored',
+        );
+      }
       expect(
         tester.getCenter(arrow('السابق')).dx,
         greaterThan(tester.getCenter(arrow('التالي')).dx),
@@ -292,7 +302,7 @@ void main() {
       await tester.tap(_counter('٠ من ٣'));
       await tester.pumpAndSettle();
       expect(_counter('١ من ٣'), findsOneWidget);
-      await tester.tap(find.text('تراجع عن مرة'));
+      await tester.tap(find.byTooltip('تراجع عن مرة'));
       await tester.pumpAndSettle();
       expect(_counter('٠ من ٣'), findsOneWidget);
     });
