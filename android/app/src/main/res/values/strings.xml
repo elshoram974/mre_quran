@@ -1,0 +1,10 @@
+<resources>
+    <!-- The app's name: under its icon, in notifications, in the widget picker. -->
+    <string name="app_name">MRE Quran</string>
+    <!-- Buttons and channel of the download notification (background_downloader). -->
+    <string name="bg_downloader_cancel">Cancel</string>
+    <string name="bg_downloader_pause">Pause</string>
+    <string name="bg_downloader_resume">Resume</string>
+    <string name="bg_downloader_notification_channel_name">Downloads</string>
+    <string name="bg_downloader_notification_channel_description">Progress of the offline Mushaf download</string>
+</resources>

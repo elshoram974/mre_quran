@@ -38,7 +38,10 @@ class _PrayerLocationPickerPageState
   bool _mapInteractionStarted = false;
   bool _restoredSavedPlace = false;
   bool _searching = false;
-  bool _searched = false;
+
+  /// Whether the last search found no place at all. A search that found one
+  /// and moved the map there is not a failed search.
+  bool _notFound = false;
   PrayerResult _locationResult = PrayerResult.ok;
 
   @override
@@ -62,143 +65,150 @@ class _PrayerLocationPickerPageState
         (_) => _restoreSavedPlace(stored),
       );
     }
+    final results = _searchResults;
     return AppPageScaffold(
       title: l10n.prayerMapTitle,
-      body: Stack(
+      // The search bar above and the save panel below sit beside the map, not
+      // over it, so the map's own buttons and the pin are never covered.
+      body: Column(
         children: [
-          RepaintBoundary(
-            child: GoogleMap(
-              initialCameraPosition: CameraPosition(
-                target: initial,
-                zoom: selected == null ? 1.5 : 14,
-              ),
-              myLocationButtonEnabled: false,
-              compassEnabled: true,
-              onMapCreated: (controller) {
-                _mapController.complete(controller);
-                _cameraTarget ??= initial;
-              },
-              onCameraMoveStarted: () => _mapInteractionStarted = true,
-              onCameraMove: (position) => _cameraTarget = position.target,
-              onCameraIdle: _selectCameraTarget,
-            ),
-          ),
-          const IgnorePointer(
-            child: Center(
-              // The pin must sit on the camera target. Do not offset it for
-              // controls below: the selected coordinates would be inaccurate.
-              child: Icon(Icons.location_pin, size: AppTokens.minTarget),
-            ),
-          ),
           SafeArea(
+            bottom: false,
             child: Padding(
-              padding: const EdgeInsetsDirectional.all(AppTokens.gutterCompact),
-              child: Align(
-                alignment: AlignmentDirectional.topCenter,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: MRETextField(
-                            controller: _searchController,
-                            hintText: l10n.prayerMapSearchHint,
-                            prefixIcon: const Icon(Icons.search),
-                            showClearButton: true,
-                            textInputAction: TextInputAction.search,
-                            onFieldSubmitted: (_) => _search(),
-                          ),
-                        ),
-                        const SizedBox(width: AppTokens.spaceSmall),
-                        IconButton.filledTonal(
-                          tooltip: l10n.prayerMapCurrentLocation,
-                          onPressed: _useDeviceLocation,
-                          icon: const Icon(Icons.my_location_outlined),
-                        ),
-                      ],
+              padding: const EdgeInsetsDirectional.fromSTEB(
+                AppTokens.gutterCompact,
+                AppTokens.spaceSmall,
+                AppTokens.gutterCompact,
+                AppTokens.spaceSmall,
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: MRETextField(
+                      controller: _searchController,
+                      hintText: l10n.prayerMapSearchHint,
+                      prefixIcon: const Icon(Icons.search),
+                      showClearButton: true,
+                      textInputAction: TextInputAction.search,
+                      onFieldSubmitted: (_) => _search(),
                     ),
-                    if (_searching) const LinearProgressIndicator(),
-                    if (_searched && _searchResults.isEmpty && !_searching)
-                      Padding(
-                        padding: const EdgeInsetsDirectional.only(
-                          top: AppTokens.spaceSmall,
-                        ),
-                        child: AppCard(
-                          child: AppNotice(
-                            l10n.prayerMapNoResults,
-                            error: true,
-                          ),
-                        ),
+                  ),
+                  const SizedBox(width: AppTokens.spaceSmall),
+                  IconButton.filledTonal(
+                    tooltip: l10n.prayerMapCurrentLocation,
+                    onPressed: _useDeviceLocation,
+                    icon: const Icon(Icons.my_location_outlined),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (_searching) const LinearProgressIndicator(),
+          Expanded(
+            child: Stack(
+              children: [
+                RepaintBoundary(
+                  child: GoogleMap(
+                    initialCameraPosition: CameraPosition(
+                      target: initial,
+                      zoom: selected == null ? _worldZoom : _placeZoom,
+                    ),
+                    // Only what choosing a point needs: no 3D buildings,
+                    // indoor maps, traffic, tilt, or rotation to draw.
+                    buildingsEnabled: false,
+                    indoorViewEnabled: false,
+                    tiltGesturesEnabled: false,
+                    rotateGesturesEnabled: false,
+                    compassEnabled: false,
+                    mapToolbarEnabled: false,
+                    myLocationButtonEnabled: false,
+                    onMapCreated: (controller) {
+                      _mapController.complete(controller);
+                      _cameraTarget ??= initial;
+                    },
+                    onCameraMoveStarted: () => _mapInteractionStarted = true,
+                    onCameraMove: (position) => _cameraTarget = position.target,
+                    onCameraIdle: _selectCameraTarget,
+                  ),
+                ),
+                const IgnorePointer(
+                  child: Center(
+                    // The pin sits on the camera target, the centre of the
+                    // map; nothing covers the map, so no offset is needed.
+                    child: Icon(Icons.location_pin, size: AppTokens.minTarget),
+                  ),
+                ),
+                if (_notFound || results.isNotEmpty)
+                  Align(
+                    alignment: AlignmentDirectional.topCenter,
+                    child: Padding(
+                      padding: const EdgeInsetsDirectional.all(
+                        AppTokens.gutterCompact,
                       ),
-                    if (_searchResults.isNotEmpty && !_searching)
-                      Padding(
-                        padding: const EdgeInsetsDirectional.only(
-                          top: AppTokens.spaceSmall,
-                        ),
-                        child: AppCard(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              for (final result in _searchResults)
-                                TextButton(
-                                  onPressed: () => _selectSearchResult(result),
-                                  child: Text(
-                                    l10n.prayerPlaceLine(
-                                      _coordinate(
-                                        result.latitude,
-                                        formatDigits,
-                                      ),
-                                      _coordinate(
-                                        result.longitude,
-                                        formatDigits,
+                      child: AppCard(
+                        child: _notFound
+                            ? AppNotice(l10n.prayerMapNoResults, error: true)
+                            : Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  for (final result in results)
+                                    TextButton(
+                                      onPressed: () =>
+                                          _selectSearchResult(result),
+                                      child: Text(
+                                        l10n.prayerPlaceLine(
+                                          _coordinate(
+                                            result.latitude,
+                                            formatDigits,
+                                          ),
+                                          _coordinate(
+                                            result.longitude,
+                                            formatDigits,
+                                          ),
+                                        ),
+                                        textAlign: TextAlign.start,
                                       ),
                                     ),
-                                    textAlign: TextAlign.start,
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
+                                ],
+                              ),
                       ),
-                  ],
-                ),
-              ),
+                    ),
+                  ),
+              ],
             ),
           ),
           SafeArea(
-            child: Align(
-              alignment: AlignmentDirectional.bottomCenter,
-              child: Padding(
-                padding: const EdgeInsetsDirectional.fromSTEB(
-                  AppTokens.gutterCompact,
-                  AppTokens.spaceMedium,
-                  AppTokens.gutterCompact,
-                  AppTokens.spaceMedium,
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    AppNotice(
-                      selected == null
-                          ? l10n.prayerMapHint
-                          : l10n.prayerPlaceLine(
-                              _coordinate(selected.latitude, formatDigits),
-                              _coordinate(selected.longitude, formatDigits),
-                            ),
-                    ),
-                    if (_locationResult == PrayerResult.locationDenied) ...[
-                      const SizedBox(height: AppTokens.spaceSmall),
-                      AppNotice(l10n.adhkarLocationDenied, error: true),
-                    ],
+            top: false,
+            child: Padding(
+              padding: const EdgeInsetsDirectional.fromSTEB(
+                AppTokens.gutterCompact,
+                AppTokens.spaceMedium,
+                AppTokens.gutterCompact,
+                AppTokens.spaceMedium,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  AppNotice(
+                    selected == null
+                        ? l10n.prayerMapHint
+                        : l10n.prayerPlaceLine(
+                            _coordinate(selected.latitude, formatDigits),
+                            _coordinate(selected.longitude, formatDigits),
+                          ),
+                  ),
+                  if (_locationResult == PrayerResult.locationDenied) ...[
                     const SizedBox(height: AppTokens.spaceSmall),
-                    FilledButton(
-                      onPressed: selected == null ? null : _save,
-                      child: Text(l10n.prayerMapSave),
-                    ),
+                    AppNotice(l10n.adhkarLocationDenied, error: true),
                   ],
-                ),
+                  const SizedBox(height: AppTokens.spaceSmall),
+                  FilledButton(
+                    onPressed: selected == null ? null : _save,
+                    child: Text(l10n.prayerMapSave),
+                  ),
+                ],
               ),
             ),
           ),
@@ -241,7 +251,7 @@ class _PrayerLocationPickerPageState
     FocusManager.instance.primaryFocus?.unfocus();
     setState(() {
       _searching = true;
-      _searched = false;
+      _notFound = false;
       _searchResults = const [];
     });
     final results = await ref
@@ -250,7 +260,7 @@ class _PrayerLocationPickerPageState
     if (!mounted) return;
     setState(() {
       _searching = false;
-      _searched = true;
+      _notFound = results.isEmpty;
       _searchResults = results;
     });
     if (results.length == 1) await _selectSearchResult(results.single);
@@ -269,7 +279,9 @@ class _PrayerLocationPickerPageState
   Future<void> _animateTo(LatLng target) async {
     final controller = await _mapController.future;
     if (!mounted) return;
-    await controller.animateCamera(CameraUpdate.newLatLngZoom(target, 14));
+    await controller.animateCamera(
+      CameraUpdate.newLatLngZoom(target, _placeZoom),
+    );
   }
 
   void _selectCameraTarget() {
@@ -286,6 +298,12 @@ class _PrayerLocationPickerPageState
   }
 
   static const LatLng _world = LatLng(20, 0);
+
+  /// Zoom that shows the whole world, before a place is chosen.
+  static const double _worldZoom = 1.5;
+
+  /// Zoom that shows a neighbourhood around a chosen place.
+  static const double _placeZoom = 14;
 
   static String _coordinate(
     double value,

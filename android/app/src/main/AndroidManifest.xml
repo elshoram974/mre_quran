@@ -17,6 +17,10 @@
          screen is off and shows its notice until stopped. -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"/>
+    <!-- The offline Mushaf is one large download. It runs as a data-sync
+         foreground service, with its notification, so it carries on when the
+         app is closed and is not cut off after nine minutes. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"/>
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <!-- Approximate location, asked for only when the person turns on the
          after-prayer reminders, to work out prayer times on the device.
@@ -27,7 +31,7 @@
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"
         tools:node="remove"/>
     <application
-        android:label="mre_quran"
+        android:label="@string/app_name"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:fullBackupContent="@xml/backup_rules"
@@ -78,6 +82,10 @@
             </intent-filter>
         </receiver>
         <service
+            android:name="androidx.work.impl.foreground.SystemForegroundService"
+            android:foregroundServiceType="dataSync"
+            tools:node="merge" />
+        <service
             android:name=".AdhanService"
             android:exported="false"
             android:foregroundServiceType="mediaPlayback" />
@@ -122,6 +130,15 @@
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/adhkar_widget_info" />
+        </receiver>
+        <receiver
+            android:name=".TasbihWidgetProvider"
+            android:exported="false"
+            android:label="@string/tasbih_widget_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/tasbih_widget_info" />
         </receiver>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->

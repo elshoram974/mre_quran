@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The next prayer. The text here is the sample shown in the widget picker;
-     PrayerWidgetProvider replaces it. -->
+<!-- The next prayer, one row tall and two cells wide: its name at the start,
+     its time and the time left at the end. The text here is the sample shown
+     in the widget picker; PrayerWidgetProvider replaces it. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/prayer_widget_root"
     android:layout_width="match_parent"
@@ -8,8 +9,8 @@
     android:background="@drawable/widget_bg">
 
     <ImageView
-        android:layout_width="64dp"
-        android:layout_height="64dp"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
         android:layout_gravity="end|bottom"
         android:layout_margin="4dp"
         android:importantForAccessibility="no"
@@ -19,36 +20,49 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center_vertical"
-        android:orientation="vertical"
-        android:padding="12dp">
-
-        <TextView
-            android:id="@+id/prayer_widget_label"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:singleLine="true"
-            android:text="@string/prayer_widget_label"
-            android:textAlignment="viewStart"
-            android:textColor="@color/widget_accent"
-            android:textSize="12sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/prayer_widget_name"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:singleLine="true"
-            android:text="@string/widget_preview_fajr"
-            android:textAlignment="viewStart"
-            android:textColor="@color/widget_text"
-            android:textSize="22sp"
-            android:textStyle="bold" />
+        android:orientation="horizontal"
+        android:paddingStart="14dp"
+        android:paddingTop="8dp"
+        android:paddingEnd="14dp"
+        android:paddingBottom="8dp">
 
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/prayer_widget_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:singleLine="true"
+                android:text="@string/prayer_widget_label"
+                android:textAlignment="viewStart"
+                android:textColor="@color/widget_accent"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <!-- Two lines, so the "set your location" hint is not cut. -->
+            <TextView
+                android:id="@+id/prayer_widget_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="2"
+                android:text="@string/widget_preview_fajr"
+                android:textAlignment="viewStart"
+                android:textColor="@color/widget_text"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:gravity="end"
             android:orientation="vertical">
 
             <TextView
@@ -58,7 +72,7 @@
                 android:singleLine="true"
                 android:text="@string/widget_preview_fajr_time"
                 android:textColor="@color/widget_text"
-                android:textSize="15sp"
+                android:textSize="17sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -67,9 +81,9 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:background="@drawable/widget_pill"
-                android:paddingStart="6dp"
+                android:paddingStart="8dp"
                 android:paddingTop="2dp"
-                android:paddingEnd="6dp"
+                android:paddingEnd="8dp"
                 android:paddingBottom="2dp"
                 android:singleLine="true"
                 android:text="@string/widget_preview_remaining"

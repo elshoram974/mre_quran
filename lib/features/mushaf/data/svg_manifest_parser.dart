@@ -14,6 +14,7 @@ abstract final class SvgManifestParser {
           'edition': final String edition,
           'base': final String base,
           'packedBytes': final int packedBytes,
+          'archives': final List<dynamic> archives,
           'pages': final List<dynamic> pages,
         }
         when pages.isNotEmpty && packedBytes > 0) {
@@ -21,10 +22,25 @@ abstract final class SvgManifestParser {
         edition: edition,
         base: Uri.parse(base),
         packedBytes: packedBytes,
+        archives: [for (final archive in archives) _archive(archive)],
         pages: [for (final page in pages) _entry(page)],
       );
     }
     throw const FormatException('Not a page manifest');
+  }
+
+  static SvgArchive _archive(Object? archive) {
+    if (archive
+        case {
+          'name': final String name,
+          'url': final String url,
+          'sha256': final String sha,
+          'bytes': final int bytes,
+        }
+        when _sha256.hasMatch(sha) && bytes > 0 && name.isNotEmpty) {
+      return (name: name, url: Uri.parse(url), sha256: sha, bytes: bytes);
+    }
+    throw const FormatException('Broken archive entry in the manifest');
   }
 
   static SvgPageEntry _entry(Object? page) {

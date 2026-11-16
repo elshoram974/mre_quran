@@ -88,6 +88,8 @@ class PackTile extends ConsumerWidget {
       completeBody: l10n.packNotifyCompleteBody,
       errorTitle: l10n.packNotifyErrorTitle(name),
       errorBody: l10n.packNotifyErrorBody,
+      pausedTitle: l10n.packNotifyPausedTitle(name),
+      pausedBody: l10n.packNotifyPausedBody,
     );
   }
 
@@ -98,7 +100,7 @@ class PackTile extends ConsumerWidget {
     final text = _text(l10n);
     final failed = l10n.packStartError;
     final megabytes = _mb(
-      (await ref.read(svgManifestProvider.future)).packedBytes,
+      (await ref.read(svgManifestProvider.future)).downloadBytes,
     );
     if (!context.mounted) return;
     final confirmed = await _confirm(
@@ -142,9 +144,15 @@ class PackTile extends ConsumerWidget {
     final digits = ref.watch(digitsFormatterProvider);
     final progress = ref.watch(mushafPackProvider).value;
     final packed = ref.watch(svgManifestProvider).value?.packedBytes ?? 0;
-    final percent = digits(((progress?.fraction ?? 0) * 100).floor());
+    // While downloading, the bar follows the transfer; otherwise it shows
+    // how many of the pages are on the device.
+    final shown = (progress?.active ?? false)
+        ? progress!.transfer
+        : progress?.fraction ?? 0;
+    final percent = digits((shown * 100).floor());
     final subtitle = switch (progress) {
       null => '',
+      PackProgress(installing: true) => l10n.packInstalling,
       PackProgress(active: true) => l10n.packDownloading(percent),
       PackProgress(complete: true) =>
         '${l10n.packReady} · ${l10n.packOnDevice(digits(_mb(progress.bytes)))}',
@@ -153,7 +161,7 @@ class PackTile extends ConsumerWidget {
       _ => l10n.packNotDownloaded(digits(_mb(packed))),
     };
     final Widget? action = switch (progress) {
-      null => null,
+      null || PackProgress(installing: true) => null,
       PackProgress(active: true) => TextButton(
         onPressed: () => ref.read(mushafPackProvider.notifier).cancel(),
         child: Text(l10n.packCancel),
@@ -183,7 +191,9 @@ class PackTile extends ConsumerWidget {
         child: Text(l10n.packDownload),
       ),
     };
-    final showBar = progress != null && (progress.active || progress.partial);
+    final installing = progress?.installing ?? false;
+    final showBar =
+        progress != null && (progress.active || progress.partial || installing);
     final ready = progress?.complete ?? false;
     return AppCard(
       padding: const EdgeInsetsDirectional.fromSTEB(16, 12, 8, 12),
@@ -223,7 +233,8 @@ class PackTile extends ConsumerWidget {
           if (showBar)
             Padding(
               padding: const EdgeInsetsDirectional.only(top: 10, end: 8),
-              child: LinearProgressIndicator(value: progress.fraction),
+              // Unpacking has no known length: the bar runs free.
+              child: LinearProgressIndicator(value: installing ? null : shown),
             ),
         ],
       ),

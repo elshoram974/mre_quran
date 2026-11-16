@@ -1094,6 +1094,17 @@ class AppLocalizationsAr extends AppLocalizations {
   String get packNotifyErrorBody => 'افتح الإعدادات لمتابعة التحميل.';
 
   @override
+  String packNotifyPausedTitle(String name) {
+    return 'توقّف تحميل $name مؤقتًا';
+  }
+
+  @override
+  String get packNotifyPausedBody => 'اضغط «متابعة» لإكماله.';
+
+  @override
+  String get packInstalling => 'جارٍ تجهيز الصفحات والتحقق منها…';
+
+  @override
   String get nextSurah => 'السورة التالية';
 
   @override

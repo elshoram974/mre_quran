@@ -24,6 +24,13 @@ void main() {
 
   Future<void> idle() => Future<void>.delayed(const Duration(milliseconds: 80));
 
+  /// Waits for [done], however busy the machine is.
+  Future<void> until(bool Function() done) async {
+    for (var i = 0; i < 100 && !done(); i++) {
+      await idle();
+    }
+  }
+
   /// The page a request is for, when it asks for the page's artwork.
   int? artworkPage(Uri uri) {
     final match = RegExp(r'(\d+)\.svg$').firstMatch(uri.path);
@@ -43,12 +50,13 @@ void main() {
       return (gates[page] = Completer<Uint8List>()).future;
     });
     p.around(page: 10, pageCount: 604);
+    await until(() => started.length >= 3);
     await idle();
     // Three at a time, the nearest ahead of the page first; nothing waits for
-    // the first to finish.
+    // the first to finish, and no fourth starts while three are running.
     expect(started, [11, 12, 13]);
     gates[11]!.complete(bytesOf(fixtureSvg));
-    await idle();
+    await until(() => started.length >= 4);
     expect(started, [11, 12, 13, 14]);
     for (final gate in gates.values) {
       if (!gate.isCompleted) gate.complete(bytesOf(fixtureSvg));
@@ -68,9 +76,7 @@ void main() {
       });
       p.around(page: 10, pageCount: 604);
       // Each page is checked and compressed as it lands; wait for them all.
-      for (var i = 0; i < 50 && started.length < 10; i++) {
-        await idle();
-      }
+      await until(() => started.length >= 10);
       expect(started, containsAll([11, 12, 13, 14, 15, 16, 17, 18, 9, 8]));
 
       started.clear();

@@ -1,0 +1,10 @@
+<resources>
+    <!-- The app's name: under its icon, in notifications, in the widget picker. -->
+    <string name="app_name">مصحف MRE</string>
+    <!-- Buttons and channel of the download notification (background_downloader). -->
+    <string name="bg_downloader_cancel">إلغاء</string>
+    <string name="bg_downloader_pause">إيقاف مؤقت</string>
+    <string name="bg_downloader_resume">متابعة</string>
+    <string name="bg_downloader_notification_channel_name">التحميلات</string>
+    <string name="bg_downloader_notification_channel_description">تقدّم تحميل المصحف للقراءة دون اتصال</string>
+</resources>

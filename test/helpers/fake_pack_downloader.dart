@@ -31,6 +31,16 @@ class FakePackDownloader implements PackDownloader {
   @override
   Stream<PackFileResult> get results => _results.stream;
 
+  final StreamController<PackTransfer> _transfers =
+      StreamController.broadcast();
+
+  /// Reports that [path] of [group] has come [fraction] of the way.
+  void move(String group, String path, double fraction) =>
+      _transfers.add((group: group, path: path, fraction: fraction));
+
+  @override
+  Stream<PackTransfer> get transfers => _transfers.stream;
+
   @override
   Future<void> requestNotifications() async => notificationRequests++;
 

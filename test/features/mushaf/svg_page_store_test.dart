@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:crypto/crypto.dart';
@@ -29,10 +30,11 @@ void main() {
   group('the bundled manifest', () {
     final file = File(SvgManifest.asset);
 
-    test('matches its recorded SHA-256', () {
+    test('its content matches the recorded SHA-256', () {
+      final compact = jsonEncode(jsonDecode(file.readAsStringSync()));
       expect(
-        sha256.convert(file.readAsBytesSync()).toString(),
-        SvgManifest.assetSha256,
+        sha256.convert(utf8.encode(compact)).toString(),
+        SvgManifest.contentSha256,
       );
     });
 
@@ -51,13 +53,24 @@ void main() {
       expect(manifest.totalBytes, greaterThan(300 * 1000 * 1000));
       // Kept compressed, the whole Mushaf is about a quarter of that.
       expect(manifest.packedBytes, lessThan(manifest.totalBytes ~/ 3));
+      // The two release archives, on the versioned release.
+      expect(
+        [for (final archive in manifest.archives) archive.name],
+        ['hafs-kfqc-svg.zip', 'hafs-kfqc-json.zip'],
+      );
+      expect(
+        manifest.archives.first.url.toString(),
+        'https://github.com/quran-ws/quran-svg/releases/download/v1.1.1/'
+        'hafs-kfqc-svg.zip',
+      );
+      expect(manifest.downloadBytes, greaterThan(100 * 1000 * 1000));
     });
 
     test('a broken manifest is rejected', () {
       expect(() => SvgManifestParser.parse('{}'), throwsFormatException);
       expect(
         () => SvgManifestParser.parse(
-          '{"edition":"x","base":"https://x","packedBytes":1,'
+          '{"edition":"x","base":"https://x","packedBytes":1,"archives":[],'
           '"pages":[["zz","zz",1]]}',
         ),
         throwsFormatException,
@@ -133,63 +146,123 @@ void main() {
   });
 
   group('the offline pack', () {
-    test('lists what is missing, at the paths the downloader writes', () async {
-      expect(await store.packFileCount(), 6);
-      await store.fetch(1);
-      final missing = await store.missing();
-      expect(
-        [for (final file in missing) file.path],
-        [
-          'svg/hafs-kfqc/002.svg',
-          'svg/hafs-kfqc/002.json',
-          'svg/hafs-kfqc/003.svg',
-          'svg/hafs-kfqc/003.json',
-        ],
-      );
-      expect(
-        missing.first.url.toString(),
-        'https://example.test/pages/002.svg',
-      );
+    /// Puts an archive where the system downloader writes it.
+    File arrived(String extension, {List<int>? bytes}) =>
+        stored('pack/hafs-kfqc-$extension.zip')
+          ..createSync(recursive: true)
+          ..writeAsBytesSync(bytes ?? fixtureArchive(extension));
+
+    test(
+      'asks for the two archives, at the paths the downloader writes',
+      () async {
+        expect(await store.packFileCount(), 6);
+        final missing = await store.missing();
+        expect(
+          [for (final file in missing) file.path],
+          [
+            'svg/hafs-kfqc/pack/hafs-kfqc-svg.zip',
+            'svg/hafs-kfqc/pack/hafs-kfqc-json.zip',
+          ],
+        );
+        expect(
+          missing.first.url.toString(),
+          'https://example.test/hafs-kfqc-svg.zip',
+        );
+        // One that has arrived is not asked for again.
+        arrived('json');
+        expect(
+          [for (final file in await store.missing()) file.path],
+          ['svg/hafs-kfqc/pack/hafs-kfqc-svg.zip'],
+        );
+        expect(await store.hasArchives(), isTrue);
+      },
+    );
+
+    test('installing checks, unpacks, and compresses every page', () async {
+      arrived('svg');
+      arrived('json');
+      await store.install();
+
+      expect(await store.filesOnDevice(), 6);
+      expect(stored('002.svg.gz').existsSync(), isTrue);
+      expect(stored('003.json.gz').existsSync(), isTrue);
+      // The archives are gone, and so are the files that are not pages.
+      expect(await store.hasArchives(), isFalse);
+      expect(stored('001-surah1.svg.gz').existsSync(), isFalse);
+      expect(await store.missing(), isEmpty);
+      // Every page now opens without the network.
+      server.offline = true;
+      for (final page in [1, 2, 3]) {
+        expect((await store.page(page)).page, page);
+      }
+      expect(server.requests, isEmpty);
     });
 
-    test('downloaded files are checked and compressed; bad ones go', () async {
-      stored('002.svg')
-        ..createSync(recursive: true)
-        ..writeAsStringSync(fixtureSvg);
-      stored('002.json').writeAsStringSync(fixtureJson);
-      // An error page a CDN answered with 200.
-      stored('003.svg').writeAsStringSync('<html>Not found</html>');
-      stored('999.svg').writeAsStringSync(fixtureSvg);
+    test('an archive that fails its checksum installs nothing', () async {
+      final altered = fixtureArchive('svg')..[40] ^= 0xFF;
+      arrived('svg', bytes: altered);
+      arrived('json', bytes: '<html>Not found</html>'.codeUnits);
+      await store.install();
+      expect(await store.filesOnDevice(), 0);
+      expect(await store.hasArchives(), isFalse);
+      // Both are asked for again.
+      expect(await store.missing(), hasLength(2));
+    });
 
-      await store.ingest();
-
-      expect(stored('002.svg.gz').existsSync(), isTrue);
-      expect(stored('002.json.gz').existsSync(), isTrue);
-      expect(stored('002.svg').existsSync(), isFalse);
-      expect(stored('003.svg').existsSync(), isFalse);
-      expect(stored('003.svg.gz').existsSync(), isFalse);
-      expect(stored('999.svg').existsSync(), isFalse);
-      expect(
-        [for (final file in await store.missing()) file.path],
-        [
-          'svg/hafs-kfqc/001.svg',
-          'svg/hafs-kfqc/001.json',
-          'svg/hafs-kfqc/003.svg',
-          'svg/hafs-kfqc/003.json',
-        ],
+    test('a page inside a sound archive is still checked on its own', () async {
+      // An archive whose checksum the manifest vouches for, but holding a
+      // page that does not match its own checksum.
+      final manifest = fixtureManifest();
+      final odd = SvgPageStore(
+        root: () async => root,
+        manifest: () async => SvgManifestParser.parse(
+          jsonEncode({
+            'edition': manifest.edition,
+            'base': '${manifest.base}',
+            'packedBytes': 1,
+            'archives': [
+              for (final archive in manifest.archives)
+                {
+                  'name': archive.name,
+                  'url': '${archive.url}',
+                  'sha256': archive.sha256,
+                  'bytes': archive.bytes,
+                },
+            ],
+            'pages': [
+              for (final page in manifest.pages)
+                ['0' * 64, page.jsonSha256, page.bytes],
+            ],
+          }),
+        ),
+        fetch: server.fetch,
       );
-      // The page opens without the network.
-      server.offline = true;
-      expect((await store.page(2)).page, 2);
+      arrived('svg');
+      arrived('json');
+      await odd.install();
+      expect(stored('001.svg.gz').existsSync(), isFalse);
+      expect(stored('001.json.gz').existsSync(), isTrue);
+    });
+
+    test('pages already on the device are kept as they are', () async {
+      await store.fetch(1);
+      final before = stored('001.svg.gz').lastModifiedSync();
+      arrived('svg');
+      arrived('json');
+      await store.install();
+      expect(stored('001.svg.gz').lastModifiedSync(), before);
+      expect(await store.filesOnDevice(), 6);
     });
 
     test('counts its bytes and deletes everything', () async {
       expect(await store.bytesOnDevice(), 0);
       await store.fetch(1);
       expect(await store.bytesOnDevice(), greaterThan(0));
+      arrived('json');
       await store.deleteAll();
       expect(await store.bytesOnDevice(), 0);
-      expect(await store.missing(), hasLength(6));
+      expect(await store.hasArchives(), isFalse);
+      expect(await store.missing(), hasLength(2));
     });
   });
 }

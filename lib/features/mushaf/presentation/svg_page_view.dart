@@ -86,6 +86,7 @@ class SvgPageView extends StatelessWidget {
     page: page,
     onTap: onTap,
     spread: spread,
+    gutter: AppTokens.readerGutterPrinted,
     child: _SlowGate(
       key: ValueKey<int>(page),
       after: fallbackAfter,

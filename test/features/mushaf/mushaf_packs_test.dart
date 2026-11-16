@@ -17,6 +17,8 @@ const _text = PackNotificationText(
   completeBody: 'Offline now',
   errorTitle: 'Failed',
   errorBody: 'Open settings',
+  pausedTitle: 'Paused',
+  pausedBody: 'Tap resume',
 );
 
 void main() {
@@ -46,86 +48,114 @@ void main() {
     root.deleteSync(recursive: true);
   });
 
-  /// Writes a file the way the system downloader does: as it came.
-  File downloaded(String name, String content) =>
-      File('${root.path}/mushaf/svg/hafs-kfqc/$name')
+  /// Puts an archive where the system downloader writes it.
+  File arrived(String extension, {List<int>? bytes}) =>
+      File('${root.path}/mushaf/svg/hafs-kfqc/pack/hafs-kfqc-$extension.zip')
         ..createSync(recursive: true)
-        ..writeAsStringSync(content);
+        ..writeAsBytesSync(bytes ?? fixtureArchive(extension));
+
+  const svgPath = 'svg/hafs-kfqc/pack/hafs-kfqc-svg.zip';
+  const jsonPath = 'svg/hafs-kfqc/pack/hafs-kfqc-json.zip';
 
   Future<PackProgress> progress() => container.read(mushafPackProvider.future);
 
-  test('counts the sound files on the device, two per page', () async {
-    downloaded('001.svg', fixtureSvg);
-    downloaded('001.json', fixtureJson);
-    downloaded('002.svg', fixtureSvg);
+  Future<void> settled() =>
+      Future<void>.delayed(const Duration(milliseconds: 400));
+
+  test('starts empty: no page on the device, nothing running', () async {
     final state = await progress();
-    expect(state.total, 6);
-    expect(state.done, 3);
-    expect(state.partial, isTrue);
-    expect(state.bytes, greaterThan(0));
+    expect((state.done, state.total), (0, 6));
+    expect(state.active, isFalse);
+    expect(state.partial, isFalse);
   });
 
-  test(
-    'a file that fails its checksum does not count and is removed',
-    () async {
-      final bad = downloaded('001.svg', '<html>503</html>');
-      expect((await progress()).done, 0);
-      expect(bad.existsSync(), isFalse);
-    },
-  );
-
-  test('start downloads only what is missing, as one notified group', () async {
-    downloaded('001.svg', fixtureSvg);
+  test('start downloads the two archives as one notified group', () async {
     await progress();
     await container.read(mushafPackProvider.notifier).start(_text);
     expect(downloader.notificationRequests, 1);
-    final files = downloader.enqueued[MushafPack.group]!;
-    expect(files, hasLength(5));
-    expect(files.map((f) => f.path), isNot(contains('svg/hafs-kfqc/001.svg')));
+    expect(
+      [for (final f in downloader.enqueued[MushafPack.group]!) f.path],
+      [svgPath, jsonPath],
+    );
     expect(downloader.texts[MushafPack.group], _text);
     final state = await progress();
-    expect((state.active, state.done), (true, 1));
+    expect((state.active, state.transfer), (true, 0.0));
   });
 
-  test(
-    'a finished file is checked, counted, and the last ends the download',
-    () async {
-      await progress();
-      await container.read(mushafPackProvider.notifier).start(_text);
-      downloaded('001.svg', fixtureSvg);
-      downloader
-        ..running[MushafPack.group] = 1
-        ..finish(MushafPack.group, 'svg/hafs-kfqc/001.svg');
-      await Future<void>.delayed(const Duration(milliseconds: 250));
-      final state = await progress();
-      expect(state.done, 1);
-      expect(state.active, isFalse);
-    },
-  );
-
-  test('an error page that came back as a file is dropped', () async {
+  test('the progress follows the slower archive', () async {
     await progress();
-    final bad = downloaded('001.svg', '<html>503</html>');
-    downloader.finish(MushafPack.group, 'svg/hafs-kfqc/001.svg');
-    await Future<void>.delayed(const Duration(milliseconds: 250));
-    expect((await progress()).done, 0);
-    expect(bad.existsSync(), isFalse);
+    await container.read(mushafPackProvider.notifier).start(_text);
+    downloader
+      ..move(MushafPack.group, jsonPath, 1)
+      ..move(MushafPack.group, svgPath, 0.4);
+    await Future<void>.delayed(Duration.zero);
+    expect((await progress()).transfer, 0.4);
+    // Another group's download does not move it.
+    downloader.move('something-else', svgPath, 0.9);
+    await Future<void>.delayed(Duration.zero);
+    expect((await progress()).transfer, 0.4);
+  });
+
+  test('arrived archives are installed, and the download ends', () async {
+    await progress();
+    await container.read(mushafPackProvider.notifier).start(_text);
+    arrived('svg');
+    arrived('json');
+    downloader
+      ..finish(MushafPack.group, svgPath)
+      ..finish(MushafPack.group, jsonPath);
+    await settled();
+    final state = await progress();
+    expect((state.done, state.total), (6, 6));
+    expect(state.complete, isTrue);
+    expect(state.active, isFalse);
+    expect(state.installing, isFalse);
+    expect(state.bytes, greaterThan(0));
+  });
+
+  test('an archive that came back broken installs nothing', () async {
+    await progress();
+    arrived('svg', bytes: '<html>503</html>'.codeUnits);
+    downloader.finish(MushafPack.group, svgPath, ok: false);
+    await settled();
+    final state = await progress();
+    expect(state.done, 0);
+    expect(state.installing, isFalse);
+  });
+
+  test('archives that arrived while the app was closed are installed when '
+      'it opens', () async {
+    arrived('svg');
+    arrived('json');
+    await progress();
+    await settled();
+    expect((await progress()).complete, isTrue);
   });
 
   test('files of another download group are ignored', () async {
     final before = await progress();
     downloader.finish('something-else', 'x');
-    await Future<void>.delayed(const Duration(milliseconds: 100));
+    await settled();
     expect(await progress(), before);
   });
 
-  test('cancel keeps the files; delete removes them', () async {
-    downloaded('002.json', fixtureJson);
+  test('a download cannot be started twice', () async {
     await progress();
+    final notifier = container.read(mushafPackProvider.notifier);
+    await notifier.start(_text);
+    await notifier.start(_text);
+    expect(downloader.notificationRequests, 1);
+  });
+
+  test('cancel keeps the pages; delete removes them', () async {
+    arrived('svg');
+    arrived('json');
+    await progress();
+    await settled();
     final notifier = container.read(mushafPackProvider.notifier);
     await notifier.cancel();
     expect(downloader.cancelled, [MushafPack.group]);
-    expect((await progress()).done, 1);
+    expect((await progress()).done, 6);
     await notifier.delete();
     expect((await progress()).done, 0);
     expect(
@@ -136,9 +166,10 @@ void main() {
 
   test('coming back to the app collects what finished meanwhile', () async {
     await progress();
-    downloaded('003.svg', fixtureSvg);
+    arrived('svg');
+    arrived('json');
     await container.read(mushafPackProvider.notifier).refresh();
     expect(downloader.resumes, 1);
-    expect((await progress()).done, 1);
+    expect((await progress()).complete, isTrue);
   });
 }

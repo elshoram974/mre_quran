@@ -28,4 +28,10 @@
     <string name="adhkar_widget_description">Suggested adhkar with your saved progress.</string>
     <string name="adhkar_widget_empty">Open MRE Quran to load your adhkar.</string>
     <string name="adhkar_widget_progress">%1$d of %2$d</string>
+    <string name="widget_preview_adhkar_title">Morning adhkar</string>
+    <string name="widget_preview_adhkar_count">3 of 12</string>
+    <string name="tasbih_widget_name">Tasbih</string>
+    <string name="tasbih_widget_description">Count your tasbih right from the home screen.</string>
+    <string name="tasbih_widget_reset">Reset</string>
+    <string name="tasbih_widget_count_description">Add one to the tasbih count</string>
 </resources>

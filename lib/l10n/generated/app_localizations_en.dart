@@ -1097,6 +1097,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get packNotifyErrorBody => 'Open settings to continue the download.';
 
   @override
+  String packNotifyPausedTitle(String name) {
+    return '$name download paused';
+  }
+
+  @override
+  String get packNotifyPausedBody => 'Tap Resume to carry on.';
+
+  @override
+  String get packInstalling => 'Checking and preparing the pages…';
+
+  @override
   String get nextSurah => 'Next surah';
 
   @override

@@ -97,4 +97,8 @@ abstract final class AppTokens {
 
   /// Side margin of the Mushaf text.
   static const double readerGutter = 12;
+
+  /// Side margin of a printed Mushaf page. The artwork carries its own
+  /// margin, so the page runs almost edge to edge, as a printed copy does.
+  static const double readerGutterPrinted = 2;
 }

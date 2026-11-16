@@ -3,6 +3,10 @@ import 'package:meta/meta.dart';
 /// The checksums of one page's two files.
 typedef SvgPageEntry = ({String svgSha256, String jsonSha256, int bytes});
 
+/// One archive holding every page's SVG or JSON file, for downloading the
+/// whole Mushaf at once.
+typedef SvgArchive = ({String name, Uri url, String sha256, int bytes});
+
 /// The list of the printed Mushaf's page files: where they are downloaded
 /// from and the SHA-256 each must match before the app will use it.
 ///
@@ -15,15 +19,20 @@ class SvgManifest {
     required this.edition,
     required this.base,
     required this.packedBytes,
+    required List<SvgArchive> archives,
     required List<SvgPageEntry> pages,
-  }) : pages = List.unmodifiable(pages);
+  }) : archives = List.unmodifiable(archives),
+       pages = List.unmodifiable(pages);
 
   /// Bundled asset holding the manifest.
   static const String asset = 'assets/quran/svg/hafs_kfqc_manifest.json';
 
-  /// SHA-256 of [asset], checked by a test.
-  static const String assetSha256 =
-      '77f9f1b91d5734dbcb6a83da1f41bf535c678d79b6eb52ce85ff8876731554da';
+  /// SHA-256 of the manifest's content, compactly re-encoded
+  /// (`jsonEncode(jsonDecode(file))`), checked by a test. Hashing the content
+  /// instead of the bytes keeps the check true when an editor re-indents the
+  /// file, and still fails on any changed value.
+  static const String contentSha256 =
+      '198cd724391c97dd1c93d8bf5db5961403a1dce31d901293baa46442b7f24cc4';
 
   /// Name of the edition, used as its folder on the device.
   final String edition;
@@ -34,6 +43,13 @@ class SvgManifest {
   /// Size of every page together as kept on the device, compressed: what
   /// the offline pack costs in storage.
   final int packedBytes;
+
+  /// The archives that together hold every page file.
+  final List<SvgArchive> archives;
+
+  /// Size of the archives together: what the offline download costs in data.
+  int get downloadBytes =>
+      archives.fold(0, (sum, archive) => sum + archive.bytes);
 
   /// One entry per page; index 0 is page 1.
   final List<SvgPageEntry> pages;

@@ -5,6 +5,9 @@ import 'package:meta/meta.dart';
 /// folder of the app support directory.
 typedef PackFile = ({Uri url, String path});
 
+/// How far one file of a download has come, 0–1.
+typedef PackTransfer = ({String group, String path, double fraction});
+
 /// How one file of a download ended.
 typedef PackFileResult = ({String group, String path, bool ok});
 
@@ -19,6 +22,8 @@ class PackNotificationText {
     required this.completeBody,
     required this.errorTitle,
     required this.errorBody,
+    required this.pausedTitle,
+    required this.pausedBody,
   });
 
   /// Shown while files download.
@@ -38,6 +43,12 @@ class PackNotificationText {
 
   /// See [errorTitle].
   final String errorBody;
+
+  /// Shown while the person has paused the download from its notification.
+  final String pausedTitle;
+
+  /// See [pausedTitle].
+  final String pausedBody;
 }
 
 /// Downloads sets of files that keep going when the app is closed.
@@ -47,11 +58,15 @@ abstract interface class PackDownloader {
   /// Every file that ends, as it ends.
   Stream<PackFileResult> get results;
 
+  /// How far each running file has come, as it moves.
+  Stream<PackTransfer> get transfers;
+
   /// Asks the person for permission to show the download's notification, if
   /// the platform wants it. Called when a download starts, never at launch.
   Future<void> requestNotifications();
 
-  /// Starts downloading [files] as one [group], with one notification.
+  /// Starts downloading [files] as one [group]. Each file shows its own
+  /// notification with a progress bar and buttons to pause and to cancel.
   Future<void> enqueue(
     String group,
     Iterable<PackFile> files,
@@ -70,8 +85,9 @@ abstract interface class PackDownloader {
 }
 
 /// The platform downloader: a background `URLSession` on iOS, WorkManager on
-/// Android. The system keeps the downloads going after the app is closed,
-/// and shows one progress notification for the group.
+/// Android. The system keeps the downloads going after the app is closed or
+/// swiped away. On Android a large file runs as a foreground service, which
+/// lifts WorkManager's nine-minute limit.
 class BackgroundPackDownloader implements PackDownloader {
   /// Creates the downloader.
   BackgroundPackDownloader();
@@ -82,13 +98,14 @@ class BackgroundPackDownloader implements PackDownloader {
   /// The folder the files go under, inside the app support directory.
   static const String _folder = 'mushaf';
 
+  /// Files above this size, in megabytes, download as a foreground service.
+  static const int _foregroundAboveMb = 5;
+
   Future<void> _configure() => _configured ??= () async {
     await _downloader.configure(
       globalConfig: [
-        // A few files at a time, queued natively so the queue keeps going
-        // while the app is suspended.
-        (Config.holdingQueue, (4, null, null)),
-        // Page images are re-downloadable, so they stay out of the iCloud
+        (Config.runInForegroundIfFileLargerThan, _foregroundAboveMb),
+        // The pages can be downloaded again, so they stay out of the iCloud
         // backup on iOS.
         (Config.excludeFromCloudBackup, true),
       ],
@@ -102,6 +119,9 @@ class BackgroundPackDownloader implements PackDownloader {
     await _downloader.resumeFromBackground();
   }
 
+  static String _path(Task task) =>
+      '${task.directory.replaceFirst('$_folder/', '')}/${task.filename}';
+
   @override
   Stream<PackFileResult> get results => _downloader.updates
       .where((update) => update is TaskStatusUpdate)
@@ -110,10 +130,22 @@ class BackgroundPackDownloader implements PackDownloader {
       .map(
         (update) => (
           group: update.task.group,
-          path:
-              '${update.task.directory.replaceFirst('$_folder/', '')}/'
-              '${update.task.filename}',
+          path: _path(update.task),
           ok: update.status == TaskStatus.complete,
+        ),
+      );
+
+  @override
+  Stream<PackTransfer> get transfers => _downloader.updates
+      .where((update) => update is TaskProgressUpdate)
+      .cast<TaskProgressUpdate>()
+      // Negative values are the downloader's codes for failed or paused.
+      .where((update) => update.progress >= 0)
+      .map(
+        (update) => (
+          group: update.task.group,
+          path: _path(update.task),
+          fraction: update.progress,
         ),
       );
 
@@ -133,13 +165,18 @@ class BackgroundPackDownloader implements PackDownloader {
     PackNotificationText text,
   ) async {
     await _configure();
+    // A download paused from its notification is still on the books; drop
+    // it, so the same file is never fetched twice at once.
+    await _downloader.cancelAll(group: group);
+    // No group notification: each file's own notification carries the
+    // Cancel and Pause buttons, which a group notification cannot.
     _downloader.configureNotificationForGroup(
       group,
       running: TaskNotification(text.runningTitle, text.runningBody),
       complete: TaskNotification(text.completeTitle, text.completeBody),
       error: TaskNotification(text.errorTitle, text.errorBody),
+      paused: TaskNotification(text.pausedTitle, text.pausedBody),
       progressBar: true,
-      groupNotificationId: group,
     );
     await _downloader.enqueueAll([
       for (final file in files)
@@ -150,7 +187,8 @@ class BackgroundPackDownloader implements PackDownloader {
               '$_folder/${file.path.substring(0, file.path.lastIndexOf('/'))}',
           filename: file.path.substring(file.path.lastIndexOf('/') + 1),
           baseDirectory: BaseDirectory.applicationSupport,
-          updates: Updates.status,
+          updates: Updates.statusAndProgress,
+          allowPause: true,
           retries: 3,
         ),
     ]);

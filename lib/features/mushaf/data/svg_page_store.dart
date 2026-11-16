@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:isolate';
 import 'dart:typed_data';
 
+import 'package:archive/archive_io.dart';
 import 'package:crypto/crypto.dart';
 
 import '../domain/svg_manifest.dart';
@@ -36,8 +37,10 @@ class PageDownloadException implements Exception {
 /// the whole Mushaf takes about a quarter of its download size. A file that
 /// fails its checksum is never kept or shown.
 ///
-/// The offline pack is fetched by the system downloader, which can only write
-/// files as they come; [ingest] checks and compresses those afterwards.
+/// The offline pack is two archives fetched by the system downloader, which
+/// keeps going when the app is closed. [install] checks each archive against
+/// its SHA-256, then takes every page file out of it, checks it, and
+/// compresses it like any other page.
 class SvgPageStore {
   /// Creates a store under [root] for the pages of [manifest], downloading
   /// with [fetch].
@@ -51,6 +54,7 @@ class SvgPageStore {
 
   static const List<String> _extensions = ['svg', 'json'];
   static const String _packed = '.gz';
+  static const String _archives = 'pack';
 
   /// The folder everything Mushaf is kept in. Pack paths are relative to it.
   Future<Directory> directory() async =>
@@ -94,9 +98,6 @@ class SvgPageStore {
       final packed = File('$folder/$name$_packed');
       if (await packed.exists()) continue;
       final expected = extension == 'svg' ? entry.svgSha256 : entry.jsonSha256;
-      final raw = File('$folder/$name');
-      // A file the pack downloader left: take it if it is sound.
-      if (await raw.exists() && await _pack(raw, packed, expected)) continue;
       final uri = manifest.url(page, extension);
       final bytes = await _fetch(uri);
       if (sha256.convert(bytes).toString() != expected) {
@@ -106,56 +107,104 @@ class SvgPageStore {
     }
   }
 
-  /// The pack files the device does not have yet, as the system downloader
-  /// should fetch them.
-  Future<List<PackFile>> missing() async {
-    final manifest = await _manifest();
-    final folder = await _folder();
-    final have = await _names(folder);
-    final relative = 'svg/${manifest.edition}';
-    return [
-      for (var page = 1; page <= manifest.pageCount; page++)
-        for (final extension in _extensions)
-          if (!have.contains(
-            '${SvgManifest.fileName(page, extension)}$_packed',
-          ))
-            (
-              url: manifest.url(page, extension),
-              path: '$relative/${SvgManifest.fileName(page, extension)}',
-            ),
-    ];
-  }
+  /// Folder, under [directory], the pack's archives are downloaded into.
+  Future<String> _archiveFolder() async => '${await _folder()}/$_archives';
 
-  /// Number of files a complete pack holds.
+  /// How many page files a complete pack holds.
   Future<int> packFileCount() async =>
       (await _manifest()).pageCount * _extensions.length;
 
-  /// Checks and compresses every file the pack downloader has written, and
-  /// deletes any that fail their checksum, so they are fetched again.
-  Future<void> ingest() async {
+  /// How many page files are on the device.
+  Future<int> filesOnDevice() async {
+    final names = await _names(await _folder());
+    return names.where((name) => name.endsWith(_packed)).length;
+  }
+
+  /// The archives still to download for the offline pack, as the system
+  /// downloader should fetch them. Empty when every page is on the device,
+  /// or when the archives are downloaded and only wait to be installed.
+  Future<List<PackFile>> missing() async {
+    if (await filesOnDevice() >= await packFileCount()) return const [];
+    final manifest = await _manifest();
+    final have = await _names(await _archiveFolder());
+    return [
+      for (final archive in manifest.archives)
+        if (!have.contains(archive.name))
+          (
+            url: archive.url,
+            path: 'svg/${manifest.edition}/$_archives/${archive.name}',
+          ),
+    ];
+  }
+
+  /// Whether a downloaded archive waits to be installed.
+  Future<bool> hasArchives() async =>
+      (await _names(await _archiveFolder())).isNotEmpty;
+
+  /// Installs every downloaded archive: checks it against its SHA-256, takes
+  /// out each page file, checks that too, and keeps it compressed. The
+  /// archive is deleted afterwards, sound or not; one that fails its
+  /// checksum installs nothing and is fetched again.
+  ///
+  /// Safe to interrupt: pages already installed are skipped the next time.
+  Future<void> install() async {
     final manifest = await _manifest();
     final folder = await _folder();
-    final raw = [
-      for (final name in await _names(folder))
-        if (!name.endsWith(_packed) && !name.endsWith('.part')) name,
-    ];
-    if (raw.isEmpty) return;
+    final archives = await _archiveFolder();
+    final names = await _names(archives);
+    if (names.isEmpty) return;
     await Isolate.run(() async {
-      for (final name in raw) {
-        final page = int.tryParse(name.split('.').first);
-        final file = File('$folder/$name');
-        if (page == null || page < 1 || page > manifest.pageCount) {
-          await file.delete();
-          continue;
+      for (final name in names) {
+        final file = File('$archives/$name');
+        SvgArchive? known;
+        for (final archive in manifest.archives) {
+          if (archive.name == name) known = archive;
         }
-        final entry = manifest.entry(page);
-        await _pack(
-          file,
-          File('$folder/$name$_packed'),
-          name.endsWith('.svg') ? entry.svgSha256 : entry.jsonSha256,
-        );
+        if (known != null &&
+            (await sha256.bind(file.openRead()).first).toString() ==
+                known.sha256) {
+          await _unpack(file, folder, manifest);
+        }
+        await file.delete();
       }
     });
+  }
+
+  static final RegExp _pageFile = RegExp(r'(?:^|/)(\d{3})\.(svg|json)$');
+
+  /// Takes the page files out of [archive], one at a time so memory stays
+  /// small, keeping those that match the manifest.
+  static Future<void> _unpack(
+    File archive,
+    String folder,
+    SvgManifest manifest,
+  ) async {
+    final input = InputFileStream(archive.path);
+    final entries = ZipDecoder().decodeStream(input);
+    try {
+      for (final entry in entries.files) {
+        final match = _pageFile.firstMatch(entry.name);
+        if (!entry.isFile || match == null) continue;
+        final page = int.parse(match.group(1)!);
+        final extension = match.group(2)!;
+        if (page < 1 || page > manifest.pageCount) continue;
+        final packed = File(
+          '$folder/${SvgManifest.fileName(page, extension)}$_packed',
+        );
+        if (await packed.exists()) continue;
+        final bytes = entry.readBytes();
+        final expected = extension == 'svg'
+            ? manifest.entry(page).svgSha256
+            : manifest.entry(page).jsonSha256;
+        if (bytes != null && sha256.convert(bytes).toString() == expected) {
+          await _writePacked(packed, bytes);
+        }
+        entry.closeSync();
+      }
+    } finally {
+      await entries.clear();
+      await input.close();
+    }
   }
 
   /// How many bytes the pages take on the device.
@@ -191,16 +240,6 @@ class SvgPageStore {
       );
       if (await file.exists()) await file.delete();
     }
-  }
-
-  /// Compresses [raw] into [packed] when it matches [expected], and removes
-  /// [raw] either way. Returns whether it was sound.
-  static Future<bool> _pack(File raw, File packed, String expected) async {
-    final bytes = await raw.readAsBytes();
-    final sound = sha256.convert(bytes).toString() == expected;
-    if (sound) await _writePacked(packed, bytes);
-    await raw.delete();
-    return sound;
   }
 
   /// Written to a side file first, so a half-written file is never read.

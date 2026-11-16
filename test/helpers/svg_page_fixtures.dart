@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:archive/archive.dart';
 import 'package:crypto/crypto.dart';
 import 'package:mre_quran/features/mushaf/data/svg_page_parser.dart';
 import 'package:mre_quran/features/mushaf/domain/svg_manifest.dart';
@@ -20,11 +21,50 @@ final String fixtureJson = File('test/fixtures/svg/003.json')
 /// Bytes of [text].
 Uint8List bytesOf(String text) => Uint8List.fromList(utf8.encode(text));
 
-/// A manifest of [pages] pages that all hold the fixture files.
+final Map<(String, int), Uint8List> _archives = {};
+
+/// A zip of [pages] pages' files with [extension], laid out like the
+/// release archives: SVG files under `svg/`, JSON files at the top.
+///
+/// Built once per shape and kept: a zip records when it was made, so two
+/// builds differ in their bytes and would not share a checksum.
+Uint8List fixtureArchive(String extension, {int pages = 3}) =>
+    Uint8List.fromList(
+      _archives.putIfAbsent((extension, pages), () {
+        final content = utf8.encode(
+          extension == 'svg' ? fixtureSvg : fixtureJson,
+        );
+        final archive = Archive();
+        for (var page = 1; page <= pages; page++) {
+          final name = SvgManifest.fileName(page, extension);
+          archive.add(
+            ArchiveFile.bytes(extension == 'svg' ? 'svg/$name' : name, content),
+          );
+        }
+        // A file the app must ignore, as the real archives hold per-surah
+        // files.
+        archive.add(ArchiveFile.bytes('001-surah1.$extension', content));
+        return ZipEncoder().encodeBytes(archive);
+      }),
+    );
+
+/// A manifest of [pages] pages that all hold the fixture files, with the
+/// two archives [fixtureArchive] builds.
 SvgManifest fixtureManifest({int pages = 3}) => SvgManifest(
   edition: 'hafs-kfqc',
   base: Uri.parse('https://example.test/pages'),
   packedBytes: 3 * 1024 * 1024,
+  archives: [
+    for (final extension in ['svg', 'json'])
+      (
+        name: 'hafs-kfqc-$extension.zip',
+        url: Uri.parse('https://example.test/hafs-kfqc-$extension.zip'),
+        sha256: sha256
+            .convert(fixtureArchive(extension, pages: pages))
+            .toString(),
+        bytes: extension == 'svg' ? 5 * 1024 * 1024 : 1024,
+      ),
+  ],
   pages: [
     for (var i = 0; i < pages; i++)
       (

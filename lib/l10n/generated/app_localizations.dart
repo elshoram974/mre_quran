@@ -1976,6 +1976,24 @@ abstract class AppLocalizations {
   /// **'Open settings to continue the download.'**
   String get packNotifyErrorBody;
 
+  /// No description provided for @packNotifyPausedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} download paused'**
+  String packNotifyPausedTitle(String name);
+
+  /// No description provided for @packNotifyPausedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap Resume to carry on.'**
+  String get packNotifyPausedBody;
+
+  /// No description provided for @packInstalling.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking and preparing the pages…'**
+  String get packInstalling;
+
   /// No description provided for @nextSurah.
   ///
   /// In en, this message translates to:

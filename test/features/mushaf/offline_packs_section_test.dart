@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -104,7 +105,7 @@ void main() {
     expect(downloader.enqueued, isEmpty, reason: 'nothing before the answer');
     await tester.tap(find.widgetWithText(FilledButton, 'تحميل').last);
     await until(tester, () => downloader.enqueued.isNotEmpty);
-    expect(downloader.enqueued[MushafPack.group], hasLength(6));
+    expect(downloader.enqueued[MushafPack.group], hasLength(2));
     expect(
       downloader.texts[MushafPack.group]!.runningTitle,
       'جارٍ تحميل المصحف المطبوع',
@@ -116,24 +117,28 @@ void main() {
     expect(downloader.cancelled, [MushafPack.group]);
   });
 
-  /// Puts the files of the first [pages] pages on the device, as the system
-  /// downloader writes them.
-  void putFiles({int pages = 3}) {
-    for (var page = 1; page <= pages; page++) {
-      final name = page.toString().padLeft(3, '0');
-      File('${root.path}/mushaf/svg/hafs-kfqc/$name.svg')
+  /// Puts the pack's archives on the device, as the system downloader
+  /// writes them; the section installs them when it opens.
+  void putFiles() {
+    for (final extension in ['svg', 'json']) {
+      File('${root.path}/mushaf/svg/hafs-kfqc/pack/hafs-kfqc-$extension.zip')
         ..createSync(recursive: true)
-        ..writeAsStringSync(fixtureSvg);
-      File('${root.path}/mushaf/svg/hafs-kfqc/$name.json')
-          .writeAsStringSync(fixtureJson);
+        ..writeAsBytesSync(fixtureArchive(extension));
     }
   }
+
+  /// Waits for the archives on the device to be checked and unpacked.
+  Future<void> installed(WidgetTester tester) => until(
+    tester,
+    () => find.textContaining('جاهز دون اتصال').evaluate().isNotEmpty,
+  );
 
   testWidgets('a finished download shows ready and its size on the device', (
     tester,
   ) async {
     putFiles();
     await pump(tester);
+    await installed(tester);
     expect(find.textContaining('جاهز دون اتصال'), findsOneWidget);
     expect(find.textContaining('على الجهاز'), findsOneWidget);
     expect(find.textContaining('وليست في الذاكرة المؤقتة'), findsOneWidget);
@@ -144,6 +149,7 @@ void main() {
   ) async {
     putFiles();
     await pump(tester);
+    await installed(tester);
     await tester.tap(find.text('حذف'));
     await tester.pumpAndSettle();
     expect(find.text('حذف المصحف المطبوع من هذا الجهاز؟'), findsOneWidget);
@@ -173,6 +179,7 @@ void main() {
   testWidgets('cancelling the warning deletes nothing', (tester) async {
     putFiles();
     await pump(tester);
+    await installed(tester);
     await tester.tap(find.text('حذف'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('إلغاء'));
@@ -184,7 +191,15 @@ void main() {
   testWidgets('a partial download can be deleted to free space too', (
     tester,
   ) async {
-    putFiles(pages: 1);
+    // One page read earlier is already on the device, as the store keeps it.
+    for (final (name, content) in [
+      ('001.svg', fixtureSvg),
+      ('001.json', fixtureJson),
+    ]) {
+      File('${root.path}/mushaf/svg/hafs-kfqc/$name.gz')
+        ..createSync(recursive: true)
+        ..writeAsBytesSync(gzip.encode(utf8.encode(content)));
+    }
     await pump(tester);
     expect(find.byTooltip('حذف'), findsOneWidget);
     expect(find.text('متابعة'), findsOneWidget);

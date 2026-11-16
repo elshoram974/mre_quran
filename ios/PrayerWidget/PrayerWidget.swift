@@ -1,3 +1,4 @@
+import AppIntents
 import SwiftUI
 import WidgetKit
 
@@ -92,7 +93,48 @@ private struct SuggestedDhikrView: View {
     }
   }
 }
+private let tasbihKey = "tasbihWidgetCount"
+@available(iOS 17.0, *)
+struct TasbihCountIntent: AppIntent {
+  static var title: LocalizedStringResource = "Count"
+  func perform() async throws -> some IntentResult {
+    let defaults = UserDefaults(suiteName: appGroup)
+    defaults?.set((defaults?.integer(forKey: tasbihKey) ?? 0) + 1, forKey: tasbihKey)
+    return .result()
+  }
+}
+@available(iOS 17.0, *)
+struct TasbihResetIntent: AppIntent {
+  static var title: LocalizedStringResource = "Reset"
+  func perform() async throws -> some IntentResult {
+    UserDefaults(suiteName: appGroup)?.set(0, forKey: tasbihKey)
+    return .result()
+  }
+}
+private struct TasbihEntry: TimelineEntry { let date: Date; let count: Int }
+private struct TasbihProvider: TimelineProvider {
+  private func entry() -> TasbihEntry { TasbihEntry(date: .now, count: UserDefaults(suiteName: appGroup)?.integer(forKey: tasbihKey) ?? 0) }
+  func placeholder(in context: Context) -> TasbihEntry { TasbihEntry(date: .now, count: 0) }
+  func getSnapshot(in context: Context, completion: @escaping (TasbihEntry) -> Void) { completion(entry()) }
+  func getTimeline(in context: Context, completion: @escaping (Timeline<TasbihEntry>) -> Void) { completion(Timeline(entries: [entry()], policy: .never)) }
+}
+private struct TasbihView: View {
+  let entry: TasbihEntry
+  var body: some View {
+    VStack(spacing: 6) {
+      Text("مسبحة").font(.caption).foregroundStyle(.secondary)
+      if #available(iOS 17.0, *) {
+        Button(intent: TasbihCountIntent()) { Text("\(entry.count)").font(.system(size: 44, weight: .bold)).minimumScaleFactor(0.5).frame(maxWidth: .infinity, maxHeight: .infinity) }.buttonStyle(.plain)
+        Button(intent: TasbihResetIntent()) { Text("تصفير").font(.caption2) }.buttonStyle(.bordered)
+      } else {
+        Text("\(entry.count)").font(.system(size: 44, weight: .bold))
+        Text("حدّث iOS لاستخدام المسبحة").font(.caption2).foregroundStyle(.secondary)
+      }
+    }.frame(maxWidth: .infinity, maxHeight: .infinity).background(Color(uiColor: .secondarySystemBackground))
+  }
+}
+struct TasbihWidget: Widget { let kind="TasbihWidget"; var body: some WidgetConfiguration { StaticConfiguration(kind:kind,provider:TasbihProvider()){TasbihView(entry:$0)}.configurationDisplayName("مسبحة").description("سبّح وعُدّ تسبيحك من الشاشة الرئيسية").supportedFamilies([.systemSmall]) } }
 struct PrayerWidget: Widget { let kind="NextPrayerWidget"; var body: some WidgetConfiguration { StaticConfiguration(kind:kind,provider:Provider()){NextView(entry:$0)}.configurationDisplayName("مواقيت الصلاة").description("الصلاة القادمة والوقت المتبقي").supportedFamilies([.systemSmall,.systemMedium]) } }
 struct PrayerScheduleWidget: Widget { let kind="PrayerScheduleWidget"; var body: some WidgetConfiguration { StaticConfiguration(kind:kind,provider:Provider()){ScheduleView(entry:$0)}.configurationDisplayName("مواقيت اليوم").description("مواقيت الصلوات الخمس").supportedFamilies([.systemMedium,.systemLarge]) } }
 struct SuggestedDhikrWidget: Widget { let kind="SuggestedDhikrWidget"; var body: some WidgetConfiguration { StaticConfiguration(kind:kind,provider:AdhkarProvider()){SuggestedDhikrView(entry:$0)}.configurationDisplayName("ذكر مقترح").description("ذكر مقترح مع تقدمك المحفوظ").supportedFamilies([.systemSmall,.systemMedium]) } }
-@main struct PrayerWidgetBundle: WidgetBundle { var body: some Widget { PrayerWidget(); PrayerScheduleWidget(); SuggestedDhikrWidget() } }
+@main struct PrayerWidgetBundle: WidgetBundle { var body: some Widget { PrayerWidget(); PrayerScheduleWidget(); SuggestedDhikrWidget(); TasbihWidget() } }

@@ -17,6 +17,7 @@ class MushafPageFrame extends StatelessWidget {
     required this.onTap,
     required this.child,
     this.spread = false,
+    this.gutter = AppTokens.readerGutter,
   });
 
   /// Quran structure, for the labels.
@@ -31,6 +32,9 @@ class MushafPageFrame extends StatelessWidget {
   /// The page body.
   final Widget child;
 
+  /// Margin at each side of the page body.
+  final double gutter;
+
   /// Whether this page faces another. Its onward arrow then only shows on the
   /// outer edge.
   final bool spread;
@@ -43,11 +47,11 @@ class MushafPageFrame extends StatelessWidget {
       children: [
         Positioned.fill(
           child: Padding(
-            padding: const EdgeInsetsDirectional.only(
+            padding: EdgeInsetsDirectional.only(
               top: AppTokens.readerHeaderExtent,
               bottom: AppTokens.readerFooterExtent,
-              start: AppTokens.readerGutter,
-              end: AppTokens.readerGutter,
+              start: gutter,
+              end: gutter,
             ),
             child: child,
           ),
