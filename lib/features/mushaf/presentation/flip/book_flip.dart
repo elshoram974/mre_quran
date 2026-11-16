@@ -6,6 +6,7 @@ import 'package:flutter/rendering.dart';
 
 import 'book_geometry.dart';
 import 'page_curl_painter.dart';
+import 'paper_shade_painter.dart';
 
 /// Builds one page of the book.
 typedef BookPageBuilder = Widget Function(BuildContext context, int page);
@@ -21,11 +22,15 @@ typedef BookPageBuilder = Widget Function(BuildContext context, int page);
 /// page facing it slides across the open book: nothing turns. Going from a
 /// left-hand (even) page to the next one turns the leaf: the even page lifts,
 /// swings over the spine onto the page before it, and lands showing the next
-/// page on its back while the page after appears underneath. Going back does
-/// the same in reverse. A drag to
-/// the left turns back the same way in reverse. Letting go finishes or undoes
-/// the turn with a spring that keeps the speed of the hand. One gesture turns
-/// at most one step: one page, or one pair of facing pages.
+/// page on its back while the page after appears underneath; the view follows
+/// the sheet across. Going back does the same in reverse. A drag to the left
+/// turns back. Letting go finishes or undoes the turn with a spring that
+/// keeps the speed of the hand. One gesture turns at most one step: one page,
+/// or one pair of facing pages.
+///
+/// Every page is drawn as the side of the book it is: darker toward the
+/// spine, with the edges of the pages lying under it showing at its outer
+/// edge, more of them the further into the book that side is.
 ///
 /// The sheet is drawn from snapshots of the pages, so any widget can be a page.
 /// The neighbouring pages stay built underneath the visible ones so a snapshot
@@ -105,10 +110,6 @@ class _BookFlipState extends State<BookFlip>
   ui.Image? _back;
   int? _textureStep;
 
-  /// How the sheet of the current textures moves: 0 swings over the spine
-  /// (spread), -1 peels off its right edge (going back), 1 peels off its
-  /// left edge (going forward).
-  int _textureDir = 0;
   double _pixelRatio = 1;
 
   BookGeometry _makeGeometry() =>
@@ -153,7 +154,6 @@ class _BookFlipState extends State<BookFlip>
     _front = null;
     _back = null;
     _textureStep = null;
-    _textureDir = 0;
   }
 
   ui.Image? _snapshot(int? page) {
@@ -169,34 +169,22 @@ class _BookFlipState extends State<BookFlip>
   /// facing it in the same spread.
   bool _turnsLeaf(int step) => _geometry.spread || (step + 1).isEven;
 
-  /// How the turn between [step] and [step] + 1 moves its sheet. In single
-  /// mode a leaf always peels, from the edge the hand holds, around a cylinder
-  /// under the finger: forward off the left edge, back off the right edge, the
-  /// two mirror images of one another. A spread swings the sheet over the
-  /// spine.
-  int _directionOf(int step) =>
-      _geometry.spread ? 0 : (_leadTarget < 0 ? -1 : 1);
-
-  /// Takes the snapshots a turn between [step] and [step] + 1 needs.
+  /// Takes the snapshots a turn between [step] and [step] + 1 needs: the
+  /// page that lifts, and the page on its back.
   void _ensureTextures(int step) {
     if (!widget.realistic || !_turnsLeaf(step)) return;
-    final dir = _directionOf(step);
-    if (_textureStep == step && _textureDir == dir && _front != null) return;
+    if (_textureStep == step && _front != null) return;
     _disposeTextures();
+    // The leaf that turns is the left-hand page: a spread's left page, or
+    // the single page on screen.
     final front = _snapshot(
-      dir < 0
-          ? _geometry.rightPage(step + 1)
-          : _geometry.spread
-          ? _geometry.leftPage(step)
-          : _geometry.rightPage(step),
+      _geometry.spread ? _geometry.leftPage(step) : _geometry.rightPage(step),
     );
     if (front == null) return;
     _front = front;
-    // The back of a swinging sheet shows the page that follows it. A peeling
-    // sheet shows its own print through.
-    _back = dir == 0 ? _snapshot(_geometry.rightPage(step + 1)) : null;
+    // Its back is the page that follows it.
+    _back = _snapshot(_geometry.rightPage(step + 1));
     _textureStep = step;
-    _textureDir = dir;
   }
 
   /// Points the bend of the sheet the way the turn is going.
@@ -230,15 +218,15 @@ class _BookFlipState extends State<BookFlip>
   }
 
   void _dragUpdate(DragUpdateDetails details, double width) {
-    // A drag to the right turns forward. A full width of travel is a bit less
-    // than a full turn so the page feels light under the finger.
-    // A peel keeps the roll under the finger, so a width of travel is a turn.
-    final peelDrag =
-        !_geometry.spread &&
+    // A drag to the right turns forward. A leaf is light under the finger:
+    // a full width of travel is a bit more than a full turn. Two facing
+    // pages sliding past keep exactly to the finger.
+    final leaf =
+        _geometry.spread ||
         _turnsLeaf(
           details.delta.dx < 0 ? _position.ceil() - 1 : _position.floor(),
         );
-    var next = _position + details.delta.dx / (width * (peelDrag ? 1.0 : 0.7));
+    var next = _position + details.delta.dx / (width * (leaf ? 0.7 : 1.0));
     next = next.clamp(_dragStartStep - 1.0, _dragStartStep + 1.0);
     next = _geometry.clampPosition(next);
     _steer(details.delta.dx);
@@ -299,7 +287,9 @@ class _BookFlipState extends State<BookFlip>
 
   @override
   Widget build(BuildContext context) {
-    final paper = widget.paper ?? Theme.of(context).colorScheme.surface;
+    final scheme = Theme.of(context).colorScheme;
+    final paper = widget.paper ?? scheme.surface;
+    final shade = scheme.shadow;
     _pixelRatio = MediaQuery.devicePixelRatioOf(context).clamp(1.0, 2.0);
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -311,8 +301,6 @@ class _BookFlipState extends State<BookFlip>
         final k = _position.floor().clamp(0, lastStep);
         final f = k >= lastStep ? 0.0 : (_position - k).clamp(0.0, 1.0);
         final turning = f > 0.0005 && _front != null && _textureStep == k;
-        final peeling = turning && _textureDir != 0;
-        final peelsForward = _textureDir > 0;
         final rest = _position.round().clamp(0, lastStep);
         // Single mode, within one spread: the two facing pages slide.
         final sliding = !spread && f > 0.0005 && !_turnsLeaf(k);
@@ -332,10 +320,7 @@ class _BookFlipState extends State<BookFlip>
         // are the next step's left page and this step's right page (spread),
         // or just the next page (single).
         final visible = <int>{};
-        if (peeling) {
-          // The page the turn is going to lies uncovered under the sheet.
-          visible.addAll([?_geometry.rightPage(peelsForward ? k + 1 : k)]);
-        } else if (sliding) {
+        if (sliding) {
           visible.addAll([
             ?_geometry.rightPage(k),
             ?_geometry.rightPage(k + 1),
@@ -356,9 +341,7 @@ class _BookFlipState extends State<BookFlip>
 
         // In single mode the sheet swings past the spine onto the facing page,
         // the one before it, which slides into view with the sheet.
-        final facing = turning && !spread && !peeling
-            ? _geometry.rightPage(k - 1)
-            : null;
+        final facing = turning && !spread ? _geometry.rightPage(k - 1) : null;
 
         // Each page sits in the slot its number says: odd on the right half,
         // even on the left half in spread mode, the whole area in single mode.
@@ -367,11 +350,24 @@ class _BookFlipState extends State<BookFlip>
           final right = pageNumber.isOdd;
           final child = RepaintBoundary(
             key: _keyFor(pageNumber),
-            child: ColoredBox(
-              color: paper,
-              child: KeyedSubtree(
-                key: ValueKey<int>(pageNumber),
-                child: widget.pageBuilder(context, pageNumber),
+            // The shading is part of the page, so the sheet a turn lifts
+            // carries it.
+            child: CustomPaint(
+              foregroundPainter: PaperShadePainter(
+                rightHand: right,
+                shade: shade,
+                // The pages already turned lie under the right-hand page;
+                // the pages still to come lie under the left-hand one.
+                stack: right
+                    ? pageNumber / widget.pageCount
+                    : 1 - pageNumber / widget.pageCount,
+              ),
+              child: ColoredBox(
+                color: paper,
+                child: KeyedSubtree(
+                  key: ValueKey<int>(pageNumber),
+                  child: widget.pageBuilder(context, pageNumber),
+                ),
               ),
             ),
           );
@@ -439,11 +435,7 @@ class _BookFlipState extends State<BookFlip>
               child: IgnorePointer(
                 child: CustomPaint(
                   painter: PageCurlPainter(
-                    peel: peeling,
-                    mirror: peelsForward,
-                    // Going back a peel runs the other way: whole at k + 1,
-                    // gone at k.
-                    progress: peeling && !peelsForward ? 1 - f : f,
+                    progress: f,
                     front: _front!,
                     back: _back,
                     vanishX: half * (spread ? 1 : 2),
@@ -477,7 +469,7 @@ class _BookFlipState extends State<BookFlip>
           return forward + (back - forward) * backWeight;
         }
 
-        final shift = turning && !spread && !peeling ? shiftFor() : 0.0;
+        final shift = turning && !spread ? shiftFor() : 0.0;
 
         final Widget content = widget.realistic
             ? Transform.translate(
@@ -545,18 +537,26 @@ class _BookFlipState extends State<BookFlip>
           )
         : page(_geometry.rightPage(s));
 
-    if (f < 0.0005) return step(_position.round());
+    // One layer per step on screen, each under its own key and always inside
+    // the same kind of parent. A page then stays the same element from rest,
+    // through the slide, to rest again: its state, its scroll offset and its
+    // decoded artwork are kept. Building a different tree at rest and while
+    // sliding would throw the page away and build it afresh at both ends of
+    // every turn.
+    final sliding = f >= 0.0005;
+    final rest = _position.round();
+    Widget layer(int s, double dx) => Transform.translate(
+      key: ValueKey<String>('step-$s'),
+      offset: Offset(dx, 0),
+      child: step(s),
+    );
     // Right to left: the next step comes in from the left as the current one
     // moves out to the right.
     return Stack(
       fit: StackFit.expand,
-      children: [
-        Transform.translate(offset: Offset(f * width, 0), child: step(k)),
-        Transform.translate(
-          offset: Offset((f - 1) * width, 0),
-          child: step(k + 1),
-        ),
-      ],
+      children: sliding
+          ? [layer(k, f * width), layer(k + 1, (f - 1) * width)]
+          : [layer(rest, 0)],
     );
   }
 }

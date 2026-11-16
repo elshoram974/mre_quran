@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mre_quran/features/mushaf/presentation/flip/book_flip.dart';
 import 'package:mre_quran/features/mushaf/presentation/flip/page_curl_painter.dart';
+import 'package:mre_quran/features/mushaf/presentation/flip/paper_shade_painter.dart';
 
 Future<List<int>> _pump(
   WidgetTester tester, {
@@ -90,7 +91,7 @@ void main() {
     (w) => w is CustomPaint && w.painter is PageCurlPainter,
   );
 
-  testWidgets('single: an even page peels off, uncovering the page after it', (
+  testWidgets('single: a left-hand page turns its leaf over the spine', (
     tester,
   ) async {
     final changes = await _pump(
@@ -100,10 +101,17 @@ void main() {
       page: 4,
     );
     final gesture = await halfway(tester, 210);
-    // Mid-turn the page being left (4) peels off from its left edge, and the
-    // page after it (5) lies uncovered underneath, in place.
+    // Mid-turn the leaf of page 4 is in the air, with page 5 on its back.
+    // Under it lies page 6, the next left-hand page, and beyond the spine
+    // the page it will land on, page 3.
     expect(curl(), findsOneWidget);
-    expect(tester.getRect(find.text('page 5')).center.dx, closeTo(200, 1));
+    expect(find.text('page 6'), findsOneWidget);
+    expect(find.text('page 3'), findsOneWidget);
+    expect(
+      tester.getRect(find.text('page 3')).center.dx,
+      greaterThan(tester.getRect(find.text('page 6')).center.dx),
+      reason: 'the right-hand page lies to the right of the left-hand one',
+    );
     await gesture.up();
     await tester.pumpAndSettle();
     expect(changes, [5]);
@@ -206,36 +214,172 @@ void main() {
     await tester.pumpAndSettle();
   });
 
-  testWidgets('single: going back peels the page off from its right edge, '
-      'uncovering the page before it', (tester) async {
-    await _pump(tester, realistic: true, spread: false, page: 5);
-    // 5 -> 4 is a leaf turn. Halfway, the page being left (5) is the sheet,
-    // and the page before it (4) lies uncovered underneath, in place.
+  testWidgets('single: going back turns the leaf back over the spine', (
+    tester,
+  ) async {
+    final changes = await _pump(
+      tester,
+      realistic: true,
+      spread: false,
+      page: 5,
+    );
+    // 5 back to 4 is the turn from 4 to 5 run backwards: the same leaf, the
+    // same two pages either side of the spine.
     final gesture = await halfway(tester, -210);
-    final sheet = tester
-        .widgetList<CustomPaint>(find.byType(CustomPaint))
-        .map((w) => w.painter)
-        .whereType<PageCurlPainter>()
-        .single;
-    expect(sheet.peel, isTrue);
-    expect(tester.getRect(find.text('page 4')).center.dx, closeTo(200, 1));
+    expect(curl(), findsOneWidget);
+    expect(find.text('page 6'), findsOneWidget);
+    expect(find.text('page 3'), findsOneWidget);
     await gesture.up();
     await tester.pumpAndSettle();
+    expect(changes, [4]);
     expect(find.text('page 4').hitTestable(), findsOneWidget);
   });
 
-  testWidgets('single: going forward peels off the left edge, the mirror of '
-      'going back', (tester) async {
-    await _pump(tester, realistic: true, spread: false, page: 4);
-    final gesture = await halfway(tester, 210);
-    final sheet = tester
-        .widgetList<CustomPaint>(find.byType(CustomPaint))
-        .map((w) => w.painter)
-        .whereType<PageCurlPainter>()
-        .single;
-    expect(sheet.peel, isTrue);
-    expect(sheet.mirror, isTrue, reason: 'hinged on the right');
-    await gesture.up();
-    await tester.pumpAndSettle();
+  group('each page is shaded as the side of the book it is', () {
+    PaperShadePainter shadeOf(WidgetTester tester, String text) =>
+        tester
+                .widget<CustomPaint>(
+                  find
+                      .ancestor(
+                        of: find.text(text),
+                        matching: find.byWidgetPredicate(
+                          (w) =>
+                              w is CustomPaint &&
+                              w.foregroundPainter is PaperShadePainter,
+                        ),
+                      )
+                      .first,
+                )
+                .foregroundPainter!
+            as PaperShadePainter;
+
+    testWidgets('an odd page is a right-hand page, an even one a left-hand '
+        'page', (tester) async {
+      await _pump(tester, realistic: true, spread: true, page: 5);
+      expect(shadeOf(tester, 'page 5').rightHand, isTrue);
+      expect(shadeOf(tester, 'page 6').rightHand, isFalse);
+    });
+
+    testWidgets('the sides do not swap in a left-to-right app', (tester) async {
+      tester.view.physicalSize = const Size(900, 700);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Directionality(
+            textDirection: TextDirection.ltr,
+            child: BookFlip(
+              pageCount: 20,
+              spread: true,
+              page: 5,
+              onPageChanged: (_) {},
+              pageBuilder: (context, p) => Center(child: Text('page $p')),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(shadeOf(tester, 'page 5').rightHand, isTrue);
+      expect(
+        tester.getCenter(find.text('page 5')).dx,
+        greaterThan(tester.getCenter(find.text('page 6')).dx),
+        reason: 'the odd page is on the right in every language',
+      );
+    });
+
+    testWidgets('the stack under a page grows as that side of the book fills', (
+      tester,
+    ) async {
+      await _pump(tester, realistic: true, spread: true, page: 3);
+      final early = shadeOf(tester, 'page 3').stack;
+      final earlyLeft = shadeOf(tester, 'page 4').stack;
+      await tester.pumpWidget(const SizedBox.shrink());
+      await _pump(tester, realistic: true, spread: true, page: 17);
+      expect(shadeOf(tester, 'page 17').stack, greaterThan(early));
+      expect(shadeOf(tester, 'page 18').stack, lessThan(earlyLeft));
+      expect(PaperShadePainter.edgesFor(0), 1);
+      expect(
+        PaperShadePainter.edgesFor(1),
+        greaterThan(PaperShadePainter.edgesFor(0.2)),
+      );
+    });
+
+    testWidgets('the plain sliding turn has no book shading', (tester) async {
+      await _pump(tester, realistic: false, spread: false);
+      expect(
+        find.byWidgetPredicate(
+          (w) => w is CustomPaint && w.foregroundPainter is PaperShadePainter,
+        ),
+        findsNothing,
+      );
+    });
   });
+
+  for (final realistic in [true, false]) {
+    final style = realistic ? 'realistic' : 'sliding';
+
+    testWidgets('$style: a page is built once and kept through a turn', (
+      tester,
+    ) async {
+      // A page that is thrown away and built again at the start or the end
+      // of a turn loses its state and has to load its artwork again.
+      final built = <int, int>{};
+      tester.view.physicalSize = const Size(400, 700);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      var current = 5;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: StatefulBuilder(
+            builder: (context, setState) => BookFlip(
+              pageCount: 20,
+              spread: false,
+              realistic: realistic,
+              page: current,
+              onPageChanged: (p) => setState(() => current = p),
+              pageBuilder: (context, p) => _CountedPage(
+                page: p,
+                onCreated: () => built[p] = (built[p] ?? 0) + 1,
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(built[5], 1);
+      // Forward to 6: page 5 stays one element from rest through the turn,
+      // and page 6 from the moment it appears to its rest.
+      await _drag(tester, 260);
+      expect(find.text('page 6').hitTestable(), findsOneWidget);
+      expect(built[5], 1, reason: 'page 5 was not rebuilt when the turn began');
+      expect(built[6], 1, reason: 'page 6 was not rebuilt when it landed');
+      // A turn that is let go half way springs back: still the same page 6.
+      await _drag(tester, 60);
+      expect(find.text('page 6').hitTestable(), findsOneWidget);
+      expect(built[6], 1);
+    });
+  }
+}
+
+/// A page that reports each time a new state is made for it.
+class _CountedPage extends StatefulWidget {
+  const _CountedPage({required this.page, required this.onCreated});
+
+  final int page;
+  final VoidCallback onCreated;
+
+  @override
+  State<_CountedPage> createState() => _CountedPageState();
+}
+
+class _CountedPageState extends State<_CountedPage> {
+  @override
+  void initState() {
+    super.initState();
+    widget.onCreated();
+  }
+
+  @override
+  Widget build(BuildContext context) =>
+      Center(child: Text('page ${widget.page}'));
 }
