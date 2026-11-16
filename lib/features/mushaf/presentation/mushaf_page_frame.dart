@@ -5,9 +5,10 @@ import '../../quran_index/domain/quran_metadata.dart';
 import 'reader_page_labels.dart';
 
 /// The room around a Mushaf page, shared by the typeset and the printed
-/// reader: a narrow side margin, and fixed room above and below where the
-/// page's own labels (surah, juz, page number) sit, so they never cover the
-/// text. The labels belong to the page, so they turn with it.
+/// reader: a narrow side margin, and, for a page with [labels], fixed room
+/// above and below where the page's own labels (surah, juz, page number)
+/// sit, so they never cover the text. The labels belong to the page, so
+/// they turn with it.
 class MushafPageFrame extends StatelessWidget {
   /// Creates the frame around [child].
   const MushafPageFrame({
@@ -18,6 +19,7 @@ class MushafPageFrame extends StatelessWidget {
     required this.child,
     this.spread = false,
     this.gutter = AppTokens.readerGutter,
+    this.labels = true,
   });
 
   /// Quran structure, for the labels.
@@ -35,6 +37,10 @@ class MushafPageFrame extends StatelessWidget {
   /// Margin at each side of the page body.
   final double gutter;
 
+  /// Whether the page carries its own labels, with room kept for them
+  /// above and below. Without them the body runs almost from top to bottom.
+  final bool labels;
+
   /// Whether this page faces another. Its onward arrow then only shows on the
   /// outer edge.
   final bool spread;
@@ -48,21 +54,26 @@ class MushafPageFrame extends StatelessWidget {
         Positioned.fill(
           child: Padding(
             padding: EdgeInsetsDirectional.only(
-              top: AppTokens.readerHeaderExtent,
-              bottom: AppTokens.readerFooterExtent,
+              top: labels
+                  ? AppTokens.readerHeaderExtent
+                  : AppTokens.readerEdgePrinted,
+              bottom: labels
+                  ? AppTokens.readerFooterExtent
+                  : AppTokens.readerEdgePrinted,
               start: gutter,
               end: gutter,
             ),
             child: child,
           ),
         ),
-        Positioned.fill(
-          child: ReaderPageLabels(
-            metadata: metadata,
-            page: page,
-            spread: spread,
+        if (labels)
+          Positioned.fill(
+            child: ReaderPageLabels(
+              metadata: metadata,
+              page: page,
+              spread: spread,
+            ),
           ),
-        ),
       ],
     ),
   );

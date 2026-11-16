@@ -132,6 +132,64 @@ class SvgPageLayout {
   }
 }
 
+/// One layer of a page's artwork with its printed lines held apart, so the
+/// lines can be moved further from each other to fill a taller screen.
+///
+/// Every line keeps its drawn shape and moves as a whole; nothing is scaled,
+/// cut or redrawn. Stretching by `k` places each line where a page `k`
+/// times as tall would have it.
+class SvgSpreadLayer {
+  /// Creates a layer from the pieces of its SVG document.
+  ///
+  /// The document is [head], the view box, then [parts] with one vertical
+  /// shift written between each two neighbours. [shifts] holds, for each of
+  /// those gaps, the shift in the document's own units for a stretch of 2.
+  SvgSpreadLayer({
+    required this.head,
+    required this.box,
+    required List<String> parts,
+    required List<double> shifts,
+  }) : assert(parts.length == shifts.length + 1),
+       parts = List.unmodifiable(parts),
+       shifts = List.unmodifiable(shifts);
+
+  /// The document up to and including `viewBox="`.
+  final String head;
+
+  /// The visible part of the page at a stretch of 1.
+  final PageBox box;
+
+  /// The rest of the document, cut at each line's shift.
+  final List<String> parts;
+
+  /// Shift of each line for a stretch of 2, in document units.
+  final List<double> shifts;
+
+  final Map<double, String> _built = {};
+
+  /// Stretches a layer remembers. A screen has one, two with rotation.
+  static const int _remembered = 2;
+
+  /// The SVG document with its lines spread for a page [stretch] times as
+  /// tall. The same string is returned for the same stretch, so a renderer
+  /// can cache its picture by it.
+  String at(double stretch) {
+    final known = _built[stretch];
+    if (known != null) return known;
+    final out = StringBuffer(head)
+      ..write('${box.left} ${box.top} ')
+      ..write('${pageBoxWidth(box)} ${pageBoxHeight(box) * stretch}')
+      ..write(parts.first);
+    for (var i = 0; i < shifts.length; i++) {
+      out
+        ..write(shifts[i] * (stretch - 1))
+        ..write(parts[i + 1]);
+    }
+    if (_built.length >= _remembered) _built.remove(_built.keys.first);
+    return _built[stretch] = out.toString();
+  }
+}
+
 /// One printed Mushaf page, ready to draw.
 ///
 /// The artwork is held as two SVG documents whose view box is the page's
@@ -146,7 +204,9 @@ class SvgPage {
     required this.ink,
     required this.marks,
     required this.layout,
-  });
+    this.inkLines,
+    this.marksLines,
+  }) : assert((inkLines == null) == (marksLines == null));
 
   /// Page number, 1–604.
   final int page;
@@ -159,4 +219,15 @@ class SvgPage {
 
   /// Where each ayah lies.
   final SvgPageLayout layout;
+
+  /// [ink] with its printed lines held apart, or null when the page's lines
+  /// could not be told apart with certainty. Such a page is never spread.
+  final SvgSpreadLayer? inkLines;
+
+  /// [marks] with each ornament tied to its line; null exactly when
+  /// [inkLines] is.
+  final SvgSpreadLayer? marksLines;
+
+  /// Whether the page's lines can be spread to fill a taller screen.
+  bool get canSpread => inkLines != null;
 }

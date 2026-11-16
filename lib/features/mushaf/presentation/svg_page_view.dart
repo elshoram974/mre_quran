@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,8 +17,9 @@ import '../application/svg_page_providers.dart';
 import '../domain/svg_page.dart';
 import 'mushaf_page_frame.dart';
 
-/// One page of the printed Mushaf, drawn from its vector artwork inside the
-/// page frame.
+/// One page of the printed Mushaf, drawn from its vector artwork from edge
+/// to edge, with nothing over it: where the reader is shows in the bars a
+/// tap brings up.
 ///
 /// The script takes the theme's ink colour and the ayah-number ornaments its
 /// accent, so the page follows every paper and accent. The selected ayah is
@@ -87,6 +89,7 @@ class SvgPageView extends StatelessWidget {
     onTap: onTap,
     spread: spread,
     gutter: AppTokens.readerGutterPrinted,
+    labels: false,
     child: _SlowGate(
       key: ValueKey<int>(page),
       after: fallbackAfter,
@@ -258,31 +261,64 @@ class _SvgArtwork extends StatelessWidget {
       final area = constraints.biggest;
       final content = page.layout.content;
       final aspect = pageBoxWidth(content) / pageBoxHeight(content);
-      final size = fillWidth
-          ? Size(area.width, area.width / aspect)
-          : applyBoxFit(BoxFit.contain, Size(aspect, 1), area).destination;
-      final sheet = SizedBox.fromSize(
-        size: size,
-        child: _sheet(context, size.width / pageBoxWidth(content)),
+      if (!fillWidth) {
+        final size = applyBoxFit(
+          BoxFit.contain,
+          Size(aspect, 1),
+          area,
+        ).destination;
+        return Center(
+          child: SizedBox.fromSize(
+            size: size,
+            child: _sheet(context, size.width / pageBoxWidth(content), 1),
+          ),
+        );
+      }
+      // The single-page reader fills the width. On a screen taller than the
+      // page, the printed lines move apart to fill the height too; a page
+      // taller than the screen scrolls.
+      final natural = area.width / aspect;
+      final stretch = page.canSpread && natural < area.height
+          ? _steady(
+              math.min(area.height / natural, AppTokens.readerMaxLineSpread),
+            )
+          : 1.0;
+      return SingleChildScrollView(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: area.height),
+          child: Center(
+            child: SizedBox(
+              width: area.width,
+              height: natural * stretch,
+              child: _sheet(
+                context,
+                area.width / pageBoxWidth(content),
+                stretch,
+              ),
+            ),
+          ),
+        ),
       );
-      // The single-page reader fills the width; a page taller than the
-      // screen scrolls.
-      return fillWidth
-          ? SingleChildScrollView(child: sheet)
-          : Center(child: sheet);
     },
   );
 
-  /// The page at [scale] screen pixels per page unit.
-  Widget _sheet(BuildContext context, double scale) {
+  /// [stretch] to three decimals, so a layout that settles a hair off does
+  /// not ask for the artwork to be built again.
+  static double _steady(double stretch) => (stretch * 1000).round() / 1000;
+
+  /// The page at [scale] screen pixels per page unit, its lines spread for
+  /// a page [stretch] times as tall.
+  Widget _sheet(BuildContext context, double scale, double stretch) {
     final colors = QuranColors.of(context);
     final scheme = Theme.of(context).colorScheme;
     final layout = page.layout;
     final content = layout.content;
     AyahRef? ayahAt(Offset position) => layout.ayahAt(
       content.left + position.dx / scale,
-      content.top + position.dy / scale,
+      // Spreading moves a line as far as stretching the page would.
+      content.top + position.dy / scale / stretch,
     );
+    final spread = stretch > 1;
     // Each layer's view box is the visible part of the page, so it simply
     // fills the sheet.
     Widget layer(String svg, Color color) => Positioned.fill(
@@ -315,6 +351,7 @@ class _SvgArtwork extends StatelessWidget {
                 child: CustomPaint(
                   painter: _RegionPainter(
                     scale: scale,
+                    stretch: stretch,
                     origin: (x: content.left, y: content.top),
                     washes: [
                       for (final ayah in bookmarked)
@@ -330,8 +367,11 @@ class _SvgArtwork extends StatelessWidget {
                   ),
                 ),
               ),
-              layer(page.ink, colors.ink),
-              layer(page.marks, colors.ayahNumber),
+              layer(spread ? page.inkLines!.at(stretch) : page.ink, colors.ink),
+              layer(
+                spread ? page.marksLines!.at(stretch) : page.marks,
+                colors.ayahNumber,
+              ),
             ],
           ),
         ),
@@ -344,12 +384,16 @@ class _SvgArtwork extends StatelessWidget {
 class _RegionPainter extends CustomPainter {
   const _RegionPainter({
     required this.scale,
+    required this.stretch,
     required this.origin,
     required this.washes,
   });
 
   /// Screen pixels per page unit.
   final double scale;
+
+  /// How many times taller than printed the page is drawn.
+  final double stretch;
 
   /// The page point at the top-left corner of the canvas.
   final PagePoint origin;
@@ -364,7 +408,10 @@ class _RegionPainter extends CustomPainter {
       for (final ring in wash.region.rings) {
         path.addPolygon([
           for (final point in ring)
-            Offset((point.x - origin.x) * scale, (point.y - origin.y) * scale),
+            Offset(
+              (point.x - origin.x) * scale,
+              (point.y - origin.y) * scale * stretch,
+            ),
         ], true);
       }
       canvas.drawPath(path, Paint()..color = wash.color);
@@ -374,6 +421,7 @@ class _RegionPainter extends CustomPainter {
   @override
   bool shouldRepaint(_RegionPainter old) {
     if (old.scale != scale ||
+        old.stretch != stretch ||
         old.origin != origin ||
         old.washes.length != washes.length) {
       return true;

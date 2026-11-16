@@ -6,11 +6,13 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mre_quran/core/theme/app_palette.dart';
 import 'package:mre_quran/core/theme/app_theme.dart';
+import 'package:mre_quran/core/theme/app_tokens.dart';
 import 'package:mre_quran/core/theme/quran_colors.dart';
 import 'package:mre_quran/core/widgets/empty_state.dart';
 import 'package:mre_quran/features/mushaf/application/svg_page_providers.dart';
 import 'package:mre_quran/features/mushaf/data/svg_page_parser.dart';
 import 'package:mre_quran/features/mushaf/domain/svg_page.dart';
+import 'package:mre_quran/features/mushaf/presentation/reader_page_labels.dart';
 import 'package:mre_quran/features/mushaf/presentation/svg_page_view.dart';
 import 'package:mre_quran/features/quran_index/data/quran_metadata_parser.dart';
 import 'package:mre_quran/features/quran_index/domain/quran_metadata.dart';
@@ -36,6 +38,7 @@ void main() {
     WidgetBuilder? fallbackBuilder,
     Duration fallbackAfter = const Duration(seconds: 30),
     Size size = const Size(390, 844),
+    bool fillWidth = false,
   }) async {
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
@@ -58,6 +61,7 @@ void main() {
               bookmarked: bookmarked,
               fallbackBuilder: fallbackBuilder,
               fallbackAfter: fallbackAfter,
+              fillWidth: fillWidth,
             ),
           ),
         ),
@@ -268,5 +272,86 @@ void main() {
     );
     expect(find.byType(EmptyState), findsOneWidget);
     expect(find.text('Retry'), findsOneWidget);
+  });
+
+  group('on a screen taller than the page', () {
+    testWidgets('the lines spread until the page fills the height', (
+      tester,
+    ) async {
+      await pump(tester, load: (p) async => spreadPage(p), fillWidth: true);
+      final sheet = tester.getRect(find.byType(SvgPicture).first);
+      final frame = tester.getRect(find.byType(SvgPageView));
+      expect(sheet.width, closeTo(frame.width, 5));
+      expect(sheet.height, closeTo(frame.height, 10));
+      // The lines moved apart; the page was not scaled to fit.
+      expect(sheet.height / (sheet.width * 550 / 345), greaterThan(1.3));
+    });
+
+    testWidgets('a very tall screen stops spreading and centres the page', (
+      tester,
+    ) async {
+      await pump(
+        tester,
+        load: (p) async => spreadPage(p),
+        fillWidth: true,
+        size: const Size(390, 1400),
+      );
+      final sheet = tester.getRect(find.byType(SvgPicture).first);
+      final frame = tester.getRect(find.byType(SvgPageView));
+      expect(
+        sheet.height,
+        closeTo(sheet.width * 550 / 345 * AppTokens.readerMaxLineSpread, 1),
+      );
+      expect(sheet.center.dy, closeTo(frame.center.dy, 1));
+    });
+
+    testWidgets('a page whose lines are unclear keeps its printed height, '
+        'centred', (tester) async {
+      await pump(tester, load: (p) async => fixturePage(p), fillWidth: true);
+      final sheet = tester.getRect(find.byType(SvgPicture).first);
+      final frame = tester.getRect(find.byType(SvgPageView));
+      expect(sheet.height, closeTo(sheet.width * 550 / 345, 1));
+      expect(sheet.center.dy, closeTo(frame.center.dy, 1));
+    });
+
+    testWidgets('a long press still finds the ayah under the finger', (
+      tester,
+    ) async {
+      final picked = <AyahRef>[];
+      await pump(
+        tester,
+        load: (p) async => spreadPage(p),
+        fillWidth: true,
+        onAyahLongPress: picked.add,
+      );
+      final sheet = tester.getRect(find.byType(SvgPicture).first);
+      // The lower line's ayah band runs from 117 to 154 of the page's 550.
+      await tester.longPressAt(
+        Offset(sheet.center.dx, sheet.top + sheet.height * 135 / 550),
+      );
+      await tester.longPressAt(
+        Offset(sheet.center.dx, sheet.top + sheet.height * 98 / 550),
+      );
+      expect(picked, [const AyahRef(2, 7), const AyahRef(2, 6)]);
+    });
+
+    testWidgets('a screen shorter than the page scrolls it, unspread', (
+      tester,
+    ) async {
+      await pump(
+        tester,
+        load: (p) async => spreadPage(p),
+        fillWidth: true,
+        size: const Size(844, 390),
+      );
+      final sheet = tester.getRect(find.byType(SvgPicture).first);
+      expect(sheet.height, closeTo(sheet.width * 550 / 345, 1));
+      expect(find.byType(SingleChildScrollView), findsOneWidget);
+    });
+  });
+
+  testWidgets('the printed page carries no labels over it', (tester) async {
+    await pump(tester, load: (p) async => fixturePage(p));
+    expect(find.byType(ReaderPageLabels), findsNothing);
   });
 }

@@ -299,3 +299,48 @@ carries on when the app is closed, and its notification can pause or cancel it. 
 only if it matches its SHA-256; each page inside is then checked against its own SHA-256 before it
 is kept. Two files replace the 1,208 small downloads tried first, which stopped when the app was
 closed because their queue lived in the app's memory.
+
+### Spreading the lines to fill a tall screen
+
+A phone screen is taller than the printed page (345 × 550). The single-page
+reader moves the printed lines apart until the page fills the height, up to
+1.4 times the printed height (`AppTokens.readerMaxLineSpread`). Nothing is
+scaled: every line keeps its drawn shape and moves as a whole, to where a
+page that much taller would have it. The ayah regions stretch by the same
+factor, so highlights and long-press still match.
+
+How lines are told apart (`lib/features/mushaf/data/svg_line_splitter.dart`):
+
+- A page's script is one SVG path. Its contours are drawn line by line, each
+  line from edge to edge, so a wide jump of the pen marks a new line.
+- The path is cut only between two whole contours. Only the opening move of
+  each piece is rewritten, from relative to absolute; every other character
+  of the path data is the source's.
+- Pause signs, a basmala and a surah title come from other fonts and are
+  drawn apart from their lines. Each is placed by where it lies, and only
+  when it lies on one line beyond doubt. Across all pages such signs sit
+  between 0.009 of the page height above their line's middle and 0.024
+  below it; nothing else drawn apart is nearer than 0.058.
+- Each ayah-number ornament moves with the line it sits on.
+
+A page is left unspread, at its printed height and centred, when anything is
+not as expected: script in more than one path, a path command the scanner
+does not read, a contour that lies between two lines, lines closer than a
+line apart, an ornament on no line, or a page group that turns the page.
+The two cropped opening pages are never spread.
+
+Check, over the two release archives unpacked:
+
+```
+dart run tool/check_svg_lines.dart <svg folder> <json folder>
+```
+
+Result on v1.1.1 (2026-11-16): 589 pages spread, every one with exactly 15
+lines. 15 pages are not spread: 1, 2 (opening pages), 17, 144 (script in
+many paths), 3, 45, 126, 294, 414, 458, 467, 496, 499, 515, 602 (a contour
+that could belong to either of two lines). Run the tool again after any
+change to the splitter; the count of spread pages must not drop and every
+spread page must still report 15 lines.
+
+Pages 78 and 50 were also drawn spread at 1.25 and compared by eye with the
+source: every letter, mark, pause sign and ornament is on its own line.

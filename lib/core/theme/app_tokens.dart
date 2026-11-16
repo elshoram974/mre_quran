@@ -101,4 +101,12 @@ abstract final class AppTokens {
   /// Side margin of a printed Mushaf page. The artwork carries its own
   /// margin, so the page runs almost edge to edge, as a printed copy does.
   static const double readerGutterPrinted = 2;
+
+  /// Margin above and below a printed Mushaf page.
+  static const double readerEdgePrinted = 4;
+
+  /// The most a printed page's lines are spread to fill a tall screen, as a
+  /// multiple of the printed page's height. Past this the lines drift too
+  /// far apart to read as a page.
+  static const double readerMaxLineSpread = 1.4;
 }

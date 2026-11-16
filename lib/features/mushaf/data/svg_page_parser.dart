@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import '../../quran_index/domain/quran_metadata.dart';
 import '../domain/svg_page.dart';
+import 'svg_line_splitter.dart';
 
 /// Reads the files of one quran-svg page: the SVG artwork and the JSON list
 /// of ayah polygons. Format notes: `docs/QURAN_SOURCES.md`, section 14.
@@ -25,11 +26,19 @@ abstract final class SvgPageParser {
   static SvgPage page(int page, {required String svg, required String json}) {
     final layout = SvgPageLayout(viewBox: viewBox(svg), regions: regions(json));
     final parts = split(svg);
+    final ink = _show(parts.ink, layout.content);
+    final marks = _show(parts.marks, layout.content);
+    // A cropped opening page is a small ornate block; it is never spread.
+    final lines = layout.content == layout.viewBox
+        ? SvgLineSplitter.split(ink: ink, marks: marks, box: layout.content)
+        : null;
     return SvgPage(
       page: page,
-      ink: _show(parts.ink, layout.content),
-      marks: _show(parts.marks, layout.content),
+      ink: ink,
+      marks: marks,
       layout: layout,
+      inkLines: lines?.ink,
+      marksLines: lines?.marks,
     );
   }
 
