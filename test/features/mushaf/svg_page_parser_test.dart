@@ -77,6 +77,23 @@ void main() {
       expect(parts.marks, isNot(contains('ayahPolygon')));
     });
 
+    test('an empty group that closes itself opens nothing', () {
+      // Some pages of other readings ship an ornament whose number group is
+      // empty and self-closed.
+      final svg = _svg.replaceFirst(
+        '<g transform="translate(9 9)" ayah:x="17.38" ayah:y="528.28">'
+            '<path d="M4 4L5 5Z" fill="#231f20" fill-rule="evenodd" /></g>',
+        '<g transform="translate(9 9)" ayah:x="17.38" ayah:y="528.28" />',
+      );
+      expect(svg, isNot(_svg));
+      final split = SvgPageParser.split(svg);
+      expect(split.marks, contains('ayah-mark-ornament'));
+      expect(split.marks, isNot(contains('M6 6L7 7Z')));
+      expect(split.ink, contains('M6 6L7 7Z'));
+      XmlDocument.parse(split.ink);
+      XmlDocument.parse(split.marks);
+    });
+
     test('a page without ornaments yields an empty ornament layer', () {
       final plain = _svg.replaceRange(
         _svg.indexOf('<g id="ayah_markers"'),

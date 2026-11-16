@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/diagnostics/app_logger.dart';
+import '../../settings/domain/app_settings.dart';
 import '../data/pack_downloader.dart';
 import '../data/svg_page_store.dart';
 import 'svg_page_providers.dart';
@@ -85,10 +86,11 @@ final packDownloaderProvider = Provider<PackDownloader>(
   (ref) => BackgroundPackDownloader(),
 );
 
-/// The state of the printed Mushaf's offline pack.
-final mushafPackProvider = AsyncNotifierProvider<MushafPack, PackProgress>(
-  MushafPack.new,
-);
+/// The state of the offline pack of each edition of the printed Mushaf.
+final mushafPackProvider =
+    AsyncNotifierProvider.family<MushafPack, PackProgress, MushafEdition>(
+      MushafPack.new,
+    );
 
 /// Downloads the whole printed Mushaf so it works offline, keeps count of
 /// what is on the device, and deletes it.
@@ -99,11 +101,22 @@ final mushafPackProvider = AsyncNotifierProvider<MushafPack, PackProgress>(
 /// checked and unpacked into the pages the reader uses; if the app was
 /// closed meanwhile, that happens the next time it opens.
 class MushafPack extends AsyncNotifier<PackProgress> {
-  SvgPageStore get _store => ref.read(svgPageStoreProvider);
+  /// Creates the pack of [edition].
+  MushafPack(this.edition);
+
+  /// The edition this pack holds.
+  final MushafEdition edition;
+
+  SvgPageStore get _store => ref.read(svgPageStoreProvider(edition));
   PackDownloader get _downloader => ref.read(packDownloaderProvider);
 
-  /// Name of the download group.
-  static const String group = 'mushaf-svg';
+  /// Name of the download group of [edition]. Hafs keeps the name it had
+  /// when it was the only edition, so a download begun then is still found.
+  static String groupOf(MushafEdition edition) =>
+      edition == MushafEdition.hafs ? 'mushaf-svg' : 'mushaf-svg-${edition.id}';
+
+  /// Name of this pack's download group.
+  String get group => groupOf(edition);
 
   /// How long finished files are gathered before the disk is read again.
   @visibleForTesting

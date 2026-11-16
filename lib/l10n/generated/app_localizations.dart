@@ -1880,6 +1880,60 @@ abstract class AppLocalizations {
   /// **'Could not read the download state'**
   String get packStateError;
 
+  /// No description provided for @mushafEdition.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading'**
+  String get mushafEdition;
+
+  /// No description provided for @editionHafs.
+  ///
+  /// In en, this message translates to:
+  /// **'Hafs from Asim'**
+  String get editionHafs;
+
+  /// No description provided for @editionShubah.
+  ///
+  /// In en, this message translates to:
+  /// **'Shu\'bah from Asim'**
+  String get editionShubah;
+
+  /// No description provided for @editionWarsh.
+  ///
+  /// In en, this message translates to:
+  /// **'Warsh from Nafi\''**
+  String get editionWarsh;
+
+  /// No description provided for @editionQalon.
+  ///
+  /// In en, this message translates to:
+  /// **'Qalun from Nafi\''**
+  String get editionQalon;
+
+  /// No description provided for @editionDouri.
+  ///
+  /// In en, this message translates to:
+  /// **'Al-Duri from Abu Amr'**
+  String get editionDouri;
+
+  /// No description provided for @editionLimitedNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Copying an ayah, its tafsir, ayah bookmarks and search work on the Hafs reading. Other readings show the Mushaf pages only.'**
+  String get editionLimitedNote;
+
+  /// No description provided for @editionInUse.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading now'**
+  String get editionInUse;
+
+  /// No description provided for @offlinePickHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a reading to read with it. It works without downloading while you are online.'**
+  String get offlinePickHint;
+
   /// No description provided for @packChecking.
   ///
   /// In en, this message translates to:

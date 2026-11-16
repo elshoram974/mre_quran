@@ -8,6 +8,7 @@ import '../../../core/widgets/app_switch_tile.dart';
 import '../../settings/application/settings_provider.dart';
 import '../../settings/domain/app_settings.dart';
 import '../../settings/presentation/theme_pickers.dart';
+import 'mushaf_edition_field.dart';
 import 'reader_orientation.dart';
 import 'reader_page_layout_field.dart';
 
@@ -60,7 +61,14 @@ class _DisplayOptions extends ConsumerWidget {
             child: settings.readerMode == ReaderMode.printed
                 ? const Padding(
                     padding: EdgeInsetsDirectional.only(top: 16, bottom: 4),
-                    child: ReaderPageLayoutField(),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        MushafEditionField(),
+                        SizedBox(height: 12),
+                        ReaderPageLayoutField(),
+                      ],
+                    ),
                   )
                 : _TextSize(settings: settings),
           ),

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
@@ -9,6 +10,7 @@ import 'package:crypto/crypto.dart';
 import '../domain/svg_manifest.dart';
 import '../domain/svg_page.dart';
 import 'pack_downloader.dart';
+import 'svg_page_compiler.dart';
 import 'svg_page_parser.dart';
 
 /// Downloads a URL. Injected so tests run offline.
@@ -52,6 +54,13 @@ class SvgPageStore {
   final Fetch _fetch;
   final Map<int, Future<void>> _inFlight = {};
 
+  /// Pages being prepared, and those waiting for a place.
+  int _busy = 0;
+  final List<Completer<void>> _waiting = [];
+
+  /// How many pages are prepared at the same time.
+  static const int _preparing = 2;
+
   static const List<String> _extensions = ['svg', 'json'];
   static const String _packed = '.gz';
   static const String _archives = 'pack';
@@ -65,14 +74,17 @@ class SvgPageStore {
     return '${(await directory()).path}/svg/${manifest.edition}';
   }
 
-  /// Page [page], ready to draw: downloaded if the device does not have it,
-  /// then decoded off the main isolate.
-  Future<SvgPage> page(int page) async {
+  /// Page [page], ready to paint with its lines spread for a page [stretch]
+  /// times as tall: downloaded if the device does not have it, then read,
+  /// checked and compiled off the main isolate.
+  Future<SvgPagePicture> page(int page, {double stretch = 1}) async {
     await fetch(page);
     final manifest = await _manifest();
     final entry = manifest.entry(page);
     final folder = await _folder();
-    final decoded = await Isolate.run(() => _decode(folder, page, entry));
+    final decoded = await _inTurn(
+      () => Isolate.run(() => _decode(folder, page, entry, stretch)),
+    );
     if (decoded == null) {
       // The files on the device no longer match: drop them, so the next try
       // downloads them again.
@@ -250,11 +262,36 @@ class SvgPageStore {
     await temp.rename(packed.path);
   }
 
-  /// Reads, re-checks, and parses a page; null when a file is damaged.
-  static Future<SvgPage?> _decode(
+  /// Runs [work] when a place is free: at most [_preparing] pages are
+  /// prepared at once, so they do not fight over the processor. The page
+  /// asked for last goes first; it is the one the reader has just turned to.
+  Future<T> _inTurn<T>(Future<T> Function() work) async {
+    if (_busy >= _preparing) {
+      final turn = Completer<void>();
+      _waiting.add(turn);
+      // Whoever finishes hands its place straight over.
+      await turn.future;
+    } else {
+      _busy++;
+    }
+    try {
+      return await work();
+    } finally {
+      if (_waiting.isEmpty) {
+        _busy--;
+      } else {
+        _waiting.removeLast().complete();
+      }
+    }
+  }
+
+  /// Reads, re-checks, parses and compiles a page; null when a file is
+  /// damaged.
+  static Future<SvgPagePicture?> _decode(
     String folder,
     int page,
     SvgPageEntry entry,
+    double stretch,
   ) async {
     Future<String?> read(String extension, String expected) async {
       final file = File(
@@ -273,7 +310,10 @@ class SvgPageStore {
     final json = await read('json', entry.jsonSha256);
     if (svg == null || json == null) return null;
     try {
-      return SvgPageParser.page(page, svg: svg, json: json);
+      return SvgPageCompiler.compile(
+        SvgPageParser.page(page, svg: svg, json: json),
+        stretch: stretch,
+      );
     } on FormatException {
       return null;
     }

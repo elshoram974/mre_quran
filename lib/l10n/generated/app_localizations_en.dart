@@ -1031,6 +1031,35 @@ class AppLocalizationsEn extends AppLocalizations {
   String get packStateError => 'Could not read the download state';
 
   @override
+  String get mushafEdition => 'Reading';
+
+  @override
+  String get editionHafs => 'Hafs from Asim';
+
+  @override
+  String get editionShubah => 'Shu\'bah from Asim';
+
+  @override
+  String get editionWarsh => 'Warsh from Nafi\'';
+
+  @override
+  String get editionQalon => 'Qalun from Nafi\'';
+
+  @override
+  String get editionDouri => 'Al-Duri from Abu Amr';
+
+  @override
+  String get editionLimitedNote =>
+      'Copying an ayah, its tafsir, ayah bookmarks and search work on the Hafs reading. Other readings show the Mushaf pages only.';
+
+  @override
+  String get editionInUse => 'Reading now';
+
+  @override
+  String get offlinePickHint =>
+      'Tap a reading to read with it. It works without downloading while you are online.';
+
+  @override
   String get packChecking => 'Checking what is on the device…';
 
   @override

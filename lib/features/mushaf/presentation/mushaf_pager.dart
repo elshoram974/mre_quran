@@ -12,6 +12,7 @@ import '../application/reading_position_provider.dart';
 import '../../../core/l10n/l10n.dart';
 import '../application/highlighted_ayah_provider.dart';
 import '../application/page_prefetcher.dart';
+import '../application/svg_page_providers.dart';
 import 'ayah_actions_sheet.dart';
 import 'flip/book_flip.dart';
 import 'mushaf_page_view.dart';
@@ -91,6 +92,11 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
   AyahRef? _selected;
   int? _prefetched;
 
+  /// The page shown at the last build, and whether the reader last turned
+  /// back rather than on.
+  int? _lastPage;
+  bool _backward = false;
+
   /// Starts downloading the printed pages around [page] once per change.
   void _prefetch(int page) {
     if (page == _prefetched) return;
@@ -150,6 +156,8 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
     if (mode == ReaderMode.printed) {
       _prefetch(page);
     }
+    final edition = ref.watch(printedEditionProvider);
+    final ownText = edition.matchesAppText;
     final bookmarked = ref.watch(bookmarkedRefsProvider);
     final highlighted = ref.watch(highlightedAyahProvider);
 
@@ -181,11 +189,23 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
             onTap: _onTap,
             spread: spread,
           ),
+          ReaderMode.printed when !ownText => SvgPageView(
+            // Another reading: its ayahs are not the app's text, so nothing
+            // of that text is tied to the page or stands in for it.
+            metadata: widget.text.metadata,
+            page: number,
+            digits: digits,
+            fillWidth: !spread,
+            spreadLines: edition.spreadsLines,
+            spread: spread,
+            onTap: _onTap,
+          ),
           ReaderMode.printed => SvgPageView(
             metadata: widget.text.metadata,
             page: number,
             digits: digits,
             fillWidth: !spread,
+            spreadLines: edition.spreadsLines,
             spread: spread,
             bookmarked: bookmarked,
             selected: _selected ?? highlighted,
@@ -209,6 +229,9 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
       ),
     );
     if (mode != ReaderMode.printed) return book;
+    final last = _lastPage;
+    if (last != null && last != page) _backward = page < last;
+    _lastPage = page;
     // The pages a turn away are laid out, unseen, in the same room. A page
     // on the device then has its artwork decoded and drawn before the
     // reader turns to it, instead of showing a placeholder for a moment.
@@ -223,6 +246,7 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
                 page: near,
                 digits: digits,
                 fillWidth: !spread,
+                spreadLines: edition.spreadsLines,
                 spread: spread,
                 onTap: () {},
               ),
@@ -233,21 +257,28 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
     );
   }
 
-  /// How many turns away, each way, pages are kept ready.
-  static const int _warmTurns = 2;
+  /// How many turns ahead of the reader, and behind, pages are made ready.
+  /// Reading goes on more often than back.
+  static const int _warmAhead = 3;
+  static const int _warmBehind = 1;
 
-  /// The pages [_warmTurns] turns before and after the ones on screen.
-  Iterable<int> _pagesToWarm(int page, {required bool spread}) sync* {
+  /// The pages a few turns from the ones on screen: more on the side the
+  /// reader is going, fewer on the side they came from. The farthest comes
+  /// first and the nearest last, as the page asked for last is prepared
+  /// first.
+  Iterable<int> _pagesToWarm(int page, {required bool spread}) {
     final shown = spread ? 2 : 1;
     // In a spread the odd page is on the right and its even page follows.
     final first = spread && page.isEven ? page - 1 : page;
-    for (
-      var near = first - _warmTurns * shown;
-      near < first + (_warmTurns + 1) * shown;
-      near++
-    ) {
-      final onScreen = near >= first && near < first + shown;
-      if (!onScreen && near >= 1 && near <= _pageCount) yield near;
-    }
+    final turns = [
+      for (var turn = _warmAhead; turn >= 1; turn--) ...[
+        if (turn <= _warmBehind) (_backward ? turn : -turn),
+        (_backward ? -turn : turn),
+      ],
+    ];
+    return [
+      for (final turn in turns)
+        for (var i = 0; i < shown; i++) first + turn * shown + i,
+    ].where((near) => near >= 1 && near <= _pageCount);
   }
 }

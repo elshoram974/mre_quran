@@ -8,7 +8,9 @@ import 'svg_page_providers.dart';
 
 /// Downloads the printed pages around the reader ahead of time.
 final pagePrefetcherProvider = Provider<PagePrefetcher>(
-  (ref) => PagePrefetcher(ref.watch(svgPageStoreProvider)),
+  (ref) => PagePrefetcher(
+    ref.watch(svgPageStoreProvider(ref.watch(printedEditionProvider))),
+  ),
 );
 
 /// Fetches the pages after the current one, then a few before it, so turning

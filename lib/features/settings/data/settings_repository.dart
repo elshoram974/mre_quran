@@ -16,6 +16,7 @@ class LocalSettingsRepository implements SettingsRepository {
   final SharedPreferencesAsync _preferences;
   static const _themeKey = 'settings.theme';
   static const _accentKey = 'settings.accent';
+  static const _mushafEditionKey = 'settings.mushaf_edition';
   static const _localeKey = 'settings.locale';
   static const _reduceMotionKey = 'settings.reduce_motion';
   static const _hapticsKey = 'settings.haptics';
@@ -53,6 +54,7 @@ class LocalSettingsRepository implements SettingsRepository {
     final readerPageLayout = await _preferences.getString(_readerPageLayoutKey);
     final haptics = await _preferences.getBool(_hapticsKey);
     final accent = await _preferences.getString(_accentKey);
+    final edition = await _preferences.getString(_mushafEditionKey);
     return AppSettings(
       theme: AppThemePreference.values.firstWhere(
         (item) => item.name == theme,
@@ -79,6 +81,10 @@ class LocalSettingsRepository implements SettingsRepository {
         (item) => item.name == readerMode,
         orElse: () => ReaderMode.printed,
       ),
+      mushafEdition: MushafEdition.values.firstWhere(
+        (item) => item.id == edition,
+        orElse: () => MushafEdition.hafs,
+      ),
       readerPageLayout: ReaderPageLayout.values.firstWhere(
         (item) => item.name == readerPageLayout,
         orElse: () => ReaderPageLayout.auto,
@@ -91,6 +97,7 @@ class LocalSettingsRepository implements SettingsRepository {
     await Future.wait([
       _preferences.setString(_themeKey, settings.theme.name),
       _preferences.setString(_accentKey, settings.accent.name),
+      _preferences.setString(_mushafEditionKey, settings.mushafEdition.id),
       _preferences.setString(_localeKey, settings.localeCode),
       _preferences.setBool(_reduceMotionKey, settings.reduceMotion),
       _preferences.setBool(_hapticsKey, settings.hapticsEnabled),

@@ -4,7 +4,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:device_preview/device_preview.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
@@ -17,7 +16,6 @@ import 'core/diagnostics/app_logger.dart';
 import 'core/haptics/haptics.dart';
 import 'core/notifications/reminder_scheduler.dart';
 import 'firebase_options.dart';
-import 'features/mushaf/presentation/svg_page_view.dart';
 import 'features/settings/application/settings_provider.dart';
 import 'features/settings/data/settings_repository.dart';
 import 'features/startup/application/startup_providers.dart';
@@ -32,9 +30,6 @@ Future<void> main() async {
   // the app looks and lays out alike everywhere.
   unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge));
   syncPreviewPlatform();
-  // A printed Mushaf page is two large pictures (script and ornaments). Keep
-  // the pages around the reader decoded, not the hundred the cache allows.
-  svg.cache.maximumSize = SvgPageView.cachedPictures;
   final preferences = SharedPreferencesAsync();
   // Independent start-up work runs in parallel so the first frame waits only
   // for the slowest item, not the sum of all of them.

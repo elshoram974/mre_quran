@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:typed_data';
 
 import 'package:meta/meta.dart';
 
@@ -76,6 +77,10 @@ class SvgPageLayout {
 
   /// One region per ayah on the page, in reading order.
   final List<AyahRegion> regions;
+
+  /// Width over height of the box every full page declares (345 × 550).
+  /// A reader asks for a page's spread before the page is read, from this.
+  static const double fullPageAspect = 345 / 550;
 
   /// Below this share of the view box, the ink is treated as a small block
   /// and the page is shown cropped to it.
@@ -230,4 +235,37 @@ class SvgPage {
 
   /// Whether the page's lines can be spread to fill a taller screen.
   bool get canSpread => inkLines != null;
+}
+
+/// A printed page compiled for drawing at one spread of its lines.
+///
+/// The two layers are vector-graphics binaries, made off the main isolate
+/// together with the rest of the page, so a page that is ready is ready to
+/// paint: nothing is left to parse when it comes on screen.
+@immutable
+class SvgPagePicture {
+  /// Creates the picture of page [page].
+  const SvgPagePicture({
+    required this.page,
+    required this.ink,
+    required this.marks,
+    required this.layout,
+    required this.stretch,
+  });
+
+  /// Page number, 1–604.
+  final int page;
+
+  /// The script, compiled.
+  final Uint8List ink;
+
+  /// The ayah-number ornaments, compiled.
+  final Uint8List marks;
+
+  /// Where each ayah lies on the printed page.
+  final SvgPageLayout layout;
+
+  /// How many times taller than printed the page is drawn: the spread that
+  /// was asked for, or 1 when the page's lines cannot be spread.
+  final double stretch;
 }

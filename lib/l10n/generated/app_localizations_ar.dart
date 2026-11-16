@@ -1029,6 +1029,35 @@ class AppLocalizationsAr extends AppLocalizations {
   String get packStateError => 'تعذّرت قراءة حالة التحميل';
 
   @override
+  String get mushafEdition => 'الرواية';
+
+  @override
+  String get editionHafs => 'حفص عن عاصم';
+
+  @override
+  String get editionShubah => 'شعبة عن عاصم';
+
+  @override
+  String get editionWarsh => 'ورش عن نافع';
+
+  @override
+  String get editionQalon => 'قالون عن نافع';
+
+  @override
+  String get editionDouri => 'الدوري عن أبي عمرو';
+
+  @override
+  String get editionLimitedNote =>
+      'نسخ الآية وتفسيرها وعلاماتها والبحث تعمل على رواية حفص. في الروايات الأخرى تُعرض صفحات المصحف فقط.';
+
+  @override
+  String get editionInUse => 'تُقرأ الآن';
+
+  @override
+  String get offlinePickHint =>
+      'اضغط على رواية لتقرأ بها. تعمل دون تحميل ما دام الإنترنت متاحًا.';
+
+  @override
   String get packChecking => 'جارٍ التحقق مما على الجهاز…';
 
   @override

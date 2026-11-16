@@ -10,6 +10,7 @@ import 'package:mre_quran/core/theme/app_tokens.dart';
 import 'package:mre_quran/core/theme/quran_colors.dart';
 import 'package:mre_quran/core/widgets/empty_state.dart';
 import 'package:mre_quran/features/mushaf/application/svg_page_providers.dart';
+import 'package:mre_quran/features/mushaf/data/svg_page_compiler.dart';
 import 'package:mre_quran/features/mushaf/data/svg_page_parser.dart';
 import 'package:mre_quran/features/mushaf/domain/svg_page.dart';
 import 'package:mre_quran/features/mushaf/presentation/reader_page_labels.dart';
@@ -27,7 +28,7 @@ void main() {
 
   Future<void> pump(
     WidgetTester tester, {
-    required Future<SvgPage> Function(int page) load,
+    required Future<SvgPagePicture> Function(SvgPageRequest request) load,
     int page = 3,
     Locale locale = const Locale('ar'),
     ThemeData? theme,
@@ -45,7 +46,9 @@ void main() {
     addTearDown(tester.view.reset);
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [svgPageProvider.overrideWith((ref, page) => load(page))],
+        overrides: [
+          svgPageProvider.overrideWith((ref, request) => load(request)),
+        ],
         child: MaterialApp(
           locale: locale,
           theme: theme ?? AppTheme.light,
@@ -89,7 +92,11 @@ void main() {
   testWidgets('draws the script in the ink colour and the ayah numbers in '
       'the accent', (tester) async {
     final theme = AppTheme.of(AppPaper.green, AppAccent.crimson);
-    await pump(tester, load: (page) async => fixturePage(page), theme: theme);
+    await pump(
+      tester,
+      load: (request) async => fixturePicture(request),
+      theme: theme,
+    );
     final colors = theme.extension<QuranColors>()!;
     final [script, ornaments] = layers(tester);
     expect(script.colorFilter, ColorFilter.mode(colors.ink, BlendMode.srcIn));
@@ -108,7 +115,7 @@ void main() {
     var taps = 0;
     await pump(
       tester,
-      load: (_) async => page,
+      load: (request) async => fixturePicture(request),
       onAyahLongPress: pressed.add,
       onTap: () => taps++,
     );
@@ -140,12 +147,12 @@ void main() {
     // A printed page reads the same in every app language: it must not
     // mirror with the app.
     final page = fixturePage(3);
-    await pump(tester, load: (_) async => page);
+    await pump(tester, load: (request) async => fixturePicture(request));
     final arabic = tester.getRect(find.byType(SvgPicture).first);
     final pressed = <AyahRef>[];
     await pump(
       tester,
-      load: (_) async => page,
+      load: (request) async => fixturePicture(request),
       locale: const Locale('en'),
       onAyahLongPress: pressed.add,
     );
@@ -170,7 +177,11 @@ void main() {
       Size(700, 900),
       Size(1100, 800),
     ]) {
-      await pump(tester, load: (page) async => fixturePage(page), size: size);
+      await pump(
+        tester,
+        load: (request) async => fixturePicture(request),
+        size: size,
+      );
       expect(tester.takeException(), isNull, reason: '$size');
       final sheet = tester.getRect(find.byType(SvgPicture).first);
       expect(sheet.width, lessThanOrEqualTo(size.width), reason: '$size');
@@ -191,7 +202,11 @@ void main() {
       ),
       json: File('test/fixtures/svg/001.json').readAsStringSync(),
     );
-    await pump(tester, load: (_) async => opening, page: 1);
+    await pump(
+      tester,
+      load: (_) async => SvgPageCompiler.compile(opening),
+      page: 1,
+    );
     expect(tester.takeException(), isNull);
     // The sheet takes the shape of the text block, not of the declared box,
     // and every ayah can still be pressed.
@@ -211,8 +226,10 @@ void main() {
   testWidgets('shows a skeleton while loading, then the page', (tester) async {
     await pump(
       tester,
-      load: (page) =>
-          Future.delayed(const Duration(seconds: 2), () => fixturePage(page)),
+      load: (page) => Future.delayed(
+        const Duration(seconds: 2),
+        () => fixturePicture(page),
+      ),
     );
     expect(find.byType(SvgPicture), findsNothing);
     await tester.pump(const Duration(seconds: 2));
@@ -225,8 +242,9 @@ void main() {
     var offline = true;
     await pump(
       tester,
-      load: (page) async =>
-          offline ? throw const SocketException('offline') : fixturePage(page),
+      load: (page) async => offline
+          ? throw const SocketException('offline')
+          : fixturePicture(page),
       fallbackBuilder: (_) => const Text('typeset page'),
     );
     expect(find.text('typeset page'), findsOneWidget);
@@ -249,8 +267,10 @@ void main() {
   ) async {
     await pump(
       tester,
-      load: (page) =>
-          Future.delayed(const Duration(minutes: 5), () => fixturePage(page)),
+      load: (page) => Future.delayed(
+        const Duration(minutes: 5),
+        () => fixturePicture(page),
+      ),
       fallbackBuilder: (_) => const Text('typeset page'),
       fallbackAfter: const Duration(seconds: 3),
     );
@@ -278,7 +298,11 @@ void main() {
     testWidgets('the lines spread until the page fills the height', (
       tester,
     ) async {
-      await pump(tester, load: (p) async => spreadPage(p), fillWidth: true);
+      await pump(
+        tester,
+        load: (request) async => spreadPicture(request),
+        fillWidth: true,
+      );
       final sheet = tester.getRect(find.byType(SvgPicture).first);
       final frame = tester.getRect(find.byType(SvgPageView));
       expect(sheet.width, closeTo(frame.width, 5));
@@ -292,7 +316,7 @@ void main() {
     ) async {
       await pump(
         tester,
-        load: (p) async => spreadPage(p),
+        load: (request) async => spreadPicture(request),
         fillWidth: true,
         size: const Size(390, 1400),
       );
@@ -307,7 +331,11 @@ void main() {
 
     testWidgets('a page whose lines are unclear keeps its printed height, '
         'centred', (tester) async {
-      await pump(tester, load: (p) async => fixturePage(p), fillWidth: true);
+      await pump(
+        tester,
+        load: (request) async => fixturePicture(request),
+        fillWidth: true,
+      );
       final sheet = tester.getRect(find.byType(SvgPicture).first);
       final frame = tester.getRect(find.byType(SvgPageView));
       expect(sheet.height, closeTo(sheet.width * 550 / 345, 1));
@@ -320,7 +348,7 @@ void main() {
       final picked = <AyahRef>[];
       await pump(
         tester,
-        load: (p) async => spreadPage(p),
+        load: (request) async => spreadPicture(request),
         fillWidth: true,
         onAyahLongPress: picked.add,
       );
@@ -340,7 +368,7 @@ void main() {
     ) async {
       await pump(
         tester,
-        load: (p) async => spreadPage(p),
+        load: (request) async => spreadPicture(request),
         fillWidth: true,
         size: const Size(844, 390),
       );
@@ -351,7 +379,7 @@ void main() {
   });
 
   testWidgets('the printed page carries no labels over it', (tester) async {
-    await pump(tester, load: (p) async => fixturePage(p));
+    await pump(tester, load: (request) async => fixturePicture(request));
     expect(find.byType(ReaderPageLabels), findsNothing);
   });
 }

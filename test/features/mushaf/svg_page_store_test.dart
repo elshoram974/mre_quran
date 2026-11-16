@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mre_quran/features/mushaf/data/svg_manifest_parser.dart';
 import 'package:mre_quran/features/mushaf/data/svg_page_store.dart';
 import 'package:mre_quran/features/mushaf/domain/svg_manifest.dart';
+import 'package:mre_quran/features/settings/domain/app_settings.dart';
 
 import '../../helpers/svg_page_fixtures.dart';
 
@@ -27,16 +28,51 @@ void main() {
 
   File stored(String name) => File('${root.path}/mushaf/svg/hafs-kfqc/$name');
 
-  group('the bundled manifest', () {
-    final file = File(SvgManifest.asset);
+  group('the bundled manifests', () {
+    for (final edition in MushafEdition.values) {
+      final file = File(SvgManifest.assetOf(edition));
 
-    test('its content matches the recorded SHA-256', () {
-      final compact = jsonEncode(jsonDecode(file.readAsStringSync()));
-      expect(
-        sha256.convert(utf8.encode(compact)).toString(),
-        SvgManifest.contentSha256,
-      );
+      test('${edition.id}: content matches the recorded SHA-256', () {
+        final compact = jsonEncode(jsonDecode(file.readAsStringSync()));
+        expect(
+          sha256.convert(utf8.encode(compact)).toString(),
+          SvgManifest.contentSha256[edition],
+        );
+      });
+
+      test('${edition.id}: lists its own 604 pages and two archives', () {
+        final manifest = SvgManifestParser.parse(file.readAsStringSync());
+        expect(manifest.edition, edition.id);
+        expect(manifest.pageCount, 604);
+        expect(
+          manifest.url(10, 'svg').toString(),
+          'https://cdn.quran.ws/svg/pages/v1.1.1/${edition.id}/010.svg',
+        );
+        expect(
+          [for (final archive in manifest.archives) archive.url.toString()],
+          [
+            for (final kind in ['svg', 'json'])
+              'https://github.com/quran-ws/quran-svg/releases/download/'
+                  'v1.1.1/${edition.id}-$kind.zip',
+          ],
+        );
+      });
+    }
+
+    test('no two editions share a page file', () {
+      // A page of one reading must never pass for a page of another.
+      final seen = <String>{};
+      for (final edition in MushafEdition.values) {
+        final manifest = SvgManifestParser.parse(
+          File(SvgManifest.assetOf(edition)).readAsStringSync(),
+        );
+        for (final page in manifest.pages) {
+          expect(seen.add(page.svgSha256), isTrue, reason: edition.id);
+        }
+      }
     });
+
+    final file = File(SvgManifest.assetOf(MushafEdition.hafs));
 
     test('lists all 604 pages on the versioned, immutable folder', () {
       final manifest = SvgManifestParser.parse(file.readAsStringSync());
@@ -82,7 +118,9 @@ void main() {
     final page = await store.page(2);
     expect(page.page, 2);
     expect(page.layout.regions, isNotEmpty);
-    expect(page.marks, contains('ayah-mark-ornament'));
+    expect(page.ink, isNotEmpty);
+    expect(page.marks, isNotEmpty);
+    expect(page.stretch, 1);
     expect(
       [for (final uri in server.requests) uri.pathSegments.last],
       ['002.svg', '002.json'],
@@ -92,6 +130,16 @@ void main() {
     final again = await store.page(2);
     expect(again.layout.regions.length, page.layout.regions.length);
     expect(server.requests, hasLength(2), reason: 'no second download');
+  });
+
+  test('many pages asked for at once are all prepared', () async {
+    // Only two are prepared at a time; the rest wait their turn.
+    final pages = await Future.wait([
+      for (var page = 1; page <= 3; page++) store.page(page),
+      store.page(1),
+      store.page(2),
+    ]);
+    expect([for (final page in pages) page.page], [1, 2, 3, 1, 2]);
   });
 
   test('files are kept compressed, smaller than they came', () async {

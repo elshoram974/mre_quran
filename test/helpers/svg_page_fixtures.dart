@@ -4,6 +4,8 @@ import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
 import 'package:crypto/crypto.dart';
+import 'package:mre_quran/features/mushaf/application/svg_page_providers.dart';
+import 'package:mre_quran/features/mushaf/data/svg_page_compiler.dart';
 import 'package:mre_quran/features/mushaf/data/svg_page_parser.dart';
 import 'package:mre_quran/features/mushaf/domain/svg_manifest.dart';
 import 'package:mre_quran/features/mushaf/domain/svg_page.dart';
@@ -156,3 +158,16 @@ const String spreadJson =
 /// Page [page] built from [spreadSvg]: one whose lines can be spread.
 SvgPage spreadPage(int page) =>
     SvgPageParser.page(page, svg: spreadSvg(), json: spreadJson);
+
+/// The fixture page compiled for drawing, as the store hands it out.
+SvgPagePicture fixturePicture(SvgPageRequest request) =>
+    SvgPageCompiler.compile(
+      fixturePage(request.page),
+      stretch: request.stretch / 1000,
+    );
+
+/// The spreadable page compiled for the spread [request] asks for.
+SvgPagePicture spreadPicture(SvgPageRequest request) => SvgPageCompiler.compile(
+  spreadPage(request.page),
+  stretch: request.stretch / 1000,
+);

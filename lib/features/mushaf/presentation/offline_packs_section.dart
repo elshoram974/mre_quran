@@ -9,9 +9,12 @@ import '../../../core/widgets/app_section_header.dart';
 import '../../../core/widgets/app_sheet.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../settings/application/digits_provider.dart';
+import '../../settings/application/settings_provider.dart';
+import '../../settings/domain/app_settings.dart';
 import '../application/mushaf_packs.dart';
 import '../application/svg_page_providers.dart';
 import '../data/pack_downloader.dart';
+import 'edition_labels.dart';
 
 /// The settings section for reading the printed Mushaf without internet:
 /// what is on the device, and a button to download, stop, or delete it. The
@@ -33,7 +36,11 @@ class _OfflinePacksSectionState extends ConsumerState<OfflinePacksSection> {
     super.initState();
     _lifecycle = AppLifecycleListener(
       // Downloads go on while the app is away; collect what finished.
-      onResume: () => ref.read(mushafPackProvider.notifier).refresh(),
+      onResume: () {
+        for (final edition in MushafEdition.values) {
+          ref.read(mushafPackProvider(edition).notifier).refresh();
+        }
+      },
     );
   }
 
@@ -64,22 +71,35 @@ class _OfflinePacksSectionState extends ConsumerState<OfflinePacksSection> {
             color: theme.colorScheme.onSurfaceVariant,
           ),
         ),
-        const SizedBox(height: 12),
-        const PackTile(),
+        const SizedBox(height: 8),
+        Text(
+          l10n.offlinePickHint,
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+        ),
+        for (final edition in MushafEdition.values) ...[
+          const SizedBox(height: 12),
+          PackTile(edition: edition),
+        ],
       ],
     );
   }
 }
 
-/// The printed Mushaf with what is on the device and its download, stop,
-/// and delete buttons.
+/// One reading's printed Mushaf: what is on the device, its download, stop
+/// and delete buttons, and whether the reader shows it. A tap chooses it
+/// for reading.
 class PackTile extends ConsumerWidget {
-  /// Creates the tile.
-  const PackTile({super.key});
+  /// Creates the tile of [edition].
+  const PackTile({super.key, required this.edition});
+
+  /// The reading this tile is for.
+  final MushafEdition edition;
 
   /// Words of the download's notification.
   PackNotificationText _text(AppLocalizations l10n) {
-    final name = l10n.readerModePrinted;
+    final name = editionName(l10n, edition);
     return PackNotificationText(
       runningTitle: l10n.packNotifyRunningTitle(name),
       // The downloader fills in the percentage.
@@ -100,18 +120,18 @@ class PackTile extends ConsumerWidget {
     final text = _text(l10n);
     final failed = l10n.packStartError;
     final megabytes = _mb(
-      (await ref.read(svgManifestProvider.future)).downloadBytes,
+      (await ref.read(svgManifestProvider(edition).future)).downloadBytes,
     );
     if (!context.mounted) return;
     final confirmed = await _confirm(
       context,
-      title: l10n.packDownloadTitle(l10n.readerModePrinted),
+      title: l10n.packDownloadTitle(editionName(l10n, edition)),
       body: l10n.packDownloadBody(digits(megabytes)),
       action: l10n.packDownload,
     );
     if (confirmed != true) return;
     try {
-      await ref.read(mushafPackProvider.notifier).start(text);
+      await ref.read(mushafPackProvider(edition).notifier).start(text);
     } on Object {
       messenger?.showSnackBar(SnackBar(content: Text(failed)));
     }
@@ -120,18 +140,27 @@ class PackTile extends ConsumerWidget {
   Future<void> _delete(BuildContext context, WidgetRef ref) async {
     final l10n = context.l10n;
     final digits = ref.read(digitsFormatterProvider);
-    final notifier = ref.read(mushafPackProvider.notifier);
-    final progress = ref.read(mushafPackProvider).value;
+    final notifier = ref.read(mushafPackProvider(edition).notifier);
+    final progress = ref.read(mushafPackProvider(edition)).value;
     if (progress == null) return;
     final megabytes = _mb(progress.bytes);
     final confirmed = await AppSheet.show<bool>(
       context: context,
       builder: (sheet) => _DeleteWarning(
-        title: l10n.packDeleteWarnTitle(l10n.readerModePrinted),
+        title: l10n.packDeleteWarnTitle(editionName(l10n, edition)),
         body: l10n.packDeleteWarnBody(digits(progress.done), digits(megabytes)),
       ),
     );
     if (confirmed == true) await notifier.delete();
+  }
+
+  /// Makes this the reading the reader shows.
+  void _use(WidgetRef ref) {
+    final settings = ref.read(settingsProvider).value;
+    if (settings == null) return;
+    ref
+        .read(settingsProvider.notifier)
+        .save(settings.copyWith(mushafEdition: edition));
   }
 
   static int _mb(int bytes) => (bytes / (1024 * 1024)).ceil();
@@ -142,12 +171,13 @@ class PackTile extends ConsumerWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final digits = ref.watch(digitsFormatterProvider);
-    final pack = ref.watch(mushafPackProvider);
+    final pack = ref.watch(mushafPackProvider(edition));
     final progress = pack.value;
     // The state could not be read: say so and offer another try, rather
     // than a card with nothing to press.
     final failed = progress == null && pack.hasError;
-    final packed = ref.watch(svgManifestProvider).value?.packedBytes ?? 0;
+    final packed =
+        ref.watch(svgManifestProvider(edition)).value?.packedBytes ?? 0;
     // While downloading, the bar follows the transfer; otherwise it shows
     // how many of the pages are on the device.
     final shown = (progress?.active ?? false)
@@ -166,12 +196,13 @@ class PackTile extends ConsumerWidget {
     };
     final Widget? action = switch (progress) {
       null when failed => TextButton(
-        onPressed: () => ref.invalidate(mushafPackProvider),
+        onPressed: () => ref.invalidate(mushafPackProvider(edition)),
         child: Text(l10n.retry),
       ),
       null || PackProgress(installing: true) => null,
       PackProgress(active: true) => TextButton(
-        onPressed: () => ref.read(mushafPackProvider.notifier).cancel(),
+        onPressed: () =>
+            ref.read(mushafPackProvider(edition).notifier).cancel(),
         child: Text(l10n.packCancel),
       ),
       PackProgress(complete: true) => TextButton(
@@ -203,7 +234,9 @@ class PackTile extends ConsumerWidget {
     final showBar =
         progress != null && (progress.active || progress.partial || installing);
     final ready = progress?.complete ?? false;
+    final inUse = ref.watch(printedEditionProvider) == edition;
     return AppCard(
+      onTap: inUse ? null : () => _use(ref),
       padding: const EdgeInsetsDirectional.fromSTEB(16, 12, 8, 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -215,7 +248,7 @@ class PackTile extends ConsumerWidget {
                     ? Icons.download_done_outlined
                     : Icons.cloud_download_outlined,
                 size: AppIconBadgeSize.small,
-                emphasized: ready,
+                emphasized: ready || inUse,
               ),
               const SizedBox(width: AppTokens.spaceMedium),
               Expanded(
@@ -223,9 +256,16 @@ class PackTile extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      l10n.readerModePrinted,
+                      editionName(l10n, edition),
                       style: theme.textTheme.titleMedium,
                     ),
+                    if (inUse)
+                      Text(
+                        l10n.editionInUse,
+                        style: theme.textTheme.labelMedium?.copyWith(
+                          color: scheme.primary,
+                        ),
+                      ),
                     Text(
                       subtitle,
                       style: theme.textTheme.bodySmall?.copyWith(

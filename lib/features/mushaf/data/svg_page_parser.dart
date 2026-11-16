@@ -12,7 +12,7 @@ import 'svg_line_splitter.dart';
 abstract final class SvgPageParser {
   static final RegExp _number = RegExp(r'-?\d+(?:\.\d+)?');
   static final RegExp _viewBox = RegExp(r'viewBox="([^"]+)"');
-  static final RegExp _group = RegExp(r'<g\b|</g>');
+  static final RegExp _group = RegExp(r'<g\b[^>]*>|</g>');
   static final RegExp _polygon = RegExp(
     r'<path\b[^>]*\bclass="ayahPolygon"[^>]*/>',
   );
@@ -151,7 +151,10 @@ abstract final class SvgPageParser {
   static int _groupEnd(String svg, int start) {
     var depth = 0;
     for (final match in _group.allMatches(svg, start)) {
-      if (match.group(0) == '</g>') {
+      final tag = match.group(0)!;
+      // An empty group closes itself; it opens nothing.
+      if (tag.endsWith('/>')) continue;
+      if (tag == '</g>') {
         depth--;
         if (depth == 0) return match.end;
       } else {

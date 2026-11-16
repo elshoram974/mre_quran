@@ -344,3 +344,47 @@ spread page must still report 15 lines.
 
 Pages 78 and 50 were also drawn spread at 1.25 and compared by eye with the
 source: every letter, mark, pause sign and ornament is on its own line.
+
+### Other readings (riwayat) of the printed Mushaf (owner-requested 2026-11-16)
+
+The same quran-svg release (v1.1.1, commit b4155f07) carries four more King
+Fahd Complex Mushafs. The app offers all five; the reader picks one in the
+display options or in "Mushaf offline". Same source, licence and terms as
+the Hafs pages above.
+
+| Reading | Edition id | SVG archive SHA-256 | JSON archive SHA-256 |
+| --- | --- | --- | --- |
+| Hafs from Asim | `hafs-kfqc` | `5d5e29eae66d9353dd8e0e51af4274c7768f81f722414b538dfd7c8de014fc91` | `27dd192cec6b5f919ffd6e7df5216464aa57a671e326fc1a37a9d82dee3f6c13` |
+| Shu'bah from Asim | `shubah-kfqc` | `1b37e01d3b3e605aec3c253ec3122970255ed5c05c3e9f6158811e63378e37ed` | `5e9d8f1a4e261261ca7c192511dcd3f99df2352d30aaa0818935faf6e8c68651` |
+| Warsh from Nafi' | `warsh-kfqc` | `bee1286ad1993e7c9feb835c2ab3018454bcb5915c48ec19f6073f70921280f2` | `7afc9145135a2571d225bc4c70c949f8e6266a48405ba6cafbc083ffcb300ff4` |
+| Qalun from Nafi' | `qalon-kfqc` | `4f6b42a9247048addeeca498bf69c789a730dc503fc372324b1114f03e0d7b3b` | `c175a217a96c0a0ee3a2a722fd43ecef7a50e89b4b5b452f3cb234240c838796` |
+| Al-Duri from Abu Amr | `douri-kfqc` | `1460746a114a4f797a67ad8aa34e95680b0b025e1c5bad0113a100396764c945` | `76ad9de9636dfe6225a4d05240e1a4235e2f41cfbedce1ffee427ffd69e19008` |
+
+- Each edition has its own manifest, `assets/quran/svg/<edition>_manifest.json`,
+  built by `python3 tool/build_svg_manifest.py <edition> <svg zip> <json zip>`.
+  Its content hash is in `SvgManifest.contentSha256` and a test checks it.
+  A test also checks that no two editions share a page file.
+- The four JSON archives match the `.sha256` files the release publishes. A
+  page fetched from the CDN (Warsh, page 300) matched its manifest entry.
+- All five have 604 pages and every surah starts on the same page, so page,
+  surah and juz navigation is shared. The wording differs, and Warsh, Qalun
+  and Al-Duri number some ayahs differently (6,218, 6,218 and 6,223 ayahs
+  against 6,236).
+
+What a reading other than Hafs does not get, and why:
+
+- **No ayah actions, ayah highlights, or text standing in for a page.** The
+  app's text, search, tafsir and ayah numbers are Hafs. Tying them to a page
+  of another reading would show or copy words that are not on that page.
+  `MushafEdition.matchesAppText` guards this.
+- **No spreading of lines.** `tool/check_svg_lines.dart` finds the lines on
+  589 of 604 Hafs pages, but on 469 Warsh pages, 7 Al-Duri, 2 Shu'bah and 1
+  Qalun: their files do not draw the script line by line. Spreading some
+  pages and not their neighbours would look broken, so these editions are
+  shown at their printed height throughout (`MushafEdition.spreadsLines`).
+  Search still opens the right page, since pages are shared.
+
+Source quirks handled, not edited: these editions list the ayah polygons
+before the artwork, and a few Qalun pages (141, 381, 589) carry an ornament
+whose number group is empty and self-closed. The parser reads both; the page
+is drawn as shipped.

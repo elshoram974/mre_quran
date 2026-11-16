@@ -36,6 +36,33 @@ void main() {
     });
 
     test(
+      'keeps the reading of the printed Mushaf, and starts on Hafs',
+      () async {
+        final repository = LocalSettingsRepository(SharedPreferencesAsync());
+        expect((await repository.load()).mushafEdition, MushafEdition.hafs);
+        for (final edition in MushafEdition.values) {
+          await repository.save(AppSettings(mushafEdition: edition));
+          expect((await repository.load()).mushafEdition, edition);
+        }
+      },
+    );
+
+    test('a reading it does not know falls back to Hafs', () async {
+      final preferences = SharedPreferencesAsync();
+      await preferences.setString('settings.mushaf_edition', 'unknown-kfqc');
+      final loaded = await LocalSettingsRepository(preferences).load();
+      expect(loaded.mushafEdition, MushafEdition.hafs);
+    });
+
+    test('only Hafs is the app\'s own text, and only it spreads its lines', () {
+      for (final edition in MushafEdition.values) {
+        final hafs = edition == MushafEdition.hafs;
+        expect(edition.matchesAppText, hafs, reason: edition.id);
+        expect(edition.spreadsLines, hafs, reason: edition.id);
+      }
+    });
+
+    test(
       'starts gold, and reads themes saved before accents existed',
       () async {
         final preferences = SharedPreferencesAsync();

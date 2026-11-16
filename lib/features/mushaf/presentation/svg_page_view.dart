@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -36,15 +37,12 @@ class SvgPageView extends StatelessWidget {
     this.bookmarked = const {},
     this.selected,
     this.fillWidth = false,
+    this.spreadLines = true,
     this.spread = false,
     this.digits,
     this.fallbackBuilder,
     this.fallbackAfter = const Duration(seconds: 30),
   });
-
-  /// How many decoded pictures the SVG cache should keep: two per page, for
-  /// the pages the prefetcher holds around the reader.
-  static const int cachedPictures = 24;
 
   /// Builds the page as typeset text, shown in place of the artwork when it
   /// cannot be had: offline, a failed download, or one that takes longer
@@ -76,6 +74,10 @@ class SvgPageView extends StatelessWidget {
   /// lets a tall page scroll vertically instead of shrinking it.
   final bool fillWidth;
 
+  /// Whether the lines may be moved apart to fill a screen taller than the
+  /// page. Off for an edition whose lines cannot be told apart reliably.
+  final bool spreadLines;
+
   /// Whether this page faces another, which keeps only its outer arrow.
   final bool spread;
 
@@ -93,22 +95,49 @@ class SvgPageView extends StatelessWidget {
     child: _SlowGate(
       key: ValueKey<int>(page),
       after: fallbackAfter,
-      builder: (context, slow, restart) => _SvgBody(
-        page: page,
-        label: context.l10n.printedPageLabel(
-          (digits ?? (value) => formatDigits(value, arabic: true))(page),
+      // The room decides how far the lines are spread, and so which
+      // picture of the page to ask for.
+      builder: (context, slow, restart) => LayoutBuilder(
+        builder: (context, constraints) => _SvgBody(
+          request: (
+            page: page,
+            stretch: _stretchFor(
+              constraints.biggest,
+              fillWidth: fillWidth && spreadLines,
+            ),
+          ),
+          label: context.l10n.printedPageLabel(
+            (digits ?? (value) => formatDigits(value, arabic: true))(page),
+          ),
+          onTap: onTap,
+          onAyahLongPress: onAyahLongPress,
+          bookmarked: bookmarked,
+          selected: selected,
+          fillWidth: fillWidth,
+          fallbackBuilder: fallbackBuilder,
+          slow: slow,
+          onRetry: restart,
         ),
-        onTap: onTap,
-        onAyahLongPress: onAyahLongPress,
-        bookmarked: bookmarked,
-        selected: selected,
-        fillWidth: fillWidth,
-        fallbackBuilder: fallbackBuilder,
-        slow: slow,
-        onRetry: restart,
       ),
     ),
   );
+
+  /// How far to spread a full page's lines in [area], in thousandths of its
+  /// printed height. The single-page reader fills the width; on a screen
+  /// taller than the page the lines move apart to fill the height too, up
+  /// to [AppTokens.readerMaxLineSpread].
+  static int _stretchFor(Size area, {required bool fillWidth}) {
+    if (!fillWidth || area.isEmpty || !area.isFinite) return _printed;
+    final natural = area.width / SvgPageLayout.fullPageAspect;
+    final stretch = math.min(
+      area.height / natural,
+      AppTokens.readerMaxLineSpread,
+    );
+    return stretch <= 1 ? _printed : (stretch * _printed).round();
+  }
+
+  /// A page at its printed height, in thousandths.
+  static const int _printed = 1000;
 }
 
 /// Tells its builder when [after] has passed since it began (or since it was
@@ -161,7 +190,7 @@ class _SlowGateState extends State<_SlowGate> {
 /// or loading.
 class _SvgBody extends ConsumerWidget {
   const _SvgBody({
-    required this.page,
+    required this.request,
     required this.label,
     required this.onTap,
     required this.onAyahLongPress,
@@ -173,7 +202,7 @@ class _SvgBody extends ConsumerWidget {
     required this.onRetry,
   });
 
-  final int page;
+  final SvgPageRequest request;
   final String label;
   final VoidCallback onTap;
   final ValueChanged<AyahRef>? onAyahLongPress;
@@ -187,9 +216,9 @@ class _SvgBody extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final artwork = ref.watch(svgPageProvider(page));
+    final artwork = ref.watch(svgPageProvider(request));
     void retry() {
-      ref.invalidate(svgPageProvider(page));
+      ref.invalidate(svgPageProvider(request));
       onRetry();
     }
 
@@ -222,7 +251,13 @@ class _SvgBody extends ConsumerWidget {
         actionLabel: l10n.retry,
         onAction: retry,
       ),
-      _ => const _PageSkeleton(key: ValueKey('loading')),
+      // A page on the device is ready in a moment; the placeholder only
+      // comes if it is not, so a quick turn never flashes one.
+      _ => const _Late(
+        key: ValueKey('loading'),
+        after: _placeholderAfter,
+        child: _PageSkeleton(),
+      ),
     };
     return AnimatedSwitcher(
       duration: MediaQuery.disableAnimationsOf(context)
@@ -231,6 +266,62 @@ class _SvgBody extends ConsumerWidget {
       child: child,
     );
   }
+}
+
+/// How long a page may take before its placeholder shows.
+const Duration _placeholderAfter = Duration(milliseconds: 250);
+
+/// Shows [child] only once [after] has passed; plain paper until then.
+class _Late extends StatefulWidget {
+  const _Late({super.key, required this.after, required this.child});
+
+  final Duration after;
+  final Widget child;
+
+  @override
+  State<_Late> createState() => _LateState();
+}
+
+class _LateState extends State<_Late> {
+  late final Timer _timer;
+  bool _due = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer(widget.after, () {
+      if (mounted) setState(() => _due = true);
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) =>
+      _due ? widget.child : const SizedBox.expand();
+}
+
+/// One compiled layer of a page, handed to the renderer as it is.
+class _CompiledLayer extends BytesLoader {
+  const _CompiledLayer(this.bytes);
+
+  final Uint8List bytes;
+
+  @override
+  Future<ByteData> loadBytes(BuildContext? context) =>
+      SynchronousFuture(ByteData.sublistView(bytes));
+
+  // A layer is its own bytes: the same page gives the same picture.
+  @override
+  bool operator ==(Object other) =>
+      other is _CompiledLayer && identical(other.bytes, bytes);
+
+  @override
+  int get hashCode => identityHashCode(bytes);
 }
 
 /// The artwork of a page, fitted to the space, with highlights under the
@@ -247,7 +338,7 @@ class _SvgArtwork extends StatelessWidget {
     required this.fillWidth,
   });
 
-  final SvgPage page;
+  final SvgPagePicture page;
   final String label;
   final VoidCallback onTap;
   final ValueChanged<AyahRef>? onAyahLongPress;
@@ -274,15 +365,11 @@ class _SvgArtwork extends StatelessWidget {
           ),
         );
       }
-      // The single-page reader fills the width. On a screen taller than the
-      // page, the printed lines move apart to fill the height too; a page
-      // taller than the screen scrolls.
+      // The single-page reader fills the width. The picture was made for
+      // this room, with its lines spread to fill the height; a page taller
+      // than the screen scrolls.
       final natural = area.width / aspect;
-      final stretch = page.canSpread && natural < area.height
-          ? _steady(
-              math.min(area.height / natural, AppTokens.readerMaxLineSpread),
-            )
-          : 1.0;
+      final stretch = page.stretch;
       return SingleChildScrollView(
         child: ConstrainedBox(
           constraints: BoxConstraints(minHeight: area.height),
@@ -302,10 +389,6 @@ class _SvgArtwork extends StatelessWidget {
     },
   );
 
-  /// [stretch] to three decimals, so a layout that settles a hair off does
-  /// not ask for the artwork to be built again.
-  static double _steady(double stretch) => (stretch * 1000).round() / 1000;
-
   /// The page at [scale] screen pixels per page unit, its lines spread for
   /// a page [stretch] times as tall.
   Widget _sheet(BuildContext context, double scale, double stretch) {
@@ -318,12 +401,11 @@ class _SvgArtwork extends StatelessWidget {
       // Spreading moves a line as far as stretching the page would.
       content.top + position.dy / scale / stretch,
     );
-    final spread = stretch > 1;
     // Each layer's view box is the visible part of the page, so it simply
     // fills the sheet.
-    Widget layer(String svg, Color color) => Positioned.fill(
-      child: SvgPicture.string(
-        svg,
+    Widget layer(Uint8List compiled, Color color) => Positioned.fill(
+      child: SvgPicture(
+        _CompiledLayer(compiled),
         fit: BoxFit.fill,
         colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
         excludeFromSemantics: true,
@@ -367,11 +449,8 @@ class _SvgArtwork extends StatelessWidget {
                   ),
                 ),
               ),
-              layer(spread ? page.inkLines!.at(stretch) : page.ink, colors.ink),
-              layer(
-                spread ? page.marksLines!.at(stretch) : page.marks,
-                colors.ayahNumber,
-              ),
+              layer(page.ink, colors.ink),
+              layer(page.marks, colors.ayahNumber),
             ],
           ),
         ),
@@ -491,7 +570,7 @@ class _TextStandIn extends StatelessWidget {
 
 /// Fifteen line placeholders spread like the printed page.
 class _PageSkeleton extends StatelessWidget {
-  const _PageSkeleton({super.key});
+  const _PageSkeleton();
 
   static const int _lines = 15;
 

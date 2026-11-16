@@ -20,7 +20,7 @@ abstract final class SvgLineSplitter {
     r'class="ayah-mark-ornament" '
     r'transform="translate\(([-\d.]+)[ ,]([-\d.]+)\)',
   );
-  static final RegExp _group = RegExp(r'<g\b|</g>');
+  static final RegExp _group = RegExp(r'<g\b[^>]*>|</g>');
   static const String _viewBoxOpen = 'viewBox="';
   static const String _markOpen = '<g class="ayah-mark">';
   static const String _shiftOpen = '<g transform="translate(0 ';
@@ -475,7 +475,10 @@ abstract final class SvgLineSplitter {
   static int _groupEnd(String svg, int start) {
     var depth = 0;
     for (final match in _group.allMatches(svg, start)) {
-      if (match.group(0) == '</g>') {
+      final tag = match.group(0)!;
+      // An empty group closes itself; it opens nothing.
+      if (tag.endsWith('/>')) continue;
+      if (tag == '</g>') {
         depth--;
         if (depth == 0) return match.end;
       } else {
