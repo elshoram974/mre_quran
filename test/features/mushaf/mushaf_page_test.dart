@@ -79,9 +79,9 @@ void main() {
   testWidgets('opens at page 1 with the floating bars showing', (tester) async {
     await _pump(tester);
     expect(find.text('سورة الفاتحة'), findsWidgets, reason: 'banner');
-    // The surah button of the floating controls, and the page pill.
+    // The surah button of the floating controls, and the page scrubber.
     expect(find.text('الفاتحة').hitTestable(), findsOneWidget);
-    expect(find.text('صفحة ١'), findsOneWidget, reason: 'page pill');
+    expect(find.text('صفحة ١'), findsOneWidget, reason: 'page scrubber');
     expect(find.bySemanticsLabel('ابحث في القرآن'), findsOneWidget);
     expect(find.byTooltip('إضافة علامة للصفحة'), findsOneWidget);
     // Display options carry a visible label, not a bare icon; there is no
@@ -181,11 +181,11 @@ void main() {
     expect(positions.page, 50);
   });
 
-  testWidgets('the page pill accepts a typed page and goes to it', (
+  testWidgets('the number button accepts a typed page and goes to it', (
     tester,
   ) async {
     final (_, positions) = await _pump(tester, savedPage: 10);
-    await tester.tap(find.byType(ReaderPagePill));
+    await tester.tap(find.byTooltip('الانتقال إلى صفحة').hitTestable());
     await tester.pumpAndSettle();
     expect(find.text('صفحة ١٠ من ٦٠٤'), findsOneWidget);
     final input = find.byType(TextField).first;

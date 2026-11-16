@@ -14,8 +14,9 @@ import '../../settings/application/digits_provider.dart';
 import '../application/reader_immersive_provider.dart';
 import '../application/reading_position_provider.dart';
 import 'display_options_sheet.dart';
-import 'mushaf_pager.dart';
 import 'go_to_page_sheet.dart';
+import 'mushaf_pager.dart';
+import 'page_scrubber.dart';
 import 'reader_bar.dart';
 import 'reader_navigation.dart';
 import 'reader_orientation.dart';
@@ -115,10 +116,11 @@ class MushafPage extends ConsumerWidget {
         ),
       ],
     );
-    // Three plain parts: where you are (the surah, opening the index), the
-    // page (opening "go to page"), and the display options. Everything else
+    // The scrubber moves through the Mushaf; under it, where you are (the
+    // surah, opening the index) and the display options. Everything else
     // lives in the display sheet; a tap on the page hides the bars.
-    final controls = Row(
+    final shortcuts = Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Flexible(
           child: ReaderFloatingSurface(
@@ -129,21 +131,6 @@ class MushafPage extends ConsumerWidget {
                 surah.arabicName,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(width: AppTokens.spaceSmall),
-        Expanded(
-          flex: 2,
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 160),
-              child: ReaderPagePill(
-                label: l10n.pageNumber(digits(page)),
-                progress: page / metadata.pageCount,
-                tooltip: l10n.goToPage,
-                onPressed: goToPage,
               ),
             ),
           ),
@@ -163,6 +150,29 @@ class MushafPage extends ConsumerWidget {
             ),
           ),
         ),
+      ],
+    );
+
+    final controls = Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        PageScrubber(
+          page: page,
+          pageCount: metadata.pageCount,
+          titleOf: (p) => l10n.pageNumber(digits(p)),
+          subtitleOf: (p) => l10n.scrubberPlace(
+            metadata.surahAtPage(p).arabicName,
+            l10n.juzTitle(digits(metadata.juzOfPage(p).number)),
+          ),
+          digits: digits,
+          fineLabel: l10n.fineScrub,
+          numberTooltip: l10n.goToPage,
+          onChanged: goTo,
+          onEnterNumber: goToPage,
+        ),
+        const SizedBox(height: AppTokens.spaceSmall),
+        shortcuts,
       ],
     );
 

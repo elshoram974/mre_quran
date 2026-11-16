@@ -1114,6 +1114,14 @@ class AppLocalizationsAr extends AppLocalizations {
   String get goToPageAction => 'انتقال';
 
   @override
+  String get fineScrub => 'تمرير دقيق';
+
+  @override
+  String scrubberPlace(String surah, String juz) {
+    return '$surah · $juz';
+  }
+
+  @override
   String pageOfTotal(String page, String total) {
     return 'صفحة $page من $total';
   }

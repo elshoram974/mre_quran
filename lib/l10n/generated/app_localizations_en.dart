@@ -1117,6 +1117,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get goToPageAction => 'Go';
 
   @override
+  String get fineScrub => 'Fine scroll';
+
+  @override
+  String scrubberPlace(String surah, String juz) {
+    return '$surah · $juz';
+  }
+
+  @override
   String pageOfTotal(String page, String total) {
     return 'Page $page of $total';
   }

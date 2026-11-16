@@ -2012,6 +2012,18 @@ abstract class AppLocalizations {
   /// **'Go'**
   String get goToPageAction;
 
+  /// No description provided for @fineScrub.
+  ///
+  /// In en, this message translates to:
+  /// **'Fine scroll'**
+  String get fineScrub;
+
+  /// No description provided for @scrubberPlace.
+  ///
+  /// In en, this message translates to:
+  /// **'{surah} · {juz}'**
+  String scrubberPlace(String surah, String juz);
+
   /// No description provided for @pageOfTotal.
   ///
   /// In en, this message translates to:
