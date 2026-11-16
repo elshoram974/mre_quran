@@ -61,4 +61,51 @@ void main() {
     await tester.pump();
     expect(tester.widget<TextField>(input).controller!.text, '10');
   });
+
+  testWidgets('understands the digits it shows: sliding in Arabic digits '
+      'keeps the button on', (tester) async {
+    String arabic(int value) => value.toString().replaceAllMapped(
+      RegExp(r'\d'),
+      (m) => String.fromCharCode(0x660 + int.parse(m.group(0)!)),
+    );
+    int? chosen;
+    await tester.pumpWidget(
+      MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Builder(
+          builder: (context) => Scaffold(
+            body: ElevatedButton(
+              onPressed: () async => chosen = await showGoToPage(
+                context,
+                page: 7,
+                pageCount: 604,
+                digits: arabic,
+              ),
+              child: const Text('open'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+    FilledButton go() => tester.widget<FilledButton>(find.byType(FilledButton));
+    // The field opens holding the page in Arabic digits.
+    expect(find.text('٧'), findsWidgets);
+    expect(go().onPressed, isNotNull);
+
+    // Sliding writes the page in the field, in Arabic digits again.
+    await tester.drag(find.byType(Slider), const Offset(-120, 0));
+    await tester.pump();
+    expect(go().onPressed, isNotNull);
+
+    final input = find.byType(TextField).first;
+    await tester.enterText(input, '٢١٣');
+    await tester.pump();
+    expect(go().onPressed, isNotNull);
+    await tester.tap(find.byType(FilledButton));
+    await tester.pumpAndSettle();
+    expect(chosen, 213);
+  });
 }

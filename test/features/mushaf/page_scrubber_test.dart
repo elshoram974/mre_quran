@@ -27,6 +27,8 @@ Future<List<int>> _pump(
                 subtitleOf: (p) => 'Place $p',
                 digits: (p) => '$p',
                 fineLabel: 'Fine',
+                cancelHint: 'Up to cancel',
+                cancelNow: 'Lift to cancel',
                 numberTooltip: 'Type a page',
                 onChanged: picked.add,
                 onEnterNumber: onEnterNumber ?? () {},
@@ -105,18 +107,17 @@ void main() {
     final gesture = await tester.startGesture(track.center);
     await gesture.moveBy(const Offset(-40, 0));
     await tester.pump();
-    final coarse = _shownPage(tester);
     // A tremor does not restart the wait.
     await tester.pump(const Duration(milliseconds: 300));
     await gesture.moveBy(const Offset(-2, 0));
     await tester.pump(const Duration(milliseconds: 300));
     expect(find.text('Fine'), findsOneWidget);
+    final coarse = _shownPage(tester);
 
     // One twentieth of the track is one page on the fine scale.
     await gesture.moveBy(Offset(-track.width / 20, 0));
     await tester.pump();
-    expect((_shownPage(tester) - coarse).abs(), lessThanOrEqualTo(4));
-    expect(_shownPage(tester), isNot(coarse));
+    expect((_shownPage(tester) - coarse).abs(), inInclusiveRange(1, 2));
 
     final chosen = _shownPage(tester);
     await gesture.up();
@@ -131,6 +132,7 @@ void main() {
     final picked = await _pump(tester);
     final track = _track(tester);
     final gesture = await tester.startGesture(track.center);
+    await gesture.moveBy(const Offset(-30, 0));
     await tester.pump(const Duration(milliseconds: 600));
     expect(find.text('Fine'), findsOneWidget);
     // To the left end, where the later pages are, and wait there.
@@ -149,6 +151,32 @@ void main() {
     await gesture.up();
     await tester.pump();
     expect(picked, [resting]);
+  });
+
+  testWidgets('lifting the finger above the track changes nothing', (
+    tester,
+  ) async {
+    final picked = await _pump(tester);
+    final track = _track(tester);
+    final gesture = await tester.startGesture(track.center);
+    await gesture.moveBy(const Offset(-60, 0));
+    await tester.pump();
+    expect(find.text('Up to cancel'), findsOneWidget);
+    expect(_shownPage(tester), isNot(100));
+    // Up and away from the track: the card shows the reader's page again.
+    await gesture.moveBy(const Offset(0, -80));
+    await tester.pump();
+    expect(find.text('Lift to cancel'), findsOneWidget);
+    expect(_shownPage(tester), 100);
+    // Back on the track the drag goes on.
+    await gesture.moveBy(const Offset(0, 80));
+    await tester.pump();
+    expect(find.text('Lift to cancel'), findsNothing);
+    expect(_shownPage(tester), isNot(100));
+    await gesture.moveBy(const Offset(0, -80));
+    await gesture.up();
+    await tester.pump();
+    expect(picked, isEmpty);
   });
 
   testWidgets('a moving finger never opens the fine scale', (tester) async {

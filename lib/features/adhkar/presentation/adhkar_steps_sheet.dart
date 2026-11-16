@@ -209,12 +209,13 @@ class _StepsBodyState extends ConsumerState<_StepsBody> {
     final next = complete
         ? ref.watch(nextCollectionProvider(collection))
         : null;
-    return Padding(
+    final safeBottom = MediaQuery.paddingOf(context).bottom;
+    final body = Padding(
       padding: EdgeInsetsDirectional.fromSTEB(
         AppTokens.gutterCompact,
         0,
         AppTokens.gutterCompact,
-        MediaQuery.paddingOf(context).bottom + 16,
+        safeBottom + 16,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -354,5 +355,25 @@ class _StepsBodyState extends ConsumerState<_StepsBody> {
         ],
       ),
     );
+    // The header, the step row and the counter need this much room. A sheet
+    // dragged lower than that keeps the layout and slides over it, rather
+    // than squeezing it.
+    final needed =
+        MediaQuery.textScalerOf(context).scale(_minBodyExtent) + safeBottom;
+    return LayoutBuilder(
+      builder: (context, constraints) => constraints.maxHeight >= needed
+          ? body
+          : ClipRect(
+              child: OverflowBox(
+                alignment: AlignmentDirectional.topCenter,
+                minHeight: needed,
+                maxHeight: needed,
+                child: body,
+              ),
+            ),
+    );
   }
+
+  /// Least height of the steps body at the standard text size.
+  static const double _minBodyExtent = 400;
 }

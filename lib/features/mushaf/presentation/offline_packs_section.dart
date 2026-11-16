@@ -142,7 +142,11 @@ class PackTile extends ConsumerWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final digits = ref.watch(digitsFormatterProvider);
-    final progress = ref.watch(mushafPackProvider).value;
+    final pack = ref.watch(mushafPackProvider);
+    final progress = pack.value;
+    // The state could not be read: say so and offer another try, rather
+    // than a card with nothing to press.
+    final failed = progress == null && pack.hasError;
     final packed = ref.watch(svgManifestProvider).value?.packedBytes ?? 0;
     // While downloading, the bar follows the transfer; otherwise it shows
     // how many of the pages are on the device.
@@ -151,7 +155,7 @@ class PackTile extends ConsumerWidget {
         : progress?.fraction ?? 0;
     final percent = digits((shown * 100).floor());
     final subtitle = switch (progress) {
-      null => '',
+      null => failed ? l10n.packStateError : l10n.packChecking,
       PackProgress(installing: true) => l10n.packInstalling,
       PackProgress(active: true) => l10n.packDownloading(percent),
       PackProgress(complete: true) =>
@@ -161,6 +165,10 @@ class PackTile extends ConsumerWidget {
       _ => l10n.packNotDownloaded(digits(_mb(packed))),
     };
     final Widget? action = switch (progress) {
+      null when failed => TextButton(
+        onPressed: () => ref.invalidate(mushafPackProvider),
+        child: Text(l10n.retry),
+      ),
       null || PackProgress(installing: true) => null,
       PackProgress(active: true) => TextButton(
         onPressed: () => ref.read(mushafPackProvider.notifier).cancel(),

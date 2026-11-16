@@ -122,8 +122,15 @@ class BackgroundPackDownloader implements PackDownloader {
   static String _path(Task task) =>
       '${task.directory.replaceFirst('$_folder/', '')}/${task.filename}';
 
+  /// Every update of every download. The plugin's own stream takes one
+  /// listener for good, and this class hands out two views of it that are
+  /// listened to again each time the pack's state is read afresh; so it is
+  /// listened to once here and shared.
+  late final Stream<TaskUpdate> _updates = _downloader.updates
+      .asBroadcastStream();
+
   @override
-  Stream<PackFileResult> get results => _downloader.updates
+  Stream<PackFileResult> get results => _updates
       .where((update) => update is TaskStatusUpdate)
       .cast<TaskStatusUpdate>()
       .where((update) => update.status.isFinalState)
@@ -136,7 +143,7 @@ class BackgroundPackDownloader implements PackDownloader {
       );
 
   @override
-  Stream<PackTransfer> get transfers => _downloader.updates
+  Stream<PackTransfer> get transfers => _updates
       .where((update) => update is TaskProgressUpdate)
       .cast<TaskProgressUpdate>()
       // Negative values are the downloader's codes for failed or paused.

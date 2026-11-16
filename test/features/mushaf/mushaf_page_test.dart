@@ -8,6 +8,7 @@ import 'package:mre_quran/features/mushaf/presentation/reader_bar.dart';
 import 'package:mre_quran/features/mushaf/presentation/reader_page_labels.dart';
 import 'package:mre_quran/features/mushaf/presentation/mushaf_page.dart';
 import 'package:mre_quran/features/mushaf/presentation/mushaf_pager.dart';
+import 'package:mre_quran/features/mushaf/presentation/page_scrubber.dart';
 import 'package:mre_quran/features/quran_index/application/quran_metadata_provider.dart';
 import 'package:mre_quran/features/bookmarks/application/bookmarks_provider.dart';
 import 'package:mre_quran/features/quran_text/application/quran_text_providers.dart';
@@ -79,9 +80,10 @@ void main() {
   testWidgets('opens at page 1 with the floating bars showing', (tester) async {
     await _pump(tester);
     expect(find.text('سورة الفاتحة'), findsWidgets, reason: 'banner');
-    // The surah button of the floating controls, and the page scrubber.
-    expect(find.text('الفاتحة').hitTestable(), findsOneWidget);
-    expect(find.text('صفحة ١'), findsOneWidget, reason: 'page scrubber');
+    // The place pill of the floating controls: the page, its surah and juz.
+    expect(find.text('صفحة ١').hitTestable(), findsOneWidget);
+    expect(find.text('الفاتحة · الجزء ١').hitTestable(), findsOneWidget);
+    expect(find.byType(PageScrubber), findsNothing);
     expect(find.bySemanticsLabel('ابحث في القرآن'), findsOneWidget);
     expect(find.byTooltip('إضافة علامة للصفحة'), findsOneWidget);
     // Display options carry a visible label, not a bare icon; there is no
@@ -185,6 +187,10 @@ void main() {
     tester,
   ) async {
     final (_, positions) = await _pump(tester, savedPage: 10);
+    // The place pill opens the scrubber, whose number button asks for a page.
+    await tester.tap(find.byType(ReaderPlacePill));
+    await tester.pumpAndSettle();
+    expect(find.byType(PageScrubber), findsOneWidget);
     await tester.tap(find.byTooltip('الانتقال إلى صفحة').hitTestable());
     await tester.pumpAndSettle();
     expect(find.text('صفحة ١٠ من ٦٠٤'), findsOneWidget);
@@ -194,6 +200,26 @@ void main() {
     await tester.tap(find.text('انتقال'));
     await tester.pumpAndSettle();
     expect(positions.page, greaterThan(550));
+  });
+
+  testWidgets('the scrubber closes by its button and with the bars', (
+    tester,
+  ) async {
+    final (container, _) = await _pump(tester, savedPage: 10);
+    await tester.tap(find.byType(ReaderPlacePill));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('إغلاق شريط الصفحات'));
+    await tester.pumpAndSettle();
+    expect(find.byType(PageScrubber), findsNothing);
+    expect(find.byType(ReaderPlacePill), findsOneWidget);
+
+    await tester.tap(find.byType(ReaderPlacePill));
+    await tester.pumpAndSettle();
+    container.read(readerImmersiveProvider.notifier).hide();
+    await tester.pumpAndSettle();
+    container.read(readerImmersiveProvider.notifier).toggle();
+    await tester.pumpAndSettle();
+    expect(find.byType(PageScrubber), findsNothing);
   });
 
   testWidgets('the bookmark button marks the page and unmarks it', (

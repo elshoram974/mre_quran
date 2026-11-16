@@ -1028,6 +1028,12 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get packStateError => 'Could not read the download state';
+
+  @override
+  String get packChecking => 'Checking what is on the device…';
+
+  @override
   String packDownloading(String percent) {
     return 'Downloading · $percent%';
   }
@@ -1118,6 +1124,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get fineScrub => 'Fine scroll';
+
+  @override
+  String get scrubCancelHint => 'Drag up to cancel';
+
+  @override
+  String get scrubCancelNow => 'Lift to cancel';
+
+  @override
+  String get scrubberOpen => 'Browse pages';
+
+  @override
+  String get scrubberClose => 'Close the page bar';
 
   @override
   String scrubberPlace(String surah, String juz) {

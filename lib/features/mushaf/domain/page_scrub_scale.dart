@@ -37,7 +37,9 @@ class PageScrubScale {
   /// thumb at one end of the track.
   PageScrubScale shifted(int by, {required int pageCount}) {
     final move = by.clamp(1 - first, pageCount - last);
-    return move == 0 ? this : PageScrubScale._(first + move, last + move, fine: fine);
+    return move == 0
+        ? this
+        : PageScrubScale._(first + move, last + move, fine: fine);
   }
 
   /// Page steps between two ticks, and between two labelled ticks, for a

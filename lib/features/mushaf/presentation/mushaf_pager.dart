@@ -153,7 +153,7 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
     final bookmarked = ref.watch(bookmarkedRefsProvider);
     final highlighted = ref.watch(highlightedAyahProvider);
 
-    return Directionality(
+    final book = Directionality(
       // The Mushaf turns right to left in every app language.
       textDirection: TextDirection.rtl,
       child: BookFlip(
@@ -208,5 +208,46 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
         },
       ),
     );
+    if (mode != ReaderMode.printed) return book;
+    // The pages a turn away are laid out, unseen, in the same room. A page
+    // on the device then has its artwork decoded and drawn before the
+    // reader turns to it, instead of showing a placeholder for a moment.
+    return Stack(
+      children: [
+        for (final near in _pagesToWarm(page, spread: spread))
+          Positioned.fill(
+            child: Offstage(
+              child: SvgPageView(
+                key: ValueKey<String>('warm-$near'),
+                metadata: widget.text.metadata,
+                page: near,
+                digits: digits,
+                fillWidth: !spread,
+                spread: spread,
+                onTap: () {},
+              ),
+            ),
+          ),
+        Positioned.fill(child: book),
+      ],
+    );
+  }
+
+  /// How many turns away, each way, pages are kept ready.
+  static const int _warmTurns = 2;
+
+  /// The pages [_warmTurns] turns before and after the ones on screen.
+  Iterable<int> _pagesToWarm(int page, {required bool spread}) sync* {
+    final shown = spread ? 2 : 1;
+    // In a spread the odd page is on the right and its even page follows.
+    final first = spread && page.isEven ? page - 1 : page;
+    for (
+      var near = first - _warmTurns * shown;
+      near < first + (_warmTurns + 1) * shown;
+      near++
+    ) {
+      final onScreen = near >= first && near < first + shown;
+      if (!onScreen && near >= 1 && near <= _pageCount) yield near;
+    }
   }
 }

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/diagnostics/app_logger.dart';
 import '../data/pack_downloader.dart';
 import '../data/svg_page_store.dart';
 import 'svg_page_providers.dart';
@@ -130,7 +131,7 @@ class MushafPack extends AsyncNotifier<PackProgress> {
   }
 
   Future<PackProgress> _read() async {
-    final active = await _downloader.pending(group) > 0;
+    final active = await _isDownloading();
     if (!active) _transfers.clear();
     return PackProgress(
       done: await _store.filesOnDevice(),
@@ -139,6 +140,18 @@ class MushafPack extends AsyncNotifier<PackProgress> {
       bytes: await _store.bytesOnDevice(),
       transfer: _transfer,
     );
+  }
+
+  /// Whether the system still holds a download of the pack. A downloader
+  /// that cannot say counts as idle: the reader must still be able to see
+  /// what is on the device and start a download.
+  Future<bool> _isDownloading() async {
+    try {
+      return await _downloader.pending(group) > 0;
+    } on Object catch (error) {
+      AppLogger.debug('Pack downloader state failed: ${error.runtimeType}');
+      return false;
+    }
   }
 
   /// The download as a whole is as far as its slowest archive.

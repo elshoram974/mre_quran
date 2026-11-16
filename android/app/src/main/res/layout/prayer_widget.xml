@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- The next prayer, one row tall and two cells wide: its name at the start,
-     its time and the time left at the end. The text here is the sample shown
+     its time and the time left at the end. Two short lines each side, sized
+     to fit the shortest row a launcher gives. The text here is the sample shown
      in the widget picker; PrayerWidgetProvider replaces it. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/prayer_widget_root"
@@ -22,9 +23,9 @@
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:paddingStart="14dp"
-        android:paddingTop="8dp"
+        android:paddingTop="4dp"
         android:paddingEnd="14dp"
-        android:paddingBottom="8dp">
+        android:paddingBottom="4dp">
 
         <LinearLayout
             android:layout_width="0dp"
@@ -41,7 +42,7 @@
                 android:text="@string/prayer_widget_label"
                 android:textAlignment="viewStart"
                 android:textColor="@color/widget_accent"
-                android:textSize="12sp"
+                android:textSize="11sp"
                 android:textStyle="bold" />
 
             <!-- Two lines, so the "set your location" hint is not cut. -->
@@ -54,7 +55,7 @@
                 android:text="@string/widget_preview_fajr"
                 android:textAlignment="viewStart"
                 android:textColor="@color/widget_text"
-                android:textSize="20sp"
+                android:textSize="16sp"
                 android:textStyle="bold" />
         </LinearLayout>
 
@@ -72,23 +73,17 @@
                 android:singleLine="true"
                 android:text="@string/widget_preview_fajr_time"
                 android:textColor="@color/widget_text"
-                android:textSize="17sp"
+                android:textSize="15sp"
                 android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/prayer_widget_remaining"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:background="@drawable/widget_pill"
-                android:paddingStart="8dp"
-                android:paddingTop="2dp"
-                android:paddingEnd="8dp"
-                android:paddingBottom="2dp"
                 android:singleLine="true"
                 android:text="@string/widget_preview_remaining"
-                android:textColor="@color/widget_text"
-                android:textSize="12sp" />
+                android:textColor="@color/widget_accent"
+                android:textSize="11sp" />
         </LinearLayout>
     </LinearLayout>
 </FrameLayout>

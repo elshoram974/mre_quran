@@ -1026,6 +1026,12 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String get packStateError => 'تعذّرت قراءة حالة التحميل';
+
+  @override
+  String get packChecking => 'جارٍ التحقق مما على الجهاز…';
+
+  @override
   String packDownloading(String percent) {
     return 'جارٍ التحميل · $percent٪';
   }
@@ -1115,6 +1121,18 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get fineScrub => 'تمرير دقيق';
+
+  @override
+  String get scrubCancelHint => 'اسحب لأعلى للإلغاء';
+
+  @override
+  String get scrubCancelNow => 'ارفع إصبعك للإلغاء';
+
+  @override
+  String get scrubberOpen => 'تصفّح الصفحات';
+
+  @override
+  String get scrubberClose => 'إغلاق شريط الصفحات';
 
   @override
   String scrubberPlace(String surah, String juz) {

@@ -16,6 +16,8 @@ internal object PrayerWidgetRenderer {
 
     private const val PREFERENCES = "prayer_widget"
     private const val PAYLOAD = "payload"
+    private const val RENDERED_AT = "rendered_at"
+    private const val PRAYER_TIMES = "prayer:times"
     private const val REQUEST_CODE = 401
     private const val MINUTE = 60_000L
 
@@ -30,6 +32,11 @@ internal object PrayerWidgetRenderer {
     private val timeIds = intArrayOf(
         R.id.schedule_time_0, R.id.schedule_time_1, R.id.schedule_time_2,
         R.id.schedule_time_3, R.id.schedule_time_4, R.id.schedule_time_5,
+    )
+
+    private val leftIds = intArrayOf(
+        R.id.schedule_left_0, R.id.schedule_left_1, R.id.schedule_left_2,
+        R.id.schedule_left_3, R.id.schedule_left_4, R.id.schedule_left_5,
     )
 
     /** Keeps the app's data (or clears it when null) and redraws. */
@@ -55,7 +62,29 @@ internal object PrayerWidgetRenderer {
         val now = System.currentTimeMillis()
         if (next.isNotEmpty()) manager.updateAppWidget(next, nextPrayerViews(context, model, now))
         if (schedule.isNotEmpty()) manager.updateAppWidget(schedule, scheduleViews(context, model, now))
+        context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE).edit().putLong(RENDERED_AT, now).apply()
         scheduleRefresh(context, now)
+    }
+
+    /**
+     * Whether a tap should redraw the widgets instead of opening the app: they
+     * hold times that still cover [now], but were last drawn in an earlier
+     * minute, so the next prayer or the time left on screen may be out of date.
+     * The system can hold the minute refresh back while the phone sleeps.
+     *
+     * Without times that cover [now] only the app can help, so the tap opens it.
+     */
+    fun needsRedraw(context: Context, now: Long): Boolean {
+        val preferences = context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE)
+        val model = WidgetModel.parse(preferences.getString(PAYLOAD, null)) ?: return false
+        if (model.nextAfter(now) == null) return false
+        return preferences.getLong(RENDERED_AT, 0) / MINUTE != now / MINUTE
+    }
+
+    /** Opens the app on its prayer times. */
+    fun appIntent(context: Context): Intent = Intent(context, MainActivity::class.java).apply {
+        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        putExtra(AdhanService.EXTRA_PAYLOAD, PRAYER_TIMES)
     }
 
     private fun nextPrayerViews(context: Context, model: WidgetModel?, now: Long): RemoteViews {
@@ -75,7 +104,7 @@ internal object PrayerWidgetRenderer {
             views.setViewVisibility(R.id.prayer_widget_remaining, View.VISIBLE)
         }
         direction(views, R.id.prayer_widget_root, model)
-        views.setOnClickPendingIntent(R.id.prayer_widget_root, openAdhanSettings(context))
+        views.setOnClickPendingIntent(R.id.prayer_widget_root, tapIntent(context))
         return views
     }
 
@@ -96,12 +125,16 @@ internal object PrayerWidgetRenderer {
                 if (row == null) return@forEachIndexed
                 views.setTextViewText(nameIds[index], row.name)
                 views.setTextViewText(timeIds[index], row.time)
-                // The coming prayer is lit; once today's are done, none is.
-                views.setInt(rowId, "setBackgroundResource", if (next != null && row.id == next.id && row.at == next.at) R.drawable.widget_row_next else 0)
+                // The coming prayer is lit, under a line saying how long is
+                // left; once today's are done, none is.
+                val coming = next != null && row.id == next.id && row.at == next.at
+                views.setInt(rowId, "setBackgroundResource", if (coming) R.drawable.widget_row_next else 0)
+                views.setViewVisibility(leftIds[index], if (coming) View.VISIBLE else View.GONE)
+                if (coming) views.setTextViewText(leftIds[index], remaining(model, row.at - now))
             }
         }
         direction(views, R.id.schedule_root, model)
-        views.setOnClickPendingIntent(R.id.schedule_root, openAdhanSettings(context))
+        views.setOnClickPendingIntent(R.id.schedule_root, tapIntent(context))
         return views
     }
 
@@ -111,16 +144,19 @@ internal object PrayerWidgetRenderer {
         views.setInt(rootId, "setLayoutDirection", if (model.rtl) View.LAYOUT_DIRECTION_RTL else View.LAYOUT_DIRECTION_LTR)
     }
 
-    private fun remaining(model: WidgetModel, millis: Long): String {
+    private fun remaining(model: WidgetModel, millis: Long): String =
+        String.format(model.labels.remaining, span(model, millis))
+
+    /** A length of time in hours and minutes, in the app's words and digits. */
+    private fun span(model: WidgetModel, millis: Long): String {
         val minutes = (millis / MINUTE).coerceAtLeast(1)
         val hours = minutes / 60
         val digits = { value: Long -> digits(value.toString(), model.arabicDigits) }
-        val span = if (hours > 0) {
+        return if (hours > 0) {
             String.format(model.labels.hours, digits(hours), digits(minutes % 60))
         } else {
             String.format(model.labels.minutes, digits(minutes))
         }
-        return String.format(model.labels.remaining, span)
     }
 
     private fun digits(value: String, arabic: Boolean): String =
@@ -136,14 +172,11 @@ internal object PrayerWidgetRenderer {
         context.getSystemService(AlarmManager::class.java).cancel(refreshIntent(context))
     }
 
-    /** Opens the settings that control the alert the widget reports. */
-    private fun openAdhanSettings(context: Context): PendingIntent = PendingIntent.getActivity(
+    /** A tap goes to [WidgetTapActivity], which redraws stale widgets or opens the app. */
+    private fun tapIntent(context: Context): PendingIntent = PendingIntent.getActivity(
         context,
         REQUEST_CODE,
-        Intent(context, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            putExtra(AdhanService.EXTRA_PAYLOAD, "adhan:settings")
-        },
+        Intent(context, WidgetTapActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
         PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
     )
 

@@ -60,8 +60,13 @@ class _PrayerWidgetSyncScopeState extends ConsumerState<PrayerWidgetSyncScope> {
 
   Future<void> _sync(NextPrayer? next) {
     final settings = ref.read(settingsProvider).value;
+    final prayer = ref.read(prayerProvider);
+    // Still loading: the widgets keep the times they have. Clearing them here
+    // would blank a correct widget every time the app opens.
+    if (settings == null || !prayer.hasValue) return Future.value();
     final day = ref.read(prayerDayProvider);
-    if (next == null || settings == null || day == null) {
+    if (next == null || day == null) {
+      // Loaded, and there is no place to compute times for.
       return PrayerWidgetSync.update(null);
     }
     final l10n = context.l10n;
@@ -69,7 +74,7 @@ class _PrayerWidgetSyncScopeState extends ConsumerState<PrayerWidgetSyncScope> {
     // the previous choice while this runs for a settings change.
     String digits(String value) =>
         formatDisplayDigits(value, arabic: settings.useArabicDigits);
-    final state = ref.read(prayerProvider).value;
+    final state = prayer.value;
     final place = state?.place;
     final method = state?.method;
     return PrayerWidgetSync.update(

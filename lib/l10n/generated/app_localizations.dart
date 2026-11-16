@@ -1874,6 +1874,18 @@ abstract class AppLocalizations {
   /// **'Not downloaded · about {size} MB'**
   String packNotDownloaded(String size);
 
+  /// No description provided for @packStateError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not read the download state'**
+  String get packStateError;
+
+  /// No description provided for @packChecking.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking what is on the device…'**
+  String get packChecking;
+
   /// No description provided for @packDownloading.
   ///
   /// In en, this message translates to:
@@ -2017,6 +2029,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Fine scroll'**
   String get fineScrub;
+
+  /// No description provided for @scrubCancelHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag up to cancel'**
+  String get scrubCancelHint;
+
+  /// No description provided for @scrubCancelNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Lift to cancel'**
+  String get scrubCancelNow;
+
+  /// No description provided for @scrubberOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse pages'**
+  String get scrubberOpen;
+
+  /// No description provided for @scrubberClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close the page bar'**
+  String get scrubberClose;
 
   /// No description provided for @scrubberPlace.
   ///

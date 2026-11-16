@@ -54,6 +54,5 @@ many people download, host the files yourself (same bytes, same SHA-256) and cha
 
 ## Other media made by the app's own code
 
-- The home-screen widget preview image (`android/app/src/main/res/drawable-nodpi/prayer_schedule_widget_preview.png`)
-  is a screenshot of the app's own widget on an emulator. It contains no third-party artwork. The two
-  one-row widgets are previewed from their own layouts.
+- The home-screen widgets are previewed in the widget picker from their own layouts, with sample
+  text from the app's string files. No preview image is shipped.

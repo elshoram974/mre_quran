@@ -287,3 +287,119 @@ class ReaderToolbar extends StatelessWidget {
     );
   }
 }
+
+/// The pill that says where the reader is: the page, and under it the surah
+/// and juz, over a thin bar showing how far into the Mushaf that is. A tap
+/// opens the page scrubber.
+class ReaderPlacePill extends StatelessWidget {
+  /// Creates the pill.
+  const ReaderPlacePill({
+    super.key,
+    required this.title,
+    required this.subtitle,
+    required this.progress,
+    required this.tooltip,
+    required this.onPressed,
+  });
+
+  /// Height of the pill, shared with the pills beside it.
+  static const double extent = AppTokens.minTarget + 12;
+
+  /// The page, as shown.
+  final String title;
+
+  /// The surah and juz of the page.
+  final String subtitle;
+
+  /// Position in the Mushaf, 0–1.
+  final double progress;
+
+  /// What a tap does.
+  final String tooltip;
+
+  /// Called on tap.
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return Tooltip(
+      message: tooltip,
+      excludeFromSemantics: true,
+      child: Semantics(
+        button: true,
+        label: '$title, $subtitle, $tooltip',
+        excludeSemantics: true,
+        child: ReaderFloatingSurface(
+          padding: EdgeInsets.zero,
+          child: InkWell(
+            onTap: onPressed,
+            child: SizedBox(
+              height: extent,
+              child: Stack(
+                children: [
+                  Padding(
+                    padding: const EdgeInsetsDirectional.symmetric(
+                      horizontal: AppTokens.spaceMedium + 8,
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                title,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.titleSmall?.copyWith(
+                                  color: scheme.primary,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              Text(
+                                subtitle,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: scheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Icon(
+                          Icons.expand_less_rounded,
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ],
+                    ),
+                  ),
+                  PositionedDirectional(
+                    start: 0,
+                    end: 0,
+                    bottom: 0,
+                    child: Directionality(
+                      // The Mushaf runs right to left.
+                      textDirection: TextDirection.rtl,
+                      child: LinearProgressIndicator(
+                        value: progress,
+                        minHeight: 3,
+                        color: scheme.primary,
+                        backgroundColor: scheme.outlineVariant.withValues(
+                          alpha: 0.5,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

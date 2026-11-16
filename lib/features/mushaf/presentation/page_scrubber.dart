@@ -13,7 +13,8 @@ import '../domain/page_scrub_scale.dart';
 /// a page. Holding the thumb still zooms it to a fine scale of a few pages
 /// with a tick for each, which picks the exact page; holding the thumb at
 /// either end of the fine scale rolls it onward. The page is reported once,
-/// when the finger lifts.
+/// when the finger lifts; lifting it above the track reports nothing, so a
+/// slip of the finger never loses the reader's place.
 ///
 /// The track runs right to left in every language, like the Mushaf: the
 /// first page is at the right end.
@@ -30,6 +31,10 @@ class PageScrubber extends StatefulWidget {
     required this.numberTooltip,
     required this.onChanged,
     required this.onEnterNumber,
+    required this.cancelHint,
+    required this.cancelNow,
+    this.onClose,
+    this.closeTooltip,
     this.holdToRefine = const Duration(milliseconds: 500),
   });
 
@@ -60,6 +65,18 @@ class PageScrubber extends StatefulWidget {
   /// Called when the reader asks to type a page number.
   final VoidCallback onEnterNumber;
 
+  /// Shown while dragging: how to back out without changing page.
+  final String cancelHint;
+
+  /// Shown once the finger is where lifting it changes nothing.
+  final String cancelNow;
+
+  /// Puts the scrubber away. Without it there is no close button.
+  final VoidCallback? onClose;
+
+  /// Tooltip of the close button.
+  final String? closeTooltip;
+
   /// How long the thumb must rest before the fine scale opens.
   final Duration holdToRefine;
 
@@ -86,6 +103,13 @@ class _PageScrubberState extends State<PageScrubber>
   /// The page under the thumb while dragging; null at rest.
   int? _preview;
 
+  /// Whether the finger has left the track upwards: lifting it now keeps
+  /// the reader's page.
+  bool _cancelling = false;
+
+  /// The finger backs out by rising this far above the track.
+  static const double _cancelRise = 28;
+
   /// The finger's last place on the track, 0–1 from the first page's end.
   double _fraction = 0;
 
@@ -109,7 +133,7 @@ class _PageScrubberState extends State<PageScrubber>
   /// Height of the track: the rail, the ticks and their labels.
   static const double _trackExtent = 52;
 
-  int get _shown => _preview ?? widget.page;
+  int get _shown => _cancelling ? widget.page : _preview ?? widget.page;
 
   /// The first and last page the track shows at this instant.
   ({double first, double last}) get _visible {
@@ -155,12 +179,22 @@ class _PageScrubberState extends State<PageScrubber>
     return usable <= 0 ? 0 : (1 - (dx - _inset) / usable).clamp(0.0, 1.0);
   }
 
-  void _drag(double dx, double width) {
+  void _drag(Offset at, double width) {
+    final dx = at.dx;
     final started = _preview == null;
+    final cancelling = at.dy < -_cancelRise;
+    if (cancelling != _cancelling) Haptics.select();
     setState(() {
+      _cancelling = cancelling;
       _fraction = _fractionAt(dx, width);
       _point();
     });
+    if (cancelling) {
+      _hold?.cancel();
+      _roll?.cancel();
+      _roll = null;
+      return;
+    }
     if (started || (dx - _anchor).abs() > _restSlop) _armHold(dx);
     _armRoll();
   }
@@ -226,9 +260,10 @@ class _PageScrubberState extends State<PageScrubber>
     _hold?.cancel();
     _roll?.cancel();
     _roll = null;
-    final page = _preview;
+    final page = _cancelling ? null : _preview;
     setState(() {
       _preview = null;
+      _cancelling = false;
       _show(PageScrubScale.whole(widget.pageCount));
     });
     if (commit && page != null && page != widget.page) widget.onChanged(page);
@@ -246,7 +281,15 @@ class _PageScrubberState extends State<PageScrubber>
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final page = _shown;
-    final dragging = _preview != null;
+    final dragging = _preview != null && !_cancelling;
+    // While the finger is down, the corner says how to back out.
+    final status = _cancelling
+        ? widget.cancelNow
+        : _preview == null
+        ? null
+        : _scale.fine
+        ? widget.fineLabel
+        : widget.cancelHint;
     return Material(
       color: scheme.surfaceContainerLowest,
       elevation: 3,
@@ -295,15 +338,19 @@ class _PageScrubberState extends State<PageScrubber>
                       ],
                     ),
                   ),
-                  if (_scale.fine)
-                    Padding(
-                      padding: const EdgeInsetsDirectional.only(
-                        end: AppTokens.spaceSmall,
-                      ),
-                      child: Text(
-                        widget.fineLabel,
-                        style: theme.textTheme.labelMedium?.copyWith(
-                          color: scheme.primary,
+                  if (status != null)
+                    Flexible(
+                      child: Padding(
+                        padding: const EdgeInsetsDirectional.only(
+                          end: AppTokens.spaceSmall,
+                        ),
+                        child: Text(
+                          status,
+                          maxLines: 2,
+                          textAlign: TextAlign.end,
+                          style: theme.textTheme.labelMedium?.copyWith(
+                            color: _cancelling ? scheme.error : scheme.primary,
+                          ),
                         ),
                       ),
                     ),
@@ -312,6 +359,12 @@ class _PageScrubberState extends State<PageScrubber>
                     tooltip: widget.numberTooltip,
                     onPressed: widget.onEnterNumber,
                   ),
+                  if (widget.onClose case final close?)
+                    IconButton(
+                      icon: const Icon(Icons.expand_more_rounded),
+                      tooltip: widget.closeTooltip,
+                      onPressed: close,
+                    ),
                 ],
               ),
             ),
@@ -328,9 +381,9 @@ class _PageScrubberState extends State<PageScrubber>
                   return GestureDetector(
                     behavior: HitTestBehavior.opaque,
                     onHorizontalDragStart: (details) =>
-                        _drag(details.localPosition.dx, width),
+                        _drag(details.localPosition, width),
                     onHorizontalDragUpdate: (details) =>
-                        _drag(details.localPosition.dx, width),
+                        _drag(details.localPosition, width),
                     onHorizontalDragEnd: (_) => _release(commit: true),
                     onHorizontalDragCancel: () => _release(commit: false),
                     onTapUp: (details) {

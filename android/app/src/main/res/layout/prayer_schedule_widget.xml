@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The day's times. The text here is the sample shown in the widget picker;
-     PrayerWidgetProvider replaces it. -->
+<!-- The day's times, one row each: the name and the time. The coming prayer's
+     row is lit and carries a line above it saying how long is left.
+     The text here is the sample shown in the widget picker, with Dhuhr as
+     the coming prayer; PrayerWidgetRenderer replaces it. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/schedule_root"
     android:layout_width="match_parent"
@@ -26,9 +28,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingStart="2dp"
-            android:paddingEnd="2dp"
-            android:paddingBottom="2dp">
+            android:paddingStart="8dp"
+            android:paddingTop="4dp"
+            android:paddingEnd="8dp"
+            android:paddingBottom="4dp">
 
             <TextView
                 android:id="@+id/schedule_date"
@@ -55,199 +58,308 @@
         <LinearLayout
             android:id="@+id/schedule_row_0"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
+            android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingStart="2dp"
-            android:paddingEnd="2dp">
+            android:orientation="vertical"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp">
 
             <TextView
-                android:id="@+id/schedule_name_0"
-                android:layout_width="0dp"
+                android:id="@+id/schedule_left_0"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:singleLine="true"
-                android:text="@string/widget_preview_fajr"
+                android:text="@string/widget_preview_remaining"
                 android:textAlignment="viewStart"
-                android:textColor="@color/widget_text"
-                android:textSize="11sp" />
+                android:textColor="@color/widget_accent"
+                android:textSize="10sp"
+                android:visibility="gone" />
 
-            <TextView
-                android:id="@+id/schedule_time_0"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:singleLine="true"
-                android:text="@string/widget_preview_fajr_time"
-                android:textAlignment="viewEnd"
-                android:textColor="@color/widget_text"
-                android:textSize="11sp"
-                android:textStyle="bold" />
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/schedule_name_0"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:singleLine="true"
+                    android:text="@string/widget_preview_fajr"
+                    android:textAlignment="viewStart"
+                    android:textColor="@color/widget_text"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/schedule_time_0"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:singleLine="true"
+                    android:text="@string/widget_preview_fajr_time"
+                    android:textAlignment="viewEnd"
+                    android:textColor="@color/widget_text"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
         </LinearLayout>
 
         <LinearLayout
             android:id="@+id/schedule_row_1"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
+            android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingStart="2dp"
-            android:paddingEnd="2dp">
+            android:orientation="vertical"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp">
 
             <TextView
-                android:id="@+id/schedule_name_1"
-                android:layout_width="0dp"
+                android:id="@+id/schedule_left_1"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:singleLine="true"
-                android:text="@string/widget_preview_sunrise"
+                android:text="@string/widget_preview_remaining"
                 android:textAlignment="viewStart"
-                android:textColor="@color/widget_text_muted"
-                android:textSize="11sp" />
+                android:textColor="@color/widget_accent"
+                android:textSize="10sp"
+                android:visibility="gone" />
 
-            <TextView
-                android:id="@+id/schedule_time_1"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:singleLine="true"
-                android:text="@string/widget_preview_sunrise_time"
-                android:textAlignment="viewEnd"
-                android:textColor="@color/widget_text_muted"
-                android:textSize="11sp"
-                android:textStyle="bold" />
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/schedule_name_1"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:singleLine="true"
+                    android:text="@string/widget_preview_sunrise"
+                    android:textAlignment="viewStart"
+                    android:textColor="@color/widget_text_muted"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/schedule_time_1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:singleLine="true"
+                    android:text="@string/widget_preview_sunrise_time"
+                    android:textAlignment="viewEnd"
+                    android:textColor="@color/widget_text_muted"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
         </LinearLayout>
 
         <LinearLayout
             android:id="@+id/schedule_row_2"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
+            android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:background="@drawable/widget_row_next"
             android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingStart="2dp"
-            android:paddingEnd="2dp">
+            android:orientation="vertical"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp">
 
             <TextView
-                android:id="@+id/schedule_name_2"
-                android:layout_width="0dp"
+                android:id="@+id/schedule_left_2"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:singleLine="true"
-                android:text="@string/widget_preview_dhuhr"
+                android:text="@string/widget_preview_remaining"
                 android:textAlignment="viewStart"
-                android:textColor="@color/widget_text"
-                android:textSize="11sp" />
+                android:textColor="@color/widget_accent"
+                android:textSize="10sp"
+                android:visibility="visible" />
 
-            <TextView
-                android:id="@+id/schedule_time_2"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:singleLine="true"
-                android:text="@string/widget_preview_dhuhr_time"
-                android:textAlignment="viewEnd"
-                android:textColor="@color/widget_text"
-                android:textSize="11sp"
-                android:textStyle="bold" />
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/schedule_name_2"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:singleLine="true"
+                    android:text="@string/widget_preview_dhuhr"
+                    android:textAlignment="viewStart"
+                    android:textColor="@color/widget_text"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/schedule_time_2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:singleLine="true"
+                    android:text="@string/widget_preview_dhuhr_time"
+                    android:textAlignment="viewEnd"
+                    android:textColor="@color/widget_text"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
         </LinearLayout>
 
         <LinearLayout
             android:id="@+id/schedule_row_3"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
+            android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingStart="2dp"
-            android:paddingEnd="2dp">
+            android:orientation="vertical"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp">
 
             <TextView
-                android:id="@+id/schedule_name_3"
-                android:layout_width="0dp"
+                android:id="@+id/schedule_left_3"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:singleLine="true"
-                android:text="@string/widget_preview_asr"
+                android:text="@string/widget_preview_remaining"
                 android:textAlignment="viewStart"
-                android:textColor="@color/widget_text"
-                android:textSize="11sp" />
+                android:textColor="@color/widget_accent"
+                android:textSize="10sp"
+                android:visibility="gone" />
 
-            <TextView
-                android:id="@+id/schedule_time_3"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:singleLine="true"
-                android:text="@string/widget_preview_asr_time"
-                android:textAlignment="viewEnd"
-                android:textColor="@color/widget_text"
-                android:textSize="11sp"
-                android:textStyle="bold" />
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/schedule_name_3"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:singleLine="true"
+                    android:text="@string/widget_preview_asr"
+                    android:textAlignment="viewStart"
+                    android:textColor="@color/widget_text"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/schedule_time_3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:singleLine="true"
+                    android:text="@string/widget_preview_asr_time"
+                    android:textAlignment="viewEnd"
+                    android:textColor="@color/widget_text"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
         </LinearLayout>
 
         <LinearLayout
             android:id="@+id/schedule_row_4"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
+            android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingStart="2dp"
-            android:paddingEnd="2dp">
+            android:orientation="vertical"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp">
 
             <TextView
-                android:id="@+id/schedule_name_4"
-                android:layout_width="0dp"
+                android:id="@+id/schedule_left_4"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:singleLine="true"
-                android:text="@string/widget_preview_maghrib"
+                android:text="@string/widget_preview_remaining"
                 android:textAlignment="viewStart"
-                android:textColor="@color/widget_text"
-                android:textSize="11sp" />
+                android:textColor="@color/widget_accent"
+                android:textSize="10sp"
+                android:visibility="gone" />
 
-            <TextView
-                android:id="@+id/schedule_time_4"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:singleLine="true"
-                android:text="@string/widget_preview_maghrib_time"
-                android:textAlignment="viewEnd"
-                android:textColor="@color/widget_text"
-                android:textSize="11sp"
-                android:textStyle="bold" />
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/schedule_name_4"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:singleLine="true"
+                    android:text="@string/widget_preview_maghrib"
+                    android:textAlignment="viewStart"
+                    android:textColor="@color/widget_text"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/schedule_time_4"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:singleLine="true"
+                    android:text="@string/widget_preview_maghrib_time"
+                    android:textAlignment="viewEnd"
+                    android:textColor="@color/widget_text"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
         </LinearLayout>
 
         <LinearLayout
             android:id="@+id/schedule_row_5"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
+            android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingStart="2dp"
-            android:paddingEnd="2dp">
+            android:orientation="vertical"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp">
 
             <TextView
-                android:id="@+id/schedule_name_5"
-                android:layout_width="0dp"
+                android:id="@+id/schedule_left_5"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:singleLine="true"
-                android:text="@string/widget_preview_isha"
+                android:text="@string/widget_preview_remaining"
                 android:textAlignment="viewStart"
-                android:textColor="@color/widget_text"
-                android:textSize="11sp" />
+                android:textColor="@color/widget_accent"
+                android:textSize="10sp"
+                android:visibility="gone" />
 
-            <TextView
-                android:id="@+id/schedule_time_5"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:singleLine="true"
-                android:text="@string/widget_preview_isha_time"
-                android:textAlignment="viewEnd"
-                android:textColor="@color/widget_text"
-                android:textSize="11sp"
-                android:textStyle="bold" />
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/schedule_name_5"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:singleLine="true"
+                    android:text="@string/widget_preview_isha"
+                    android:textAlignment="viewStart"
+                    android:textColor="@color/widget_text"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/schedule_time_5"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:singleLine="true"
+                    android:text="@string/widget_preview_isha_time"
+                    android:textAlignment="viewEnd"
+                    android:textColor="@color/widget_text"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 </FrameLayout>

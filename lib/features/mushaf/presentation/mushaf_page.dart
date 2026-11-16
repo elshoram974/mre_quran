@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/router.dart';
 import '../../../core/l10n/l10n.dart';
-import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../bookmarks/application/bookmarks_provider.dart';
@@ -16,15 +15,16 @@ import '../application/reading_position_provider.dart';
 import 'display_options_sheet.dart';
 import 'go_to_page_sheet.dart';
 import 'mushaf_pager.dart';
-import 'page_scrubber.dart';
 import 'reader_bar.dart';
+import 'reader_controls.dart';
 import 'reader_navigation.dart';
 import 'reader_orientation.dart';
 
 /// The Mushaf tab: the pages, labelled like a printed Mushaf (surah and juz
 /// above, page number below, arrows onward). A tap on the page or an ayah
 /// brings up a floating toolbar (index, search, page bookmark), floating
-/// controls (surah, page, text options), and the tab bar; turning the page
+/// controls (the page, which opens the scrubber, and display options), and
+/// the tab bar; turning the page
 /// puts them away.
 class MushafPage extends ConsumerWidget {
   const MushafPage({super.key});
@@ -54,7 +54,6 @@ class MushafPage extends ConsumerWidget {
 
     final metadata = data.metadata;
     final digits = ref.watch(digitsFormatterProvider);
-    final surah = metadata.surahAtPage(page);
     final onPage = metadata.ayahsOnPage(page);
     final bookmarked = ref.watch(bookmarkedRefsProvider);
     final marked = onPage.where(bookmarked.contains).toList();
@@ -116,64 +115,17 @@ class MushafPage extends ConsumerWidget {
         ),
       ],
     );
-    // The scrubber moves through the Mushaf; under it, where you are (the
-    // surah, opening the index) and the display options. Everything else
-    // lives in the display sheet; a tap on the page hides the bars.
-    final shortcuts = Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Flexible(
-          child: ReaderFloatingSurface(
-            padding: EdgeInsets.zero,
-            child: TextButton(
-              onPressed: () => open(AppRoute.quranIndex),
-              child: Text(
-                surah.arabicName,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(width: AppTokens.spaceSmall),
-        Flexible(
-          child: ReaderFloatingSurface(
-            padding: EdgeInsets.zero,
-            child: TextButton.icon(
-              onPressed: () => showDisplayOptions(context),
-              icon: const Icon(Icons.tune_rounded),
-              label: Text(
-                l10n.displayOptions,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-
-    final controls = Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        PageScrubber(
-          page: page,
-          pageCount: metadata.pageCount,
-          titleOf: (p) => l10n.pageNumber(digits(p)),
-          subtitleOf: (p) => l10n.scrubberPlace(
-            metadata.surahAtPage(p).arabicName,
-            l10n.juzTitle(digits(metadata.juzOfPage(p).number)),
-          ),
-          digits: digits,
-          fineLabel: l10n.fineScrub,
-          numberTooltip: l10n.goToPage,
-          onChanged: goTo,
-          onEnterNumber: goToPage,
-        ),
-        const SizedBox(height: AppTokens.spaceSmall),
-        shortcuts,
-      ],
+    // Where the reader is (a tap opens the page scrubber) and the display
+    // options. Everything else lives in the display sheet; a tap on the page
+    // hides the bars.
+    final controls = ReaderControls(
+      metadata: metadata,
+      page: page,
+      digits: digits,
+      shown: !immersive,
+      onPage: goTo,
+      onEnterNumber: goToPage,
+      onDisplayOptions: () => showDisplayOptions(context),
     );
 
     // The page keeps one size: it fills the screen inside the system insets.
