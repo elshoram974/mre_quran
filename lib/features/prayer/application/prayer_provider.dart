@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -12,6 +13,7 @@ import '../../../core/time/ticking_clock.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../adhan/application/adhan_providers.dart';
 import '../../adhan/data/adhan_platform.dart';
+import '../../settings/application/digits_provider.dart';
 import '../../settings/application/settings_provider.dart';
 import '../data/location_source.dart';
 import '../data/prayer_repository.dart';
@@ -178,6 +180,18 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
         : settings.copyWith(method: method),
   );
 
+  /// Turns the reminder before each alerting prayer on or off.
+  Future<void> setBeforeReminder(bool on) => _change(
+    needsPermission: false,
+    change: (settings) => settings.copyWith(beforeReminder: on),
+  );
+
+  /// Changes how long before the prayer its reminder comes.
+  Future<void> setBeforeMinutes(int minutes) => _change(
+    needsPermission: false,
+    change: (settings) => settings.copyWith(beforeMinutes: minutes),
+  );
+
   /// Changes how long after the prayer the adhkar reminder comes.
   Future<void> setAfterMinutes(int minutes) => _change(
     needsPermission: false,
@@ -250,8 +264,10 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
           AdhanAlarm(
             id: alert.id,
             at: alert.at,
-            title: l10n.prayerAlertTitle(prayerName(l10n, alert.prayer)),
+            title: l10n.prayerAlertTitle(_alertName(l10n, alert)),
             body: l10n.prayerAlertBody,
+            fajr: alert.prayer == DailyPrayer.fajr,
+            announce: _isJumuah(alert) ? 'jumuah' : alert.prayer.name,
           ),
       ], config);
       return true;
@@ -262,10 +278,23 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
     }
   }
 
+  /// How many days ahead the alerts are planned. Android arms only the next
+  /// adhan at a time and takes the rest from its own list, so a month costs
+  /// nothing and the adhan goes on even when the app is not opened. iOS
+  /// keeps at most 64 pending notifications, so a week.
+  static int get _days =>
+      defaultTargetPlatform == TargetPlatform.android ? 30 : 7;
+
+  /// The most prayer notifications handed to the system at once: on iOS
+  /// within its 64, leaving room for the adhkar reminders; on Android well
+  /// below the alarms a phone allows an app.
+  static int get _notificationLimit =>
+      defaultTargetPlatform == TargetPlatform.android ? 150 : 48;
+
   Future<void> _schedule(PrayerSettings settings, PrayerPlace? place) async {
     try {
-      for (final id in PrayerAlertPlan.allIds) {
-        await _scheduler.cancel(id);
+      for (final id in await _scheduler.pendingIds()) {
+        if (PrayerAlertPlan.owns(id)) await _scheduler.cancel(id);
       }
       if (!settings.needsSchedule || place == null) {
         await ref.read(adhanPlatformProvider).cancelAll();
@@ -277,6 +306,7 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
         place: place,
         settings: settings,
         now: ref.read(clockProvider)(),
+        days: _days,
       );
       // The adhan that plays by itself takes the at-time alerts when the phone
       // can; otherwise they stay normal notifications.
@@ -284,10 +314,26 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
         l10n,
         alerts.where((alert) => alert.kind == PrayerAlertKind.atTime),
       );
-      for (final alert in alerts) {
-        if (byAdhan && alert.kind == PrayerAlertKind.atTime) continue;
-        final prayer = prayerName(l10n, alert.prayer);
+      final notices = [
+        for (final alert in alerts)
+          if (!byAdhan || alert.kind != PrayerAlertKind.atTime) alert,
+      ].take(_notificationLimit);
+      final minutes = settings.beforeMinutes;
+      final number = ref.read(digitsFormatterProvider);
+      for (final alert in notices) {
+        final prayer = _alertName(l10n, alert);
         switch (alert.kind) {
+          case PrayerAlertKind.beforePrayer:
+            await _scheduler.scheduleOnce(
+              id: alert.id,
+              at: alert.at,
+              title: l10n.prayerSoonTitle(prayer),
+              body: l10n.prayerSoonBody(minutes, number(minutes)),
+              channel: ReminderChannel.prayerSoon,
+              channelName: l10n.prayerSoonChannelName,
+              payload: ReminderPayload.prayerTimes,
+              exact: true,
+            );
           case PrayerAlertKind.atTime:
             await _scheduler.scheduleOnce(
               id: alert.id,
@@ -304,7 +350,9 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
               id: alert.id,
               at: alert.at,
               title: l10n.adhkarPrayerReminderTitle,
-              body: l10n.adhkarPrayerReminderBody(prayer),
+              body: l10n.adhkarPrayerReminderBody(
+                prayerName(l10n, alert.prayer),
+              ),
               channel: ReminderChannel.adhkar,
               channelName: l10n.adhkarReminderChannel,
               payload: ReminderPayload.forCollection(afterPrayerCollectionId),
@@ -315,6 +363,14 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
       AppLogger.debug('Prayer schedule failed: ${error.runtimeType}');
     }
   }
+
+  /// Whether [alert] is Dhuhr on a Friday: the Friday prayer.
+  static bool _isJumuah(PrayerAlert alert) =>
+      alert.prayer == DailyPrayer.dhuhr && alert.at.weekday == DateTime.friday;
+
+  /// The prayer's name as an alert says it: the Friday prayer by its own.
+  static String _alertName(AppLocalizations l10n, PrayerAlert alert) =>
+      _isJumuah(alert) ? l10n.prayerJumuah : prayerName(l10n, alert.prayer);
 }
 
 /// The localized name of [prayer].

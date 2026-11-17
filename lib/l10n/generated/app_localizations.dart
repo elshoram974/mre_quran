@@ -842,6 +842,54 @@ abstract class AppLocalizations {
   /// **'Prayer time alerts'**
   String get prayerChannelName;
 
+  /// No description provided for @prayerJumuah.
+  ///
+  /// In en, this message translates to:
+  /// **'Jumu\'ah'**
+  String get prayerJumuah;
+
+  /// No description provided for @prayerSoonTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{prayer} is near'**
+  String prayerSoonTitle(String prayer);
+
+  /// No description provided for @prayerSoonBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 minute to the adhan} other{{number} minutes to the adhan}}'**
+  String prayerSoonBody(int count, String number);
+
+  /// No description provided for @prayerSoonChannelName.
+  ///
+  /// In en, this message translates to:
+  /// **'Before the prayer'**
+  String get prayerSoonChannelName;
+
+  /// No description provided for @prayerSoonSwitch.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder before the prayer'**
+  String get prayerSoonSwitch;
+
+  /// No description provided for @prayerSoonHint.
+  ///
+  /// In en, this message translates to:
+  /// **'A notification a while before the adhan, for the prayers whose alert is on.'**
+  String get prayerSoonHint;
+
+  /// No description provided for @prayerSoonMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Before the adhan'**
+  String get prayerSoonMinutes;
+
+  /// No description provided for @minutesCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 minute} other{{number} minutes}}'**
+  String minutesCount(int count, String number);
+
   /// No description provided for @qiblaTitle.
   ///
   /// In en, this message translates to:
@@ -1105,6 +1153,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Put the screen against the table to silence it.'**
   String get adhanFlipHint;
+
+  /// No description provided for @adhanAnnounceSwitch.
+  ///
+  /// In en, this message translates to:
+  /// **'Announce the prayer before the adhan'**
+  String get adhanAnnounceSwitch;
+
+  /// No description provided for @adhanAnnounceHint.
+  ///
+  /// In en, this message translates to:
+  /// **'\"It is now time for the Dhuhr adhan\", then the adhan.'**
+  String get adhanAnnounceHint;
+
+  /// No description provided for @adhanDuaSwitch.
+  ///
+  /// In en, this message translates to:
+  /// **'Dua after the adhan'**
+  String get adhanDuaSwitch;
+
+  /// No description provided for @adhanDuaHint.
+  ///
+  /// In en, this message translates to:
+  /// **'\"O Allah, Lord of this perfect call…\" once the adhan ends.'**
+  String get adhanDuaHint;
+
+  /// No description provided for @adhanFajrVoices.
+  ///
+  /// In en, this message translates to:
+  /// **'Fajr adhan'**
+  String get adhanFajrVoices;
+
+  /// No description provided for @adhanFajrVoicesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Fajr has its own adhan, with \"Prayer is better than sleep\".'**
+  String get adhanFajrVoicesHint;
 
   /// No description provided for @adhanTest.
   ///

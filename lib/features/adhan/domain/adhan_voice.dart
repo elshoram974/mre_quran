@@ -13,6 +13,15 @@ class AdhanLicense {
   final String url;
 }
 
+/// Which prayers a recording is for.
+enum AdhanKind {
+  /// The adhan of Dhuhr, Asr, Maghrib and Isha.
+  regular,
+
+  /// The Fajr adhan, which says "الصلاة خير من النوم" twice.
+  fajr,
+}
+
 /// One adhan recording the person can choose.
 ///
 /// The data comes from `assets/adhan/voices.json`; see `docs/AUDIO_SOURCES.md`
@@ -32,10 +41,14 @@ class AdhanVoice {
     this.url,
     this.extension = 'audio',
     this.builtIn = false,
+    this.kind = AdhanKind.regular,
   });
 
   /// The id of the voice that ships with the app.
   static const String defaultId = 'default';
+
+  /// The id of the Fajr voice that ships with the app.
+  static const String defaultFajrId = 'default_fajr';
 
   /// The id of the file the person chose from their own phone.
   static const String customId = 'custom';
@@ -72,6 +85,12 @@ class AdhanVoice {
 
   /// Whether the file ships inside the app.
   final bool builtIn;
+
+  /// Which prayers it is for.
+  final AdhanKind kind;
+
+  /// Whether it is a Fajr adhan.
+  bool get isFajr => kind == AdhanKind.fajr;
 
   /// The title in [language], else Arabic, else the id.
   String title(String language) => titles[language] ?? titles['ar'] ?? id;

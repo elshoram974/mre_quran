@@ -33,7 +33,7 @@ class AssetAdhanCatalog implements AdhanCatalogSource {
 /// an https address.
 List<AdhanVoice> parseAdhanCatalog(String json) {
   final root = jsonDecode(json) as Map<String, Object?>;
-  if (root['schema'] != 1) {
+  if (root['schema'] != 2) {
     throw FormatException('Unsupported adhan catalogue: ${root['schema']}');
   }
   final voices = <AdhanVoice>[
@@ -44,8 +44,14 @@ List<AdhanVoice> parseAdhanCatalog(String json) {
   if (ids.length != voices.length) {
     throw const FormatException('Two adhan voices share an id');
   }
-  if (!ids.contains(AdhanVoice.defaultId)) {
-    throw const FormatException('The catalogue has no default voice');
+  for (final id in [AdhanVoice.defaultId, AdhanVoice.defaultFajrId]) {
+    if (!voices.any((voice) => voice.id == id && voice.builtIn)) {
+      throw FormatException('The catalogue has no bundled "$id" voice');
+    }
+  }
+  if (voices.firstWhere((v) => v.id == AdhanVoice.defaultFajrId).kind !=
+      AdhanKind.fajr) {
+    throw const FormatException('The bundled Fajr voice is not for Fajr');
   }
   // The bundled voice leads the list.
   voices.sort((a, b) => a.builtIn == b.builtIn ? 0 : (a.builtIn ? -1 : 1));
@@ -80,6 +86,11 @@ AdhanVoice _voice(Map<String, Object?> map) {
     ),
     credit: _text(map, 'credit'),
     builtIn: builtIn,
+    kind: switch (map['kind']) {
+      null || 'regular' => AdhanKind.regular,
+      'fajr' => AdhanKind.fajr,
+      final other => throw FormatException('Voice $id has kind $other'),
+    },
   );
 }
 

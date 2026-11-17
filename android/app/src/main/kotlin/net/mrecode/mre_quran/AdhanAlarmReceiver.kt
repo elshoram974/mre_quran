@@ -17,7 +17,13 @@ class AdhanAlarmReceiver : BroadcastReceiver() {
                 val (alarm, config) = if (own != null) {
                     JSONObject(own) to JSONObject(intent.getStringExtra(AdhanService.EXTRA_CONFIG) ?: "{}")
                 } else {
-                    AdhanScheduler.find(context, id) ?: return
+                    val found = AdhanScheduler.find(context, id) ?: return
+                    // A real prayer: arm the one after it before playing.
+                    AdhanScheduler.armAfter(
+                        context,
+                        maxOf(System.currentTimeMillis(), found.first.getLong("at")),
+                    )
+                    found
                 }
                 try {
                     AdhanService.start(context, alarm, config)

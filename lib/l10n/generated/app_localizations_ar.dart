@@ -411,6 +411,53 @@ class AppLocalizationsAr extends AppLocalizations {
   String get prayerChannelName => 'تنبيهات وقت الصلاة';
 
   @override
+  String get prayerJumuah => 'الجمعة';
+
+  @override
+  String prayerSoonTitle(String prayer) {
+    return 'اقتربت صلاة $prayer';
+  }
+
+  @override
+  String prayerSoonBody(int count, String number) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'باقي $number دقيقة على الأذان',
+      few: 'باقي $number دقائق على الأذان',
+      two: 'باقي دقيقتان على الأذان',
+      one: 'باقي دقيقة على الأذان',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get prayerSoonChannelName => 'تذكير قبل الصلاة';
+
+  @override
+  String get prayerSoonSwitch => 'تذكير قبل الصلاة';
+
+  @override
+  String get prayerSoonHint =>
+      'إشعار قبل الأذان بوقت تختاره، للصلوات التي فعّلت تنبيهها.';
+
+  @override
+  String get prayerSoonMinutes => 'قبل الأذان بـ';
+
+  @override
+  String minutesCount(int count, String number) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$number دقيقة',
+      few: '$number دقائق',
+      two: 'دقيقتين',
+      one: 'دقيقة',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get qiblaTitle => 'القبلة';
 
   @override
@@ -556,6 +603,25 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get adhanFlipHint => 'ضع الشاشة على السطح ليسكت الصوت.';
+
+  @override
+  String get adhanAnnounceSwitch => 'إعلان الصلاة قبل الأذان';
+
+  @override
+  String get adhanAnnounceHint => '«حان الآن موعد أذان الظهر» ثم الأذان.';
+
+  @override
+  String get adhanDuaSwitch => 'الدعاء بعد الأذان';
+
+  @override
+  String get adhanDuaHint => '«اللهم رب هذه الدعوة التامة…» بعد انتهاء الأذان.';
+
+  @override
+  String get adhanFajrVoices => 'أذان الفجر';
+
+  @override
+  String get adhanFajrVoicesHint =>
+      'لصلاة الفجر أذانها الخاص، وفيه «الصلاة خير من النوم».';
 
   @override
   String get adhanTest => 'جرّب التنبيه الآن';

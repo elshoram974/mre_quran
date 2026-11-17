@@ -12,6 +12,8 @@ class AdhanAlarm {
     required this.at,
     required this.title,
     required this.body,
+    this.fajr = false,
+    this.announce,
   });
 
   /// Identifies the alarm.
@@ -26,11 +28,20 @@ class AdhanAlarm {
   /// The notice's text.
   final String body;
 
+  /// Whether this is the Fajr adhan, which says "الصلاة خير من النوم".
+  final bool fajr;
+
+  /// Which announcement plays before the adhan ("حان الآن موعد أذان …"):
+  /// a prayer's name, or `jumuah` for the Friday prayer. Null for none.
+  final String? announce;
+
   Map<String, Object> toMap() => {
     'id': id,
     'at': at.millisecondsSinceEpoch,
     'title': title,
     'body': body,
+    'fajr': fajr,
+    'announce': ?announce,
   };
 }
 
@@ -39,6 +50,9 @@ class AdhanAlertConfig {
   /// Creates the config.
   const AdhanAlertConfig({
     required this.voicePath,
+    this.fajrVoicePath,
+    this.announce = true,
+    this.duaAfter = true,
     required this.stopWhenFlipped,
     required this.stopLabel,
     required this.channelName,
@@ -47,6 +61,15 @@ class AdhanAlertConfig {
 
   /// The saved recording to play, or null for the bundled one.
   final String? voicePath;
+
+  /// The saved Fajr recording, or null for the bundled one.
+  final String? fajrVoicePath;
+
+  /// Whether the prayer is announced before the adhan.
+  final bool announce;
+
+  /// Whether the dua after the adhan follows it.
+  final bool duaAfter;
 
   /// Whether turning the phone face down stops the adhan.
   final bool stopWhenFlipped;
@@ -62,6 +85,9 @@ class AdhanAlertConfig {
 
   Map<String, Object?> toMap() => {
     'voicePath': voicePath,
+    'fajrVoicePath': fajrVoicePath,
+    'announce': announce,
+    'duaAfter': duaAfter,
     'stopWhenFlipped': stopWhenFlipped,
     'stopLabel': stopLabel,
     'channelName': channelName,
@@ -97,11 +123,14 @@ sealed class AdhanPreviewSource {
 
 /// The recording that ships with the app.
 class BundledPreview extends AdhanPreviewSource {
-  /// Creates the source.
-  const BundledPreview();
+  /// Creates the source: the Fajr adhan when [fajr].
+  const BundledPreview({this.fajr = false});
+
+  /// Whether it is the Fajr adhan.
+  final bool fajr;
 
   @override
-  Map<String, Object?> toMap() => {'kind': 'bundled'};
+  Map<String, Object?> toMap() => {'kind': 'bundled', 'fajr': fajr};
 }
 
 /// A saved file.

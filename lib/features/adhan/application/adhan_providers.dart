@@ -71,29 +71,34 @@ class AdhanSettingsNotifier extends AsyncNotifier<AdhanSettings> {
   }
 }
 
-/// Builds what the platform needs to play the adhan: the chosen recording's
-/// file (null for the bundled one), the stop button's text, and what a tap on
-/// the notice opens. Falls back to the bundled voice when the chosen file is
-/// gone.
+/// Builds what the platform needs to play the adhan: the chosen recordings'
+/// files (null for the bundled ones), what plays around the adhan, the stop
+/// button's text, and what a tap on the notice opens. Falls back to the
+/// bundled voice when a chosen file is gone.
 Future<AdhanAlertConfig> buildAdhanConfig({
   required AdhanSettings settings,
   required List<AdhanVoice> voices,
   required VoiceStore store,
   required AppLocalizations l10n,
 }) async {
-  String? path;
-  if (settings.voiceId == AdhanVoice.customId) {
-    final custom = settings.customPath;
-    if (custom != null && File(custom).existsSync()) path = custom;
-  } else if (settings.voiceId != AdhanVoice.defaultId) {
+  Future<String?> pathOf(String id) async {
+    if (id == AdhanVoice.customId) {
+      final custom = settings.customPath;
+      return custom != null && File(custom).existsSync() ? custom : null;
+    }
     for (final voice in voices) {
-      if (voice.id == settings.voiceId) {
-        path = (await store.fileOf(voice))?.path;
+      if (voice.id == id && !voice.builtIn) {
+        return (await store.fileOf(voice))?.path;
       }
     }
+    return null;
   }
+
   return AdhanAlertConfig(
-    voicePath: path,
+    voicePath: await pathOf(settings.voiceId),
+    fajrVoicePath: await pathOf(settings.fajrVoiceId),
+    announce: settings.announce,
+    duaAfter: settings.duaAfter,
     stopWhenFlipped: settings.stopWhenFlipped,
     stopLabel: l10n.adhanStopAction,
     channelName: l10n.adhanChannelName,
@@ -246,20 +251,29 @@ class AdhanVoicesNotifier extends AsyncNotifier<VoicesState> {
     if (state.value?.listening == voice.id) await stopListening();
     await _store.delete(voice);
     _setStatus(voice.id, const VoiceAvailable());
-    final settings = ref.read(adhanSettingsProvider).value;
-    if (settings?.voiceId == voice.id) {
-      await ref
-          .read(adhanSettingsProvider.notifier)
-          .change((value) => value.copyWith(voiceId: AdhanVoice.defaultId));
-    }
+    await ref
+        .read(adhanSettingsProvider.notifier)
+        .change(
+          (value) => value.copyWith(
+            voiceId: value.voiceId == voice.id ? AdhanVoice.defaultId : null,
+            fajrVoiceId: value.fajrVoiceId == voice.id
+                ? AdhanVoice.defaultFajrId
+                : null,
+          ),
+        );
   }
 
-  /// Chooses [voice] for the alert. It must be on the phone.
+  /// Chooses [voice] for the alert: for Fajr when it is a Fajr recording,
+  /// for the other prayers otherwise. It must be on the phone.
   Future<void> choose(AdhanVoice voice) async {
     if (state.value?.statusOf(voice.id) is! VoiceReady) return;
     await ref
         .read(adhanSettingsProvider.notifier)
-        .change((value) => value.copyWith(voiceId: voice.id));
+        .change(
+          (value) => voice.isFajr
+              ? value.copyWith(fajrVoiceId: voice.id)
+              : value.copyWith(voiceId: voice.id),
+        );
   }
 
   /// Plays [voice], from the phone if it is there and from the network if not,
@@ -270,7 +284,7 @@ class AdhanVoicesNotifier extends AsyncNotifier<VoicesState> {
     if (current.listening == voice.id) return stopListening();
     final AdhanPreviewSource source;
     if (voice.builtIn) {
-      source = const BundledPreview();
+      source = BundledPreview(fajr: voice.isFajr);
     } else {
       final file = await _store.fileOf(voice);
       source = file != null

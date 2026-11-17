@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The adhan's recordings are looked up by name (AdhanAudio.raw), which
+     resource shrinking cannot see; keep them. -->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@raw/adhan_*,@raw/announce_*,@raw/dua_after_adhan" />

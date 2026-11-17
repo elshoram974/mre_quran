@@ -20,6 +20,7 @@ import '../../../core/widgets/app_switch_tile.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../settings/application/digits_provider.dart';
 import '../application/prayer_provider.dart';
+import '../domain/prayer_alerts.dart';
 import '../domain/prayer_times.dart';
 import 'prayer_labels.dart';
 import 'prayer_no_place.dart';
@@ -210,6 +211,35 @@ class _Content extends ConsumerWidget {
                     ],
                   ),
                 ),
+              // The reminder before a prayer comes with its alert.
+              if (settings.alerts.isNotEmpty) ...[
+                AppSwitchTile(
+                  value: settings.beforeReminder,
+                  onChanged: notifier.setBeforeReminder,
+                  title: l10n.prayerSoonSwitch,
+                  subtitle: l10n.prayerSoonHint,
+                  icon: Icons.alarm_outlined,
+                ),
+                if (settings.beforeReminder)
+                  Padding(
+                    padding: const EdgeInsetsDirectional.fromSTEB(16, 0, 16, 8),
+                    child: AppSelectField<int>(
+                      label: l10n.prayerSoonMinutes,
+                      value: settings.beforeMinutes,
+                      options: [
+                        for (final minutes in PrayerSettings.beforeChoices)
+                          AppSelectOption(
+                            value: minutes,
+                            label: l10n.minutesCount(
+                              minutes,
+                              ref.watch(digitsFormatterProvider)(minutes),
+                            ),
+                          ),
+                      ],
+                      onChanged: notifier.setBeforeMinutes,
+                    ),
+                  ),
+              ],
               AppSwitchTile(
                 value: settings.adhkarReminder,
                 onChanged: (on) => onRun(() => notifier.setAdhkarReminder(on)),

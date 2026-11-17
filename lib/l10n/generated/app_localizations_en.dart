@@ -415,6 +415,49 @@ class AppLocalizationsEn extends AppLocalizations {
   String get prayerChannelName => 'Prayer time alerts';
 
   @override
+  String get prayerJumuah => 'Jumu\'ah';
+
+  @override
+  String prayerSoonTitle(String prayer) {
+    return '$prayer is near';
+  }
+
+  @override
+  String prayerSoonBody(int count, String number) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$number minutes to the adhan',
+      one: '1 minute to the adhan',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get prayerSoonChannelName => 'Before the prayer';
+
+  @override
+  String get prayerSoonSwitch => 'Reminder before the prayer';
+
+  @override
+  String get prayerSoonHint =>
+      'A notification a while before the adhan, for the prayers whose alert is on.';
+
+  @override
+  String get prayerSoonMinutes => 'Before the adhan';
+
+  @override
+  String minutesCount(int count, String number) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$number minutes',
+      one: '1 minute',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get qiblaTitle => 'Qibla';
 
   @override
@@ -560,6 +603,27 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get adhanFlipHint => 'Put the screen against the table to silence it.';
+
+  @override
+  String get adhanAnnounceSwitch => 'Announce the prayer before the adhan';
+
+  @override
+  String get adhanAnnounceHint =>
+      '\"It is now time for the Dhuhr adhan\", then the adhan.';
+
+  @override
+  String get adhanDuaSwitch => 'Dua after the adhan';
+
+  @override
+  String get adhanDuaHint =>
+      '\"O Allah, Lord of this perfect call…\" once the adhan ends.';
+
+  @override
+  String get adhanFajrVoices => 'Fajr adhan';
+
+  @override
+  String get adhanFajrVoicesHint =>
+      'Fajr has its own adhan, with \"Prayer is better than sleep\".';
 
   @override
   String get adhanTest => 'Try the alert now';

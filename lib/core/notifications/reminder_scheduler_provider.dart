@@ -56,4 +56,7 @@ class _NoopReminderScheduler implements ReminderScheduler {
 
   @override
   Future<void> cancel(int id) async {}
+
+  @override
+  Future<Set<int>> pendingIds() async => const {};
 }

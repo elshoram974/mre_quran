@@ -18,7 +18,7 @@ internal class AdhanPreview(
         val attributes = AdhanAudio.attributesForPreview()
         try {
             when (source.getString("kind")) {
-                "bundled" -> begin(AdhanAudio.bundled(context, attributes))
+                "bundled" -> begin(AdhanAudio.bundled(context, attributes, source.optBoolean("fajr", false)))
                 "file" -> begin(AdhanAudio.savedFile(context, source.getString("path"), attributes))
                 else -> stream(source, attributes)
             }

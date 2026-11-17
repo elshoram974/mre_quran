@@ -8,11 +8,12 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
-import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.media.MediaPlayer
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
@@ -20,13 +21,17 @@ import org.json.JSONObject
 
 /**
  * Plays the adhan with a notice that stays until it is stopped, as an
- * incoming call does. It stops when the recording ends, when the person taps
- * Stop, and (if chosen) when the phone is turned face down.
+ * incoming call does: the announcement of the prayer, the adhan, and the
+ * dua after it, one after another (see [AdhanAudio.steps]). It stops when
+ * the last ends, when the person taps Stop, and (if chosen) when the phone
+ * is turned face down.
  */
 class AdhanService : Service() {
     private var player: MediaPlayer? = null
     private var flip: FlipDetector? = null
     private var focus: AudioFocusRequest? = null
+    private val steps = ArrayDeque<() -> MediaPlayer?>()
+    private val main = Handler(Looper.getMainLooper())
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -40,7 +45,7 @@ class AdhanService : Service() {
         // A second adhan replaces the first.
         release()
         showNotice(alarm, config)
-        play(config.optString("voicePath").takeIf { it.isNotEmpty() && it != "null" })
+        play(AdhanAudio.steps(this, alarm, config))
         if (config.optBoolean("stopWhenFlipped", true)) {
             flip = FlipDetector(this) { finish() }.also { it.start() }
         }
@@ -56,28 +61,43 @@ class AdhanService : Service() {
         }
     }
 
-    private fun play(path: String?) {
+    private fun play(sequence: List<() -> MediaPlayer?>) {
         val audio = getSystemService(AudioManager::class.java)
-        val attributes = AudioAttributes.Builder()
-            .setUsage(AudioAttributes.USAGE_ALARM)
-            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-            .build()
         focus = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)
-            .setAudioAttributes(attributes)
+            .setAudioAttributes(AdhanAudio.alarmAttributes())
             .build()
             .also { audio.requestAudioFocus(it) }
-        val next = AdhanAudio.alarmPlayer(this, path)
-        if (next == null) {
-            finish()
+        steps.clear()
+        steps.addAll(sequence)
+        playNext()
+    }
+
+    /** Plays the next step that has a recording, or ends when none is left. */
+    private fun playNext() {
+        while (steps.isNotEmpty()) {
+            val next = steps.removeFirst().invoke() ?: continue
+            next.setOnCompletionListener { done ->
+                done.release()
+                if (player === done) player = null
+                // A breath between the parts, as a muezzin takes.
+                main.postDelayed({ playNext() }, GAP_MILLIS)
+            }
+            next.setOnErrorListener { failed, _, _ ->
+                failed.release()
+                if (player === failed) player = null
+                main.post { playNext() }
+                true
+            }
+            next.start()
+            player = next
             return
         }
-        next.setOnCompletionListener { finish() }
-        next.setOnErrorListener { _, _, _ -> finish(); true }
-        next.start()
-        player = next
+        finish()
     }
 
     private fun release() {
+        main.removeCallbacksAndMessages(null)
+        steps.clear()
         flip?.stop()
         flip = null
         player?.let {
@@ -110,6 +130,7 @@ class AdhanService : Service() {
         const val EXTRA_PAYLOAD = "adhan_payload"
         private const val CHANNEL_ID = "adhan_call"
         private const val NOTICE_ID = 7001
+        private const val GAP_MILLIS = 600L
 
         /** Starts the adhan now. Throws if the system will not allow it. */
         fun start(context: Context, alarm: JSONObject, config: JSONObject) {

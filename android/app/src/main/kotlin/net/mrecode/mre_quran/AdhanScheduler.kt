@@ -12,6 +12,11 @@ import org.json.JSONObject
 /**
  * Keeps the adhan alarms and arms them with the system. The list is stored
  * here too, so it can be armed again after a restart without the app running.
+ *
+ * Only the next alarm is armed at a time; when it fires, the one after it is
+ * armed. So a month of adhans holds one system alarm, far from the limit a
+ * phone sets an app, and the adhan goes on for that month even if the app
+ * is not opened.
  */
 internal object AdhanScheduler {
     const val ALARM_ACTION = "net.mrecode.mre_quran.ADHAN_ALARM"
@@ -37,15 +42,24 @@ internal object AdhanScheduler {
         armAll(context)
     }
 
-    /** Arms the stored alarms that are still ahead. */
-    fun armAll(context: Context) {
+    /** Arms the next stored alarm that is still ahead. */
+    fun armAll(context: Context) = armAfter(context, System.currentTimeMillis())
+
+    /**
+     * Arms the first stored alarm after [after]. An alarm that fires calls
+     * this with its own time, so it never arms itself again, even when the
+     * system fires it a moment early.
+     */
+    fun armAfter(context: Context, after: Long) {
         val stored = read(context) ?: return
         val alarms = stored.getJSONArray("alarms")
-        val now = System.currentTimeMillis()
+        var next: JSONObject? = null
         for (index in 0 until alarms.length()) {
             val alarm = alarms.getJSONObject(index)
-            if (alarm.getLong("at") > now) arm(context, alarm.getInt("id"), alarm.getLong("at"))
+            val at = alarm.getLong("at")
+            if (at > after && (next == null || at < next.getLong("at"))) next = alarm
         }
+        next?.let { arm(context, it.getInt("id"), it.getLong("at")) }
     }
 
     fun cancelAll(context: Context) {

@@ -226,6 +226,9 @@ class FakeReminderScheduler implements ReminderScheduler {
     scheduled.remove(id);
     once.remove(id);
   }
+
+  @override
+  Future<Set<int>> pendingIds() async => {...scheduled.keys, ...once.keys};
 }
 
 /// One list with an ayah (with the isti'adha) and a plain dhikr.

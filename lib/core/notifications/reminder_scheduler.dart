@@ -14,7 +14,10 @@ enum ReminderChannel {
   adhkar('adhkar_reminders'),
 
   /// The alert at a prayer time.
-  prayer('prayer_time');
+  prayer('prayer_time'),
+
+  /// The reminder a while before a prayer time.
+  prayerSoon('prayer_soon');
 
   const ReminderChannel(this.id);
 
@@ -69,6 +72,9 @@ abstract interface class ReminderScheduler {
 
   /// Removes the reminder [id], if any.
   Future<void> cancel(int id);
+
+  /// The ids of the reminders still to come.
+  Future<Set<int>> pendingIds();
 }
 
 /// [ReminderScheduler] over `flutter_local_notifications`.
@@ -248,6 +254,12 @@ class LocalReminderScheduler implements ReminderScheduler {
 
   @override
   Future<void> cancel(int id) => _plugin.cancel(id: id);
+
+  @override
+  Future<Set<int>> pendingIds() async => {
+    for (final request in await _plugin.pendingNotificationRequests())
+      request.id,
+  };
 
   Future<void> _ensureZone() async {
     if (_zoneReady) return;

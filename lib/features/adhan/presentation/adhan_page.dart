@@ -24,8 +24,9 @@ final adhanExactAllowedProvider = FutureProvider.autoDispose<bool>(
   (ref) => ref.watch(reminderSchedulerProvider).canScheduleExact(),
 );
 
-/// How the adhan sounds and behaves: the voice, whether it plays by itself
-/// like a call, and whether turning the phone over stops it.
+/// How the adhan sounds and behaves: the voice, and its own for Fajr;
+/// whether it plays by itself like a call, with the prayer announced before
+/// it and the dua after it; and whether turning the phone over stops it.
 class AdhanPage extends ConsumerWidget {
   /// Creates the page.
   const AdhanPage({super.key});
@@ -91,19 +92,35 @@ class AdhanPage extends ConsumerWidget {
                   title: l10n.adhanVoices,
                   subtitle: l10n.adhanVoicesHint,
                 ),
-                for (final voice in state.voices) ...[
-                  VoiceCard(
-                    voice: voice,
-                    status: state.statusOf(voice.id),
-                    chosen: voice.id == current.voiceId,
-                    listening: voice.id == state.listening,
-                  ),
-                  const SizedBox(height: 12),
-                ],
+                for (final voice in state.voices)
+                  if (!voice.isFajr) ...[
+                    VoiceCard(
+                      voice: voice,
+                      status: state.statusOf(voice.id),
+                      chosen: voice.id == current.voiceId,
+                      listening: voice.id == state.listening,
+                    ),
+                    const SizedBox(height: 12),
+                  ],
                 CustomVoiceCard(
                   settings: current,
                   listening: state.listening == AdhanVoice.customId,
                 ),
+                const SizedBox(height: 24),
+                AppSectionHeader(
+                  title: l10n.adhanFajrVoices,
+                  subtitle: l10n.adhanFajrVoicesHint,
+                ),
+                for (final voice in state.voices)
+                  if (voice.isFajr) ...[
+                    VoiceCard(
+                      voice: voice,
+                      status: state.statusOf(voice.id),
+                      chosen: voice.id == current.fajrVoiceId,
+                      listening: voice.id == state.listening,
+                    ),
+                    const SizedBox(height: 12),
+                  ],
                 const SizedBox(height: 16),
                 AppNotice(l10n.adhanLicenseNote),
               ],
@@ -149,6 +166,26 @@ class _AlertSection extends ConsumerWidget {
               subtitle: l10n.adhanFlipHint,
               icon: Icons.screen_rotation_alt_outlined,
             ),
+            AppSwitchTile(
+              value: settings.announce,
+              onChanged: settings.playAdhan
+                  ? (on) =>
+                        notifier.change((value) => value.copyWith(announce: on))
+                  : null,
+              title: l10n.adhanAnnounceSwitch,
+              subtitle: l10n.adhanAnnounceHint,
+              icon: Icons.campaign_outlined,
+            ),
+            AppSwitchTile(
+              value: settings.duaAfter,
+              onChanged: settings.playAdhan
+                  ? (on) =>
+                        notifier.change((value) => value.copyWith(duaAfter: on))
+                  : null,
+              title: l10n.adhanDuaSwitch,
+              subtitle: l10n.adhanDuaHint,
+              icon: Icons.volunteer_activism_outlined,
+            ),
           ],
         ),
         if (settings.playAdhan && !exact) ...[
@@ -193,6 +230,9 @@ class _AlertSection extends ConsumerWidget {
             at: DateTime.now(),
             title: l10n.adhanTestTitle,
             body: l10n.adhanTestBody,
+            // The test plays what the next Dhuhr would: announcement, adhan,
+            // dua.
+            announce: 'dhuhr',
           ),
           config,
         );
