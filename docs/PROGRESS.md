@@ -19,8 +19,8 @@
   Settings control. Firebase Analytics was not added.
 
 - Shared UI system: tokens, harmonised themes, platform-native shell, draggable `AppSheet`,
-  `AppCard`, `AppSelectField`, `AppSwitchTile`, optimistic settings, Device Preview 3 with
-  platform sync, launch setting (last tab / Mushaf), Duas tab placeholder.
+  `AppCard`, `AppSelectField`, `AppSwitchTile`, optimistic settings,
+  launch setting (last tab / Mushaf), Duas tab placeholder.
 - Wrote `docs/UI_RULES.md`, `docs/UI_UX_PLAN.md`, and `docs/QURAN_SOURCES.md`.
 
 - Quran index: Tanzil metadata bundled with a checked SHA-256, surah and juz index with search,

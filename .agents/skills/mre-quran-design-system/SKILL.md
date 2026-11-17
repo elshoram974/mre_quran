@@ -22,7 +22,7 @@ description: Build or change MRE Quran UI with the shared theme, tokens, glass c
 - Android: stock Material 3 (`Scaffold`, `AppBar`, `NavigationBar`, `Card`, `showModalBottomSheet`). No glass.
 - Keep branching inside shared widgets: `AppShell` (`lib/app/shell/`), `AppCard`, `AppSelectField`.
 - Glass screens pad content with `pagePadding(context)`; the glass shell publishes bar insets through `MediaQuery.padding`.
-- Preview both platforms with Device Preview 3 (debug only, DevTools panel): choose an iPhone preset for iOS chrome and a Pixel or Galaxy preset for Android.
+- Preview both platforms on an iOS simulator or device and an Android emulator or device.
 
 ## Responsive
 

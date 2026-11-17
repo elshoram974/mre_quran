@@ -88,20 +88,13 @@
   standard-quality mode honors accessibility settings. Quran page content stays
   opaque for legibility, reverence, and predictable performance.
 
-## D-012: Native chrome per platform; Device Preview 3 in debug
+## D-012: Native chrome per platform
 
 - **Decision:** iOS/macOS use liquid glass chrome. Android uses stock Material 3.
-  The platform comes from `Theme.of(context).platform`. `device_preview` 3.0.0 is
-  enabled with `DevicePreview.enable(enabled: kDebugMode)`, and
-  `syncPreviewPlatform()` (debug only) applies the chosen device's operating system.
-- **Alternatives:** Glass on every platform (narrows D-011 to iOS); `device_preview_plus`
-  and `device_frame_plus` (catalog stops at iPhone 14 Pro); `device_preview_screenshot`
-  (requires Dart < 3).
-- **Reason:** Each platform should feel native. `device_preview` 3.0 ships current
-  presets with real frames and system UI (iPhone 16/17/Air, Pixel 9/10, Galaxy S24/S25,
-  foldables, tablets). It is controlled from Flutter DevTools. Its screenshot tool lives
-  there too, so no custom screenshot tool is added. Device and target platform are
-  separate overrides, which `syncPreviewPlatform()` keeps in step.
+  The platform comes from `Theme.of(context).platform`.
+- **Reason:** Each platform should feel native. `device_preview` 3.0.0 was tried in debug
+  and removed: it does not build on Flutter 3.47 (`PlatformDispatcher.resetInternalState`
+  is unimplemented) and upstream has no fix. Check each platform on a simulator or device.
 
 ## D-013: Shared draggable sheet and optimistic settings
 

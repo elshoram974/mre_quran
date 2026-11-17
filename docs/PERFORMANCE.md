@@ -45,7 +45,6 @@ the app a reader gets, so never judge speed from them.
   no default-theme flash.
 - Settings apply at once and persist in the background, with rollback on failure.
 - Index search keys are computed once (`IndexSearcher`), not per keystroke.
-- Device Preview is only enabled in debug builds. In profile and release it adds nothing.
 
 ## Results
 

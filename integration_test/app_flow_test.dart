@@ -18,7 +18,7 @@ import 'package:mre_quran/main.dart' as app;
 /// The app as a reader uses it, on a device: open the Mushaf, turn pages,
 /// find a surah, change the display, and look at the offline download. Run
 /// it online and again with the device in airplane mode; it must pass both
-/// ways. Run in profile mode, where Device Preview is off:
+/// ways. Run in profile mode:
 /// `fvm flutter drive --no-dds --profile
 ///  --driver=test_driver/perf_driver.dart
 ///  --target=integration_test/app_flow_test.dart -d DEVICE_ID`

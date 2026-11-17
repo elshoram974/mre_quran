@@ -10,7 +10,7 @@ The single rule file for UI/UX. `AGENTS.md` points here. The design plan is in
 3. Android and other platforms use Material 3: `AppBar`, `NavigationRail`, `Card`, Material sheets. No glass. The compact tab bar is `ExpandingNavBar`: a floating rounded pill above the system navigation bar where the selected destination grows into a labelled chip and the others show only their icon (owner's decision, 2026-10-06; redesigned 2026-10-08).
 4. Branch only inside shared widgets (`AppShell`, `AppCard`, `AppSheet`, `AppSelectField`, `AppSwitchTile`). Feature screens never check the platform.
 5. Glass never goes over Quran text. The reading surface is opaque paper.
-6. Judge glass on a real iOS simulator or device, not only in Device Preview. Preview scales the view and can distort glass sampling.
+6. Judge glass on a real iOS simulator or device, not only in a scaled preview, which can distort glass sampling.
 7. The Mushaf reader is labelled like a printed Mushaf (surah and juz chips above the page, page number and an onward arrow below, in fixed room that never covers the text). A tap on the page or an ayah shows a floating toolbar and floating controls, opaque on every platform since they lie over the text; turning a page hides them.
 
 ## 2. Components
@@ -63,6 +63,6 @@ The single rule file for UI/UX. `AGENTS.md` points here. The design plan is in
 ## 8. Before finishing UI work
 
 1. Check compact, medium, expanded; dark and sepia; text scale 2.0; Arabic RTL and English LTR.
-2. Check one iPhone preset and one Android preset in Device Preview (DevTools). `syncPreviewPlatform()` switches the app to the chosen device's chrome.
+2. Check one iOS simulator or device and one Android emulator or device.
 3. Add or update widget tests for the touched widgets.
 4. Delete screenshots and any throwaway file you made.

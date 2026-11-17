@@ -17,7 +17,6 @@ dependencies:
   archive: ^4.3.0
   background_downloader: ^9.6.3
   crypto: ^3.0.7
-  device_preview: ^3.0.0
   firebase_core: ^4.15.0
   firebase_crashlytics: ^5.4.0
   flutter:
