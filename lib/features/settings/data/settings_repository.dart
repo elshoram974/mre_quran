@@ -27,6 +27,7 @@ class LocalSettingsRepository implements SettingsRepository {
   static const _realisticTurnKey = 'settings.realistic_page_turn';
   static const _readerModeKey = 'settings.reader_mode';
   static const _readerPageLayoutKey = 'settings.reader_page_layout';
+  static const _surahFrameKey = 'settings.surah_frame';
 
   @override
   Future<AppSettings> load() async {
@@ -55,6 +56,7 @@ class LocalSettingsRepository implements SettingsRepository {
     final haptics = await _preferences.getBool(_hapticsKey);
     final accent = await _preferences.getString(_accentKey);
     final edition = await _preferences.getString(_mushafEditionKey);
+    final surahFrame = await _preferences.getString(_surahFrameKey);
     return AppSettings(
       theme: AppThemePreference.values.firstWhere(
         (item) => item.name == theme,
@@ -86,6 +88,10 @@ class LocalSettingsRepository implements SettingsRepository {
         (item) => item.name == readerPageLayout,
         orElse: () => ReaderPageLayout.auto,
       ),
+      surahFrame: SurahFrameStyle.values.firstWhere(
+        (item) => item.name == surahFrame,
+        orElse: () => SurahFrameStyle.cartouche,
+      ),
     );
   }
 
@@ -108,6 +114,7 @@ class LocalSettingsRepository implements SettingsRepository {
         _readerPageLayoutKey,
         settings.readerPageLayout.name,
       ),
+      _preferences.setString(_surahFrameKey, settings.surahFrame.name),
     ]);
   }
 }

@@ -33,7 +33,11 @@ class MushafPageView extends StatefulWidget {
     this.selected,
     this.framed = true,
     this.spread = false,
+    this.frame = SurahFrameStyle.cartouche,
   });
+
+  /// The frame drawn around each surah's name.
+  final SurahFrameStyle frame;
 
   /// The verified text.
   final QuranText text;
@@ -271,7 +275,11 @@ class _MushafPageViewState extends State<MushafPageView> {
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       child: SizedBox(
                         height: MushafPageView._bannerExtent - 16,
-                        child: SurahBanner(surah: surah, number: _n),
+                        child: SurahBanner(
+                          surah: surah,
+                          number: _n,
+                          style: widget.frame,
+                        ),
                       ),
                     ),
                     _Basmala(:final text) => Padding(

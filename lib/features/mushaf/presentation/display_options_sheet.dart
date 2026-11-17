@@ -11,6 +11,7 @@ import '../../settings/presentation/theme_pickers.dart';
 import 'mushaf_edition_field.dart';
 import 'reader_orientation.dart';
 import 'reader_page_layout_field.dart';
+import 'surah_frame_field.dart';
 
 /// Opens the reading display options: reading mode, text size or page
 /// layout, orientation, page turn, and theme.
@@ -72,6 +73,8 @@ class _DisplayOptions extends ConsumerWidget {
                   )
                 : _TextSize(settings: settings),
           ),
+          const SizedBox(height: 16),
+          const SurahFrameField(),
           const SizedBox(height: 12),
           const ReaderOrientationTile(),
           const SizedBox(height: 4),

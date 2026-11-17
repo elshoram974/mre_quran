@@ -22,7 +22,11 @@ class AppSettings {
     this.readerMode = ReaderMode.printed,
     this.readerPageLayout = ReaderPageLayout.auto,
     this.mushafEdition = MushafEditions.hafs,
+    this.surahFrame = SurahFrameStyle.cartouche,
   });
+
+  /// The frame drawn around each surah's name in the Mushaf.
+  final SurahFrameStyle surahFrame;
 
   /// The reading (riwaya) whose printed pages the reader shows.
   final MushafEdition mushafEdition;
@@ -85,6 +89,7 @@ class AppSettings {
     ReaderMode? readerMode,
     ReaderPageLayout? readerPageLayout,
     MushafEdition? mushafEdition,
+    SurahFrameStyle? surahFrame,
   }) => AppSettings(
     theme: theme ?? this.theme,
     accent: accent ?? this.accent,
@@ -99,7 +104,26 @@ class AppSettings {
     readerMode: readerMode ?? this.readerMode,
     readerPageLayout: readerPageLayout ?? this.readerPageLayout,
     mushafEdition: mushafEdition ?? this.mushafEdition,
+    surahFrame: surahFrame ?? this.surahFrame,
   );
+}
+
+/// The frames the Mushaf can draw around a surah's name. Each is the app's
+/// own design, after the ways printed Mushafs frame their surah titles.
+enum SurahFrameStyle {
+  /// A panel of small stars with a rosette at each end, around a cartouche
+  /// with pointed ends.
+  cartouche,
+
+  /// A ruled panel with a chain of lozenges, around a plaque with cut
+  /// corners.
+  classic,
+
+  /// A rounded panel with leaves, around a plaque with scalloped ends.
+  arch,
+
+  /// Two fine rules and a rounded plaque, with no panel.
+  minimal,
 }
 
 /// User-selectable color treatments.

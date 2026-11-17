@@ -52,7 +52,68 @@ abstract final class SvgPageParser {
       layout: layout,
       inkLines: lines?.ink,
       marksLines: lines?.marks,
+      titles: titles(layout, lines?.lines ?? const []),
     );
+  }
+
+  /// Widest a printed surah name is, and the least and most width of a
+  /// basmala, as shares of the page's width; and how far off the page's
+  /// middle either may be centred.
+  static const double _nameWidth = 0.4;
+  static const double _basmalaLeast = 0.4;
+  static const double _basmalaMost = 0.75;
+  static const double _centred = 0.08;
+
+  /// The surah names [layout] prints, each with the box its calligraphy
+  /// covers on the page's printed [lines], so a frame can be drawn around
+  /// it whatever its size, in any reading.
+  ///
+  /// A name is a short line in the middle of the page with a basmala, a
+  /// little wider and also centred, straight under it (At-Tawbah has
+  /// none). Short lines that end a surah are not followed by a basmala.
+  /// The ayah regions only say about where a name is: some readings count
+  /// the name and basmala lines into the first ayah. A name whose line is
+  /// not found gets no frame, never one over the text.
+  static List<SvgSurahTitle> titles(
+    SvgPageLayout layout,
+    List<SvgPrintedLine> lines,
+  ) {
+    final pitch = pageBoxHeight(layout.viewBox) / SvgPageLayout.printedLines;
+    final width = pageBoxWidth(layout.viewBox);
+    double share(PageBox box) => (box.right - box.left) / width;
+    bool centred(PageBox box) =>
+        (((box.left + box.right) / 2 - layout.viewBox.left) / width - 0.5)
+            .abs() <
+        _centred;
+    final names = <({SvgPrintedLine line, bool basmala})>[
+      for (var i = 0; i < lines.length; i++)
+        if (share(lines[i].box) < _nameWidth && centred(lines[i].box))
+          (
+            line: lines[i],
+            basmala:
+                i + 1 < lines.length &&
+                centred(lines[i + 1].box) &&
+                share(lines[i + 1].box) >= _basmalaLeast &&
+                share(lines[i + 1].box) <= _basmalaMost,
+          ),
+    ];
+    final taken = <SvgPrintedLine>{};
+    final titles = <SvgSurahTitle>[];
+    for (final slot in layout.surahTitles) {
+      final aim = (slot.top + slot.bottom) / 2;
+      final basmala = slot.surah != 9;
+      SvgPrintedLine? best;
+      for (final name in names) {
+        if (name.basmala != basmala || taken.contains(name.line)) continue;
+        final off = (name.line.middle - aim).abs();
+        if (off > pitch * 4) continue;
+        if (best == null || off < (best.middle - aim).abs()) best = name.line;
+      }
+      if (best == null) continue;
+      taken.add(best);
+      titles.add((surah: slot.surah, box: best.box, line: best.middle));
+    }
+    return titles;
   }
 
   /// [svg] with its view box set to [box]. Only the viewport changes; the

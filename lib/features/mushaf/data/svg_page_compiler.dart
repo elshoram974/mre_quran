@@ -20,6 +20,7 @@ abstract final class SvgPageCompiler {
       marks: _encode(spread ? page.marksLines!.at(stretch) : page.marks),
       layout: page.layout,
       stretch: spread ? stretch : 1,
+      titles: page.titles,
     );
   }
 

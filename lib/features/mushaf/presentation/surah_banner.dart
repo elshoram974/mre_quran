@@ -3,23 +3,26 @@ import 'package:material_ui/material_ui.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../quran_index/domain/quran_metadata.dart';
+import '../../settings/domain/app_settings.dart';
 import 'mushaf_ornaments.dart';
 
 /// The frame of a surah's opening (see [SurahFramePainter]), with the
-/// surah's name in its cartouche and, under the name, where it was revealed
+/// surah's name in its plaque and, under the name, where it was revealed
 /// and how many ayahs it has.
 ///
 /// It fills the box it is given. The printed pages draw the surah's name in
 /// their own calligraphy; there the frame goes under it with [showTitle]
 /// off, so only the frame is drawn and the page's name sits in the
-/// cartouche.
+/// plaque.
 class SurahBanner extends StatelessWidget {
   /// Creates the banner of [surah].
   const SurahBanner({
     super.key,
     required this.surah,
     required this.number,
+    this.style = SurahFrameStyle.cartouche,
     this.showTitle = true,
+    this.nameWidth = 0,
     this.paper,
     this.band,
     this.stroke,
@@ -32,8 +35,15 @@ class SurahBanner extends StatelessWidget {
   /// Formats a number in the reader's digits.
   final String Function(int) number;
 
-  /// Whether the name is written in the cartouche.
+  /// Which frame to draw.
+  final SurahFrameStyle style;
+
+  /// Whether the name is written in the frame's plaque.
   final bool showTitle;
+
+  /// Width of a name the page itself prints, which the plaque must hold,
+  /// in logical pixels; 0 when the banner writes the name.
+  final double nameWidth;
 
   /// Colours of the cartouche, the panel, the lines and the writing; from
   /// the theme when not given.
@@ -63,9 +73,11 @@ class SurahBanner extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final size = constraints.biggest;
-        final cartouche = SurahFrameGeometry.cartouche(size);
+        final name = SurahFrameGeometry.name(size, style);
         return CustomPaint(
           painter: SurahFramePainter(
+            style: style,
+            nameWidth: nameWidth,
             paper: paper ?? scheme.surface,
             band: band ?? lines.withValues(alpha: 0.1),
             stroke: lines,
@@ -74,9 +86,9 @@ class SurahBanner extends StatelessWidget {
               ? const SizedBox.expand()
               : Center(
                   child: SizedBox(
-                    // The pointed ends are left clear.
-                    width: cartouche.width - cartouche.height * 1.1,
-                    height: cartouche.height * 0.9,
+                    // The plaque's ends are left clear.
+                    width: name.width,
+                    height: name.height,
                     child: FittedBox(
                       fit: BoxFit.scaleDown,
                       child: Column(

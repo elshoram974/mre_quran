@@ -1054,6 +1054,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get readerPageLayoutSpread => 'Two-page spread';
 
   @override
+  String get surahFrame => 'Surah name frame';
+
+  @override
+  String get surahFrameCartouche => 'Pointed';
+
+  @override
+  String get surahFrameClassic => 'Classic';
+
+  @override
+  String get surahFrameArch => 'Scalloped';
+
+  @override
+  String get surahFrameMinimal => 'Simple';
+
+  @override
   String get readerLandscape => 'Landscape reading';
 
   @override

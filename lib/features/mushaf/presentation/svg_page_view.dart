@@ -19,6 +19,8 @@ import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../quran_index/domain/quran_metadata.dart';
 import '../../settings/application/digits_provider.dart';
+import '../../settings/application/settings_provider.dart';
+import '../../settings/domain/app_settings.dart';
 import '../application/svg_page_providers.dart';
 import '../domain/svg_page.dart';
 import 'mushaf_page_frame.dart';
@@ -240,6 +242,11 @@ class _SvgBody extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final artwork = ref.watch(svgPageProvider(request));
+    final frame = ref.watch(
+      settingsProvider.select(
+        (settings) => settings.value?.surahFrame ?? SurahFrameStyle.cartouche,
+      ),
+    );
     void retry() {
       ref.invalidate(svgPageProvider(request));
       onRetry();
@@ -251,6 +258,7 @@ class _SvgBody extends ConsumerWidget {
         metadata: metadata,
         number: number,
         page: value,
+        frame: frame,
         label: label,
         onTap: onTap,
         onAyahLongPress: onAyahLongPress,
@@ -371,6 +379,7 @@ class _SvgArtwork extends StatelessWidget {
     required this.metadata,
     required this.number,
     required this.page,
+    required this.frame,
     required this.label,
     required this.onTap,
     required this.onAyahLongPress,
@@ -382,6 +391,7 @@ class _SvgArtwork extends StatelessWidget {
   final QuranMetadata metadata;
   final String Function(int) number;
   final SvgPagePicture page;
+  final SurahFrameStyle frame;
   final String label;
   final VoidCallback onTap;
   final ValueChanged<AyahRef>? onAyahLongPress;
@@ -432,38 +442,52 @@ class _SvgArtwork extends StatelessWidget {
     },
   );
 
-  /// The frame of [title], where its line is drawn: spreading moves a line's
-  /// middle as far as stretching the page would, and leaves its height.
-  ///
+  /// The frame of [title], around the name the page prints: as tall as the
+  /// name with a margin, across the page, and moved with the name's line
+  /// as far as spreading moves it.
   Widget _titleFrame(
     BuildContext context,
-    ({int surah, double top, double bottom}) title, {
+    SvgSurahTitle title, {
     required double scale,
     required double stretch,
-    required double width,
-    required double top,
   }) {
     final colors = QuranColors.of(context);
-    final line = (title.bottom - title.top) * scale;
-    // The printed name sits a little below the middle of its line: its
-    // letters rise above it more than they fall below (measured on the
-    // pages: about an eighth of a line).
-    final middle =
-        ((title.top + title.bottom) / 2 - top) * stretch * scale +
-        line * _titleDrop;
-    final height = line * _titleFrameHeight;
+    final content = page.layout.content;
+    final width = pageBoxWidth(content);
+    final pitch =
+        pageBoxHeight(page.layout.viewBox) / SvgPageLayout.printedLines;
+    final box = title.box;
+    final ink = box.bottom - box.top;
+    final height = (ink + pitch * _titleMargin * 2).clamp(
+      pitch * _titleLeast,
+      pitch * _titleMost,
+    );
+    // Spreading moves each line as a whole, by as much as stretching the
+    // page would move its middle.
+    final moved = (title.line - content.top) * (stretch - 1);
+    final middle = (box.top + box.bottom) / 2 - content.top + moved;
     // The same margin on both sides, so the frame sits alike whichever way
     // the app reads.
-    const margin = 0.015;
+    final side = width * _titleSide;
     return PositionedDirectional(
-      start: width * scale * margin,
-      end: width * scale * margin,
-      top: middle - height / 2,
-      height: height,
+      start: side * scale,
+      end: side * scale,
+      top: (middle - height / 2) * scale,
+      height: height * scale,
       child: SurahBanner(
         surah: metadata.surah(title.surah),
         number: number,
+        style: frame,
         showTitle: false,
+        // The plaque is centred; the name may sit a little off the page's
+        // middle, so the plaque reaches to its farther side on both.
+        nameWidth:
+            2 *
+            math.max(
+              (content.left + width / 2) - box.left,
+              box.right - (content.left + width / 2),
+            ) *
+            scale,
         paper: colors.paper,
         band: colors.ayahNumber.withValues(alpha: 0.12),
         stroke: colors.ayahNumber.withValues(alpha: 0.85),
@@ -471,10 +495,13 @@ class _SvgArtwork extends StatelessWidget {
     );
   }
 
-  /// How far below its line's middle a printed surah name is centred, and
-  /// how tall its frame is, in lines.
-  static const double _titleDrop = 0.12;
-  static const double _titleFrameHeight = 1.04;
+  /// A surah frame's margin above and below the name, and its least and
+  /// most height, in printed lines; and its margin at each side, as a share
+  /// of the page's width.
+  static const double _titleMargin = 0.14;
+  static const double _titleLeast = 0.9;
+  static const double _titleMost = 1.12;
+  static const double _titleSide = 0.015;
 
   /// The page at [scale] screen pixels per page unit, its lines spread for
   /// a page [stretch] times as tall.
@@ -544,15 +571,8 @@ class _SvgArtwork extends StatelessWidget {
               // A frame under each surah's name, as printed Mushafs set
               // it. The name itself is the page's own calligraphy, drawn
               // over the frame.
-              for (final title in layout.surahTitles)
-                _titleFrame(
-                  context,
-                  title,
-                  scale: scale,
-                  stretch: stretch,
-                  width: pageBoxWidth(content),
-                  top: content.top,
-                ),
+              for (final title in page.titles)
+                _titleFrame(context, title, scale: scale, stretch: stretch),
               layer(page.ink, colors.ink),
               layer(page.marks, colors.ayahNumber),
             ],

@@ -153,6 +153,11 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
       settingsProvider.select((s) => s.value?.readerFontScale ?? 1),
     );
     final digits = ref.watch(digitsFormatterProvider);
+    final frame = ref.watch(
+      settingsProvider.select(
+        (s) => s.value?.surahFrame ?? SurahFrameStyle.cartouche,
+      ),
+    );
     final realistic = ref.watch(
       settingsProvider.select((s) => s.value?.realisticPageTurn ?? false),
     );
@@ -197,6 +202,7 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
             text: widget.text,
             page: number,
             fontScale: fontScale,
+            frame: frame,
             digits: digits,
             bookmarked: bookmarked,
             selected: _selected ?? highlighted,
@@ -236,6 +242,7 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
               text: widget.text,
               page: number,
               fontScale: fontScale,
+              frame: frame,
               digits: digits,
               bookmarked: bookmarked,
               selected: _selected ?? highlighted,

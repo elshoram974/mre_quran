@@ -96,7 +96,7 @@ abstract final class SvgLineSplitter {
   /// [ordered] says the Mushaf draws its script line by line, as Hafs and
   /// Warsh do. When it does not, every contour is placed by where it lies:
   /// see [splitOrThrow].
-  static ({SvgSpreadLayer ink, SvgSpreadLayer marks})? split({
+  static SvgSplit? split({
     required String ink,
     required String marks,
     required PageBox box,
@@ -137,7 +137,7 @@ abstract final class SvgLineSplitter {
   /// with it, and every other one goes with the nearer of its two lines.
   /// Checked against Hafs, whose lines the drawing order gives, this puts
   /// about three contours in ten thousand on the wrong line.
-  static ({SvgSpreadLayer ink, SvgSpreadLayer marks}) splitOrThrow({
+  static SvgSplit splitOrThrow({
     required String ink,
     required String marks,
     required PageBox box,
@@ -279,7 +279,32 @@ abstract final class SvgLineSplitter {
         parts: marksParts,
         shifts: marksShifts,
       ),
+      lines: _printedLines(contours, lineOf),
     );
+  }
+
+  /// Each line of [lineOf], top first: its middle, and the box of its ink.
+  static List<SvgPrintedLine> _printedLines(
+    List<_Contour> contours,
+    List<_Line> lineOf,
+  ) {
+    final boxes = <_Line, PageBox>{};
+    for (var i = 0; i < contours.length; i++) {
+      final c = contours[i];
+      final known = boxes[lineOf[i]];
+      boxes[lineOf[i]] = known == null
+          ? (left: c.left, top: c.top, right: c.right, bottom: c.bottom)
+          : (
+              left: math.min(known.left, c.left),
+              top: math.min(known.top, c.top),
+              right: math.max(known.right, c.right),
+              bottom: math.max(known.bottom, c.bottom),
+            );
+    }
+    return [
+      for (final MapEntry(key: line, value: box) in boxes.entries)
+        (middle: line.middle, box: box),
+    ]..sort((a, b) => a.middle.compareTo(b.middle));
   }
 
   /// The printed line of every contour, in drawing order.
@@ -882,6 +907,14 @@ abstract final class SvgLineSplitter {
     throw const SvgLinesUnclear('a group never closes');
   }
 }
+
+/// A page split into its printed lines: its two layers, each ready to be
+/// spread, and the lines themselves.
+typedef SvgSplit = ({
+  SvgSpreadLayer ink,
+  SvgSpreadLayer marks,
+  List<SvgPrintedLine> lines,
+});
 
 /// One path of a page's script: the transform of its group, what that
 /// transform does, its data, and its other attributes.

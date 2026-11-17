@@ -6,6 +6,7 @@ import '../../../core/theme/quran_colors.dart';
 import '../../quran_text/domain/ayah_span.dart';
 import '../../quran_text/domain/ayah_texts.dart';
 import 'surah_banner.dart';
+import '../../settings/domain/app_settings.dart';
 
 /// Ayahs set as a card to share as a picture: the surah's name in its
 /// frame, the ayahs one under another in the Mushaf's own script with their
@@ -20,8 +21,12 @@ class AyahShareCard extends StatelessWidget {
     required this.text,
     required this.span,
     required this.digits,
+    this.frame = SurahFrameStyle.cartouche,
     this.width = 360,
   });
+
+  /// The frame drawn around the surah's name.
+  final SurahFrameStyle frame;
 
   /// The reading's text.
   final AyahTexts text;
@@ -78,6 +83,7 @@ class AyahShareCard extends StatelessWidget {
                 child: SurahBanner(
                   surah: surah,
                   number: digits,
+                  style: frame,
                   ink: colors.ink,
                   paper: colors.paper,
                   band: colors.ayahNumber.withValues(alpha: 0.12),

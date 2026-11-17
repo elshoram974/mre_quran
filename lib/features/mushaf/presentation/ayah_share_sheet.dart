@@ -15,6 +15,8 @@ import '../../quran_text/domain/ayah_span.dart';
 import '../../quran_text/domain/ayah_texts.dart';
 import '../../settings/application/digits_provider.dart';
 import 'ayah_share_card.dart';
+import '../../settings/domain/app_settings.dart';
+import '../../settings/application/settings_provider.dart';
 
 /// Opens the sharing of [target]: choose from which ayah to which, see the
 /// picture as it will be sent, then copy, send as text, or send as a
@@ -220,6 +222,9 @@ class _AyahShareSheetState extends ConsumerState<AyahShareSheet> {
                     text: widget.text,
                     span: _span,
                     digits: digits,
+                    frame:
+                        ref.watch(settingsProvider).value?.surahFrame ??
+                        SurahFrameStyle.cartouche,
                   ),
                 ),
               ),

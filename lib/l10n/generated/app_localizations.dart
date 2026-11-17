@@ -1922,6 +1922,36 @@ abstract class AppLocalizations {
   /// **'Two-page spread'**
   String get readerPageLayoutSpread;
 
+  /// No description provided for @surahFrame.
+  ///
+  /// In en, this message translates to:
+  /// **'Surah name frame'**
+  String get surahFrame;
+
+  /// No description provided for @surahFrameCartouche.
+  ///
+  /// In en, this message translates to:
+  /// **'Pointed'**
+  String get surahFrameCartouche;
+
+  /// No description provided for @surahFrameClassic.
+  ///
+  /// In en, this message translates to:
+  /// **'Classic'**
+  String get surahFrameClassic;
+
+  /// No description provided for @surahFrameArch.
+  ///
+  /// In en, this message translates to:
+  /// **'Scalloped'**
+  String get surahFrameArch;
+
+  /// No description provided for @surahFrameMinimal.
+  ///
+  /// In en, this message translates to:
+  /// **'Simple'**
+  String get surahFrameMinimal;
+
   /// No description provided for @readerLandscape.
   ///
   /// In en, this message translates to:

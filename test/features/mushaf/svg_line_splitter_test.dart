@@ -7,7 +7,7 @@ import '../../helpers/svg_page_fixtures.dart';
 
 const PageBox _box = (left: 0, top: 0, right: 345, bottom: 550);
 
-({SvgSpreadLayer ink, SvgSpreadLayer marks})? _split(String svg) {
+SvgSplit? _split(String svg) {
   final parts = SvgPageParser.split(svg);
   return SvgLineSplitter.split(ink: parts.ink, marks: parts.marks, box: _box);
 }

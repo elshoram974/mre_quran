@@ -223,6 +223,15 @@ class SvgSpreadLayer {
   }
 }
 
+/// A printed line as the line splitter found it: the height of its middle,
+/// and the box its ink covers, in page units.
+typedef SvgPrintedLine = ({double middle, PageBox box});
+
+/// A surah's name as a page prints it: the box its calligraphy covers, and
+/// the middle of its line, in page units. Spreading moves the name with its
+/// line.
+typedef SvgSurahTitle = ({int surah, PageBox box, double line});
+
 /// One printed Mushaf page, ready to draw.
 ///
 /// The artwork is held as two SVG documents whose view box is the page's
@@ -239,7 +248,11 @@ class SvgPage {
     required this.layout,
     this.inkLines,
     this.marksLines,
+    this.titles = const [],
   }) : assert((inkLines == null) == (marksLines == null));
+
+  /// The surah names printed on the page, top first.
+  final List<SvgSurahTitle> titles;
 
   /// Page number, 1–604.
   final int page;
@@ -279,7 +292,11 @@ class SvgPagePicture {
     required this.marks,
     required this.layout,
     required this.stretch,
+    this.titles = const [],
   });
+
+  /// The surah names printed on the page, top first.
+  final List<SvgSurahTitle> titles;
 
   /// Page number, 1–604.
   final int page;

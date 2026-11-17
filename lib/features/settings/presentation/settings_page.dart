@@ -18,6 +18,7 @@ import '../../../core/widgets/app_tile_card.dart';
 import '../../adhkar/presentation/reminders_sheet.dart';
 import '../application/settings_provider.dart';
 import '../../mushaf/presentation/reader_page_layout_field.dart';
+import '../../mushaf/presentation/surah_frame_field.dart';
 import '../../mushaf/presentation/offline_packs_section.dart';
 import '../domain/app_settings.dart';
 import 'theme_pickers.dart';
@@ -159,6 +160,8 @@ class _SettingsContent extends ConsumerWidget {
         ),
         const SizedBox(height: _gap),
         const ReaderPageLayoutField(),
+        const SizedBox(height: _gap),
+        const SurahFrameField(),
         const SizedBox(height: _gap),
         AppGroupCard(
           children: [

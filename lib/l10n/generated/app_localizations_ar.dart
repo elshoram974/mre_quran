@@ -1052,6 +1052,21 @@ class AppLocalizationsAr extends AppLocalizations {
   String get readerPageLayoutSpread => 'صفحتان متقابلتان';
 
   @override
+  String get surahFrame => 'إطار اسم السورة';
+
+  @override
+  String get surahFrameCartouche => 'مُدبَّب';
+
+  @override
+  String get surahFrameClassic => 'كلاسيكي';
+
+  @override
+  String get surahFrameArch => 'مُقوَّس';
+
+  @override
+  String get surahFrameMinimal => 'بسيط';
+
+  @override
   String get readerLandscape => 'قراءة أفقية';
 
   @override

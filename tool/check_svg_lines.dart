@@ -55,7 +55,7 @@ void main(List<String> arguments) {
       continue;
     }
     final parts = SvgPageParser.split(svg);
-    ({SvgSpreadLayer ink, SvgSpreadLayer marks})? lines;
+    SvgSplit? lines;
     final reasons = <String>[];
     for (final (way, lenient, inOrder) in ways) {
       try {
