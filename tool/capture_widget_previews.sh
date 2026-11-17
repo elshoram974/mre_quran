@@ -18,7 +18,7 @@ fvm flutter build apk --debug
 "${adb[@]}" install -r build/app/outputs/flutter-apk/app-debug.apk >/dev/null
 "${adb[@]}" shell am start -W -n "$app/.WidgetPreviewCapture" >/dev/null
 for _ in $(seq 1 30); do
-  "${adb[@]}" shell run-as "$app" test -f files/widget_previews/done && break
+  "${adb[@]}" shell run-as "$app" ls files/widget_previews/done >/dev/null 2>&1 && break
   sleep 1
 done
 for language in en ar; do

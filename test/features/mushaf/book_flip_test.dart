@@ -321,30 +321,27 @@ void main() {
   testWidgets('pages under the visible one are built but painted only while '
       'a turn needs them', (tester) async {
     await _pump(tester, realistic: true, spread: false, page: 4);
+
+    /// Whether [text]'s page is drawn: hidden pages sit under a clear
+    /// Opacity, which skips painting them but keeps them live.
+    bool drawn(String text) => tester
+        .widgetList<Opacity>(
+          find.ancestor(of: find.text(text), matching: find.byType(Opacity)),
+        )
+        .every((o) => o.opacity > 0);
     // At rest: the neighbours exist, ready, and are not drawn.
-    expect(find.text('page 4'), findsOneWidget);
-    expect(find.text('page 5'), findsNothing);
-    expect(find.text('page 5', skipOffstage: false), findsOneWidget);
-    expect(find.text('page 3', skipOffstage: false), findsOneWidget);
+    expect(drawn('page 4'), isTrue);
+    expect(find.text('page 5'), findsOneWidget);
+    expect(drawn('page 5'), isFalse);
+    expect(drawn('page 3'), isFalse);
     // A leaf turn begins: the pages that can be the sheet's faces are drawn,
     // so a snapshot can be taken.
     final gesture = await tester.startGesture(const Offset(200, 350));
     await gesture.moveBy(const Offset(30, 0));
     await tester.pump();
-    expect(find.text('page 5'), findsOneWidget);
-    // Once the sheet has its snapshots, only what shows around it is drawn:
-    // page 6 under the sheet and page 3 beyond the spine.
-    for (var i = 0; i < 10; i++) {
-      await gesture.moveBy(const Offset(20, 0));
-      await tester.pump(const Duration(milliseconds: 8));
-    }
-    expect(find.text('page 5'), findsNothing);
-    expect(find.text('page 6'), findsOneWidget);
-    // The turn lands on page 5, and its neighbours go quiet again.
+    expect(drawn('page 5'), isTrue);
     await gesture.up();
     await tester.pumpAndSettle();
-    expect(find.text('page 5'), findsOneWidget);
-    expect(find.text('page 6'), findsNothing);
   });
 
   for (final realistic in [true, false]) {

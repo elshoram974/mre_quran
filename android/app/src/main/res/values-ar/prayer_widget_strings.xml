@@ -1,6 +1,6 @@
 <resources>
     <string name="prayer_widget_label">الصلاة القادمة</string>
-    <string name="prayer_widget_remaining">متبقٍ %1$s</string>
+    <string name="prayer_widget_remaining">بعد %1$s</string>
     <string name="prayer_widget_empty">افتح مصحف MRE لتحديد موقعك</string>
     <string name="prayer_widget_name">مواقيت الصلاة</string>
     <string name="prayer_widget_next_description">الصلاة القادمة ووقتها والمدة المتبقية عليها.</string>
@@ -18,7 +18,7 @@
     <string name="widget_preview_asr_time">٤:٠٢ م</string>
     <string name="widget_preview_maghrib_time">٦:٣٢ م</string>
     <string name="widget_preview_isha_time">٧:٤٩ م</string>
-    <string name="widget_preview_remaining">متبقٍ ١ س ٢٤ د</string>
+    <string name="widget_preview_remaining">بعد ١ س ٢٤ د</string>
     <string name="widget_preview_date">الخميس ٨ أكتوبر</string>
     <string name="widget_preview_hijri">٢٧ ربيع الآخر ١٤٤٨ هـ</string>
     <string name="prayer_widget_next_name">الصلاة القادمة</string>

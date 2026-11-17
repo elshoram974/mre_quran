@@ -245,6 +245,15 @@ void main() {
       expect(server.requests, isEmpty);
     });
 
+    test('two unpackings at once do not trip over each other', () async {
+      // Each deletes the archives it finished; the other finds them gone.
+      arrived('svg');
+      arrived('json');
+      await Future.wait([store.install(), store.install()]);
+      expect(await store.filesOnDevice(), 6);
+      expect(await store.hasArchives(), isFalse);
+    });
+
     test('an archive that fails its checksum installs nothing', () async {
       final altered = fixtureArchive('svg')..[40] ^= 0xFF;
       arrived('svg', bytes: altered);

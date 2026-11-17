@@ -96,9 +96,9 @@ void main() {
       'ready, unseen', (tester) async {
     final asked = await _pump(tester, page: 10);
     expect(asked, {9, 10, 11, 12, 13});
-    // Only the reader's page can be seen or touched.
-    expect(find.byType(SvgPageView), findsOneWidget);
-    expect(find.byType(SvgPageView, skipOffstage: false), findsNWidgets(5));
+    // They are prepared without being built: only the reader's page is a
+    // widget.
+    expect(find.byType(SvgPageView, skipOffstage: false), findsOneWidget);
   });
 
   testWidgets('nothing is asked for before the first page or after the last', (
@@ -121,21 +121,26 @@ void main() {
   });
 
   group('a reading other than the app\'s own text', () {
-    testWidgets('shows its pages only: no ayah actions, no text standing in', (
+    testWidgets('has no Hafs text standing in and no bookmarks', (
       tester,
     ) async {
       await _pump(tester, page: 10, edition: MushafEditions.warsh);
       final view = tester.widget<SvgPageView>(find.byType(SvgPageView));
-      expect(view.onAyahLongPress, isNull);
       expect(view.fallbackBuilder, isNull);
       expect(view.bookmarked, isEmpty);
       expect(view.selected, isNull);
     });
 
-    testWidgets('keeps its printed height: its lines are not spread', (
+    testWidgets('Warsh, drawn line by line, has its lines spread', (
       tester,
     ) async {
       await _pump(tester, page: 10, edition: MushafEditions.warsh);
+      expect(_stretches.values.toSet().single, greaterThan(1000));
+    });
+
+    testWidgets('one whose marks are drawn apart from their words keeps its '
+        'printed height', (tester) async {
+      await _pump(tester, page: 10, edition: MushafEditions.qalon);
       expect(_stretches.values.toSet(), {1000});
     });
   });

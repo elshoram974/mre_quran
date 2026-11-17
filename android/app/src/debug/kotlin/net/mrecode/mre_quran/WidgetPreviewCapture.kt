@@ -32,20 +32,48 @@ class WidgetPreviewCapture : Activity() {
         Shot(R.layout.tasbih_widget, "tasbih_widget_preview", 76, 76),
     )
 
+    private val stage by lazy { FrameLayout(this) }
+    private lateinit var out: File
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val out = File(filesDir, "widget_previews").apply { deleteRecursively(); mkdirs() }
-        for (language in listOf("en", "ar")) {
-            val context = localized(language)
-            val folder = File(out, language).apply { mkdirs() }
-            for (shot in shots) {
-                File(folder, "${shot.name}.png").outputStream().use {
-                    draw(context, shot, language == "ar").compress(Bitmap.CompressFormat.PNG, 100, it)
-                }
-            }
+        out = File(filesDir, "widget_previews").apply { deleteRecursively(); mkdirs() }
+        setContentView(stage)
+        val jobs = ArrayDeque<Pair<String, Shot>>()
+        for (language in listOf("en", "ar")) for (shot in shots) jobs.add(language to shot)
+        next(jobs)
+    }
+
+    /**
+     * Draws the next widget once it is on screen and has been through a whole
+     * frame: a text view only settles where its line starts (the end of the
+     * line, for one-line text in Arabic) after a frame on a window.
+     */
+    private fun next(jobs: ArrayDeque<Pair<String, Shot>>) {
+        val job = jobs.removeFirstOrNull()
+        if (job == null) {
+            File(out, "done").writeText("ok")
+            finish()
+            return
         }
-        File(out, "done").writeText("ok")
-        finish()
+        val (language, shot) = job
+        val context = localized(language)
+        val density = context.resources.displayMetrics.density
+        val width = (shot.widthDp * density).toInt()
+        val height = (shot.heightDp * density).toInt()
+        stage.removeAllViews()
+        val view = RemoteViews(packageName, shot.layout).apply(context, stage)
+        view.layoutDirection = if (language == "ar") View.LAYOUT_DIRECTION_RTL else View.LAYOUT_DIRECTION_LTR
+        stage.addView(view, FrameLayout.LayoutParams(width, height))
+        view.postDelayed({
+            val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+            view.draw(Canvas(bitmap))
+            val folder = File(out, language).apply { mkdirs() }
+            File(folder, "${shot.name}.png").outputStream().use {
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)
+            }
+            next(jobs)
+        }, 300)
     }
 
     private fun localized(language: String): Context {
@@ -53,22 +81,5 @@ class WidgetPreviewCapture : Activity() {
         configuration.setLocale(Locale.forLanguageTag(language))
         configuration.setLayoutDirection(Locale.forLanguageTag(language))
         return createConfigurationContext(configuration)
-    }
-
-    private fun draw(context: Context, shot: Shot, rtl: Boolean): Bitmap {
-        val density = context.resources.displayMetrics.density
-        val width = (shot.widthDp * density).toInt()
-        val height = (shot.heightDp * density).toInt()
-        val host = FrameLayout(context)
-        val view = RemoteViews(packageName, shot.layout).apply(context, host)
-        view.layoutDirection = if (rtl) View.LAYOUT_DIRECTION_RTL else View.LAYOUT_DIRECTION_LTR
-        view.measure(
-            View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
-            View.MeasureSpec.makeMeasureSpec(height, View.MeasureSpec.EXACTLY),
-        )
-        view.layout(0, 0, width, height)
-        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-        view.draw(Canvas(bitmap))
-        return bitmap
     }
 }

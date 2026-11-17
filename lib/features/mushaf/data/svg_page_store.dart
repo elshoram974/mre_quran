@@ -159,7 +159,14 @@ class SvgPageStore {
   /// checksum installs nothing and is fetched again.
   ///
   /// Safe to interrupt: pages already installed are skipped the next time.
-  Future<void> install() async {
+  /// Calls made while one is running share it, so two never take the same
+  /// archive apart at once.
+  Future<void> install() =>
+      _installing ??= _install().whenComplete(() => _installing = null);
+
+  Future<void>? _installing;
+
+  Future<void> _install() async {
     final manifest = await _manifest();
     final folder = await _folder();
     final archives = await _archiveFolder();
@@ -168,16 +175,22 @@ class SvgPageStore {
     await Isolate.run(() async {
       for (final name in names) {
         final file = File('$archives/$name');
-        SvgArchive? known;
-        for (final archive in manifest.archives) {
-          if (archive.name == name) known = archive;
+        try {
+          SvgArchive? known;
+          for (final archive in manifest.archives) {
+            if (archive.name == name) known = archive;
+          }
+          if (known != null &&
+              (await sha256.bind(file.openRead()).first).toString() ==
+                  known.sha256) {
+            await _unpack(file, folder, manifest);
+          }
+        } on FileSystemException {
+          // The archive went while it was read: the system downloader moved
+          // or removed it, or another unpacking took it first. What was
+          // unpacked stays; the rest is downloaded again.
         }
-        if (known != null &&
-            (await sha256.bind(file.openRead()).first).toString() ==
-                known.sha256) {
-          await _unpack(file, folder, manifest);
-        }
-        await file.delete();
+        if (await file.exists()) await file.delete();
       }
     });
   }
