@@ -32,7 +32,7 @@ dependencies:
   go_router: ^18.0.2
   hijri: ^3.0.1
   intl: ^0.20.3
-  liquid_glass_widgets: ^1.9.0
+  liquid_glass_widgets: ^1.17.5
   meta: ^1.19.0
   mre_fields: ^0.4.0
   path_provider: ^2.1.6
