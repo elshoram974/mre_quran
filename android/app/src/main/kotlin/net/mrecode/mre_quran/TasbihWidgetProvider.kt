@@ -6,6 +6,7 @@ import android.appwidget.AppWidgetProvider
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.os.Bundle
 import android.widget.RemoteViews
 
 /**
@@ -16,6 +17,10 @@ import android.widget.RemoteViews
 class TasbihWidgetProvider : AppWidgetProvider() {
     override fun onUpdate(context: Context, manager: AppWidgetManager, ids: IntArray) =
         redraw(context, manager, ids)
+
+    /** Resized: everything is drawn again at the new size. */
+    override fun onAppWidgetOptionsChanged(context: Context, manager: AppWidgetManager, id: Int, options: Bundle) =
+        redraw(context, manager, intArrayOf(id))
 
     override fun onReceive(context: Context, intent: Intent) {
         when (intent.action) {
@@ -34,11 +39,19 @@ class TasbihWidgetProvider : AppWidgetProvider() {
 
     private fun redraw(context: Context, manager: AppWidgetManager, ids: IntArray) {
         val count = context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE).getInt(COUNT, 0)
-        val views = RemoteViews(context.packageName, R.layout.tasbih_widget)
-        views.setTextViewText(R.id.tasbih_widget_count, String.format("%d", count))
-        views.setOnClickPendingIntent(R.id.tasbih_widget_count_area, broadcast(context, ACTION_COUNT, 1))
-        views.setOnClickPendingIntent(R.id.tasbih_widget_reset, broadcast(context, ACTION_RESET, 2))
-        manager.updateAppWidget(ids, views)
+        for (id in ids) {
+            val views = RemoteViews(context.packageName, R.layout.tasbih_widget)
+            views.setTextViewText(R.id.tasbih_widget_count, String.format("%d", count))
+            views.setOnClickPendingIntent(R.id.tasbih_widget_count_area, broadcast(context, ACTION_COUNT, 1))
+            views.setOnClickPendingIntent(R.id.tasbih_widget_reset, broadcast(context, ACTION_RESET, 2))
+            // A bigger widget gets a bigger name and reset button; the count
+            // sizes itself to fill what is left.
+            val scale = WidgetScale.of(manager, id, BASE_DP, BASE_DP)
+            WidgetScale.text(views, R.id.tasbih_widget_name, 10f, scale)
+            WidgetScale.text(views, R.id.tasbih_widget_reset, 13f, scale)
+            WidgetScale.padding(context, views, R.id.tasbih_widget_reset, 6f, 1f, scale)
+            manager.updateAppWidget(id, views)
+        }
     }
 
     private fun broadcast(context: Context, action: String, code: Int): PendingIntent =
@@ -50,6 +63,8 @@ class TasbihWidgetProvider : AppWidgetProvider() {
         )
 
     private companion object {
+        /** One cell, the size the layout is drawn for. */
+        const val BASE_DP = 64f
         const val PREFERENCES = "tasbih_widget"
         const val COUNT = "count"
         const val ACTION_COUNT = "net.mrecode.mre_quran.TASBIH_COUNT"

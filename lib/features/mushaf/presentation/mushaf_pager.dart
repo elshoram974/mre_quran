@@ -255,29 +255,30 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
     final last = _lastPage;
     if (last != null && last != page) _backward = page < last;
     _lastPage = page;
-    // The pages a turn away are laid out, unseen, in the same room. A page
-    // on the device then has its artwork decoded and drawn before the
-    // reader turns to it, instead of showing a placeholder for a moment.
-    return Stack(
-      children: [
-        for (final near in _pagesToWarm(page, spread: spread))
-          Positioned.fill(
-            child: Offstage(
-              child: SvgPageView(
-                key: ValueKey<String>('warm-$near'),
-                metadata: widget.text.metadata,
-                page: near,
-                digits: digits,
-                fillWidth: !spread,
-                spreadLines: edition.spreadsLines,
-                spread: spread,
-                onTap: () {},
-              ),
-            ),
-          ),
-        Positioned.fill(child: book),
-      ],
+    // The pages a few turns away are prepared ahead: read from the device,
+    // checked and compiled, so a turn finds them ready. They are held by a
+    // listener here, never built as unseen widgets: a page view kept off
+    // stage keeps provider subscriptions that the framework may pause and
+    // close under it.
+    final slot = Size(
+      spread ? widget.availableWidth / 2 : widget.availableWidth,
+      widget.availableHeight,
     );
+    for (final near in _pagesToWarm(page, spread: spread)) {
+      ref.listen(
+        svgPageProvider(
+          SvgPageView.requestIn(
+            slot,
+            page: near,
+            fillWidth: !spread,
+            spreadLines: edition.spreadsLines,
+          ),
+        ),
+        (_, _) {},
+        onError: (_, _) {},
+      );
+    }
+    return book;
   }
 
   /// How many turns ahead of the reader, and behind, pages are made ready.

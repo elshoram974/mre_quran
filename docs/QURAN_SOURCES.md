@@ -418,3 +418,46 @@ the list; nothing else changes.
 
 `MushafPageKind` names how pages are drawn. Only `svg` exists; another kind
 of page (images, say) needs its own renderer before an edition can use it.
+
+## 15. Texts and fonts of the other readings (owner-approved 2026-11-17)
+
+The quran-svg pages of Shu'bah, Warsh, Qalun and Al-Duri carry no text. To
+copy and share their ayahs, the app bundles each reading's own text and font
+from the King Fahd Glorious Quran Printing Complex (KFGQPC), as published on
+its developer page (`https://qurancomplex.gov.sa/techquran/dev/`). That page
+is rendered by script and offers no direct links, so the files were taken
+from the mirror `github.com/thetruetruth/quran-data-kfgqpc`, commit
+`281dbbe8eed1370daa5a023b6cd81655cbfd6473` (2022-02-15), which states the
+developer page as its source. Licence: the Complex's terms, as for Hafs
+(section 13): free for digital use, republished with credit and version.
+
+| Reading | Source file (version) | Source SHA-256 | Font (SHA-256) |
+| --- | --- | --- | --- |
+| Warsh | `warsh/data/warshData_v10.json` (10) | `f05d0dc652fd46b38563cacb13242f76f80db4cc64d25873da0bce157253872f` | `warsh.10.ttf` (`e6347a1b4cf0ca32e9cb187a7db8c9ecee0d5e384269ca6a943373a34ff747fb`) |
+| Qalun | `qaloon/data/QaloonData_v10.json` (10) | `18465c40ebeec40a92eb98745c9b89796ac6e31f6e93988883dfb6602faaea95` | `qaloon.10.ttf` (`95e7f9268fd4ab9f8b79d2ed3827e0c8a78f80195c02c6cbadb97c90d837b1e3`) |
+| Al-Duri | `doori/data/DooriData_v09.json` (9) | `169b949d6cedd93ddb21728c16057d5ac7faf673ac10e0f213bb5dec1dc90d7d` | `doori.9.ttf` (`8a3c14c522ba4ef99d2ece6711ea45c5d7994568d98cf862c448e025592bf746`) |
+| Shu'bah | `shouba/data/ShoubaData08.json` (8) | `f105da3949e0b8092e3abcd23a539c9bef4c9b7474f15d29848471f150ade667` | `shouba.8.ttf` (`9d13404a4a309f2d08501a15fed39d05baf83d3fa5e77bf43f0aac8c8614e118`) |
+
+`tool/build_riwaya_text.py` turns each JSON file into
+`assets/quran/riwayat/<edition>.txt`, one ayah per line
+(`surah|ayah|page|text|mark`). The words are kept byte for byte; only the
+number after the last no-break space is set apart (a plain space in Warsh
+17:110 and 28:88). The output's SHA-256 is in `MushafEditions` and a test
+checks it. Fonts are in `assets/fonts/kfgqpc_riwayat/`, unchanged.
+
+Checked against the quran-svg pages of each reading (2026-11-17): Warsh,
+Qalun and Shu'bah have the same ayahs (6,214, 6,214 and 6,236) on the same
+pages as their polygons, every one. Al-Duri's text counts Al-Mulk (67) as
+30 ayahs where its pages have 31, a known open question of counting noted in
+the quran-svg repository; that surah gives no text, so no ayah is ever tied
+to the wrong words. Everywhere else Al-Duri matches.
+
+What each reading offers: select an ayah on its page, copy it with its
+number, surah and page, and share it as text or as a picture set in its own
+font. Bookmarks stay Hafs-only, since they hold the app's (Hafs) numbering.
+
+Line spreading: only editions whose files draw the script line by line can
+be spread (section 14). Warsh does on 469 of 604 pages and is spread there.
+Shu'bah, Qalun and Al-Duri draw words and their marks apart, in no line
+order; placing marks by position alone put about 0.1% of them on the wrong
+line when checked against Hafs's verified split, so these are not spread.

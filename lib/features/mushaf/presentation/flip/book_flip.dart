@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/physics.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/scheduler.dart';
 
 import 'book_geometry.dart';
 import 'page_curl_painter.dart';
@@ -149,11 +150,19 @@ class _BookFlipState extends State<BookFlip>
   GlobalKey _keyFor(int page) => _keys.putIfAbsent(page, GlobalKey.new);
 
   void _disposeTextures() {
-    _front?.dispose();
-    _back?.dispose();
+    final front = _front;
+    final back = _back;
     _front = null;
     _back = null;
     _textureStep = null;
+    // The frame being built may still hold the old painter; free its
+    // images once that frame is done.
+    if (front != null || back != null) {
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        front?.dispose();
+        back?.dispose();
+      });
+    }
   }
 
   ui.Image? _snapshot(int? page) {
@@ -404,9 +413,11 @@ class _BookFlipState extends State<BookFlip>
             // A page under the visible one is kept built, so it is ready,
             // but painted only while a turn may need a snapshot of it. At
             // rest and once the snapshots are taken it costs nothing to
-            // draw.
-            child: Offstage(
-              offstage: hidden && !faces.contains(pageNumber),
+            // draw. Opacity, not Offstage: a page off stage has its tickers
+            // and its provider subscriptions paused, and coming back on
+            // stage mid-turn read a closed subscription.
+            child: Opacity(
+              opacity: hidden && !faces.contains(pageNumber) ? 0 : 1,
               child: child,
             ),
           );

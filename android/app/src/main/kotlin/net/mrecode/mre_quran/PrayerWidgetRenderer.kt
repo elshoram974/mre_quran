@@ -60,8 +60,29 @@ internal object PrayerWidgetRenderer {
             context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE).getString(PAYLOAD, null),
         )
         val now = System.currentTimeMillis()
-        if (next.isNotEmpty()) manager.updateAppWidget(next, nextPrayerViews(context, model, now))
-        if (schedule.isNotEmpty()) manager.updateAppWidget(schedule, scheduleViews(context, model, now))
+        for (id in next) {
+            val views = nextPrayerViews(context, model, now)
+            // Base: two cells by one.
+            val scale = WidgetScale.of(manager, id, 140f, 60f)
+            WidgetScale.text(views, R.id.prayer_widget_label, 11f, scale)
+            WidgetScale.text(views, R.id.prayer_widget_name, 16f, scale)
+            WidgetScale.text(views, R.id.prayer_widget_time, 15f, scale)
+            WidgetScale.text(views, R.id.prayer_widget_remaining, 11f, scale)
+            manager.updateAppWidget(id, views)
+        }
+        for (id in schedule) {
+            val views = scheduleViews(context, model, now)
+            // Base: two cells by two.
+            val scale = WidgetScale.of(manager, id, 140f, 150f)
+            WidgetScale.text(views, R.id.schedule_date, 12f, scale)
+            WidgetScale.text(views, R.id.schedule_hijri, 10f, scale)
+            for (index in rowIds.indices) {
+                WidgetScale.text(views, nameIds[index], 12f, scale)
+                WidgetScale.text(views, timeIds[index], 12f, scale)
+                WidgetScale.text(views, leftIds[index], 10f, scale)
+            }
+            manager.updateAppWidget(id, views)
+        }
         context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE).edit().putLong(RENDERED_AT, now).apply()
         scheduleRefresh(context, now)
     }

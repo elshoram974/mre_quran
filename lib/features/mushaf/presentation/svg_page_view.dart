@@ -130,6 +130,26 @@ class SvgPageView extends StatelessWidget {
     ),
   );
 
+  /// What a page view of [page] in a slot of [slot] asks for: the same
+  /// request as the view itself makes, so a page made ready ahead of time is
+  /// the one the view shows.
+  static SvgPageRequest requestIn(
+    Size slot, {
+    required int page,
+    required bool fillWidth,
+    required bool spreadLines,
+  }) => (
+    page: page,
+    stretch: _stretchFor(
+      // The frame's margins (see MushafPageFrame, without labels).
+      Size(
+        slot.width - 2 * AppTokens.readerGutterPrinted,
+        slot.height - 2 * AppTokens.readerEdgePrinted,
+      ),
+      fillWidth: fillWidth && spreadLines,
+    ),
+  );
+
   /// How far to spread a full page's lines in [area], in thousandths of its
   /// printed height. The single-page reader fills the width; on a screen
   /// taller than the page the lines move apart to fill the height too, up

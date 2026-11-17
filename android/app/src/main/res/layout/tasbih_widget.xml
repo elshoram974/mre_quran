@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Tasbih counter: tap the number to count, the small button resets. -->
+<!-- Tasbih counter, one cell square: tap anywhere to count; the round
+     button in the corner resets. The count sizes itself to fill the room;
+     TasbihWidgetProvider scales the name and the button with the widget. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/tasbih_widget_root"
     android:layout_width="match_parent"
@@ -13,23 +15,33 @@
         android:contentDescription="@string/tasbih_widget_count_description"
         android:gravity="center"
         android:orientation="vertical"
-        android:padding="12dp">
+        android:paddingStart="6dp"
+        android:paddingTop="8dp"
+        android:paddingEnd="6dp"
+        android:paddingBottom="6dp">
 
         <TextView
+            android:id="@+id/tasbih_widget_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:maxLines="1"
             android:text="@string/tasbih_widget_name"
             android:textColor="@color/widget_accent"
-            android:textSize="12sp"
+            android:textSize="10sp"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/tasbih_widget_count"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="0"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:autoSizeMaxTextSize="120sp"
+            android:autoSizeMinTextSize="14sp"
+            android:autoSizeTextType="uniform"
+            android:gravity="center"
+            android:maxLines="1"
+            android:text="@string/tasbih_widget_preview_count"
             android:textColor="@color/widget_text"
-            android:textSize="40sp"
             android:textStyle="bold" />
     </LinearLayout>
 
@@ -38,12 +50,15 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="end|top"
-        android:layout_margin="8dp"
+        android:layout_margin="4dp"
         android:background="@drawable/widget_pill"
         android:contentDescription="@string/tasbih_widget_reset"
-        android:paddingHorizontal="10dp"
-        android:paddingVertical="4dp"
-        android:text="@string/tasbih_widget_reset"
+        android:gravity="center"
+        android:paddingStart="6dp"
+        android:paddingTop="1dp"
+        android:paddingEnd="6dp"
+        android:paddingBottom="1dp"
+        android:text="↺"
         android:textColor="@color/widget_text"
-        android:textSize="11sp" />
+        android:textSize="13sp" />
 </FrameLayout>

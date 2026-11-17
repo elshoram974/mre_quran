@@ -29,7 +29,15 @@ internal object AdhkarWidgetRenderer {
         val model = AdhkarWidgetModel.parse(
             context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE).getString(PAYLOAD, null),
         )
-        manager.updateAppWidget(ids, views(context, model))
+        for (id in ids) {
+            val views = views(context, model)
+            // Base: two cells by one.
+            val scale = WidgetScale.of(manager, id, 140f, 60f)
+            WidgetScale.text(views, R.id.adhkar_widget_label, 12f, scale)
+            WidgetScale.text(views, R.id.adhkar_widget_count, 12f, scale)
+            WidgetScale.text(views, R.id.adhkar_widget_title, 18f, scale)
+            manager.updateAppWidget(id, views)
+        }
     }
 
     private fun views(context: Context, model: AdhkarWidgetModel?): RemoteViews {

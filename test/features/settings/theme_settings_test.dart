@@ -54,11 +54,18 @@ void main() {
       expect(loaded.mushafEdition, MushafEditions.hafs);
     });
 
-    test('only Hafs is the app\'s own text, and only it spreads its lines', () {
+    test('only Hafs is the app\'s own text; Hafs and Warsh spread their '
+        'lines', () {
       for (final edition in MushafEditions.all) {
         final hafs = edition == MushafEditions.hafs;
         expect(edition.matchesAppText, hafs, reason: edition.id);
-        expect(edition.spreadsLines, hafs, reason: edition.id);
+        // Only these draw their script line by line on most pages
+        // (tool/check_svg_lines.dart: 589 and 469 of 604).
+        expect(
+          edition.spreadsLines,
+          hafs || edition == MushafEditions.warsh,
+          reason: edition.id,
+        );
       }
     });
 
