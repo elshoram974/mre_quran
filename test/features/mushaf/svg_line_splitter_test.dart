@@ -81,13 +81,12 @@ void main() {
   });
 
   group('a page is left alone when', () {
-    test('its script is in more than one path', () {
+    test('its script group holds anything but paths', () {
       final svg = spreadSvg().replaceFirst(
         '<g id="content">',
-        '<g transform="translate(1 1)"><path d="M0 0L1 1Z" /></g>'
-            '<g id="content">',
+        '<g id="content"><text>x</text>',
       );
-      expect(_why(svg), 'script in more than one path');
+      expect(_why(svg), 'no script path');
       expect(_split(svg), isNull);
     });
 
@@ -151,6 +150,75 @@ void main() {
     ].join();
     final layers = _split(spreadSvg(script: script))!;
     expect(layers.ink.shifts, [-98, -135, -98]);
+  });
+
+  group('without the drawing order', () {
+    // The upper line's squares centred at page height 98, the lower's at
+    // 135, as in spreadSvg.
+    final upper =
+        'M10 450h4v4h-4z${[for (var i = 1; i < 9; i++) square(36, 0)].join()}';
+    final lower =
+        'M10 413h4v4h-4z${[for (var i = 1; i < 9; i++) square(36, 0)].join()}';
+
+    /// [spreadSvg] with its script group holding [inside] instead.
+    String withScript(String inside) => spreadSvg().replaceFirst(
+      RegExp(r'<g id="content">.*?</g></g>'),
+      '<g id="content">$inside</g>',
+    );
+
+    test('each contour goes to the line it lies on, as the drawing order '
+        'would put it', () {
+      final parts = SvgPageParser.split(spreadSvg());
+      final byOrder = SvgLineSplitter.splitOrThrow(
+        ink: parts.ink,
+        marks: parts.marks,
+        box: _box,
+      );
+      final byPlace = SvgLineSplitter.splitOrThrow(
+        ink: parts.ink,
+        marks: parts.marks,
+        box: _box,
+        ordered: false,
+      );
+      expect(byPlace.ink.at(1.25), byOrder.ink.at(1.25));
+      expect(byPlace.marks.at(1.25), byOrder.marks.at(1.25));
+    });
+
+    test('a script in many paths is split by where they lie', () {
+      final svg = withScript(
+        '<g transform="translate(0 0)"><path d="$lower" fill="#231f20" />'
+        '</g><g transform="translate(0 0)"><path d="$upper" fill="#231f20" />'
+        '</g>',
+      );
+      final layers = _split(svg)!;
+      expect(layers.ink.shifts.toSet(), {-98, -135});
+      expect(_starts(layers.ink.at(1.25)), hasLength(2));
+    });
+
+    test('a bare path, or one placed by a matrix, is read too', () {
+      final bare = withScript('<path d="$lower$upper" fill="#231f20" />');
+      expect(_split(bare)!.ink.shifts.toSet(), {-98, -135});
+      // Moved down 10 and drawn at its own size: the lines sit 10 lower.
+      final moved = withScript(
+        '<g transform="matrix(1 0 0 1 0 -10)">'
+        '<path id="" d="$lower$upper" fill="#231f20" />\n</g>',
+      );
+      expect(_split(moved)!.ink.shifts.toSet(), {-108, -145});
+    });
+
+    test('a page the drawing order leaves in doubt is still spread', () {
+      final script = [
+        lineOfSquares(10, 413),
+        square(-320, 37),
+        for (var i = 1; i < 4; i++) square(40, 0),
+        square(40, -30),
+        square(40, 30),
+        for (var i = 6; i < 9; i++) square(40, 0),
+      ].join();
+      final svg = spreadSvg(script: script);
+      expect(_why(svg), contains('too far from it'));
+      expect(_split(svg), isNotNull);
+    });
   });
 
   test('the fixture of a real page layout is not spread: its script is not '

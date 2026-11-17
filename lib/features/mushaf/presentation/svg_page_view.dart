@@ -43,7 +43,6 @@ class SvgPageView extends StatelessWidget {
     this.bookmarked = const {},
     this.selected,
     this.fillWidth = false,
-    this.spreadLines = true,
     this.spread = false,
     this.digits,
     this.fallbackBuilder,
@@ -80,10 +79,6 @@ class SvgPageView extends StatelessWidget {
   /// lets a tall page scroll vertically instead of shrinking it.
   final bool fillWidth;
 
-  /// Whether the lines may be moved apart to fill a screen taller than the
-  /// page. Off for an edition whose lines cannot be told apart reliably.
-  final bool spreadLines;
-
   /// Whether this page faces another, which keeps only its outer arrow.
   final bool spread;
 
@@ -109,10 +104,7 @@ class SvgPageView extends StatelessWidget {
           number: digits ?? (value) => formatDigits(value, arabic: true),
           request: (
             page: page,
-            stretch: _stretchFor(
-              constraints.biggest,
-              fillWidth: fillWidth && spreadLines,
-            ),
+            stretch: _stretchFor(constraints.biggest, fillWidth: fillWidth),
           ),
           label: context.l10n.printedPageLabel(
             (digits ?? (value) => formatDigits(value, arabic: true))(page),
@@ -137,7 +129,6 @@ class SvgPageView extends StatelessWidget {
     Size slot, {
     required int page,
     required bool fillWidth,
-    required bool spreadLines,
   }) => (
     page: page,
     stretch: _stretchFor(
@@ -146,7 +137,7 @@ class SvgPageView extends StatelessWidget {
         slot.width - 2 * AppTokens.readerGutterPrinted,
         slot.height - 2 * AppTokens.readerEdgePrinted,
       ),
-      fillWidth: fillWidth && spreadLines,
+      fillWidth: fillWidth,
     ),
   );
 

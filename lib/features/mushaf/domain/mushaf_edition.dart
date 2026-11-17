@@ -48,7 +48,7 @@ class MushafEdition {
     required this.manifestSha256,
     this.kind = MushafPageKind.svg,
     this.matchesAppText = false,
-    this.spreadsLines = false,
+    this.linesInDrawingOrder = true,
     this.downloadGroupName,
     this.text,
   });
@@ -78,11 +78,12 @@ class MushafEdition {
   /// or highlighted from the app's text, and the text stand in for a page.
   final bool matchesAppText;
 
-  /// Whether its lines are spread to fill a tall screen. Only for an edition
-  /// whose files draw the script line by line on nearly every page, as
-  /// `tool/check_svg_lines.dart` reports; the others keep their printed
-  /// height throughout, so neighbouring pages never differ.
-  final bool spreadsLines;
+  /// Whether its files draw the script line by line, so the drawing order
+  /// tells the lines apart (`tool/check_svg_lines.dart` reports it). When
+  /// it does not, each outline is placed on a line by where it lies, which
+  /// is wrong for about three outlines in ten thousand. Every edition's
+  /// lines are spread to fill a tall screen either way.
+  final bool linesInDrawingOrder;
 
   /// Name of its offline download, when it is not the usual one.
   final String? downloadGroupName;
@@ -115,7 +116,6 @@ abstract final class MushafEditions {
     manifestSha256:
         '198cd724391c97dd1c93d8bf5db5961403a1dce31d901293baa46442b7f24cc4',
     matchesAppText: true,
-    spreadsLines: true,
     // The name it had when it was the only edition, so a download begun
     // then is still found.
     downloadGroupName: 'mushaf-svg',
@@ -124,6 +124,8 @@ abstract final class MushafEditions {
   /// Shu'bah from Asim.
   static const shubah = MushafEdition(
     id: 'shubah-kfqc',
+    // Its outlines are drawn grouped by shape, not line by line.
+    linesInDrawingOrder: false,
     names: {'ar': 'شعبة عن عاصم', 'en': "Shu'bah from Asim"},
     text: EditionText(
       asset: AppAssets.shubahText,
@@ -139,9 +141,6 @@ abstract final class MushafEditions {
   static const warsh = MushafEdition(
     id: 'warsh-kfqc',
     names: {'ar': 'ورش عن نافع', 'en': "Warsh from Nafi'"},
-    // 469 of its 604 pages draw their script line by line; the others keep
-    // their printed height.
-    spreadsLines: true,
     text: EditionText(
       asset: AppAssets.warshText,
       sha256:
@@ -155,6 +154,8 @@ abstract final class MushafEditions {
   /// Qalun from Nafi'.
   static const qalon = MushafEdition(
     id: 'qalon-kfqc',
+    // Its outlines are drawn grouped by shape, not line by line.
+    linesInDrawingOrder: false,
     names: {'ar': 'قالون عن نافع', 'en': "Qalun from Nafi'"},
     text: EditionText(
       asset: AppAssets.qalonText,
@@ -169,6 +170,8 @@ abstract final class MushafEditions {
   /// Al-Duri from Abu Amr.
   static const douri = MushafEdition(
     id: 'douri-kfqc',
+    // Its outlines are drawn grouped by shape, not line by line.
+    linesInDrawingOrder: false,
     names: {'ar': 'الدوري عن أبي عمرو', 'en': 'Al-Duri from Abu Amr'},
     text: EditionText(
       asset: AppAssets.douriText,

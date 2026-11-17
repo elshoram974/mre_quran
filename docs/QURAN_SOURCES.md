@@ -323,24 +323,62 @@ How lines are told apart (`lib/features/mushaf/data/svg_line_splitter.dart`):
   below it; nothing else drawn apart is nearer than 0.058.
 - Each ayah-number ornament moves with the line it sits on.
 
-A page is left unspread, at its printed height and centred, when anything is
-not as expected: script in more than one path, a path command the scanner
-does not read, a contour that lies between two lines, lines closer than a
-line apart, an ornament on no line, or a page group that turns the page.
-The two cropped opening pages are never spread.
+When the drawing order leaves something in doubt (a contour between two
+lines, a surah title drawn in the same run as its basmala), the page is
+split in three ways, surest first (`SvgLineSplitter.split`):
 
-Check, over the two release archives unpacked:
+1. **By the drawing order, strictly**, as above.
+2. **By the drawing order, leniently.** The script's lines still come from
+   the drawing order. A contour it does not place beyond doubt is put on the
+   nearer of the two lines it lies between: the one whose already placed
+   outlines come closest to it. Bands of a title found on no line become
+   their own line, and two lines closer than two lines can be are one. Kept
+   only when it finds the page's 15 lines.
+3. **By where each contour lies**, for an edition whose files do not draw
+   line by line (`MushafEdition.linesInDrawingOrder` false) and for any page
+   the first two cannot split. The page's 15 lines are found where its
+   contours gather. A contour within 0.022 of the page height of a line's
+   middle goes with it. Every other one goes to the nearer of its two lines,
+   clearest first, by its distance to the nearest point of each line's
+   outlines plus a quarter of its distance to each line's middle. The parts
+   of one sign (overlapping boxes) go together: a sign of three or more
+   parts to the line nearest its middle.
+
+Checked against Hafs, whose strictly split pages give the right line of
+every contour (each page split both ways and compared contour by contour,
+2026-11-17), way 3 alone puts 216 of 776,653 contours (0.028%) on the wrong
+line:
+on 109 of those pages, one to four small marks or pause-sign parts each.
+Spread to 1.4, such a mark sits a fifth of a line from its word. Ways 1 and 2
+are used wherever they work for that reason.
+
+The script may be one path, many paths (Hafs 17 and 144, Qalun 580, Al-Duri
+92), a bare path, or a path under a matrix that only scales and moves it
+(Shu'bah 313). A path is cut only between two of its own contours. The two
+cropped opening pages are never spread; any page that still cannot be split
+(a path command the scanner does not read, a page group that turns the page)
+stays at its printed height, centred.
+
+Check, over the two release archives unpacked (add `--unordered` for
+Shu'bah, Qalun and Al-Duri):
 
 ```
-dart run tool/check_svg_lines.dart <svg folder> <json folder>
+dart run tool/check_svg_lines.dart <svg folder> <json folder> [--unordered]
 ```
 
-Result on v1.1.1 (2026-11-16): 589 pages spread, every one with exactly 15
-lines. 15 pages are not spread: 1, 2 (opening pages), 17, 144 (script in
-many paths), 3, 45, 126, 294, 414, 458, 467, 496, 499, 515, 602 (a contour
-that could belong to either of two lines). Run the tool again after any
-change to the splitter; the count of spread pages must not drop and every
-spread page must still report 15 lines.
+Result on v1.1.1 (2026-11-17): every page but the two opening ones is
+spread, with exactly 15 lines, in every edition.
+
+| Edition | By drawing order | Leniently | By where contours lie |
+| --- | --- | --- | --- |
+| Hafs | 591 (17 and 144 by place, being many paths) | 11: 3, 45, 126, 294, 414, 458, 467, 496, 499, 515, 602 | 0 |
+| Warsh | 469 | 114 | 19 |
+| Shu'bah, Qalun, Al-Duri | — | — | 602 each |
+
+Run the tool again after any change to the splitter; no page may stop being
+spread and every spread page must still report 15 lines. The Hafs pages
+split leniently were drawn spread at 1.4 and compared by eye: titles,
+basmalas, marks and pause signs are each on their own line.
 
 Pages 78 and 50 were also drawn spread at 1.25 and compared by eye with the
 source: every letter, mark, pause sign and ornament is on its own line.
@@ -377,12 +415,11 @@ What a reading other than Hafs does not get, and why:
   app's text, search, tafsir and ayah numbers are Hafs. Tying them to a page
   of another reading would show or copy words that are not on that page.
   `MushafEdition.matchesAppText` guards this.
-- **No spreading of lines.** `tool/check_svg_lines.dart` finds the lines on
-  589 of 604 Hafs pages, but on 469 Warsh pages, 7 Al-Duri, 2 Shu'bah and 1
-  Qalun: their files do not draw the script line by line. Spreading some
-  pages and not their neighbours would look broken, so these editions are
-  shown at their printed height throughout (`MushafEdition.spreadsLines`).
-  Search still opens the right page, since pages are shared.
+- **Spreading of lines.** Every edition's lines are spread to fill a tall
+  screen (owner's decision, 2026-11-17: the page must fill the height).
+  Shu'bah, Qalun and Al-Duri do not draw their script line by line, so
+  their contours are placed by where they lie (way 3 above), which is wrong
+  for about 3 contours in 10,000.
 
 Source quirks handled, not edited: these editions list the ayah polygons
 before the artwork, and a few Qalun pages (141, 381, 589) carry an ornament
@@ -411,8 +448,9 @@ the list; nothing else changes.
 4. Decide its two switches, never by default:
    - `matchesAppText`: only when its words and ayah numbers are exactly the
      app's text (Hafs). Otherwise its pages show without ayah actions.
-   - `spreadsLines`: only when `dart run tool/check_svg_lines.dart` spreads
-     nearly every page with exactly 15 lines.
+   - `linesInDrawingOrder`: true only when `dart run
+     tool/check_svg_lines.dart` (without `--unordered`) splits nearly every
+     page by the drawing order, strictly, with exactly 15 lines.
 5. Run the tests: they check every entry's manifest hash, that its manifest
    is bundled, and that no two editions share a page file.
 
@@ -456,8 +494,8 @@ What each reading offers: select an ayah on its page, copy it with its
 number, surah and page, and share it as text or as a picture set in its own
 font. Bookmarks stay Hafs-only, since they hold the app's (Hafs) numbering.
 
-Line spreading: only editions whose files draw the script line by line can
-be spread (section 14). Warsh does on 469 of 604 pages and is spread there.
-Shu'bah, Qalun and Al-Duri draw words and their marks apart, in no line
-order; placing marks by position alone put about 0.1% of them on the wrong
-line when checked against Hafs's verified split, so these are not spread.
+Line spreading: every reading is spread (section 14). Warsh draws its
+script line by line on 469 of 604 pages. Shu'bah, Qalun and Al-Duri draw
+words and their marks in no line order, so each contour is placed by where
+it lies; checked against Hafs's verified split, that is wrong for 0.028% of
+contours.

@@ -139,10 +139,10 @@ void main() {
       expect(_stretches.values.toSet().single, greaterThan(1000));
     });
 
-    testWidgets('one whose marks are drawn apart from their words keeps its '
-        'printed height', (tester) async {
+    testWidgets('one whose lines are not drawn in order has its lines '
+        'spread too', (tester) async {
       await _pump(tester, page: 10, edition: MushafEditions.qalon);
-      expect(_stretches.values.toSet(), {1000});
+      expect(_stretches.values.toSet().single, greaterThan(1000));
     });
   });
 

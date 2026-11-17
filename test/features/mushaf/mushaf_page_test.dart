@@ -23,6 +23,12 @@ import '../../helpers/memory_bookmarks_repository.dart';
 import '../../helpers/memory_reading_position_repository.dart';
 import '../../helpers/memory_settings_repository.dart';
 
+/// A page label chip by its tooltip. The chips use material_ui's Tooltip,
+/// which `find.byTooltip` (Flutter's own Tooltip) does not match.
+Finder _chip(String message) => find.byWidgetPredicate(
+  (widget) => widget is Tooltip && widget.message == message,
+);
+
 Future<(ProviderContainer, MemoryReadingPositionRepository)> _pump(
   WidgetTester tester, {
   int? savedPage,
@@ -100,15 +106,9 @@ void main() {
     final (container, _) = await _pump(tester, savedPage: 5);
     container.read(readerImmersiveProvider.notifier).hide();
     await tester.pumpAndSettle();
-    final back = tester.getCenter(
-      find.byTooltip('الصفحة السابقة').hitTestable(),
-    );
-    final next = tester.getCenter(
-      find.byTooltip('الصفحة التالية').hitTestable(),
-    );
-    final number = tester.getCenter(
-      find.byTooltip('الانتقال إلى صفحة').hitTestable(),
-    );
+    final back = tester.getCenter(_chip('الصفحة السابقة').hitTestable());
+    final next = tester.getCenter(_chip('الصفحة التالية').hitTestable());
+    final number = tester.getCenter(_chip('الانتقال إلى صفحة').hitTestable());
     expect(back.dx, greaterThan(number.dx));
     expect(next.dx, lessThan(number.dx));
     expect(number.dx, closeTo(195, 12));
@@ -129,7 +129,7 @@ void main() {
           .hitTestable(),
       findsOneWidget,
     );
-    expect(find.byTooltip('الصفحة التالية').hitTestable(), findsOneWidget);
+    expect(_chip('الصفحة التالية').hitTestable(), findsOneWidget);
     expect(find.bySemanticsLabel('ابحث في القرآن').hitTestable(), findsNothing);
   });
 
@@ -169,17 +169,17 @@ void main() {
     final (container, positions) = await _pump(tester, savedPage: 5);
     container.read(readerImmersiveProvider.notifier).hide();
     await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('الصفحة التالية').hitTestable());
+    await tester.tap(_chip('الصفحة التالية').hitTestable());
     await tester.pumpAndSettle();
     expect(positions.page, 6);
-    await tester.tap(find.byTooltip('الصفحة السابقة').hitTestable());
+    await tester.tap(_chip('الصفحة السابقة').hitTestable());
     await tester.pumpAndSettle();
     expect(positions.page, 5);
-    await tester.tap(find.byTooltip('الصفحة التالية').hitTestable());
+    await tester.tap(_chip('الصفحة التالية').hitTestable());
     await tester.pumpAndSettle();
     container.read(readerImmersiveProvider.notifier).hide();
     await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('السورة التالية').hitTestable());
+    await tester.tap(_chip('السورة التالية').hitTestable());
     await tester.pumpAndSettle();
     // Al-Baqarah is followed by Al Imran, which starts on page 50.
     expect(positions.page, 50);

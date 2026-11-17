@@ -30,6 +30,7 @@ final svgPageStoreProvider = Provider.family<SvgPageStore, MushafEdition>(
   (ref, edition) => SvgPageStore(
     root: getApplicationSupportDirectory,
     manifest: () => ref.read(svgManifestProvider(edition).future),
+    ordered: edition.linesInDrawingOrder,
   ),
 );
 

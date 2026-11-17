@@ -48,12 +48,15 @@ class SurahBanner extends StatelessWidget {
     final l10n = context.l10n;
     final writing = ink ?? scheme.onSurface;
     final lines = stroke ?? scheme.primary.withValues(alpha: 0.8);
-    TextStyle quran(double size, {double? opacity}) => TextStyle(
-      fontFamily: AppTokens.quranFontFamily,
-      fontSize: size,
-      height: 1.15,
-      color: opacity == null ? writing : writing.withValues(alpha: opacity),
-    );
+    // Line heights leave room for the Quran font's deep descenders, so the
+    // caption never runs into the name above it.
+    TextStyle quran(double size, {required double height, double? opacity}) =>
+        TextStyle(
+          fontFamily: AppTokens.quranFontFamily,
+          fontSize: size,
+          height: height,
+          color: opacity == null ? writing : writing.withValues(alpha: opacity),
+        );
     final revelation = surah.revelation == Revelation.meccan
         ? l10n.revelationMeccan
         : l10n.revelationMedinan;
@@ -82,14 +85,14 @@ class SurahBanner extends StatelessWidget {
                           Text(
                             l10n.surahTitle(surah.arabicName),
                             textScaler: TextScaler.noScaling,
-                            style: quran(22),
+                            style: quran(22, height: 1.6),
                           ),
                           Text(
                             '$revelation · '
                             '${number(surah.ayahCount)} '
                             '${l10n.surahAyahsCaption}',
                             textScaler: TextScaler.noScaling,
-                            style: quran(11, opacity: 0.75),
+                            style: quran(11, height: 1.3, opacity: 0.75),
                           ),
                         ],
                       ),

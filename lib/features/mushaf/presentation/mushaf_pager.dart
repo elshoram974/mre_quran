@@ -215,7 +215,6 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
             page: number,
             digits: digits,
             fillWidth: !spread,
-            spreadLines: edition.spreadsLines,
             spread: spread,
             selected: _selected,
             onAyahLongPress: hasText ? _actionsOf(edition) : null,
@@ -226,7 +225,6 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
             page: number,
             digits: digits,
             fillWidth: !spread,
-            spreadLines: edition.spreadsLines,
             spread: spread,
             bookmarked: bookmarked,
             selected: _selected ?? highlighted,
@@ -267,12 +265,7 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
     for (final near in _pagesToWarm(page, spread: spread)) {
       ref.listen(
         svgPageProvider(
-          SvgPageView.requestIn(
-            slot,
-            page: near,
-            fillWidth: !spread,
-            spreadLines: edition.spreadsLines,
-          ),
+          SvgPageView.requestIn(slot, page: near, fillWidth: !spread),
         ),
         (_, _) {},
         onError: (_, _) {},

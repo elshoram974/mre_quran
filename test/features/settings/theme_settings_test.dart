@@ -55,15 +55,15 @@ void main() {
       expect(loaded.mushafEdition, MushafEditions.hafs);
     });
 
-    test('only Hafs is the app\'s own text; Hafs and Warsh spread their '
-        'lines', () {
+    test('only Hafs is the app\'s own text; Hafs and Warsh draw their '
+        'lines in order', () {
       for (final edition in MushafEditions.all) {
         final hafs = edition == MushafEditions.hafs;
         expect(edition.matchesAppText, hafs, reason: edition.id);
         // Only these draw their script line by line on most pages
-        // (tool/check_svg_lines.dart: 589 and 469 of 604).
+        // (tool/check_svg_lines.dart: 591 and 469 of 604).
         expect(
-          edition.spreadsLines,
+          edition.linesInDrawingOrder,
           hafs || edition == MushafEditions.warsh,
           reason: edition.id,
         );

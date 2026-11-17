@@ -45,11 +45,17 @@ class PageDownloadException implements Exception {
 /// compresses it like any other page.
 class SvgPageStore {
   /// Creates a store under [root] for the pages of [manifest], downloading
-  /// with [fetch].
-  SvgPageStore({required this._root, required this._manifest, Fetch? fetch})
-    : _fetch = fetch ?? _httpFetch;
+  /// with [fetch]. `ordered` says the edition draws its script line by
+  /// line (the edition's `linesInDrawingOrder`).
+  SvgPageStore({
+    required this._root,
+    required this._manifest,
+    Fetch? fetch,
+    this._ordered = true,
+  }) : _fetch = fetch ?? _httpFetch;
 
   final Future<Directory> Function() _root;
+  final bool _ordered;
   final Future<SvgManifest> Function() _manifest;
   final Fetch _fetch;
   final Map<int, Future<void>> _inFlight = {};
@@ -82,8 +88,12 @@ class SvgPageStore {
     final manifest = await _manifest();
     final entry = manifest.entry(page);
     final folder = await _folder();
+    // A local, so the isolate is sent the flag and not the store.
+    final ordered = _ordered;
     final decoded = await _inTurn(
-      () => Isolate.run(() => _decode(folder, page, entry, stretch)),
+      () => Isolate.run(
+        () => _decode(folder, page, entry, stretch, ordered: ordered),
+      ),
     );
     if (decoded == null) {
       // The files on the device no longer match: drop them, so the next try
@@ -304,8 +314,9 @@ class SvgPageStore {
     String folder,
     int page,
     SvgPageEntry entry,
-    double stretch,
-  ) async {
+    double stretch, {
+    required bool ordered,
+  }) async {
     Future<String?> read(String extension, String expected) async {
       final file = File(
         '$folder/${SvgManifest.fileName(page, extension)}$_packed',
@@ -324,7 +335,7 @@ class SvgPageStore {
     if (svg == null || json == null) return null;
     try {
       return SvgPageCompiler.compile(
-        SvgPageParser.page(page, svg: svg, json: json),
+        SvgPageParser.page(page, svg: svg, json: json, ordered: ordered),
         stretch: stretch,
       );
     } on FormatException {

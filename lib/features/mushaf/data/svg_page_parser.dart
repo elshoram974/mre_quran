@@ -23,14 +23,27 @@ abstract final class SvgPageParser {
   /// Both halves of the artwork are given the page's visible box as their
   /// view box, so a renderer only has to fill a box of that shape: the
   /// opening pages come out cropped to their text with no placement maths.
-  static SvgPage page(int page, {required String svg, required String json}) {
+  ///
+  /// [ordered] says the edition draws its script line by line; see
+  /// [SvgLineSplitter.split].
+  static SvgPage page(
+    int page, {
+    required String svg,
+    required String json,
+    bool ordered = true,
+  }) {
     final layout = SvgPageLayout(viewBox: viewBox(svg), regions: regions(json));
     final parts = split(svg);
     final ink = _show(parts.ink, layout.content);
     final marks = _show(parts.marks, layout.content);
     // A cropped opening page is a small ornate block; it is never spread.
     final lines = layout.content == layout.viewBox
-        ? SvgLineSplitter.split(ink: ink, marks: marks, box: layout.content)
+        ? SvgLineSplitter.split(
+            ink: ink,
+            marks: marks,
+            box: layout.content,
+            ordered: ordered,
+          )
         : null;
     return SvgPage(
       page: page,
