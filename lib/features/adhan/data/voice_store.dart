@@ -50,7 +50,7 @@ abstract interface class VoiceFetcher {
   Stream<List<int>> open(Uri url);
 }
 
-/// Fetches with `dart:io`, naming the app as Wikimedia asks of clients.
+/// Fetches with `dart:io`, naming the app so the host can tell who asks.
 class HttpVoiceFetcher implements VoiceFetcher {
   /// Creates the fetcher.
   const HttpVoiceFetcher();

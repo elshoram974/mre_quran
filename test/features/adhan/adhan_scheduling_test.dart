@@ -73,8 +73,22 @@ _Harness _harness({
   );
 }
 
-Iterable<int> _atTimeNotifications(_Harness h) =>
-    h.scheduler.once.keys.where((id) => id >= PrayerAlertPlan.firstAtTimeId);
+Iterable<int> _atTimeNotifications(_Harness h) => [
+  for (final MapEntry(:key, :value) in h.scheduler.once.entries)
+    if (value.channel == ReminderChannel.prayer) key,
+];
+
+Iterable<int> _beforeNotifications(_Harness h) => [
+  for (final MapEntry(:key, :value) in h.scheduler.once.entries)
+    if (value.channel == ReminderChannel.prayerSoon) key,
+];
+
+/// Every prayer of every planned day.
+int get _allAlarms => PrayerNotifier.planDays * DailyPrayer.values.length;
+
+/// With the reminder before each prayer, notifications come in pairs, and
+/// only the earliest the system is given are kept.
+int get _atTimeWithin => PrayerNotifier.notificationLimit ~/ 2;
 
 void main() {
   test(
@@ -83,7 +97,7 @@ void main() {
       final h = _harness();
       await h.turnAllOn();
 
-      expect(h.platform.alarms, hasLength(35));
+      expect(h.platform.alarms, hasLength(_allAlarms));
       expect(h.platform.alarms.first.title, 'حان وقت صلاة الفجر');
       expect(h.platform.config!.stopLabel, 'إيقاف الأذان');
       expect(h.platform.config!.stopWhenFlipped, isTrue);
@@ -106,14 +120,14 @@ void main() {
     final h = _harness(settings: const AdhanSettings(voiceId: 'madinah'));
     await h.turnAllOn();
     expect(h.platform.config!.voicePath, isNull);
-    expect(h.platform.alarms, hasLength(35));
+    expect(h.platform.alarms, hasLength(_allAlarms));
   });
 
   test('without exact alarms the alerts stay normal notifications', () async {
     final h = _harness(exact: false);
     await h.turnAllOn();
     expect(h.platform.alarms, isEmpty);
-    expect(_atTimeNotifications(h), hasLength(35));
+    expect(_atTimeNotifications(h), hasLength(_atTimeWithin));
   });
 
   test(
@@ -122,7 +136,7 @@ void main() {
       final h = _harness(supported: false);
       await h.turnAllOn();
       expect(h.platform.alarms, isEmpty);
-      expect(_atTimeNotifications(h), hasLength(35));
+      expect(_atTimeNotifications(h), hasLength(_atTimeWithin));
     },
   );
 
@@ -133,7 +147,7 @@ void main() {
       await h.turnAllOn();
       expect(h.platform.alarms, isEmpty);
       expect(h.platform.cancels, greaterThan(0));
-      expect(_atTimeNotifications(h), hasLength(35));
+      expect(_atTimeNotifications(h), hasLength(_atTimeWithin));
     },
   );
 
@@ -161,7 +175,7 @@ void main() {
         .change((value) => value.copyWith(playAdhan: false));
     await Future<void>.delayed(const Duration(milliseconds: 50));
     expect(h.platform.alarms, isEmpty);
-    expect(_atTimeNotifications(h), hasLength(35));
+    expect(_atTimeNotifications(h), hasLength(_atTimeWithin));
   });
 
   test('the after-prayer adhkar reminders stay notifications', () async {
@@ -171,6 +185,92 @@ void main() {
     final after = h.scheduler.once.entries.where(
       (entry) => entry.value.channel == ReminderChannel.adhkar,
     );
-    expect(after, hasLength(35));
+    expect(after, isNotEmpty);
+    expect(
+      after.length + _beforeNotifications(h).length,
+      PrayerNotifier.notificationLimit,
+    );
+  });
+
+  test('a reminder comes before each prayer, and can move or stop', () async {
+    final h = _harness();
+    await h.turnAllOn();
+    final first = h.scheduler.once[PrayerAlertPlan.firstBeforeId]!;
+    final fajr = h.platform.alarms.first;
+    expect(first.title, 'اقتربت صلاة الفجر');
+    expect(first.body, 'باقي ١٥ دقيقة على الأذان');
+    expect(fajr.at.difference(first.at), const Duration(minutes: 15));
+    expect(first.exact, isTrue);
+
+    final notifier = h.container.read(prayerProvider.notifier);
+    await notifier.setBeforeMinutes(5);
+    final moved = h.scheduler.once[PrayerAlertPlan.firstBeforeId]!;
+    expect(fajr.at.difference(moved.at), const Duration(minutes: 5));
+    expect(moved.body, 'باقي ٥ دقائق على الأذان');
+
+    await notifier.setBeforeReminder(false);
+    expect(_beforeNotifications(h), isEmpty);
+    // The adhan itself is untouched.
+    expect(h.platform.alarms, hasLength(_allAlarms));
+  });
+
+  test('Fajr plays the Fajr adhan; every adhan is announced, Friday\'s '
+      'Dhuhr as the Friday prayer', () async {
+    final h = _harness();
+    await h.turnAllOn();
+    final alarms = h.platform.alarms;
+    expect(
+      alarms.where((alarm) => alarm.fajr),
+      hasLength(PrayerNotifier.planDays),
+    );
+    expect(alarms.first.fajr, isTrue);
+    expect(alarms.first.announce, 'fajr');
+    final friday = alarms.firstWhere(
+      (alarm) =>
+          alarm.at.weekday == DateTime.friday && alarm.announce == 'jumuah',
+    );
+    expect(friday.title, 'حان وقت صلاة الجمعة');
+    expect(
+      alarms.where(
+        (alarm) =>
+            alarm.at.weekday != DateTime.friday && alarm.announce == 'jumuah',
+      ),
+      isEmpty,
+    );
+  });
+
+  test(
+    'the announcement, the dua and the Fajr voice reach the player',
+    () async {
+      final h = _harness(
+        settings: const AdhanSettings(
+          fajrVoiceId: 'fajr_voice',
+          announce: false,
+        ),
+        saved: {'fajr_voice'},
+      );
+      await h.turnAllOn();
+      final config = h.platform.config!;
+      expect(config.announce, isFalse);
+      expect(config.duaAfter, isTrue);
+      expect(config.fajrVoicePath, endsWith('fajr_voice.audio'));
+      expect(config.voicePath, isNull, reason: 'bundled voice');
+    },
+  );
+
+  test('scheduling again leaves other reminders alone', () async {
+    final h = _harness();
+    await h.scheduler.scheduleOnce(
+      id: 42,
+      at: _now.add(const Duration(days: 1)),
+      title: 'other',
+      body: '',
+      channel: ReminderChannel.adhkar,
+      channelName: '',
+      payload: '',
+    );
+    await h.turnAllOn();
+    await h.container.read(prayerProvider.notifier).setAllAlerts(false);
+    expect(h.scheduler.once.keys, [42]);
   });
 }

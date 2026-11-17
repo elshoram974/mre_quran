@@ -126,11 +126,60 @@ void main() {
           alerts: DailyPrayer.values.toSet(),
         ),
       );
-      expect(alerts, hasLength(70));
-      expect(alerts.map((a) => a.id).toSet(), hasLength(70));
+      // Before, at, and after each of five prayers, for seven days.
+      expect(alerts, hasLength(105));
+      expect(alerts.map((a) => a.id).toSet(), hasLength(105));
+      expect(alerts.every((a) => PrayerAlertPlan.owns(a.id)), isTrue);
+    });
+
+    test('a month of alerts keeps every kind inside its own ids', () {
+      final alerts = PrayerAlertPlan.compute(
+        place: _cairo,
+        settings: PrayerSettings(
+          adhkarReminder: true,
+          alerts: DailyPrayer.values.toSet(),
+        ),
+        now: _now,
+        days: PrayerAlertPlan.maxDays,
+      );
+      expect(alerts.map((a) => a.id).toSet(), hasLength(alerts.length));
+      for (final kind in PrayerAlertKind.values) {
+        final first = switch (kind) {
+          PrayerAlertKind.afterPrayer => PrayerAlertPlan.firstAfterId,
+          PrayerAlertKind.atTime => PrayerAlertPlan.firstAtTimeId,
+          PrayerAlertKind.beforePrayer => PrayerAlertPlan.firstBeforeId,
+        };
+        expect(
+          alerts
+              .where((a) => a.kind == kind)
+              .every((a) => a.id >= first && a.id < first + 1000),
+          isTrue,
+          reason: kind.name,
+        );
+      }
+      expect(PrayerAlertPlan.owns(42), isFalse);
+    });
+
+    test('the reminder before comes its minutes ahead, only for prayers '
+        'that alert, and can be turned off', () {
+      final alerts = plan(
+        const PrayerSettings(alerts: {DailyPrayer.asr}, beforeMinutes: 20),
+      );
+      final before = alerts.where(
+        (a) => a.kind == PrayerAlertKind.beforePrayer,
+      );
+      expect(before, hasLength(7));
+      expect(before.every((a) => a.prayer == DailyPrayer.asr), isTrue);
+      final asr = alerts.firstWhere((a) => a.kind == PrayerAlertKind.atTime);
+      expect(asr.at.difference(before.first.at), const Duration(minutes: 20));
       expect(
-        alerts.every((a) => PrayerAlertPlan.allIds.contains(a.id)),
-        isTrue,
+        plan(
+          const PrayerSettings(
+            alerts: {DailyPrayer.asr},
+            beforeReminder: false,
+          ),
+        ).where((a) => a.kind == PrayerAlertKind.beforePrayer),
+        isEmpty,
       );
     });
 
@@ -168,8 +217,16 @@ void main() {
         method: PrayerMethod.karachi,
         afterMinutes: 30,
         alerts: {DailyPrayer.asr, DailyPrayer.isha},
+        beforeReminder: false,
+        beforeMinutes: 30,
       );
       final back = PrayerSettings.fromJson(settings.toJson());
+      expect(back.beforeReminder, isFalse);
+      expect(back.beforeMinutes, 30);
+      // Saved before the reminder existed: it is on, 15 minutes ahead.
+      final old = PrayerSettings.fromJson(const <String, Object?>{'on': true});
+      expect(old.beforeReminder, isTrue);
+      expect(old.beforeMinutes, 15);
       expect(back.adhkarReminder, isTrue);
       expect(back.method, PrayerMethod.karachi);
       expect(back.afterMinutes, 30);

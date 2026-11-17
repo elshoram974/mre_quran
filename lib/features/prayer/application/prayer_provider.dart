@@ -282,13 +282,13 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
   /// adhan at a time and takes the rest from its own list, so a month costs
   /// nothing and the adhan goes on even when the app is not opened. iOS
   /// keeps at most 64 pending notifications, so a week.
-  static int get _days =>
+  static int get planDays =>
       defaultTargetPlatform == TargetPlatform.android ? 30 : 7;
 
   /// The most prayer notifications handed to the system at once: on iOS
   /// within its 64, leaving room for the adhkar reminders; on Android well
   /// below the alarms a phone allows an app.
-  static int get _notificationLimit =>
+  static int get notificationLimit =>
       defaultTargetPlatform == TargetPlatform.android ? 150 : 48;
 
   Future<void> _schedule(PrayerSettings settings, PrayerPlace? place) async {
@@ -306,7 +306,7 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
         place: place,
         settings: settings,
         now: ref.read(clockProvider)(),
-        days: _days,
+        days: planDays,
       );
       // The adhan that plays by itself takes the at-time alerts when the phone
       // can; otherwise they stay normal notifications.
@@ -317,7 +317,7 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
       final notices = [
         for (final alert in alerts)
           if (!byAdhan || alert.kind != PrayerAlertKind.atTime) alert,
-      ].take(_notificationLimit);
+      ].take(notificationLimit);
       final minutes = settings.beforeMinutes;
       final number = ref.read(digitsFormatterProvider);
       for (final alert in notices) {

@@ -6,9 +6,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mre_quran/features/adhan/data/adhan_catalog.dart';
 import 'package:mre_quran/features/adhan/domain/adhan_voice.dart';
 
-Map<String, Object?> _voice(String id, {bool builtIn = false}) => {
+Map<String, Object?> _voice(
+  String id, {
+  bool builtIn = false,
+  bool fajr = false,
+}) => {
   'id': id,
   if (builtIn) 'builtIn': true,
+  if (fajr) 'kind': 'fajr',
   'title': {'ar': 'صوت', 'en': 'Voice'},
   'place': {'ar': 'مكان', 'en': 'Place'},
   'bytes': 10,
@@ -19,8 +24,14 @@ Map<String, Object?> _voice(String id, {bool builtIn = false}) => {
   'credit': 'Someone',
 };
 
-String _catalog(List<Map<String, Object?>> voices, {int schema = 1}) =>
+String _catalog(List<Map<String, Object?>> voices, {int schema = 2}) =>
     jsonEncode({'schema': schema, 'voices': voices});
+
+/// The two voices every catalogue bundles: the adhan and the Fajr adhan.
+List<Map<String, Object?>> get _bundled => [
+  _voice('default', builtIn: true),
+  _voice('default_fajr', builtIn: true, fajr: true),
+];
 
 void main() {
   final real = File('assets/adhan/voices.json').readAsStringSync();
@@ -28,10 +39,20 @@ void main() {
   group('the catalogue that ships', () {
     final voices = parseAdhanCatalog(real);
 
-    test('has the bundled voice first, and some to download', () {
-      expect(voices.first.id, AdhanVoice.defaultId);
-      expect(voices.first.builtIn, isTrue);
-      expect(voices.where((voice) => !voice.builtIn), isNotEmpty);
+    test('bundles an adhan and a Fajr adhan first, and has more of each to '
+        'download', () {
+      expect(voices.take(2).map((voice) => voice.id), [
+        AdhanVoice.defaultId,
+        AdhanVoice.defaultFajrId,
+      ]);
+      expect(voices.take(2).every((voice) => voice.builtIn), isTrue);
+      expect(voices[1].isFajr, isTrue);
+      for (final fajr in [false, true]) {
+        expect(
+          voices.where((voice) => !voice.builtIn && voice.isFajr == fajr),
+          isNotEmpty,
+        );
+      }
     });
 
     test('every voice carries its licence, credit, source and checksum', () {
@@ -44,17 +65,36 @@ void main() {
         expect(voice.titles['ar'], isNotEmpty, reason: voice.id);
         expect(voice.titles['en'], isNotEmpty, reason: voice.id);
         if (!voice.builtIn) {
-          expect(voice.url, startsWith('https://upload.wikimedia.org/'));
+          // Served from a tag of the media repository, which never changes.
+          expect(
+            voice.url,
+            matches(
+              RegExp(r'^https://cdn\.jsdelivr\.net/gh/[^/]+/[^@]+@v\d+/'),
+            ),
+          );
+          expect(voice.extension, 'm4a');
         }
       }
     });
 
-    test('the bundled recording is the file the catalogue describes', () {
-      final file = File('android/app/src/main/res/raw/adhan_default.ogg');
-      final bytes = file.readAsBytesSync();
-      final voice = voices.first;
-      expect(bytes.length, voice.bytes);
-      expect(sha256.convert(bytes).toString(), voice.sha256);
+    test('the bundled recordings are the files the catalogue describes', () {
+      for (final (id, name) in [
+        (AdhanVoice.defaultId, 'adhan_default'),
+        (AdhanVoice.defaultFajrId, 'adhan_fajr'),
+      ]) {
+        final file = File('android/app/src/main/res/raw/$name.m4a');
+        final bytes = file.readAsBytesSync();
+        final voice = voices.firstWhere((voice) => voice.id == id);
+        expect(bytes.length, voice.bytes, reason: id);
+        expect(sha256.convert(bytes).toString(), voice.sha256, reason: id);
+      }
+    });
+
+    test('the dua after the adhan ships beside them', () {
+      expect(
+        File('android/app/src/main/res/raw/dua_after_adhan.m4a').existsSync(),
+        isTrue,
+      );
     });
 
     test('every voice is written up in docs/AUDIO_SOURCES.md', () {
@@ -70,9 +110,7 @@ void main() {
     test('refuses a voice with no licence', () {
       final voice = _voice('x')..remove('license');
       expect(
-        () => parseAdhanCatalog(
-          _catalog([_voice('default', builtIn: true), voice]),
-        ),
+        () => parseAdhanCatalog(_catalog([..._bundled, voice])),
         throwsFormatException,
       );
     });
@@ -80,50 +118,55 @@ void main() {
     test('refuses a download that is not https', () {
       final voice = _voice('x')..['url'] = 'http://example.test/x.ogg';
       expect(
-        () => parseAdhanCatalog(
-          _catalog([_voice('default', builtIn: true), voice]),
-        ),
+        () => parseAdhanCatalog(_catalog([..._bundled, voice])),
         throwsFormatException,
       );
     });
 
-    test('refuses a bad checksum, a repeated id, no default, a new schema', () {
-      final bad = _voice('x')..['sha256'] = 'abc';
-      expect(
-        () => parseAdhanCatalog(
-          _catalog([_voice('default', builtIn: true), bad]),
-        ),
-        throwsFormatException,
-      );
-      expect(
-        () => parseAdhanCatalog(
-          _catalog([_voice('default', builtIn: true), _voice('default')]),
-        ),
-        throwsFormatException,
-      );
-      expect(
-        () => parseAdhanCatalog(_catalog([_voice('x')])),
-        throwsFormatException,
-      );
-      expect(
-        () => parseAdhanCatalog(
-          _catalog([_voice('default', builtIn: true)], schema: 2),
-        ),
-        throwsFormatException,
-      );
-    });
+    test(
+      'refuses a bad checksum, a repeated id, no default, an old schema',
+      () {
+        final bad = _voice('x')..['sha256'] = 'abc';
+        expect(
+          () => parseAdhanCatalog(_catalog([..._bundled, bad])),
+          throwsFormatException,
+        );
+        expect(
+          () => parseAdhanCatalog(_catalog([..._bundled, _voice('default')])),
+          throwsFormatException,
+        );
+        expect(
+          () => parseAdhanCatalog(_catalog([_voice('x')])),
+          throwsFormatException,
+        );
+        expect(
+          () => parseAdhanCatalog(_catalog(_bundled, schema: 1)),
+          throwsFormatException,
+        );
+        // No bundled Fajr adhan, or one that is not for Fajr.
+        expect(
+          () => parseAdhanCatalog(_catalog([_voice('default', builtIn: true)])),
+          throwsFormatException,
+        );
+        expect(
+          () => parseAdhanCatalog(
+            _catalog([
+              _voice('default', builtIn: true),
+              _voice('default_fajr', builtIn: true),
+            ]),
+          ),
+          throwsFormatException,
+        );
+      },
+    );
 
     test('puts the bundled voice first whatever the order', () {
-      final voices = parseAdhanCatalog(
-        _catalog([_voice('x'), _voice('default', builtIn: true)]),
-      );
-      expect(voices.map((voice) => voice.id), ['default', 'x']);
+      final voices = parseAdhanCatalog(_catalog([_voice('x'), ..._bundled]));
+      expect(voices.map((voice) => voice.id), ['default', 'default_fajr', 'x']);
     });
 
     test('names fall back to Arabic', () {
-      final voice = parseAdhanCatalog(
-        _catalog([_voice('default', builtIn: true)]),
-      ).single;
+      final voice = parseAdhanCatalog(_catalog(_bundled)).first;
       expect(voice.title('en'), 'Voice');
       expect(voice.title('fr'), 'صوت');
       expect(voice.place('fr'), 'مكان');

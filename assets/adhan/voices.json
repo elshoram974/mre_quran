@@ -1,64 +1,157 @@
 {
-  "schema": 1,
+  "schema": 2,
   "voices": [
     {
       "id": "default",
-      "builtIn": true,
-      "title": {"ar": "الأذان الافتراضي", "en": "Default adhan"},
-      "place": {"ar": "مسجد (غير محدد)", "en": "A mosque (not specified)"},
-      "bytes": 1229032,
-      "sha256": "35fe06b08fe80505c550c33fed8a783fa9901ddc81ac884958b4be048f5b2a79",
-      "source": "https://commons.wikimedia.org/wiki/File:Beautiful_adhan.ogg",
-      "license": {"name": "CC0 1.0", "url": "https://creativecommons.org/publicdomain/zero/1.0/"},
-      "credit": "Adam-synagda"
+      "kind": "regular",
+      "title": {
+        "ar": "مشاري راشد العفاسي",
+        "en": "Mishary Rashid Alafasy"
+      },
+      "place": {
+        "ar": "تسجيل استوديو",
+        "en": "Studio recording"
+      },
+      "bytes": 1895196,
+      "sha256": "ab1ffab2f99432931936ce05320feb308e53fc15329fe7a95f69b7d4bff40f88",
+      "source": "https://archive.org/details/VeryBeautifulAdhaanByMisharyAlAfasy",
+      "license": {
+        "name": "Permission pending",
+        "url": "https://archive.org/details/VeryBeautifulAdhaanByMisharyAlAfasy"
+      },
+      "credit": "Mishary Rashid Alafasy (recitation)",
+      "builtIn": true
     },
     {
-      "id": "makkah",
-      "title": {"ar": "أذان المسجد الحرام", "en": "Adhan at the Grand Mosque, Makkah"},
-      "place": {"ar": "مكة المكرمة", "en": "Makkah"},
-      "bytes": 9359941,
-      "sha256": "f4acc1bcc6e7919fce60b21162a3c794952c562a6df7b6aa7971f80d191eb5f0",
-      "url": "https://upload.wikimedia.org/wikipedia/commons/a/a7/Adhan%2C_Great_Mosque_of_Mecca_-_Jan_21%2C_2013.webm",
-      "extension": "webm",
-      "source": "https://commons.wikimedia.org/wiki/File:Adhan,_Great_Mosque_of_Mecca_-_Jan_21,_2013.webm",
-      "license": {"name": "CC BY 3.0", "url": "https://creativecommons.org/licenses/by/3.0/"},
-      "credit": "Seyfula Islam"
+      "id": "default_fajr",
+      "kind": "fajr",
+      "title": {
+        "ar": "مشاري راشد العفاسي (الفجر)",
+        "en": "Mishary Rashid Alafasy (Fajr)"
+      },
+      "place": {
+        "ar": "مقام الحجاز",
+        "en": "Maqam Hijaz"
+      },
+      "bytes": 1818143,
+      "sha256": "12dc0334fc4d557db1a0f52592fdd0bec9ee4750349de2517a4dd9f3350ffea2",
+      "source": "https://archive.org/details/adhan-call-to-prayer-mishary-rashid-alafasy-fajr-maqam-hijaz-hd-320-kbps-1",
+      "license": {
+        "name": "Permission pending",
+        "url": "https://archive.org/details/adhan-call-to-prayer-mishary-rashid-alafasy-fajr-maqam-hijaz-hd-320-kbps-1"
+      },
+      "credit": "Mishary Rashid Alafasy (recitation)",
+      "builtIn": true
     },
     {
-      "id": "madinah",
-      "title": {"ar": "أذان المسجد النبوي", "en": "Adhan at the Prophet's Mosque, Madinah"},
-      "place": {"ar": "المدينة المنورة", "en": "Madinah"},
-      "bytes": 2974689,
-      "sha256": "4d0fabe0e0ef52186646a256220f74a972ba698ac269165fed5d52de3202d656",
-      "url": "https://upload.wikimedia.org/wikipedia/commons/7/7c/33937_ejaz215_call-to-prayer-from-the-prophet-s-mo.ogg",
-      "extension": "ogg",
-      "source": "https://commons.wikimedia.org/wiki/File:33937_ejaz215_call-to-prayer-from-the-prophet-s-mo.ogg",
-      "license": {"name": "CC BY 3.0", "url": "https://creativecommons.org/licenses/by/3.0/"},
-      "credit": "ejaz215 (Freesound)"
+      "id": "egypt_harak",
+      "kind": "regular",
+      "title": {
+        "ar": "عبد الناصر حرك",
+        "en": "Abdulnasser Harak"
+      },
+      "place": {
+        "ar": "مصر",
+        "en": "Egypt"
+      },
+      "bytes": 2616292,
+      "sha256": "8183c49cfaed2d34364a28e55d743385469d6c402a0607dbc2e32b5fec14590b",
+      "source": "https://archive.org/details/adhan-from-egypt-abdulnasser-harak",
+      "license": {
+        "name": "Permission pending",
+        "url": "https://archive.org/details/adhan-from-egypt-abdulnasser-harak"
+      },
+      "credit": "Abdulnasser Harak (recitation); uploaded by Summernight",
+      "url": "https://cdn.jsdelivr.net/gh/elshoram974/mushafi-media@v1/adhan/egypt_harak.m4a",
+      "extension": "m4a"
     },
     {
-      "id": "aaqib_azeez",
-      "title": {"ar": "أذان بصوت عاقب عزيز", "en": "Adhan by Aaqib Azeez"},
-      "place": {"ar": "تسجيل قصير", "en": "A short recording"},
-      "bytes": 1448294,
-      "sha256": "0faa59e2028bbb2f60a670b53ec89ffcf628f3c195b43fb41d9bdbc99000c1b3",
-      "url": "https://upload.wikimedia.org/wikipedia/commons/7/7d/The_Adhan_-_Muslim_Call_to_Prayer_-_Aaqib_Azeez.mp3",
-      "extension": "mp3",
-      "source": "https://commons.wikimedia.org/wiki/File:The_Adhan_-_Muslim_Call_to_Prayer_-_Aaqib_Azeez.mp3",
-      "license": {"name": "CC BY-SA 4.0", "url": "https://creativecommons.org/licenses/by-sa/4.0/"},
-      "credit": "Atcovi"
+      "id": "nasser_alqatami",
+      "kind": "regular",
+      "title": {
+        "ar": "ناصر القطامي",
+        "en": "Nasser Al-Qatami"
+      },
+      "place": {
+        "ar": "تسجيل استوديو",
+        "en": "Studio recording"
+      },
+      "bytes": 1697947,
+      "sha256": "600b972bb3c5f53b568b2dfd66d8d4a4c789fb4c8a31f47d9ddc47e68580df97",
+      "source": "https://github.com/abodehq/Athan-MP3/tree/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds",
+      "license": {
+        "name": "Permission pending",
+        "url": "https://github.com/abodehq/Athan-MP3/tree/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds"
+      },
+      "credit": "Nasser Al-Qatami (recitation)",
+      "url": "https://cdn.jsdelivr.net/gh/elshoram974/mushafi-media@v1/adhan/nasser_alqatami.m4a",
+      "extension": "m4a"
     },
     {
-      "id": "azan_andrewler",
-      "title": {"ar": "أذان (تسجيل أندرولر)", "en": "Adhan (Andrewler recording)"},
-      "place": {"ar": "مسجد (غير محدد)", "en": "A mosque (not specified)"},
-      "bytes": 1473809,
-      "sha256": "2163ceafb8a05064a5ea5e1e0a7fac5fff958a21fcf830844d557d496b9b23c3",
-      "url": "https://upload.wikimedia.org/wikipedia/commons/8/86/Azan.ogg",
-      "extension": "ogg",
-      "source": "https://commons.wikimedia.org/wiki/File:Azan.ogg",
-      "license": {"name": "CC BY-SA 4.0", "url": "https://creativecommons.org/licenses/by-sa/4.0/"},
-      "credit": "Andrewler"
+      "id": "makkah_ali_mullah_fajr",
+      "kind": "fajr",
+      "title": {
+        "ar": "علي ملا (فجر الحرم المكي)",
+        "en": "Ali Mullah (Fajr, Makkah)"
+      },
+      "place": {
+        "ar": "المسجد الحرام، ٦ سبتمبر ٢٠١٣",
+        "en": "The Grand Mosque, 6 September 2013"
+      },
+      "bytes": 2936610,
+      "sha256": "644c3b8a1c60c789d5b3eabf21b0200c3eb0ecaddae7930eebd028664817c25d",
+      "source": "https://archive.org/details/MakkahFajrAdhan6913SheikhAliMullah",
+      "license": {
+        "name": "Permission pending",
+        "url": "https://archive.org/details/MakkahFajrAdhan6913SheikhAliMullah"
+      },
+      "credit": "Sheikh Ali Mullah (recitation)",
+      "url": "https://cdn.jsdelivr.net/gh/elshoram974/mushafi-media@v1/adhan/makkah_ali_mullah_fajr.m4a",
+      "extension": "m4a"
+    },
+    {
+      "id": "mansoor_zahrani_fajr",
+      "kind": "fajr",
+      "title": {
+        "ar": "منصور الزهراني (الفجر)",
+        "en": "Mansoor Az-Zahrani (Fajr)"
+      },
+      "place": {
+        "ar": "تسجيل استوديو",
+        "en": "Studio recording"
+      },
+      "bytes": 2334044,
+      "sha256": "8c231212c2496d66624c0fcdda9eda66e6c3c103b80e886e371e7db3bade6506",
+      "source": "https://github.com/abodehq/Athan-MP3/tree/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds",
+      "license": {
+        "name": "Permission pending",
+        "url": "https://github.com/abodehq/Athan-MP3/tree/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds"
+      },
+      "credit": "Mansoor Az-Zahrani (recitation)",
+      "url": "https://cdn.jsdelivr.net/gh/elshoram974/mushafi-media@v1/adhan/mansoor_zahrani_fajr.m4a",
+      "extension": "m4a"
+    },
+    {
+      "id": "malek_chebae_fajr",
+      "kind": "fajr",
+      "title": {
+        "ar": "مالك شيباني (الفجر)",
+        "en": "Malek Chebae (Fajr)"
+      },
+      "place": {
+        "ar": "تسجيل استوديو",
+        "en": "Studio recording"
+      },
+      "bytes": 3047630,
+      "sha256": "8df72cb6916f56f78a89a6a6f5129f977017185fffdaa283590422066d7ca603",
+      "source": "https://github.com/abodehq/Athan-MP3/tree/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds",
+      "license": {
+        "name": "Permission pending",
+        "url": "https://github.com/abodehq/Athan-MP3/tree/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds"
+      },
+      "credit": "Malek Chebae (recitation)",
+      "url": "https://cdn.jsdelivr.net/gh/elshoram974/mushafi-media@v1/adhan/malek_chebae_fajr.m4a",
+      "extension": "m4a"
     }
   ]
 }

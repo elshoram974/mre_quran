@@ -49,6 +49,35 @@ const AdhanVoice kMakkahVoice = AdhanVoice(
   credit: 'Seyfula Islam',
 );
 
+/// The bundled Fajr adhan.
+const AdhanVoice kDefaultFajrVoice = AdhanVoice(
+  id: AdhanVoice.defaultFajrId,
+  titles: {'ar': 'أذان الفجر', 'en': 'Fajr adhan'},
+  places: {'ar': 'مسجد', 'en': 'A mosque'},
+  bytes: 1800000,
+  sha256: '12dc0334fc4d557db1a0f52592fdd0bec9ee4750349de2517a4dd9f3350ffea2',
+  sourceUrl: 'https://example.test/default_fajr',
+  license: AdhanLicense(name: 'CC0 1.0', url: 'https://example.test/cc0'),
+  credit: 'Someone',
+  builtIn: true,
+  kind: AdhanKind.fajr,
+);
+
+/// A Fajr adhan that is downloaded.
+const AdhanVoice kFajrVoice = AdhanVoice(
+  id: 'fajr_voice',
+  titles: {'ar': 'أذان فجر للتنزيل', 'en': 'A Fajr adhan to download'},
+  places: {'ar': 'مكة المكرمة', 'en': 'Makkah'},
+  bytes: 2000000,
+  sha256: kVoiceSha256,
+  url: 'https://example.test/fajr_voice.m4a',
+  extension: 'm4a',
+  sourceUrl: 'https://example.test/fajr_voice',
+  license: AdhanLicense(name: 'CC BY 3.0', url: 'https://example.test/by'),
+  credit: 'Someone',
+  kind: AdhanKind.fajr,
+);
+
 /// The bytes a fake download delivers, and their SHA-256.
 const List<int> kVoiceBytes = [1, 2, 3, 4, 5, 6, 7, 8];
 const String kVoiceSha256 =
@@ -57,7 +86,13 @@ const String kVoiceSha256 =
 /// A fixed catalogue.
 class FakeAdhanCatalog implements AdhanCatalogSource {
   FakeAdhanCatalog([
-    this.voices = const [kDefaultVoice, kMadinahVoice, kMakkahVoice],
+    this.voices = const [
+      kDefaultVoice,
+      kDefaultFajrVoice,
+      kMadinahVoice,
+      kMakkahVoice,
+      kFajrVoice,
+    ],
   ]);
 
   final List<AdhanVoice> voices;

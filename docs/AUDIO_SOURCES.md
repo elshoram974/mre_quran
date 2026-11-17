@@ -1,56 +1,75 @@
-# Audio sources: adhan voices
+# Audio sources: the adhan
 
-The app has no recording of its own. Each voice is a file from Wikimedia Commons. One is bundled as the default
-(CC0). The rest are streamed for a preview **only when the person taps Play** and kept on the phone **only when
-they tap Download**; each kept file is checked against its SHA-256 before it is saved. A preview is not checked (it is
-never saved), so it can differ from the catalogue if Commons replaces the file; the download then fails the check.
+What plays at prayer time, in order (Android, `AdhanAudio.steps`):
 
-The catalogue is `assets/adhan/voices.json` (schema 1). Adding or removing a voice never needs a code change. A test
-fails when a voice has no licence, credit, source page, https URL or 64-character SHA-256.
+1. **The announcement** of the prayer: "حان الآن موعد أذان الظهر" (`res/raw/announce_<prayer>.m4a`,
+   `announce_jumuah` on Fridays). **No recording yet** (see the licence list below); until one is added
+   the step is skipped, and nothing else changes.
+2. **The adhan**: the chosen voice, and at Fajr the chosen *Fajr* voice, which says "الصلاة خير من النوم".
+3. **The dua after the adhan**, "اللهم رب هذه الدعوة التامة…" (Bukhari 614), `res/raw/dua_after_adhan.m4a`.
 
-## What the licences ask for
+Each part can be turned off on the Adhan page. iOS cannot play an adhan by itself; there the alert is a
+notification (an iOS notification sound is 30 seconds at most).
 
-| Licence | What the app does about it |
-|---|---|
-| CC0 1.0 | Nothing is required. Credit is shown anyway. |
-| CC BY 3.0 | The credit and the licence link are shown in the voice's information sheet. The file is not changed. |
-| CC BY-SA 4.0 | Same. The file is passed on **unmodified**, so the share-alike condition does not reach the app. Do not trim or re-encode these files. |
+## How the files are made
+
+`tool/audio/adhan_sources.json` lists every recording: where it is downloaded from, its SHA-256, and
+which part of it is used. `tool/audio/build_adhan_audio.py` downloads each once, refuses one whose SHA-256
+differs, and then cuts and cleans every one the same way: rumble below 80 Hz removed, silence at both ends
+removed (the adhan starts at once), loudness set to -16 LUFS with a true peak of -1.5 dBTP (measured, then
+applied linearly), a short fade at each end, mono AAC without the source's tags. It writes the bundled
+files to `android/app/src/main/res/raw` and the others to `app_assets/media`, then
+`assets/adhan/voices.json` with each file's size and SHA-256. Never edit those outputs by hand.
+
+**Checked by listening by machine.** Each recording was transcribed with Whisper (`ggml-small`, Arabic) to
+confirm what it says: every Fajr recording says "الصلاة خير من النوم" and no other one does, and the dua
+clip is the dua. (This caught one: Mansoor Az-Zahrani's file is named as a plain adhan but is a Fajr adhan.)
+**Listen to each once before a release.**
+
+## Where the downloads are served from
+
+The voices that are not bundled are downloaded on demand from the media repository, tagged and served by
+jsDelivr: `https://cdn.jsdelivr.net/gh/elshoram974/mushafi-media@v1/adhan/<id>.m4a`. Publish it as
+`app_assets/README.md` says. Until the tag exists, those downloads fail and the bundled voices still work.
 
 ## Voices
 
-| id | Source page | File SHA-256 | Size | Licence | Credit |
-|---|---|---|---|---|---|
-| `default` (bundled as `android/app/src/main/res/raw/adhan_default.ogg`) | [Beautiful adhan.ogg](https://commons.wikimedia.org/wiki/File:Beautiful_adhan.ogg) | `35fe06b0…f5b2a79` | 1,229,032 | CC0 1.0 | Adam-synagda |
-| `makkah` | [Adhan, Great Mosque of Mecca, 21 Jan 2013](https://commons.wikimedia.org/wiki/File:Adhan,_Great_Mosque_of_Mecca_-_Jan_21,_2013.webm) | `f4acc1bc…91eb5f0` | 9,359,941 | CC BY 3.0 | Seyfula Islam |
-| `madinah` | [Call to prayer from the Prophet's Mosque](https://commons.wikimedia.org/wiki/File:33937_ejaz215_call-to-prayer-from-the-prophet-s-mo.ogg) | `4d0fabe0…202d656` | 2,974,689 | CC BY 3.0 | ejaz215 (Freesound) |
-| `aaqib_azeez` | [The Adhan, Aaqib Azeez](https://commons.wikimedia.org/wiki/File:The_Adhan_-_Muslim_Call_to_Prayer_-_Aaqib_Azeez.mp3) | `0faa59e2…99000c1b3` | 1,448,294 | CC BY-SA 4.0 | Atcovi |
-| `azan_andrewler` | [Azan.ogg](https://commons.wikimedia.org/wiki/File:Azan.ogg) | `2163ceaf…b9b23c3` | 1,473,809 | CC BY-SA 4.0 | Andrewler |
+| id | Kind | Source | File SHA-256 | Bytes |
+|---|---|---|---|---|
+| `default` (bundled, `adhan_default.m4a`) | Adhan | Mishary Rashid Alafasy, [archive.org](https://archive.org/details/VeryBeautifulAdhaanByMisharyAlAfasy), up to 3:51 | `ab1ffab2…ff40f88` | 1,895,196 |
+| `default_fajr` (bundled, `adhan_fajr.m4a`) | Fajr | Mishary Rashid Alafasy, Maqam Hijaz, [archive.org](https://archive.org/details/adhan-call-to-prayer-mishary-rashid-alafasy-fajr-maqam-hijaz-hd-320-kbps-1) | `12dc0334…50ffea2` | 1,818,143 |
+| dua (bundled, `dua_after_adhan.m4a`) | Dua | The same Mishary recording as `default`, from 3:55 | `9fada8bd…f89647f4` | 143,511 |
+| `egypt_harak` | Adhan | Abdulnasser Harak, Egypt, [archive.org](https://archive.org/details/adhan-from-egypt-abdulnasser-harak) | `8183c49c…c14590b` | 2,616,292 |
+| `nasser_alqatami` | Adhan | Nasser Al-Qatami, [abodehq/Athan-MP3](https://github.com/abodehq/Athan-MP3/tree/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds) | `600b972b…580df97` | 1,697,947 |
+| `makkah_ali_mullah_fajr` | Fajr | Ali Mullah, the Grand Mosque, 6 Sep 2013, [archive.org](https://archive.org/details/MakkahFajrAdhan6913SheikhAliMullah) | `644c3b8a…817c25d` | 2,936,610 |
+| `mansoor_zahrani_fajr` | Fajr | Mansoor Az-Zahrani, [abodehq/Athan-MP3](https://github.com/abodehq/Athan-MP3/tree/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds) | `8c231212…ade6506` | 2,334,044 |
+| `malek_chebae_fajr` | Fajr | Malek Chebae, [abodehq/Athan-MP3](https://github.com/abodehq/Athan-MP3/tree/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds) | `8df72cb6…d7ca603` | 3,047,630 |
 
-Checked on 2026-10-09: the SHA-1 of each file I downloaded equals the SHA-1 Commons reports for it.
-The full SHA-256 of every file is in `assets/adhan/voices.json`.
+The source files' own SHA-256 are in `tool/audio/adhan_sources.json`.
 
-## Limits of this evidence (read before shipping)
+Looked at and left out: Mohammad Refaat and Abed Albase6 in Athan-MP3 (16 kb/s, too poor to use), the Wikimedia
+Commons voices used before (uneven loudness and long silences; the old default was at -8.8 LUFS, close to
+clipping), and "Adhan-Fajr-Afasy" on archive.org (19 seconds of silence before it starts).
 
-- **The licence is the uploader's statement on Commons.** Commons does not prove that the person who uploaded a
-  recording of a live adhan held every right in it. For the two mosque recordings (`makkah`, `madinah`) the licence
-  was given by the person who filmed or recorded it; nothing here shows the mosque authority, a broadcaster or the
-  muezzin agreed. If that matters to the store listing or to the community, ask first (template in
-  `docs/PERMISSION_REQUESTS.md`, Request 3).
-- `makkah` is the audio of a video file (WebM), 9 MB. The app plays only the sound.
-- The muezzin is **not named** for any of these. The app does not claim a name it cannot show evidence for.
-- Voices of well-known muezzins (for example the Haramain muezzins or famous reciters) were looked for and **not
-  added**: none had a free licence. They can be added to the catalogue the day written permission exists, with the
-  same fields. Meanwhile a person can pick any audio file from their own phone as the adhan (see the Adhan page).
-- Considered and left out: "Call to prayer by Sabah Fakhry" (marked public domain on Commons; a 1985 recording, so
-  that claim is doubtful), "Oración Al-Azzan" (30 s, public-domain claim by the uploader), "Llamada a oración Mezquita
-  Hassan II" (31 MB WAV with street noise), and Cambridge's Cairo recordings (CC BY-NC-ND: no redistribution of
-  changes, non-commercial only).
+## Licences to obtain before a release (the owner is handling them)
 
-## Wikimedia's rules for downloads
+**None of these recordings has a licence yet.** Their catalogue entries say "Permission pending" and link the
+page they came from. Uploaders on archive.org and GitHub gave no licence (except `egypt_harak`, marked Public
+Domain Mark 1.0 by its uploader, which does not prove the muezzin agreed).
 
-Files are fetched from `upload.wikimedia.org` with a descriptive `User-Agent`, only after a tap, one at a time.
-Previews stream the same URL. If
-many people download, host the files yourself (same bytes, same SHA-256) and change the `url` fields.
+| What | Whose permission | Why |
+|---|---|---|
+| Mishary Alafasy: adhan, Fajr adhan, dua after the adhan (all three bundled) | Mishary Rashid Alafasy or his office (his recordings are published commercially) | Bundled in the app: the most important to settle first |
+| Nasser Al-Qatami: adhan | Nasser Al-Qatami or his office | Downloadable |
+| Mansoor Az-Zahrani: Fajr adhan | Mansoor Az-Zahrani or his office | Downloadable |
+| Malek Chebae: Fajr adhan | Malek Chebae | Downloadable |
+| Ali Mullah, live from the Grand Mosque | The General Authority for the Affairs of the Two Holy Mosques (it broadcasts the adhan), and the person who recorded it | Downloadable |
+| Abdulnasser Harak | Abdulnasser Harak; confirm the Public Domain Mark | Downloadable |
+| **Announcements** "حان الآن موعد أذان …" (fajr, dhuhr, asr, maghrib, isha, jumuah) | Whoever records them: best recorded for the app, by a voice artist who signs the rights over | Not found anywhere usable. Add as `res/raw/announce_<name>.m4a` through the build tool |
+| **Sheikh Al-Shaarawy's dua after the adhan** | The rights holder of the recording (the broadcaster that produced it, or the Sheikh's heirs) | Not downloaded: it is only on video sites, whose terms forbid it. When permission and the file are in hand, add it as a second `dua` recording in the sources file |
+
+When a licence arrives: put its name and link in the recording's entry in `tool/audio/adhan_sources.json`
+(the build tool then writes it into the catalogue), and record the permission in `docs/PERMISSION_REQUESTS.md`.
 
 ## Other media made by the app's own code
 
