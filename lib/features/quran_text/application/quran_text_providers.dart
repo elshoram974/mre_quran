@@ -23,6 +23,8 @@ final quranTextDataProvider = FutureProvider<QuranTextData>((ref) async {
 final quranTextProvider = FutureProvider<QuranText>((ref) async {
   final metadata = await ref.watch(quranMetadataProvider.future);
   final data = await ref.watch(quranTextDataProvider.future);
+  // ignore: avoid_print
+print('[T] text ${DateTime.now().millisecondsSinceEpoch}');
   return QuranText(
     metadata: metadata,
     uthmani: data.uthmani,

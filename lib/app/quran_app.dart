@@ -72,9 +72,15 @@ class QuranApp extends ConsumerWidget {
         darkTheme: AppTheme.of(settings.theme.nightPaper, settings.accent),
         themeMode: settings.materialThemeMode,
         routerConfig: ref.watch(routerProvider),
-        builder: (context, child) => AppShortcutsScope(
-          child: AdhkarWidgetSyncScope(
-            child: PrayerWidgetSyncScope(child: child!),
+        // StartupSplash lets the launch screen go once the first screen is
+        // ready; without it the launch screen waits for its time limit.
+        builder: (context, child) => _SystemBars(
+          child: StartupSplash(
+            child: AppShortcutsScope(
+              child: AdhkarWidgetSyncScope(
+                child: PrayerWidgetSyncScope(child: child!),
+              ),
+            ),
           ),
         ),
       ),

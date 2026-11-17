@@ -37,7 +37,11 @@ class ReaderPainted extends Notifier<bool> {
   /// Called by a page view once it shows something other than a
   /// placeholder.
   void painted() {
-    if (!state) state = true;
+    if (!state) {
+      // ignore: avoid_print
+print('[T] painted ${DateTime.now().millisecondsSinceEpoch}');
+      state = true;
+    }
   }
 }
 

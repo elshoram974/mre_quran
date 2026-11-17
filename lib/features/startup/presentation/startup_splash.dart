@@ -103,6 +103,8 @@ class _StartupSplashState extends ConsumerState<StartupSplash>
     final ready = ref.watch(startupReadyProvider);
     if (!_fading && ((ready && _leastPassed) || _timedOut)) {
       _fading = true;
+      // ignore: avoid_print
+print('[T] release ${DateTime.now().millisecondsSinceEpoch}');
       unawaited(ref.read(launchScreenProvider).release());
     }
     if (!_overlay) return widget.child;
