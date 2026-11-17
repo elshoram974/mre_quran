@@ -161,7 +161,13 @@ class _BookFlipState extends State<BookFlip>
     final render = _keys[page]?.currentContext?.findRenderObject();
     if (render is! RenderRepaintBoundary || !render.hasSize) return null;
     if (render.debugNeedsPaint) return null;
-    return render.toImageSync(pixelRatio: _pixelRatio);
+    try {
+      return render.toImageSync(pixelRatio: _pixelRatio);
+    } on Object {
+      // The page has only just come on stage and has not been painted yet.
+      // The turn asks again on its next frame.
+      return null;
+    }
   }
 
   /// Whether going from [step] to [step] + 1 turns a leaf. In single mode
@@ -181,9 +187,19 @@ class _BookFlipState extends State<BookFlip>
       _geometry.spread ? _geometry.leftPage(step) : _geometry.rightPage(step),
     );
     if (front == null) return;
+    // Its back is the page that follows it. Past the last page there is
+    // none, and the back is blank paper.
+    final following = _geometry.rightPage(step + 1);
+    final back = _snapshot(following);
+    if (following != null && back == null) {
+      // That page is built but not painted yet; it is being painted for
+      // this turn now. Take both faces together on the next frame, never a
+      // sheet with a blank back.
+      front.dispose();
+      return;
+    }
     _front = front;
-    // Its back is the page that follows it.
-    _back = _snapshot(_geometry.rightPage(step + 1));
+    _back = back;
     _textureStep = step;
   }
 
@@ -304,6 +320,18 @@ class _BookFlipState extends State<BookFlip>
         final rest = _position.round().clamp(0, lastStep);
         // Single mode, within one spread: the two facing pages slide.
         final sliding = !spread && f > 0.0005 && !_turnsLeaf(k);
+        // A leaf is about to turn and its sheet has no snapshots yet: the
+        // pages that may be its two faces, whichever way the hand goes, must
+        // be painted so a snapshot can be taken of them.
+        final snapshotting =
+            (_dragging || _settle.isAnimating) && _front == null && !sliding;
+        final faces = <int>{
+          if (snapshotting)
+            for (final s in [rest - 1, rest]) ...[
+              ?(spread ? _geometry.leftPage(s) : _geometry.rightPage(s)),
+              ?_geometry.rightPage(s + 1),
+            ],
+        };
 
         // Pages that must stay built so a snapshot is always ready: the
         // current step and the steps on either side. Single mode also keeps
@@ -373,7 +401,14 @@ class _BookFlipState extends State<BookFlip>
           );
           final content = IgnorePointer(
             ignoring: hidden || isFacing,
-            child: child,
+            // A page under the visible one is kept built, so it is ready,
+            // but painted only while a turn may need a snapshot of it. At
+            // rest and once the snapshots are taken it costs nothing to
+            // draw.
+            child: Offstage(
+              offstage: hidden && !faces.contains(pageNumber),
+              child: child,
+            ),
           );
           if (isFacing) {
             // Beyond the spine: one page width past the reading start.

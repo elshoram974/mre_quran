@@ -137,10 +137,11 @@ void main() {
   ) async {
     await _pump(tester, savedPage: 5, realistic: true);
     // Inside each page's own subtree, so the turning sheet carries them.
+    // The neighbours are built but not painted until a turn needs them.
     for (final number in [4, 5, 6]) {
       final labels = find.descendant(
-        of: find.byKey(ValueKey<int>(number)),
-        matching: find.byType(ReaderPageLabels),
+        of: find.byKey(ValueKey<int>(number), skipOffstage: false),
+        matching: find.byType(ReaderPageLabels, skipOffstage: false),
       );
       expect(labels, findsOneWidget, reason: 'page $number');
     }

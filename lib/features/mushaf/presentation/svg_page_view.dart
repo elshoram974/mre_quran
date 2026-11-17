@@ -5,6 +5,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:vector_graphics/vector_graphics_compat.dart'
+    show RenderingStrategy;
 
 import '../../../core/haptics/haptics.dart';
 import '../../../core/l10n/l10n.dart';
@@ -408,6 +410,11 @@ class _SvgArtwork extends StatelessWidget {
         _CompiledLayer(compiled),
         fit: BoxFit.fill,
         colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+        // A page is some 1,400 outlines. Drawn as a picture, they are
+        // tessellated again on every frame of a turn, inside an offscreen
+        // layer for the colour. Drawn once into an image at the screen's
+        // own resolution, a frame only blits it, tinted as it goes.
+        renderingStrategy: RenderingStrategy.raster,
         excludeFromSemantics: true,
       ),
     );

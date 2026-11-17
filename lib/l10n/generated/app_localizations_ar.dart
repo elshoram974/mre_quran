@@ -1137,7 +1137,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get packNotifyPausedBody => 'اضغط «متابعة» لإكماله.';
 
   @override
-  String get packInstalling => 'جارٍ تجهيز الصفحات والتحقق منها…';
+  String packInstallingProgress(String percent) {
+    return 'جارٍ تجهيز الصفحات والتحقق منها · $percent٪';
+  }
 
   @override
   String get nextSurah => 'السورة التالية';

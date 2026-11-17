@@ -29,7 +29,7 @@
     <string name="adhkar_widget_progress">%1$d من %2$d</string>
     <string name="widget_preview_adhkar_title">أذكار الصباح</string>
     <string name="widget_preview_adhkar_count">٣ من ١٢</string>
-    <string name="tasbih_widget_name">مسبحة</string>
+    <string name="tasbih_widget_name">المسبحة</string>
     <string name="tasbih_widget_description">سبّح وعُدّ تسبيحك من الشاشة الرئيسية.</string>
     <string name="tasbih_widget_reset">تصفير</string>
     <string name="tasbih_widget_count_description">أضف واحدة إلى عدّاد المسبحة</string>

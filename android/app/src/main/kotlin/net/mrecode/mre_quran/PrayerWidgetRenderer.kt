@@ -117,20 +117,23 @@ internal object PrayerWidgetRenderer {
             rowIds.forEach { views.setViewVisibility(it, View.GONE) }
         } else {
             val next = model.nextAfter(now)
+            // After the day's last prayer the coming one is tomorrow's Fajr.
+            // It takes today's Fajr row, with tomorrow's time, so the widget
+            // always points at a prayer.
+            val tomorrow = next != null && day.rows.none { it.isPrayer && it.at > now }
             views.setTextViewText(R.id.schedule_date, day.dateLabel)
             views.setTextViewText(R.id.schedule_hijri, day.hijriLabel)
             rowIds.forEachIndexed { index, rowId ->
                 val row = day.rows.getOrNull(index)
                 views.setViewVisibility(rowId, if (row == null) View.GONE else View.VISIBLE)
                 if (row == null) return@forEachIndexed
+                // The coming prayer is lit, under a line saying how long is left.
+                val coming = next != null && row.id == next.id && (tomorrow || row.at == next.at)
                 views.setTextViewText(nameIds[index], row.name)
-                views.setTextViewText(timeIds[index], row.time)
-                // The coming prayer is lit, under a line saying how long is
-                // left; once today's are done, none is.
-                val coming = next != null && row.id == next.id && row.at == next.at
+                views.setTextViewText(timeIds[index], if (coming) next!!.time else row.time)
                 views.setInt(rowId, "setBackgroundResource", if (coming) R.drawable.widget_row_next else 0)
                 views.setViewVisibility(leftIds[index], if (coming) View.VISIBLE else View.GONE)
-                if (coming) views.setTextViewText(leftIds[index], remaining(model, row.at - now))
+                if (coming) views.setTextViewText(leftIds[index], remaining(model, next!!.at - now))
             }
         }
         direction(views, R.id.schedule_root, model)

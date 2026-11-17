@@ -122,8 +122,14 @@ class MushafPack extends AsyncNotifier<PackProgress> {
   @visibleForTesting
   static Duration settleDelay = const Duration(milliseconds: 1200);
 
+  /// How often the pages on the device are counted while archives are
+  /// being unpacked.
+  @visibleForTesting
+  static Duration installPoll = const Duration(seconds: 1);
+
   Timer? _timer;
   bool _dirty = false;
+  bool _installing = false;
 
   /// How far each archive of the running download has come, by its path.
   final Map<String, double> _transfers = {};
@@ -204,12 +210,33 @@ class MushafPack extends AsyncNotifier<PackProgress> {
 
   /// Unpacks any archive that has arrived, then counts again.
   Future<void> _install() async {
+    // One unpacking at a time; a second call would only wait on the first.
+    if (_installing) return;
     if (await _store.hasArchives()) {
+      _installing = true;
       final current = state.value;
       if (current != null) _set(current.copyWith(installing: true));
-      await _store.install();
+      // Unpacking and checking 1,208 files takes a while. Counting the pages
+      // as they land shows it moving, so it never looks stuck.
+      final watch = Timer.periodic(installPoll, (_) => _countInstalled());
+      try {
+        await _store.install();
+      } on Object catch (error) {
+        // Whatever was unpacked stays; the rest is downloaded again.
+        AppLogger.debug('Pack install failed: ${error.runtimeType}');
+      } finally {
+        watch.cancel();
+        _installing = false;
+      }
     }
     _set(await _read());
+  }
+
+  Future<void> _countInstalled() async {
+    final done = await _store.filesOnDevice();
+    final current = state.value;
+    if (current == null || !current.installing) return;
+    _set(current.copyWith(done: done));
   }
 
   /// Reads everything again and collects what finished while the app was

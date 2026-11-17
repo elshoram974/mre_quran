@@ -2,6 +2,7 @@
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:description="@string/adhkar_widget_description"
     android:initialLayout="@layout/adhkar_widget"
+    android:previewImage="@drawable/adhkar_widget_preview"
     android:previewLayout="@layout/adhkar_widget"
     android:minWidth="110dp"
     android:minHeight="40dp"

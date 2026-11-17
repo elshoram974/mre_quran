@@ -139,6 +139,29 @@ void main() {
     expect(state.installing, isFalse);
   });
 
+  test(
+    'while archives are unpacked, the pages ready so far are counted',
+    () async {
+      MushafPack.installPoll = const Duration(milliseconds: 5);
+      addTearDown(() => MushafPack.installPoll = const Duration(seconds: 1));
+      arrived('svg');
+      arrived('json');
+      final seen = <PackProgress>[];
+      container.listen(mushafPackProvider(MushafEdition.hafs), (_, next) {
+        if (next.value case final value?) seen.add(value);
+      }, fireImmediately: true);
+      await progress();
+      await settled();
+      // It said it was unpacking, and ended with every page and no spinner.
+      expect(seen.any((state) => state.installing), isTrue);
+      expect(seen.last.installing, isFalse);
+      expect(seen.last.complete, isTrue);
+      // The count never went backwards while unpacking.
+      final counts = [for (final state in seen) state.done];
+      expect(counts, [...counts]..sort());
+    },
+  );
+
   test('archives that arrived while the app was closed are installed when '
       'it opens', () async {
     arrived('svg');

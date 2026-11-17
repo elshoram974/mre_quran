@@ -54,5 +54,7 @@ many people download, host the files yourself (same bytes, same SHA-256) and cha
 
 ## Other media made by the app's own code
 
-- The home-screen widgets are previewed in the widget picker from their own layouts, with sample
-  text from the app's string files. No preview image is shipped.
+- The home-screen widgets' preview images (`android/app/src/main/res/drawable-nodpi/*_preview.png`)
+  are drawn by `tool/build_widget_previews.py` from the widgets' own colours and sample texts. They
+  contain no third-party artwork; the letters are set in Arial on the machine that runs the tool.
+  Launchers that support it preview the widgets from their layouts instead.

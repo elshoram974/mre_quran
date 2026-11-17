@@ -1140,7 +1140,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get packNotifyPausedBody => 'Tap Resume to carry on.';
 
   @override
-  String get packInstalling => 'Checking and preparing the pages…';
+  String packInstallingProgress(String percent) {
+    return 'Checking and preparing the pages · $percent%';
+  }
 
   @override
   String get nextSurah => 'Next surah';

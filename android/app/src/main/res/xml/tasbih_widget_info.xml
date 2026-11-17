@@ -4,6 +4,7 @@
     android:initialLayout="@layout/tasbih_widget"
     android:minWidth="110dp"
     android:minHeight="110dp"
+    android:previewImage="@drawable/tasbih_widget_preview"
     android:previewLayout="@layout/tasbih_widget"
     android:resizeMode="horizontal|vertical"
     android:targetCellWidth="2"

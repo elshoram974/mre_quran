@@ -186,7 +186,9 @@ class PackTile extends ConsumerWidget {
     final percent = digits((shown * 100).floor());
     final subtitle = switch (progress) {
       null => failed ? l10n.packStateError : l10n.packChecking,
-      PackProgress(installing: true) => l10n.packInstalling,
+      PackProgress(installing: true) => l10n.packInstallingProgress(
+        digits((progress.fraction * 100).floor()),
+      ),
       PackProgress(active: true) => l10n.packDownloading(percent),
       PackProgress(complete: true) =>
         '${l10n.packReady} · ${l10n.packOnDevice(digits(_mb(progress.bytes)))}',
@@ -281,8 +283,11 @@ class PackTile extends ConsumerWidget {
           if (showBar)
             Padding(
               padding: const EdgeInsetsDirectional.only(top: 10, end: 8),
-              // Unpacking has no known length: the bar runs free.
-              child: LinearProgressIndicator(value: installing ? null : shown),
+              // Unpacking shows how many pages are ready; before the first
+              // one lands, while the archive itself is checked, it runs free.
+              child: LinearProgressIndicator(
+                value: installing && shown <= 0 ? null : shown,
+              ),
             ),
         ],
       ),

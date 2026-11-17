@@ -2054,11 +2054,11 @@ abstract class AppLocalizations {
   /// **'Tap Resume to carry on.'**
   String get packNotifyPausedBody;
 
-  /// No description provided for @packInstalling.
+  /// No description provided for @packInstallingProgress.
   ///
   /// In en, this message translates to:
-  /// **'Checking and preparing the pages…'**
-  String get packInstalling;
+  /// **'Checking and preparing the pages · {percent}%'**
+  String packInstallingProgress(String percent);
 
   /// No description provided for @nextSurah.
   ///

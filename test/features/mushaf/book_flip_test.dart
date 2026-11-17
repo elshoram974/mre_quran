@@ -105,6 +105,9 @@ void main() {
     // Under it lies page 6, the next left-hand page, and beyond the spine
     // the page it will land on, page 3.
     expect(curl(), findsOneWidget);
+    final painter =
+        tester.widget<CustomPaint>(curl()).painter! as PageCurlPainter;
+    expect(painter.back, isNotNull, reason: 'its back is page 5, not blank');
     expect(find.text('page 6'), findsOneWidget);
     expect(find.text('page 3'), findsOneWidget);
     expect(
@@ -313,6 +316,35 @@ void main() {
         findsNothing,
       );
     });
+  });
+
+  testWidgets('pages under the visible one are built but painted only while '
+      'a turn needs them', (tester) async {
+    await _pump(tester, realistic: true, spread: false, page: 4);
+    // At rest: the neighbours exist, ready, and are not drawn.
+    expect(find.text('page 4'), findsOneWidget);
+    expect(find.text('page 5'), findsNothing);
+    expect(find.text('page 5', skipOffstage: false), findsOneWidget);
+    expect(find.text('page 3', skipOffstage: false), findsOneWidget);
+    // A leaf turn begins: the pages that can be the sheet's faces are drawn,
+    // so a snapshot can be taken.
+    final gesture = await tester.startGesture(const Offset(200, 350));
+    await gesture.moveBy(const Offset(30, 0));
+    await tester.pump();
+    expect(find.text('page 5'), findsOneWidget);
+    // Once the sheet has its snapshots, only what shows around it is drawn:
+    // page 6 under the sheet and page 3 beyond the spine.
+    for (var i = 0; i < 10; i++) {
+      await gesture.moveBy(const Offset(20, 0));
+      await tester.pump(const Duration(milliseconds: 8));
+    }
+    expect(find.text('page 5'), findsNothing);
+    expect(find.text('page 6'), findsOneWidget);
+    // The turn lands on page 5, and its neighbours go quiet again.
+    await gesture.up();
+    await tester.pumpAndSettle();
+    expect(find.text('page 5'), findsOneWidget);
+    expect(find.text('page 6'), findsNothing);
   });
 
   for (final realistic in [true, false]) {
