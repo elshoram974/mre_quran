@@ -433,16 +433,22 @@ class _SvgArtwork extends StatelessWidget {
     required double top,
   }) {
     final colors = QuranColors.of(context);
-    final height = (title.bottom - title.top) * scale;
-    final middle = ((title.top + title.bottom) / 2 - top) * stretch * scale;
+    final line = (title.bottom - title.top) * scale;
+    // The printed name sits a little below the middle of its line: its
+    // letters rise above it more than they fall below (measured on the
+    // pages: about an eighth of a line).
+    final middle =
+        ((title.top + title.bottom) / 2 - top) * stretch * scale +
+        line * _titleDrop;
+    final height = line * _titleFrameHeight;
     // The same margin on both sides, so the frame sits alike whichever way
     // the app reads.
     const margin = 0.015;
     return PositionedDirectional(
       start: width * scale * margin,
       end: width * scale * margin,
-      top: middle - height * 0.47,
-      height: height * 0.94,
+      top: middle - height / 2,
+      height: height,
       child: SurahBanner(
         surah: metadata.surah(title.surah),
         number: number,
@@ -453,6 +459,11 @@ class _SvgArtwork extends StatelessWidget {
       ),
     );
   }
+
+  /// How far below its line's middle a printed surah name is centred, and
+  /// how tall its frame is, in lines.
+  static const double _titleDrop = 0.12;
+  static const double _titleFrameHeight = 1.04;
 
   /// The page at [scale] screen pixels per page unit, its lines spread for
   /// a page [stretch] times as tall.

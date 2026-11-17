@@ -35,7 +35,7 @@ dependencies:
   intl: ^0.20.3
   liquid_glass_widgets: ^1.9.0
   meta: ^1.19.0
-  mre_fields: ^0.3.3
+  mre_fields: ^0.4.0
   path_provider: ^2.1.6
   sensors_plus: ^7.1.1
   shared_preferences: ^2.5.3

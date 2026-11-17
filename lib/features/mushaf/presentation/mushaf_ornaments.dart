@@ -182,7 +182,7 @@ abstract final class SurahFrameGeometry {
     return Rect.fromCenter(
       center: size.center(Offset.zero),
       width: width,
-      height: h * 0.74,
+      height: h * 0.82,
     );
   }
 
