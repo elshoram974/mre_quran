@@ -131,9 +131,9 @@ void main() {
     // and page.
     expect(
       copied,
-      startsWith('﴿${text.uthmani(const AyahRef(2, 255))} (٢٥٥)﴾'),
+      startsWith('\u200F﴿${text.uthmani(const AyahRef(2, 255))} (٢٥٥)﴾'),
     );
-    expect(copied, endsWith('\n[البقرة: ٢٥٥ · صفحة ٤٢]'));
+    expect(copied, endsWith('\n\u200F[البقرة: ٢٥٥ · صفحة ٤٢]'));
     expect(find.text('تم نسخ الآية'), findsOneWidget);
   });
 

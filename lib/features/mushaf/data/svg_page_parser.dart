@@ -32,8 +32,19 @@ abstract final class SvgPageParser {
     required String json,
     bool ordered = true,
   }) {
-    final layout = SvgPageLayout(viewBox: viewBox(svg), regions: regions(json));
     final parts = split(svg);
+    final declared = viewBox(svg);
+    final ayahs = regions(json);
+    final byRegions = SvgPageLayout(viewBox: declared, regions: ayahs);
+    // Only a cropped page needs its ink measured: its name and basmala lie
+    // outside the ayah regions.
+    final layout = byRegions.content == declared
+        ? byRegions
+        : SvgPageLayout(
+            viewBox: declared,
+            regions: ayahs,
+            ink: SvgLineSplitter.inkBox(parts.ink),
+          );
     final ink = _show(parts.ink, layout.content);
     final marks = _show(parts.marks, layout.content);
     // A cropped opening page is a small ornate block; it is never spread.
@@ -52,8 +63,30 @@ abstract final class SvgPageParser {
       layout: layout,
       inkLines: lines?.ink,
       marksLines: lines?.marks,
-      titles: titles(layout, lines?.lines ?? const []),
+      titles: layout.content == layout.viewBox
+          ? titles(layout, lines?.lines ?? const [])
+          : _openingTitle(layout, ink),
     );
+  }
+
+  /// The surah name of a cropped opening page: the topmost block of its
+  /// ink above its first ayah, which the page sets apart in its own space.
+  static List<SvgSurahTitle> _openingTitle(SvgPageLayout layout, String ink) {
+    final first = layout.regions.where((r) => r.ref.ayah == 1).firstOrNull;
+    if (first == null) return const [];
+    final pitch = pageBoxHeight(layout.viewBox) / SvgPageLayout.printedLines;
+    final box = SvgLineSplitter.topBlock(
+      ink,
+      above: first.bounds.top,
+      gap: pitch * 0.5,
+    );
+    if (box == null) return const [];
+    final width = pageBoxWidth(layout.content);
+    final narrow = box.right - box.left < width * 0.6;
+    if (!narrow || box.bottom - box.top > pitch * 1.2) return const [];
+    return [
+      (surah: first.ref.surah, box: box, line: (box.top + box.bottom) / 2),
+    ];
   }
 
   /// Widest a printed surah name is, and the least and most width of a

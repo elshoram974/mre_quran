@@ -1,4 +1,4 @@
-# MRE Quran
+# Mushafi (مصحفي)
 
 Arabic-first Flutter foundation for a Quran app. Android and iOS runners are included.
 

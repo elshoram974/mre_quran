@@ -1,6 +1,6 @@
 <resources>
     <!-- The app's name: under its icon, in notifications, in the widget picker. -->
-    <string name="app_name">مصحف MRE</string>
+    <string name="app_name">مصحفي</string>
     <!-- Buttons and channel of the download notification (background_downloader). -->
     <string name="bg_downloader_cancel">إلغاء</string>
     <string name="bg_downloader_pause">إيقاف مؤقت</string>

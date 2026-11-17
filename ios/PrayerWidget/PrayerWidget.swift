@@ -55,7 +55,7 @@ private struct Provider: TimelineProvider {
     completion(Timeline(entries: [entry], policy: .after(refresh)))
   }
 }
-private struct Empty: View { var body: some View { Text(Payload.read()?.labels["empty"] ?? "Open MRE Quran to set your location").font(.caption).frame(maxWidth:.infinity,maxHeight:.infinity,alignment:.leading).background(Color(uiColor:.secondarySystemBackground)) } }
+private struct Empty: View { var body: some View { Text(Payload.read()?.labels["empty"] ?? "Open Mushafi to set your location").font(.caption).frame(maxWidth:.infinity,maxHeight:.infinity,alignment:.leading).background(Color(uiColor:.secondarySystemBackground)) } }
 private struct NextView: View {
   let entry: Entry
   var body: some View {
@@ -89,7 +89,7 @@ private struct SuggestedDhikrView: View {
         Text("\(data.done) / \(data.total)").font(.caption2).foregroundStyle(.secondary)
       }.frame(maxWidth:.infinity,maxHeight:.infinity,alignment:.leading).background(Color(uiColor:.secondarySystemBackground)).widgetURL(URL(string:"mrequran://mre-quran/adhkar/\(data.payload.replacingOccurrences(of: "adhkar:", with: ""))"))
     } else {
-      Text("Open MRE Quran to load your adhkar.").font(.caption).frame(maxWidth:.infinity,maxHeight:.infinity,alignment:.leading).background(Color(uiColor:.secondarySystemBackground))
+      Text("Open Mushafi to load your adhkar.").font(.caption).frame(maxWidth:.infinity,maxHeight:.infinity,alignment:.leading).background(Color(uiColor:.secondarySystemBackground))
     }
   }
 }

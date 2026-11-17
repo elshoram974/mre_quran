@@ -10,7 +10,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appTitle => 'MRE Quran';
+  String get appTitle => 'Mushafi';
 
   @override
   String get reader => 'Mushaf';
@@ -530,7 +530,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get prayerWidgetEmpty => 'Open MRE Quran to set your location';
+  String get prayerWidgetEmpty => 'Open Mushafi to set your location';
 
   @override
   String get adhanTitle => 'Adhan';

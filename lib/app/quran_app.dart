@@ -8,6 +8,7 @@ import '../core/haptics/haptics.dart';
 import '../core/l10n/l10n.dart';
 import '../core/theme/app_theme.dart';
 import '../features/adhan/application/adhan_providers.dart';
+import '../features/startup/presentation/startup_splash.dart';
 import '../features/adhkar/presentation/adhkar_widget_sync_scope.dart';
 import '../features/prayer/application/prayer_provider.dart';
 import '../features/prayer/presentation/prayer_widget_sync_scope.dart';
@@ -71,7 +72,9 @@ class QuranApp extends ConsumerWidget {
         themeMode: settings.materialThemeMode,
         routerConfig: ref.watch(routerProvider),
         builder: (context, child) => AdhkarWidgetSyncScope(
-          child: PrayerWidgetSyncScope(child: _SystemBars(child: child!)),
+          child: PrayerWidgetSyncScope(
+            child: _SystemBars(child: StartupSplash(child: child!)),
+          ),
         ),
       ),
     );

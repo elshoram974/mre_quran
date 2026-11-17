@@ -180,6 +180,28 @@ void main() {
       expect(layoutOf('003', full).content, full);
     });
 
+    test('an opening page keeps its surah\'s name and basmala, which lie in '
+        'no ayah region', () {
+      // Al-Baqarah's opening: its ayahs from 0 to 150, its name and basmala
+      // drawn above them, from -60.
+      final layout = SvgPageLayout(
+        viewBox: (left: -53, top: -198, right: 292, bottom: 352),
+        regions: [
+          const AyahRegion(
+            ref: AyahRef(2, 1),
+            rings: [
+              [(x: 0, y: 0), (x: 240, y: 0), (x: 240, y: 150), (x: 0, y: 150)],
+            ],
+          ),
+        ],
+        ink: (left: 0, top: -60, right: 240, bottom: 150),
+      );
+      final content = layout.content;
+      expect(content.top, lessThan(-60));
+      expect(content.bottom, greaterThan(150));
+      expect(content, isNot(layout.viewBox));
+    });
+
     test('an opening page is cropped to its small block of text', () {
       final content = layoutOf('001', opening).content;
       final shown = pageBoxWidth(content) * pageBoxHeight(content);
@@ -295,6 +317,85 @@ void main() {
       );
       expect(cropped.content, isNot(cropped.viewBox));
       expect(cropped.surahTitles, isEmpty);
+    });
+
+    group('the name\'s own box, from the printed lines', () {
+      /// A printed line at [middle], [share] of the page wide, centred
+      /// unless moved by [offset].
+      SvgPrintedLine printed(double middle, double share, {double offset = 0}) {
+        final half = 345 * share / 2;
+        return (
+          middle: middle,
+          box: (
+            left: 172.5 - half + offset,
+            top: middle - 12,
+            right: 172.5 + half + offset,
+            bottom: middle + 12,
+          ),
+        );
+      }
+
+      // Full lines, at the printed pitch.
+      List<SvgPrintedLine> page(Map<int, SvgPrintedLine> special) => [
+        for (var k = 0; k < 15; k++)
+          special[k] ?? printed(line * (k + 0.6), 0.94),
+      ];
+
+      test('is the short centred line with a basmala under it', () {
+        final layout = SvgPageLayout(
+          viewBox: (left: 0, top: 0, right: 345, bottom: 550),
+          regions: [band(3, 1, 74.8, 112.8), band(3, 2, 112.8, 550)],
+        );
+        final name = printed(line * 0.6, 0.22);
+        final titles = SvgPageParser.titles(
+          layout,
+          page({0: name, 1: printed(line * 1.6, 0.58)}),
+        );
+        expect(titles.single.surah, 3);
+        expect(titles.single.box, name.box);
+        expect(titles.single.line, name.middle);
+      });
+
+      test('is found where a reading counts the name into the first ayah, '
+          'and never on the short line that ends a surah', () {
+        // Qalun page 528: the regions put Al-Qamar's first ayah three lines
+        // too high; a short last line of An-Najm stands above its name.
+        final layout = SvgPageLayout(
+          viewBox: (left: 0, top: 0, right: 345, bottom: 550),
+          regions: [band(53, 50, 0, 287), band(54, 1, 287, 550)],
+        );
+        final name = printed(line * 9.6, 0.23);
+        final titles = SvgPageParser.titles(
+          layout,
+          page({
+            8: printed(line * 8.6, 0.38),
+            9: name,
+            10: printed(line * 10.6, 0.6),
+          }),
+        );
+        expect(titles.single.box, name.box);
+      });
+
+      test('At-Tawbah\'s has no basmala under it', () {
+        final layout = SvgPageLayout(
+          viewBox: (left: 0, top: 0, right: 345, bottom: 550),
+          regions: [band(8, 75, 0, 39.5), band(9, 1, 39.5, 550)],
+        );
+        final name = printed(line * 0.6, 0.2);
+        expect(
+          SvgPageParser.titles(layout, page({0: name})).single.box,
+          name.box,
+        );
+      });
+
+      test('a name not found gets no frame rather than one over the text', () {
+        final layout = SvgPageLayout(
+          viewBox: (left: 0, top: 0, right: 345, bottom: 550),
+          regions: [band(3, 1, 74.8, 112.8), band(3, 2, 112.8, 550)],
+        );
+        expect(SvgPageParser.titles(layout, page({})), isEmpty);
+        expect(SvgPageParser.titles(layout, const []), isEmpty);
+      });
     });
   });
 }

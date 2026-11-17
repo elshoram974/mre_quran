@@ -8,7 +8,10 @@ import '../../../core/l10n/l10n.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../bookmarks/application/bookmarks_provider.dart';
+import '../../quran_index/application/quran_metadata_provider.dart';
 import '../../quran_text/application/quran_text_providers.dart';
+import '../../settings/application/settings_provider.dart';
+import '../../settings/domain/app_settings.dart';
 import '../../settings/application/digits_provider.dart';
 import '../application/reader_immersive_provider.dart';
 import '../application/reading_position_provider.dart';
@@ -32,7 +35,14 @@ class MushafPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
+    // The printed pages need only the Quran's structure, so they start
+    // loading at once while the text is read beside them; the typeset
+    // reader needs the text itself.
+    final metadata = ref.watch(quranMetadataProvider);
     final text = ref.watch(quranTextProvider);
+    final printed =
+        ref.watch(settingsProvider.select((s) => s.value?.readerMode)) !=
+        ReaderMode.text;
     final page = ref.watch(readingPositionProvider).value;
     final immersive = ref.watch(readerImmersiveProvider);
     // Rebuilds when the screen's insets change (rotation, navigation mode).
@@ -40,21 +50,23 @@ class MushafPage extends ConsumerWidget {
 
     Future<void> open(AppRoute route) => openReaderRoute(context, ref, route);
 
-    if (text.hasError) {
+    if (metadata.hasError || (!printed && text.hasError)) {
       return EmptyState(
         icon: Icons.error_outline,
         title: l10n.readerLoadError,
         message: '',
         actionLabel: l10n.retry,
-        onAction: () => ref.invalidate(quranTextDataProvider),
+        onAction: () => ref
+          ..invalidate(quranMetadataProvider)
+          ..invalidate(quranTextDataProvider),
       );
     }
-    final data = text.value;
-    if (data == null || page == null) return const _ReaderSkeleton();
-
-    final metadata = data.metadata;
+    final structure = metadata.value;
+    if (structure == null || page == null || (!printed && !text.hasValue)) {
+      return const _ReaderSkeleton();
+    }
     final digits = ref.watch(digitsFormatterProvider);
-    final onPage = metadata.ayahsOnPage(page);
+    final onPage = structure.ayahsOnPage(page);
     final bookmarked = ref.watch(bookmarkedRefsProvider);
     final marked = onPage.where(bookmarked.contains).toList();
     final scheme = Theme.of(context).colorScheme;
@@ -91,7 +103,7 @@ class MushafPage extends ConsumerWidget {
       final chosen = await showGoToPage(
         context,
         page: page,
-        pageCount: metadata.pageCount,
+        pageCount: structure.pageCount,
         digits: digits,
       );
       if (chosen != null) goTo(chosen);
@@ -119,7 +131,7 @@ class MushafPage extends ConsumerWidget {
     // options. Everything else lives in the display sheet; a tap on the page
     // hides the bars.
     final controls = ReaderControls(
-      metadata: metadata,
+      metadata: structure,
       page: page,
       digits: digits,
       shown: !immersive,
@@ -169,7 +181,11 @@ class MushafPage extends ConsumerWidget {
           child: Stack(
             children: [
               Positioned.fill(
-                child: MushafPager(text: data, initialPage: page),
+                child: MushafPager(
+                  metadata: structure,
+                  text: text.value,
+                  initialPage: page,
+                ),
               ),
               PositionedDirectional(
                 top: 4,

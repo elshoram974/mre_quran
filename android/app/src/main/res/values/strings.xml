@@ -1,6 +1,6 @@
 <resources>
     <!-- The app's name: under its icon, in notifications, in the widget picker. -->
-    <string name="app_name">MRE Quran</string>
+    <string name="app_name">Mushafi</string>
     <!-- Buttons and channel of the download notification (background_downloader). -->
     <string name="bg_downloader_cancel">Cancel</string>
     <string name="bg_downloader_pause">Pause</string>

@@ -50,11 +50,21 @@ bool resolveMushafSpread(ReaderPageLayout layout, Size size) =>
 /// one page. The pager saves every turn and follows page changes made
 /// elsewhere (index, search, bookmarks).
 class MushafPager extends StatelessWidget {
-  /// Creates the pager over [text], opening at [initialPage].
-  const MushafPager({super.key, required this.text, required this.initialPage});
+  /// Creates the pager over the Quran's [metadata], opening at
+  /// [initialPage].
+  const MushafPager({
+    super.key,
+    required this.metadata,
+    required this.text,
+    required this.initialPage,
+  });
 
-  /// The verified text.
-  final QuranText text;
+  /// The Quran's structure: all the printed pages need.
+  final QuranMetadata metadata;
+
+  /// The verified text, once read: the typeset reader needs it, and the
+  /// printed pages fall back to it. Null while it is still being read.
+  final QuranText? text;
 
   /// Page to open at, 1–604.
   final int initialPage;
@@ -63,6 +73,7 @@ class MushafPager extends StatelessWidget {
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) {
       return _PagerBody(
+        metadata: metadata,
         text: text,
         availableWidth: constraints.maxWidth,
         availableHeight: constraints.maxHeight,
@@ -74,13 +85,15 @@ class MushafPager extends StatelessWidget {
 
 class _PagerBody extends ConsumerStatefulWidget {
   const _PagerBody({
+    required this.metadata,
     required this.text,
     required this.availableWidth,
     required this.availableHeight,
     required this.initialPage,
   });
 
-  final QuranText text;
+  final QuranMetadata metadata;
+  final QuranText? text;
   final double availableWidth;
   final double availableHeight;
   final int initialPage;
@@ -110,7 +123,7 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
     });
   }
 
-  int get _pageCount => widget.text.metadata.pageCount;
+  int get _pageCount => widget.metadata.pageCount;
 
   /// The ayah actions of a page of [edition].
   ValueChanged<AyahRef> _actionsOf(MushafEdition edition) =>
@@ -198,8 +211,10 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
         onPageChanged: (turned) =>
             ref.read(readingPositionProvider.notifier).setPage(turned),
         pageBuilder: (context, number) => switch (mode) {
+          // The page waits for the text it is set in: the reader shows only
+          // once it is read.
           ReaderMode.text => MushafPageView(
-            text: widget.text,
+            text: widget.text!,
             page: number,
             fontScale: fontScale,
             frame: frame,
@@ -217,7 +232,7 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
             // app's bookmarks and highlights (Hafs numbers) are not tied to
             // the page, and the app's text does not stand in for it. Its own
             // text is copied and shared.
-            metadata: widget.text.metadata,
+            metadata: widget.metadata,
             page: number,
             digits: digits,
             fillWidth: !spread,
@@ -227,7 +242,7 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
             onTap: _onTap,
           ),
           ReaderMode.printed => SvgPageView(
-            metadata: widget.text.metadata,
+            metadata: widget.metadata,
             page: number,
             digits: digits,
             fillWidth: !spread,
@@ -237,21 +252,24 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
             // The typeset text and its stand-in are always Hafs.
             onAyahLongPress: _actionsOf(MushafEditions.hafs),
             onTap: _onTap,
-            // Without its artwork the page still reads, as text.
-            fallbackBuilder: (_) => MushafPageView(
-              text: widget.text,
-              page: number,
-              fontScale: fontScale,
-              frame: frame,
-              digits: digits,
-              bookmarked: bookmarked,
-              selected: _selected ?? highlighted,
-              // The typeset text and its stand-in are always Hafs.
-              onAyahLongPress: _actionsOf(MushafEditions.hafs),
-              onTap: _onTap,
-              framed: false,
-              spread: spread,
-            ),
+            // Without its artwork the page still reads, as text, once the
+            // text is read.
+            fallbackBuilder: widget.text == null
+                ? null
+                : (_) => MushafPageView(
+                    text: widget.text!,
+                    page: number,
+                    fontScale: fontScale,
+                    frame: frame,
+                    digits: digits,
+                    bookmarked: bookmarked,
+                    selected: _selected ?? highlighted,
+                    // The typeset text and its stand-in are always Hafs.
+                    onAyahLongPress: _actionsOf(MushafEditions.hafs),
+                    onTap: _onTap,
+                    framed: false,
+                    spread: spread,
+                  ),
           ),
         },
       ),

@@ -101,7 +101,7 @@ abstract class AppLocalizations {
   /// No description provided for @appTitle.
   ///
   /// In en, this message translates to:
-  /// **'MRE Quran'**
+  /// **'Mushafi'**
   String get appTitle;
 
   /// No description provided for @reader.
@@ -1049,7 +1049,7 @@ abstract class AppLocalizations {
   /// No description provided for @prayerWidgetEmpty.
   ///
   /// In en, this message translates to:
-  /// **'Open MRE Quran to set your location'**
+  /// **'Open Mushafi to set your location'**
   String get prayerWidgetEmpty;
 
   /// No description provided for @adhanTitle.

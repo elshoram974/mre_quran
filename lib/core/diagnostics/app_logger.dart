@@ -9,7 +9,7 @@ final class AppLogger {
   const AppLogger._();
 
   static void debug(String message) {
-    if (kDebugMode) debugPrint('[MRE Quran] $message');
+    if (kDebugMode) debugPrint('[Mushafi] $message');
   }
 
   static void flutterError(

@@ -9,6 +9,7 @@ import '../../quran_index/domain/quran_metadata.dart';
 import '../../quran_text/domain/quran_text.dart';
 import '../../settings/application/digits_provider.dart';
 import '../../settings/domain/app_settings.dart';
+import '../../startup/presentation/reader_painted_mark.dart';
 import 'mushaf_page_frame.dart';
 import 'surah_banner.dart';
 
@@ -318,12 +319,14 @@ class _MushafPageViewState extends State<MushafPageView> {
             child: page,
           );
     if (!widget.framed) return body;
-    return MushafPageFrame(
-      metadata: text.metadata,
-      page: widget.page,
-      onTap: widget.onTap,
-      spread: widget.spread,
-      child: body,
+    return ReaderPaintedMark(
+      child: MushafPageFrame(
+        metadata: text.metadata,
+        page: widget.page,
+        onTap: widget.onTap,
+        spread: widget.spread,
+        child: body,
+      ),
     );
   }
 }

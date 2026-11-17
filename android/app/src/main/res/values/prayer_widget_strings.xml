@@ -1,7 +1,7 @@
 <resources>
     <string name="prayer_widget_label">Next prayer</string>
     <string name="prayer_widget_remaining">in %1$s</string>
-    <string name="prayer_widget_empty">Open MRE Quran to set your location</string>
+    <string name="prayer_widget_empty">Open Mushafi to set your location</string>
     <string name="prayer_widget_name">Prayer times</string>
     <string name="prayer_widget_next_description">The next prayer, its time and how long until it.</string>
     <string name="prayer_schedule_widget_description">Today\'s five prayers and sunrise, with the Hijri date.</string>
@@ -26,7 +26,7 @@
     <string name="prayer_schedule_widget_name">Today\'s prayer times</string>
     <string name="adhkar_widget_name">Suggested dhikr</string>
     <string name="adhkar_widget_description">Suggested adhkar with your saved progress.</string>
-    <string name="adhkar_widget_empty">Open MRE Quran to load your adhkar.</string>
+    <string name="adhkar_widget_empty">Open Mushafi to load your adhkar.</string>
     <string name="adhkar_widget_progress">%1$d of %2$d</string>
     <string name="widget_preview_adhkar_title">Morning adhkar</string>
     <string name="widget_preview_adhkar_count">3 of 12</string>

@@ -35,7 +35,8 @@ Future<void> showAyahShare(
 );
 
 /// The ayahs with their reference, ready to paste:
-/// `﴿… (٢٥٥)﴾` and on the next line `[البقرة: ٢٥٥ · صفحة ٤٢]`.
+/// `﴿… (٢٥٥)﴾` and on the next line `[البقرة: ٢٥٥ · صفحة ٤٢]`, each line
+/// set to read right to left in any app and any language.
 String ayahShareText(
   BuildContext context,
   AyahTexts text,
@@ -51,8 +52,10 @@ String ayahShareText(
       ? digits(span.first)
       : l10n.ayahRange(digits(span.first), digits(span.last));
   final surah = text.metadata.surah(span.surah).arabicName;
-  return '${AyahShareText.body(text, span, digits)}\n'
-      '${l10n.ayahShareReference(surah, ayahs, page)}';
+  return AyahShareText.rightToLeft(
+    '${AyahShareText.body(text, span, digits)}\n'
+    '${l10n.ayahShareReference(surah, ayahs, page)}',
+  );
 }
 
 /// The body of the sharing sheet.

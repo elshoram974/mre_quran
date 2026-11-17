@@ -32,7 +32,10 @@ class SurahFrameField extends ConsumerWidget {
         LayoutBuilder(
           builder: (context, constraints) {
             // Two to a row on a phone, all four in one where they fit.
-            final columns = constraints.maxWidth >= 560 ? 4 : 2;
+            final columns =
+                ((constraints.maxWidth + AppTokens.spaceSmall) ~/
+                        (AppTokens.frameSampleMinWidth + AppTokens.spaceSmall))
+                    .clamp(2, SurahFrameStyle.values.length);
             final width =
                 (constraints.maxWidth - AppTokens.spaceSmall * (columns - 1)) /
                 columns;
@@ -91,7 +94,7 @@ class _FrameChoice extends StatelessWidget {
           borderRadius: radius,
           side: BorderSide(
             color: selected ? scheme.primary : scheme.outlineVariant,
-            width: selected ? 2 : 1,
+            width: selected ? AppTokens.selectedOutline : 1,
           ),
         ),
         child: InkWell(
@@ -102,7 +105,7 @@ class _FrameChoice extends StatelessWidget {
             child: Column(
               children: [
                 SizedBox(
-                  height: 30,
+                  height: AppTokens.frameSampleHeight,
                   width: double.infinity,
                   child: CustomPaint(
                     painter: SurahFramePainter(
@@ -120,10 +123,10 @@ class _FrameChoice extends StatelessWidget {
                     if (selected) ...[
                       Icon(
                         Icons.check_rounded,
-                        size: 16,
+                        size: AppTokens.iconSmall,
                         color: scheme.primary,
                       ),
-                      const SizedBox(width: 4),
+                      const SizedBox(width: AppTokens.spaceTiny),
                     ],
                     Flexible(
                       child: Text(

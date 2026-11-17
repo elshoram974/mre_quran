@@ -48,6 +48,18 @@ void main() {
       },
     );
 
+    test('keeps the surah name frame, and starts on the pointed one', () async {
+      final preferences = SharedPreferencesAsync();
+      final repository = LocalSettingsRepository(preferences);
+      expect((await repository.load()).surahFrame, SurahFrameStyle.cartouche);
+      for (final style in SurahFrameStyle.values) {
+        await repository.save(AppSettings(surahFrame: style));
+        expect((await repository.load()).surahFrame, style);
+      }
+      await preferences.setString('settings.surah_frame', 'gone');
+      expect((await repository.load()).surahFrame, SurahFrameStyle.cartouche);
+    });
+
     test('a reading it does not know falls back to Hafs', () async {
       final preferences = SharedPreferencesAsync();
       await preferences.setString('settings.mushaf_edition', 'unknown-kfqc');

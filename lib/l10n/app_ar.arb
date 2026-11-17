@@ -1,5 +1,5 @@
 {
-  "appTitle": "مصحف MRE",
+  "appTitle": "مصحفي",
   "reader": "المصحف",
   "bookmarks": "العلامات",
   "settings": "الإعدادات",
@@ -163,7 +163,7 @@
   "hijriMonth12": "ذو الحجة",
   "hijriDateLine": "{day} {month} {year} هـ",
   "@hijriDateLine": {"placeholders": {"day": {"type": "String"}, "month": {"type": "String"}, "year": {"type": "String"}}},
-  "prayerWidgetEmpty": "افتح مصحف MRE لتحديد موقعك",
+  "prayerWidgetEmpty": "افتح مصحفي لتحديد موقعك",
   "adhanTitle": "الأذان",
   "adhanTileSubtitle": "الصوت وطريقة عمل التنبيه",
   "adhanSectionAlert": "التنبيه",

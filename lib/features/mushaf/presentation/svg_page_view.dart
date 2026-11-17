@@ -21,6 +21,7 @@ import '../../quran_index/domain/quran_metadata.dart';
 import '../../settings/application/digits_provider.dart';
 import '../../settings/application/settings_provider.dart';
 import '../../settings/domain/app_settings.dart';
+import '../../startup/presentation/reader_painted_mark.dart';
 import '../application/svg_page_providers.dart';
 import '../domain/svg_page.dart';
 import 'mushaf_page_frame.dart';
@@ -310,7 +311,10 @@ class _SvgBody extends ConsumerWidget {
       duration: MediaQuery.disableAnimationsOf(context)
           ? Duration.zero
           : AppTokens.motionMedium,
-      child: child,
+      // Anything but the placeholder lets the start-up splash give way.
+      child: child.key == const ValueKey('loading')
+          ? child
+          : ReaderPaintedMark(key: child.key, child: child),
     );
   }
 }
@@ -458,10 +462,15 @@ class _SvgArtwork extends StatelessWidget {
         pageBoxHeight(page.layout.viewBox) / SvgPageLayout.printedLines;
     final box = title.box;
     final ink = box.bottom - box.top;
-    final height = (ink + pitch * _titleMargin * 2).clamp(
-      pitch * _titleLeast,
-      pitch * _titleMost,
-    );
+    // Spreading opens a gap of (stretch - 1) lines above and below the
+    // name's line; the frame takes most of it, so it stands as a band of
+    // its own rather than a thin rule around the letters.
+    final height =
+        (ink + pitch * _titleMargin * 2).clamp(
+          pitch * _titleLeast,
+          pitch * _titleMost,
+        ) +
+        pitch * (stretch - 1) * _titleGrowth;
     // Spreading moves each line as a whole, by as much as stretching the
     // page would move its middle.
     final moved = (title.line - content.top) * (stretch - 1);
@@ -496,11 +505,15 @@ class _SvgArtwork extends StatelessWidget {
   }
 
   /// A surah frame's margin above and below the name, and its least and
-  /// most height, in printed lines; and its margin at each side, as a share
-  /// of the page's width.
-  static const double _titleMargin = 0.14;
-  static const double _titleLeast = 0.9;
-  static const double _titleMost = 1.12;
+  /// most height before spreading, in printed lines; and its margin at each
+  /// side, as a share of the page's width.
+  static const double _titleMargin = 0.2;
+  static const double _titleLeast = 1;
+  static const double _titleMost = 1.18;
+
+  /// How much of the gap spreading opens around the name's line the frame
+  /// takes.
+  static const double _titleGrowth = 0.8;
   static const double _titleSide = 0.015;
 
   /// The page at [scale] screen pixels per page unit, its lines spread for

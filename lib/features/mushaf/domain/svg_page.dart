@@ -69,8 +69,16 @@ class AyahRegion {
 @immutable
 class SvgPageLayout {
   /// Creates the layout of a page whose SVG declares [viewBox].
-  SvgPageLayout({required this.viewBox, required List<AyahRegion> regions})
-    : regions = List.unmodifiable(regions);
+  SvgPageLayout({
+    required this.viewBox,
+    required List<AyahRegion> regions,
+    this.ink,
+  }) : regions = List.unmodifiable(regions);
+
+  /// The box the script's ink covers, when it was measured. A surah's name
+  /// and basmala lie outside every ayah region, so a cropped page takes its
+  /// ink into its crop as well.
+  final PageBox? ink;
 
   /// The page's declared view box.
   final PageBox viewBox;
@@ -137,15 +145,18 @@ class SvgPageLayout {
   ///
   /// Every page declares the same box, but the two opening pages fill about
   /// a fifth of it; fitting the declared box would show them tiny in a mostly
-  /// empty page. Such a page is cropped to its ayah regions plus a margin.
+  /// empty page. Such a page is cropped to its ayah regions and its ink
+  /// (the surah's name and basmala are in no region), plus a margin.
   PageBox get content {
     if (regions.isEmpty) return viewBox;
     var left = double.infinity;
     var top = double.infinity;
     var right = double.negativeInfinity;
     var bottom = double.negativeInfinity;
-    for (final region in regions) {
-      final box = region.bounds;
+    for (final PageBox box in [
+      for (final region in regions) region.bounds,
+      ?this.ink,
+    ]) {
       left = math.min(left, box.left);
       top = math.min(top, box.top);
       right = math.max(right, box.right);

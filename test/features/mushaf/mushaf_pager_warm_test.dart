@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:material_ui/material_ui.dart';
@@ -13,6 +14,7 @@ import 'package:mre_quran/features/mushaf/presentation/mushaf_page.dart';
 import 'package:mre_quran/features/mushaf/presentation/svg_page_view.dart';
 import 'package:mre_quran/features/quran_index/application/quran_metadata_provider.dart';
 import 'package:mre_quran/features/quran_text/application/quran_text_providers.dart';
+import 'package:mre_quran/features/quran_text/domain/quran_text.dart';
 import 'package:mre_quran/features/settings/application/settings_provider.dart';
 import 'package:mre_quran/features/settings/domain/app_settings.dart';
 import 'package:mre_quran/l10n/generated/app_localizations.dart';
@@ -34,6 +36,7 @@ Future<Set<int>> _pump(
   Size size = const Size(390, 844),
   ReaderPageLayout layout = ReaderPageLayout.auto,
   MushafEdition edition = MushafEditions.hafs,
+  bool textLate = false,
 }) async {
   _stretches.clear();
   tester.view.physicalSize = size;
@@ -49,6 +52,11 @@ Future<Set<int>> _pump(
           FakeQuranMetadataSource(),
         ),
         quranTextSourceProvider.overrideWithValue(FakeQuranTextSource()),
+        if (textLate)
+          // The text is still being read.
+          quranTextProvider.overrideWith(
+            (ref) => Completer<QuranText>().future,
+          ),
         bookmarksRepositoryProvider.overrideWithValue(
           MemoryBookmarksRepository(),
         ),
@@ -100,6 +108,14 @@ void main() {
     // They are prepared without being built: only the reader's page is a
     // widget.
     expect(find.byType(SvgPageView, skipOffstage: false), findsOneWidget);
+  });
+
+  testWidgets('the printed pages load while the text is still being read', (
+    tester,
+  ) async {
+    final asked = await _pump(tester, page: 10, textLate: true);
+    expect(asked, {9, 10, 11, 12, 13});
+    expect(find.byType(SvgPageView), findsOneWidget);
   });
 
   testWidgets('nothing is asked for before the first page or after the last', (

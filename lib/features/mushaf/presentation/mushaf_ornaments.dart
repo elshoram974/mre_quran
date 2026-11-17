@@ -364,39 +364,36 @@ class SurahFramePainter extends CustomPainter {
     ..close();
 
   /// A rectangle whose ends are three outward lobes, the middle one the
-  /// largest.
+  /// largest, like a trefoil.
   static Path _scalloped(Rect r) {
-    final end = r.height * 0.5;
-    final small = Radius.circular(r.height * 0.2);
-    final large = Radius.circular(r.height * 0.32);
     final third = r.height / 3;
-    final path = Path()
-      ..moveTo(r.left + end, r.top)
-      ..lineTo(r.right - end, r.top);
-    final ends = [(x: r.right - end, sign: 1.0), (x: r.left + end, sign: -1.0)];
-    for (final (index, side) in ends.indexed) {
-      final down = index == 0;
-      final ys = down
-          ? [r.top, r.top + third, r.bottom - third, r.bottom]
-          : [r.bottom, r.bottom - third, r.top + third, r.top];
-      // Out to the lobes, then back to the plaque's edge.
-      path.lineTo(side.x + side.sign * end * 0.2, ys[0]);
-      for (var i = 0; i < 3; i++) {
-        final reach = i == 1 ? end : end * 0.55;
-        path.arcToPoint(
-          Offset(
-            side.x + side.sign * (i == 2 ? end * 0.2 : reach * 0.6),
-            ys[i + 1],
-          ),
-          radius: i == 1 ? large : small,
-          clockwise: true,
-        );
-      }
-      path.lineTo(side.x, ys[3]);
-      if (down) path.lineTo(r.left + end, r.bottom);
-    }
-    return path..close();
+    // The middle lobe reaches furthest: a major arc on a third of the
+    // height, of radius 0.6 of a third.
+    final end = third * _middleLobe;
+    final small = Radius.circular(third / 2);
+    final large = Radius.circular(third * 0.6);
+    final left = r.left + end;
+    final right = r.right - end;
+    return Path()
+      ..moveTo(left, r.top)
+      ..lineTo(right, r.top)
+      ..arcToPoint(Offset(right, r.top + third), radius: small)
+      ..arcToPoint(
+        Offset(right, r.bottom - third),
+        radius: large,
+        largeArc: true,
+      )
+      ..arcToPoint(Offset(right, r.bottom), radius: small)
+      ..lineTo(left, r.bottom)
+      ..arcToPoint(Offset(left, r.bottom - third), radius: small)
+      ..arcToPoint(Offset(left, r.top + third), radius: large, largeArc: true)
+      ..arcToPoint(Offset(left, r.top), radius: small)
+      ..close();
   }
+
+  /// How far the middle lobe of [_scalloped] reaches, in thirds of the
+  /// plaque's height: 0.6 + √(0.6² − 0.5²).
+  static const double _middleLobe = 0.93;
 
   /// A rhombus around [c], [rx] wide and [ry] tall from its centre.
   static Path _lozenge(Offset c, double rx, double ry) => Path()
@@ -479,7 +476,7 @@ abstract final class SurahFrameGeometry {
   static double _ends(SurahFrameStyle style) => switch (style) {
     SurahFrameStyle.cartouche => 0.62,
     SurahFrameStyle.classic => 0.3,
-    SurahFrameStyle.arch => 0.5,
+    SurahFrameStyle.arch => SurahFramePainter._middleLobe / 3,
     SurahFrameStyle.minimal => 0.5,
   };
 

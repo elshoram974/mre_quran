@@ -15,6 +15,7 @@ import 'package:mre_quran/features/mushaf/data/svg_page_compiler.dart';
 import 'package:mre_quran/features/mushaf/data/svg_page_parser.dart';
 import 'package:mre_quran/features/mushaf/domain/svg_page.dart';
 import 'package:mre_quran/features/mushaf/presentation/reader_page_labels.dart';
+import 'package:mre_quran/features/mushaf/presentation/surah_banner.dart';
 import 'package:mre_quran/features/mushaf/presentation/svg_page_view.dart';
 import 'package:mre_quran/features/quran_index/data/quran_metadata_parser.dart';
 import 'package:mre_quran/features/quran_index/domain/quran_metadata.dart';
@@ -310,6 +311,42 @@ void main() {
       expect(sheet.height, closeTo(frame.height, 10));
       // The lines moved apart; the page was not scaled to fit.
       expect(sheet.height / (sheet.width * 550 / 345), greaterThan(1.3));
+    });
+
+    testWidgets('a surah name\'s frame goes around the name, moved with its '
+        'line', (tester) async {
+      // A name 60 wide and 24 tall on the line whose middle is at 98.
+      const box = (left: 142.5, top: 88.0, right: 202.5, bottom: 112.0);
+      SvgPagePicture named(SvgPagePicture picture) => SvgPagePicture(
+        page: picture.page,
+        ink: picture.ink,
+        marks: picture.marks,
+        layout: picture.layout,
+        stretch: picture.stretch,
+        titles: const [(surah: 3, box: box, line: 98)],
+      );
+      for (final fill in [false, true]) {
+        await pump(
+          tester,
+          load: (request) async => named(spreadPicture(request)),
+          fillWidth: fill,
+        );
+        final sheet = tester.getRect(find.byType(SvgPicture).first);
+        final scale = sheet.width / 345;
+        final stretch = sheet.height / (550 * scale);
+        final moved = (98 - 0) * (stretch - 1);
+        final name = Rect.fromLTRB(
+          sheet.left + box.left * scale,
+          sheet.top + (box.top + moved) * scale,
+          sheet.left + box.right * scale,
+          sheet.top + (box.bottom + moved) * scale,
+        );
+        final frame = tester.getRect(find.byType(SurahBanner));
+        expect(frame.contains(name.topLeft), isTrue, reason: '$fill');
+        expect(frame.contains(name.bottomRight), isTrue, reason: '$fill');
+        expect(frame.center.dy, closeTo(name.center.dy, 0.5));
+        expect(frame.width, greaterThan(sheet.width * 0.9));
+      }
     });
 
     testWidgets('a very tall screen stops spreading and centres the page', (

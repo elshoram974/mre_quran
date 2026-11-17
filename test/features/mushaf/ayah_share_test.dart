@@ -152,11 +152,13 @@ void main() {
       await tester.pump();
       await tester.tap(find.text('نسخ'));
       await tester.pump();
+      // Every line starts with a right-to-left mark, so it reads from the
+      // right wherever it is pasted.
       expect(
         copied,
-        '﴿${text.uthmani(const AyahRef(2, 255))} (٢٥٥) '
+        '\u200F﴿${text.uthmani(const AyahRef(2, 255))} (٢٥٥) '
         '${text.uthmani(const AyahRef(2, 256))} (٢٥٦)﴾\n'
-        '[البقرة: ٢٥٥–٢٥٦ · صفحة ٤٢]',
+        '\u200F[البقرة: ٢٥٥–٢٥٦ · صفحة ٤٢]',
       );
     });
 
@@ -164,7 +166,7 @@ void main() {
       await open(tester);
       await tester.tap(find.text('مشاركة كنص'));
       await tester.pump();
-      expect(sharer.texts.single, startsWith('﴿'));
+      expect(sharer.texts.single, startsWith('\u200F﴿'));
       expect(sharer.texts.single, endsWith('[البقرة: ٢٥٥ · صفحة ٤٢]'));
     });
 

@@ -77,6 +77,15 @@ abstract final class AyahShareText {
     return '﴿${ayahs.join(' ')}﴾';
   }
 
+  /// [text] set to read right to left wherever it is pasted: each line
+  /// starts with a right-to-left mark, so an app that takes a line's
+  /// direction from its first letter (or from its own language) still lays
+  /// the Quran and its reference out from the right.
+  static String rightToLeft(String text) =>
+      text.split('\n').map((line) => '$_rlm$line').join('\n');
+
+  static const String _rlm = '\u200F';
+
   /// The pages [span] lies on: its first ayah's page and its last ayah's.
   static ({int first, int last}) pages(AyahTexts text, AyahSpan span) => (
     first: text.pageOf(AyahRef(span.surah, span.first)),

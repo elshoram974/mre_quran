@@ -1,5 +1,5 @@
 {
-  "appTitle": "MRE Quran",
+  "appTitle": "Mushafi",
   "reader": "Mushaf",
   "bookmarks": "Bookmarks",
   "settings": "Settings",
@@ -171,7 +171,7 @@
   "hijriMonth12": "Dhu al-Hijjah",
   "hijriDateLine": "{day} {month} {year} AH",
   "@hijriDateLine": {"placeholders": {"day": {"type": "String"}, "month": {"type": "String"}, "year": {"type": "String"}}},
-  "prayerWidgetEmpty": "Open MRE Quran to set your location",
+  "prayerWidgetEmpty": "Open Mushafi to set your location",
   "adhanTitle": "Adhan",
   "adhanTileSubtitle": "The voice and how the alert behaves",
   "adhanSectionAlert": "Alert",

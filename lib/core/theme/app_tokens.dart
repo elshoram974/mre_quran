@@ -109,4 +109,29 @@ abstract final class AppTokens {
   /// multiple of the printed page's height. Past this the lines drift too
   /// far apart to read as a page.
   static const double readerMaxLineSpread = 1.4;
+
+  /// Height of a surah-name frame drawn as a sample in its chooser.
+  static const double frameSampleHeight = 30;
+
+  /// Narrowest a frame sample in the chooser may be; as many fit in a row
+  /// as the room allows, between two and four.
+  static const double frameSampleMinWidth = 132;
+
+  /// A small icon beside a label, and the gap between them.
+  static const double iconSmall = 16;
+  static const double spaceTiny = 4;
+
+  /// Outline of a chosen option.
+  static const double selectedOutline = 2;
+
+  /// Shortest and longest the start-up splash shows, how long its star
+  /// takes to turn an eighth of a circle, and how long its name takes to
+  /// fade in.
+  static const Duration splashLeast = Duration(milliseconds: 700);
+  static const Duration splashMost = Duration(seconds: 4);
+  static const Duration splashTurn = Duration(milliseconds: 1600);
+  static const Duration splashName = Duration(milliseconds: 500);
+
+  /// Size of the start-up splash's star.
+  static const double splashEmblem = 96;
 }

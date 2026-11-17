@@ -123,6 +123,80 @@ abstract final class SvgLineSplitter {
     return null;
   }
 
+  /// The box, in page units, that the script of [ink] (a layer from
+  /// [SvgPageParser.split]) covers, or null when its script cannot be read.
+  static PageBox? inkBox(String ink) {
+    final contours = _pageContours(ink);
+    if (contours == null || contours.isEmpty) return null;
+    return _boxOf(contours);
+  }
+
+  /// The box of the topmost block of [ink]'s script lying wholly above
+  /// [above], in page units: on an opening page, the surah's name. Blocks
+  /// are told apart by a gap of [gap] between contour middles. Null when
+  /// nothing lies above, or the script cannot be read.
+  static PageBox? topBlock(
+    String ink, {
+    required double above,
+    required double gap,
+  }) {
+    final contours = [
+      for (final contour in _pageContours(ink) ?? const <_Contour>[])
+        if (contour.bottom < above) contour,
+    ]..sort((a, b) => a.centreY.compareTo(b.centreY));
+    if (contours.isEmpty) return null;
+    var end = 1;
+    while (end < contours.length &&
+        contours[end].centreY - contours[end - 1].centreY <= gap) {
+      end++;
+    }
+    return _boxOf(contours.sublist(0, end));
+  }
+
+  /// Every contour of [ink]'s script, measured in page units, or null when
+  /// the script cannot be read.
+  static List<_Contour>? _pageContours(String ink) {
+    final matrix = _matrix(ink);
+    final start = ink.indexOf(_contentOpen);
+    if (matrix == null || start < 0) return null;
+    final List<_ScriptPath> paths;
+    try {
+      paths = _scriptPaths(
+        ink.substring(start + _contentOpen.length, _groupEnd(ink, start) - 4),
+      );
+    } on SvgLinesUnclear {
+      return null;
+    }
+    return [
+      for (final path in paths)
+        for (final c in _PathScanner(path.d).contours() ?? const <_Contour>[])
+          c..toPage(
+            xScale: matrix.a * path.place.a,
+            xMove: matrix.a * path.place.e + matrix.e,
+            yScale: matrix.d * path.place.d,
+            yMove: matrix.d * path.place.f + matrix.f,
+          ),
+    ];
+  }
+
+  static PageBox _boxOf(List<_Contour> contours) {
+    var box = (
+      left: contours.first.left,
+      top: contours.first.top,
+      right: contours.first.right,
+      bottom: contours.first.bottom,
+    );
+    for (final c in contours.skip(1)) {
+      box = (
+        left: math.min(box.left, c.left),
+        top: math.min(box.top, c.top),
+        right: math.max(box.right, c.right),
+        bottom: math.max(box.bottom, c.bottom),
+      );
+    }
+    return box;
+  }
+
   /// As [split], but says why a page cannot be spread. For the checking
   /// tool; the app uses [split].
   ///
