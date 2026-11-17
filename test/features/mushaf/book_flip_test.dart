@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mre_quran/features/mushaf/presentation/flip/book_flip.dart';
 import 'package:mre_quran/features/mushaf/presentation/flip/page_curl_painter.dart';

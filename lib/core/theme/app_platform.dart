@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Platform-aware helpers. Always read the platform from the [Theme], never
 /// from `defaultTargetPlatform`, so Device Preview and tests can switch it.

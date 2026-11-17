@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// How raised surfaces (cards, the floating tab bar, hero panels) look in the
 /// current theme: their fill, their hairline edge, and their soft shadow.

@@ -1,6 +1,6 @@
 import 'dart:math' as math;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Drawn ornaments for the Mushaf page. Vector shapes only, no image assets,
 /// all coloured from the theme so they follow light, sepia, and dark.

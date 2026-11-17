@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// A ring that fills as [fraction] grows, with [icon] in the middle.
 class ProgressRing extends StatelessWidget {

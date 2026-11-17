@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// A chevron pointing the way reading goes: right in English, left in
 /// Arabic.

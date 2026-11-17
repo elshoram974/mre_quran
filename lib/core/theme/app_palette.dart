@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// The page colour of a theme: the paper the whole app, and the Mushaf, sit
 /// on, with its ink and surfaces.

@@ -1,6 +1,6 @@
 import 'dart:math' as math;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// The compass card: the four directions and a tick every 5°, turning so that
 /// north on the card is north in the world, and a Kaaba marker on the rim at

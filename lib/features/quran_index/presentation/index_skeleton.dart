@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../core/layout/adaptive_layout.dart';
 import '../../../core/widgets/app_shimmer.dart';

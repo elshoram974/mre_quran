@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// A line of text with an icon, for something the person should know right
 /// where they are: why a switch stayed off, or a short hint. An [error] one is

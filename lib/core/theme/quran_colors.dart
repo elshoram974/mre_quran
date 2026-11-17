@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// The colours the Mushaf reader paints with: the paper, the ink of the
 /// ayahs, the ayah-number marks, and the highlight over a chosen ayah.
