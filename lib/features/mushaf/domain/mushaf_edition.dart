@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+import 'package:mre_quran/core/assets/app_assets.dart';
 
 /// How an edition's pages are drawn.
 enum MushafPageKind {
@@ -90,8 +91,7 @@ class MushafEdition {
   String get downloadGroup => downloadGroupName ?? 'mushaf-svg-$id';
 
   /// Bundled asset holding its manifest.
-  String get manifestAsset =>
-      'assets/quran/svg/${id.replaceAll('-', '_')}_manifest.json';
+  String get manifestAsset => AppAssets.svgManifest(id);
 
   /// Its name in [languageCode], or in Arabic.
   String name(String languageCode) => names[languageCode] ?? names['ar']!;
@@ -126,7 +126,7 @@ abstract final class MushafEditions {
     id: 'shubah-kfqc',
     names: {'ar': 'شعبة عن عاصم', 'en': "Shu'bah from Asim"},
     text: EditionText(
-      asset: 'assets/quran/riwayat/shubah_kfqc.txt',
+      asset: AppAssets.shubahText,
       sha256:
           '5cd0a2e1ce5ed51e2e5638455a3b0d666acfc9d58cc1eb514f45dcac464ed00e',
       fontFamily: 'KfgqpcShubah',
@@ -143,7 +143,7 @@ abstract final class MushafEditions {
     // their printed height.
     spreadsLines: true,
     text: EditionText(
-      asset: 'assets/quran/riwayat/warsh_kfqc.txt',
+      asset: AppAssets.warshText,
       sha256:
           'cbeedd60925ef4a88bee92480a197aa8c22026d433ceaaf79005a37d1d2c5890',
       fontFamily: 'KfgqpcWarsh',
@@ -157,7 +157,7 @@ abstract final class MushafEditions {
     id: 'qalon-kfqc',
     names: {'ar': 'قالون عن نافع', 'en': "Qalun from Nafi'"},
     text: EditionText(
-      asset: 'assets/quran/riwayat/qalon_kfqc.txt',
+      asset: AppAssets.qalonText,
       sha256:
           '86aba2d384f5e2f0927c81a70c8062af8765924243c9ae304e5c5642388d8fcd',
       fontFamily: 'KfgqpcQalon',
@@ -171,7 +171,7 @@ abstract final class MushafEditions {
     id: 'douri-kfqc',
     names: {'ar': 'الدوري عن أبي عمرو', 'en': 'Al-Duri from Abu Amr'},
     text: EditionText(
-      asset: 'assets/quran/riwayat/douri_kfqc.txt',
+      asset: AppAssets.douriText,
       sha256:
           '9b5e13f4ee7a952f886baf6e1810ad32d4adb13138848da7a02ff9ea7bc08083',
       fontFamily: 'KfgqpcDouri',

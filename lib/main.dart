@@ -10,6 +10,7 @@ import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app/quran_app.dart';
+import 'core/assets/app_assets.dart';
 import 'core/crash/crash_reporter.dart';
 import 'core/dev/preview_platform_sync.dart';
 import 'core/diagnostics/app_logger.dart';
@@ -52,10 +53,10 @@ Future<void> main() async {
   LicenseRegistry.addLicense(() async* {
     yield LicenseEntryWithLineBreaks(const [
       'Amiri Quran',
-    ], await rootBundle.loadString('assets/fonts/amiri_quran/OFL.txt'));
+    ], await rootBundle.loadString(AppAssets.amiriQuranLicense));
     yield LicenseEntryWithLineBreaks(const [
       'Morning and Evening Adhkar database (Seen Arabic)',
-    ], await rootBundle.loadString('assets/adhkar/LICENSE.seen-arabic.txt'));
+    ], await rootBundle.loadString(AppAssets.adhkarLicense));
   });
   final initialLocation = resolveInitialLocation(
     settings.startupBehavior,
