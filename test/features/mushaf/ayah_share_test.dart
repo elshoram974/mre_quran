@@ -11,7 +11,7 @@ import 'package:mre_quran/features/quran_index/application/quran_metadata_provid
 import 'package:mre_quran/features/quran_index/domain/quran_metadata.dart';
 import 'package:mre_quran/features/quran_text/application/quran_text_providers.dart';
 import 'package:mre_quran/features/quran_text/domain/ayah_texts.dart';
-import 'package:mre_quran/features/quran_text/domain/ayah_span.dart';
+import 'package:mre_quran/features/quran_text/domain/ayah_range.dart';
 import 'package:mre_quran/features/quran_text/domain/quran_text.dart';
 import 'package:mre_quran/l10n/generated/app_localizations.dart';
 
@@ -21,42 +21,79 @@ import '../../helpers/fake_quran_text_source.dart';
 /// Records what would be handed to the system's share sheet.
 class _RecordingSharer implements Sharer {
   final List<String> texts = [];
-  final List<({Uint8List png, String name, String? text})> images = [];
+  final List<({List<SharedImage> images, String? text})> shares = [];
 
   @override
   Future<void> shareText(String text) async => texts.add(text);
 
   @override
-  Future<void> shareImage(
-    Uint8List png, {
-    required String name,
-    String? text,
-  }) async => images.add((png: png, name: name, text: text));
+  Future<void> shareImages(List<SharedImage> images, {String? text}) async =>
+      shares.add((images: images, text: text));
 }
 
 void main() {
-  group('a span of ayahs', () {
-    const span = AyahSpan(surah: 2, first: 255, last: 257);
+  group('the order of the ayahs', () {
+    // Al-Fatiha 7, Al-Baqarah 286, Al Imran 200.
+    final order = AyahOrder(
+      surahCount: 3,
+      ayahCount: (surah) => const [7, 286, 200][surah - 1],
+    );
 
-    test('lists its ayahs in order', () {
-      expect(span.length, 3);
-      expect(span.refs, [
-        const AyahRef(2, 255),
-        const AyahRef(2, 256),
-        const AyahRef(2, 257),
-      ]);
+    test('numbers every ayah in turn and finds it again', () {
+      expect(order.total, 493);
+      expect(order.indexOf(const AyahRef(1, 1)), 0);
+      expect(order.indexOf(const AyahRef(2, 1)), 7);
+      expect(order.at(7), const AyahRef(2, 1));
+      expect(order.at(292), const AyahRef(2, 286));
+      expect(order.at(293), const AyahRef(3, 1));
+      expect(order.at(-5), const AyahRef(1, 1));
+      expect(order.at(10000), const AyahRef(3, 200));
     });
 
-    test('stays inside its surah and its limit, the other end following', () {
-      AyahSpan move({int? first, int? last}) =>
-          span.adjusted(first: first, last: last, surahLength: 286, limit: 5);
-      expect(move(last: 259), const AyahSpan(surah: 2, first: 255, last: 259));
+    test('steps across the end of a surah', () {
+      expect(order.step(const AyahRef(2, 286), 1), const AyahRef(3, 1));
+      expect(order.step(const AyahRef(3, 1), -1), const AyahRef(2, 286));
+    });
+
+    test('a range across two surahs is cut at the surah end', () {
+      const range = AyahRange(AyahRef(2, 285), AyahRef(3, 3));
+      expect(order.length(range), 5);
+      expect(order.runs(range), [
+        (surah: 2, first: 285, last: 286),
+        (surah: 3, first: 1, last: 3),
+      ]);
+      expect(range.contains(const AyahRef(2, 286)), isTrue);
+      expect(range.contains(const AyahRef(3, 4)), isFalse);
+      expect(range.contains(const AyahRef(1, 7)), isFalse);
+    });
+
+    test('moving one end keeps the range in order and inside its limit', () {
+      const range = AyahRange(AyahRef(2, 255), AyahRef(2, 257));
+      expect(
+        order.moveEnd(range, const AyahRef(3, 2), limit: 50),
+        const AyahRange(AyahRef(2, 255), AyahRef(3, 2)),
+      );
       // Five at most: the start follows the end.
-      expect(move(last: 262), const AyahSpan(surah: 2, first: 258, last: 262));
+      expect(
+        order.moveEnd(range, const AyahRef(3, 2), limit: 5),
+        const AyahRange(AyahRef(2, 284), AyahRef(3, 2)),
+      );
       // The start moved past the end: the end follows.
-      expect(move(first: 260), const AyahSpan(surah: 2, first: 260, last: 260));
-      expect(move(first: 0).first, 1);
-      expect(move(last: 300).last, 286);
+      expect(
+        order.moveStart(range, const AyahRef(2, 260), limit: 5),
+        const AyahRange(AyahRef(2, 260), AyahRef(2, 260)),
+      );
+      expect(
+        order.moveStart(range, const AyahRef(2, 400), limit: 5).start,
+        const AyahRef(2, 286),
+      );
+    });
+
+    test('a range is between two ayahs whichever is pressed first', () {
+      expect(
+        AyahRange.between(const AyahRef(3, 2), const AyahRef(2, 286)),
+        const AyahRange(AyahRef(2, 286), AyahRef(3, 2)),
+      );
     });
   });
 
@@ -68,8 +105,13 @@ void main() {
     Future<void> open(
       WidgetTester tester, {
       Locale locale = const Locale('ar'),
+      AyahRange initial = const AyahRange.single(AyahRef(2, 255)),
+      Size size = const Size(400, 860),
+      double textScale = 1,
     }) async {
-      tester.view.physicalSize = const Size(400, 860);
+      tester.view.physicalSize = size;
+      tester.platformDispatcher.textScaleFactorTestValue = textScale;
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.reset);
       tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
@@ -115,7 +157,7 @@ void main() {
                   onPressed: () => showAyahShare(
                     context,
                     HafsAyahTexts(text, fontFamily: 'KfgqpcHafs'),
-                    const AyahRef(2, 255),
+                    initial,
                   ),
                   child: const Text('open'),
                 ),
@@ -128,8 +170,9 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    int shownAyahs(WidgetTester tester) =>
-        tester.widget<AyahShareCard>(find.byType(AyahShareCard)).span.length;
+    int shownAyahs(WidgetTester tester) => tester
+        .widgetList<AyahShareCard>(find.byType(AyahShareCard))
+        .fold(0, (sum, card) => sum + card.refs.length);
 
     testWidgets('opens on the ayah pressed, and the range can grow', (
       tester,
@@ -176,19 +219,82 @@ void main() {
       await open(tester);
       await tester.runAsync(() async {
         await tester.tap(find.text('مشاركة كصورة'));
-        for (var i = 0; i < 20 && sharer.images.isEmpty; i++) {
+        for (var i = 0; i < 20 && sharer.shares.isEmpty; i++) {
           await Future<void>.delayed(const Duration(milliseconds: 50));
           await tester.pump();
         }
       });
-      final shared = sharer.images.single;
-      expect(shared.name, 'quran-2-255-255.png');
+      final shared = sharer.shares.single;
+      final image = shared.images.single;
+      expect(image.name, 'quran-2-255-2-255.png');
       // A PNG, three pixels for each of the card's 360.
-      expect(shared.png.sublist(1, 4), 'PNG'.codeUnits);
-      final width = ByteData.sublistView(shared.png, 16, 20).getUint32(0);
+      expect(image.png.sublist(1, 4), 'PNG'.codeUnits);
+      final width = ByteData.sublistView(image.png, 16, 20).getUint32(0);
       expect(width, 360 * 3);
       expect(shared.text, endsWith('[البقرة: ٢٥٥ · صفحة ٤٢]'));
     });
+
+    testWidgets('the last ayahs of a surah and the first of the next are '
+        'copied together, each surah in its own brackets', (tester) async {
+      await open(
+        tester,
+        initial: const AyahRange(AyahRef(2, 285), AyahRef(3, 2)),
+      );
+      expect(shownAyahs(tester), 4);
+      await tester.tap(find.text('نسخ'));
+      await tester.pump();
+      expect(
+        copied,
+        '\u200F﴿${text.uthmani(const AyahRef(2, 285))} (٢٨٥) '
+        '${text.uthmani(const AyahRef(2, 286))} (٢٨٦)﴾\n'
+        '\u200F[البقرة: ٢٨٥–٢٨٦ · صفحة ٤٩]\n'
+        '\u200F﴿${text.uthmani(const AyahRef(3, 1))} (١) '
+        '${text.uthmani(const AyahRef(3, 2))} (٢)﴾\n'
+        '\u200F[آل عمران: ١–٢ · صفحة ٥٠]',
+      );
+    });
+
+    testWidgets('stepping the end past a surah goes on into the next', (
+      tester,
+    ) async {
+      await open(tester, initial: const AyahRange.single(AyahRef(2, 286)));
+      await tester.tap(find.byTooltip('الآية التالية').last);
+      await tester.pump();
+      expect(shownAyahs(tester), 2);
+      expect(find.textContaining('آل عمران'), findsWidgets);
+    });
+
+    testWidgets('a long choice is cut into several pictures, all sent', (
+      tester,
+    ) async {
+      await open(
+        tester,
+        initial: const AyahRange(AyahRef(2, 1), AyahRef(2, 20)),
+      );
+      final cards = tester.widgetList<AyahShareCard>(
+        find.byType(AyahShareCard, skipOffstage: false),
+      );
+      expect(cards.length, greaterThan(1));
+      expect(cards.first.parts, cards.length);
+      // Every ayah is on exactly one picture, in order.
+      expect(
+        [for (final card in cards) ...card.refs],
+        [for (var ayah = 1; ayah <= 20; ayah++) AyahRef(2, ayah)],
+      );
+    });
+
+    for (final (name, size, scale) in [
+      ('a phone on its side', const Size(844, 390), 1.0),
+      ('the largest text', const Size(390, 844), 2.0),
+    ]) {
+      testWidgets('fits $name: everything scrolls, the actions stay', (
+        tester,
+      ) async {
+        await open(tester, size: size, textScale: scale);
+        expect(tester.takeException(), isNull);
+        expect(find.text('مشاركة كصورة'), findsOneWidget);
+      });
+    }
 
     testWidgets('the card shows the surah, the ayah and its page, and writes '
         'the ayahs right to left in English too', (tester) async {

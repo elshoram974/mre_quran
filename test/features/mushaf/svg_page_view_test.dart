@@ -19,6 +19,7 @@ import 'package:mre_quran/features/mushaf/presentation/surah_banner.dart';
 import 'package:mre_quran/features/mushaf/presentation/svg_page_view.dart';
 import 'package:mre_quran/features/quran_index/data/quran_metadata_parser.dart';
 import 'package:mre_quran/features/quran_index/domain/quran_metadata.dart';
+import 'package:mre_quran/features/quran_text/domain/ayah_range.dart';
 import 'package:mre_quran/l10n/generated/app_localizations.dart';
 
 import '../../helpers/svg_page_fixtures.dart';
@@ -34,10 +35,11 @@ void main() {
     int page = 3,
     Locale locale = const Locale('ar'),
     ThemeData? theme,
-    AyahRef? selected,
+    AyahRange? selected,
     Set<AyahRef> bookmarked = const {},
     VoidCallback? onTap,
     ValueChanged<AyahRef>? onAyahLongPress,
+    ValueChanged<AyahRef>? onAyahTap,
     WidgetBuilder? fallbackBuilder,
     Duration fallbackAfter = const Duration(seconds: 30),
     Size size = const Size(390, 844),
@@ -62,6 +64,7 @@ void main() {
               page: page,
               onTap: onTap ?? () {},
               onAyahLongPress: onAyahLongPress,
+              onAyahTap: onAyahTap,
               selected: selected,
               bookmarked: bookmarked,
               fallbackBuilder: fallbackBuilder,
@@ -141,6 +144,34 @@ void main() {
     await tester.tapAt(tester.getCenter(find.byType(SvgPicture).first));
     await tester.pump();
     expect(taps, 1);
+  });
+
+  testWidgets('while ayahs are being chosen, a tap on one reports it; a tap '
+      'beside every ayah is still passed on', (tester) async {
+    final page = fixturePage(3);
+    final tapped = <AyahRef>[];
+    var taps = 0;
+    final region = page.layout.regions[2];
+    await pump(
+      tester,
+      load: (request) async => fixturePicture(request),
+      selected: AyahRange(page.layout.regions.first.ref, region.ref),
+      onAyahTap: tapped.add,
+      onTap: () => taps++,
+    );
+    final ring = region.rings.first;
+    await tester.tapAt(
+      onScreen(
+        tester,
+        page,
+        (ring[0].x + ring[2].x) / 2,
+        (ring[0].y + ring[2].y) / 2,
+      ),
+    );
+    await tester.pump();
+    expect(tapped, [region.ref]);
+    expect(taps, 0);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('the page sits the same way in Arabic and in English', (

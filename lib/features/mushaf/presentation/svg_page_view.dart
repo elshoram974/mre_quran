@@ -18,6 +18,7 @@ import '../../../core/theme/quran_colors.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../quran_index/domain/quran_metadata.dart';
+import '../../quran_text/domain/ayah_range.dart';
 import '../../settings/application/digits_provider.dart';
 import '../../settings/application/settings_provider.dart';
 import '../../settings/domain/app_settings.dart';
@@ -43,6 +44,7 @@ class SvgPageView extends StatelessWidget {
     required this.page,
     required this.onTap,
     this.onAyahLongPress,
+    this.onAyahTap,
     this.bookmarked = const {},
     this.selected,
     this.fillWidth = false,
@@ -72,11 +74,15 @@ class SvgPageView extends StatelessWidget {
   /// Called with the ayah that was pressed and held.
   final ValueChanged<AyahRef>? onAyahLongPress;
 
+  /// Called with the ayah that was tapped, in place of [onTap], when given.
+  /// A tap outside every ayah still calls [onTap].
+  final ValueChanged<AyahRef>? onAyahTap;
+
   /// Ayahs the reader bookmarked, tinted lightly.
   final Set<AyahRef> bookmarked;
 
-  /// The ayah to highlight.
-  final AyahRef? selected;
+  /// The ayahs to highlight.
+  final AyahRange? selected;
 
   /// Whether this is the single-page reader: it uses the available width and
   /// lets a tall page scroll vertically instead of shrinking it.
@@ -114,6 +120,7 @@ class SvgPageView extends StatelessWidget {
           ),
           onTap: onTap,
           onAyahLongPress: onAyahLongPress,
+          onAyahTap: onAyahTap,
           bookmarked: bookmarked,
           selected: selected,
           fillWidth: fillWidth,
@@ -218,6 +225,7 @@ class _SvgBody extends ConsumerWidget {
     required this.label,
     required this.onTap,
     required this.onAyahLongPress,
+    required this.onAyahTap,
     required this.bookmarked,
     required this.selected,
     required this.fillWidth,
@@ -232,8 +240,9 @@ class _SvgBody extends ConsumerWidget {
   final String label;
   final VoidCallback onTap;
   final ValueChanged<AyahRef>? onAyahLongPress;
+  final ValueChanged<AyahRef>? onAyahTap;
   final Set<AyahRef> bookmarked;
-  final AyahRef? selected;
+  final AyahRange? selected;
   final bool fillWidth;
   final WidgetBuilder? fallbackBuilder;
   final bool slow;
@@ -263,6 +272,7 @@ class _SvgBody extends ConsumerWidget {
         label: label,
         onTap: onTap,
         onAyahLongPress: onAyahLongPress,
+        onAyahTap: onAyahTap,
         bookmarked: bookmarked,
         selected: selected,
         fillWidth: fillWidth,
@@ -387,6 +397,7 @@ class _SvgArtwork extends StatelessWidget {
     required this.label,
     required this.onTap,
     required this.onAyahLongPress,
+    required this.onAyahTap,
     required this.bookmarked,
     required this.selected,
     required this.fillWidth,
@@ -399,8 +410,9 @@ class _SvgArtwork extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
   final ValueChanged<AyahRef>? onAyahLongPress;
+  final ValueChanged<AyahRef>? onAyahTap;
   final Set<AyahRef> bookmarked;
-  final AyahRef? selected;
+  final AyahRange? selected;
   final bool fillWidth;
 
   @override
@@ -544,12 +556,19 @@ class _SvgArtwork extends StatelessWidget {
       ),
     );
     final longPress = onAyahLongPress;
+    final ayahTap = onAyahTap;
     return Semantics(
       container: true,
       image: true,
       label: label,
       child: GestureDetector(
-        onTap: onTap,
+        onTap: ayahTap == null ? onTap : null,
+        onTapUp: ayahTap == null
+            ? null
+            : (details) => switch (ayahAt(details.localPosition)) {
+                final ayah? => ayahTap(ayah),
+                null => onTap(),
+              },
         onLongPressStart: longPress == null
             ? null
             : (details) {
@@ -574,9 +593,10 @@ class _SvgArtwork extends StatelessWidget {
                             region: region,
                             color: scheme.tertiary.withValues(alpha: 0.16),
                           ),
-                      if (selected case final ayah?)
-                        if (layout.regionOf(ayah) case final region?)
-                          (region: region, color: colors.highlight),
+                      if (selected case final range?)
+                        for (final region in layout.regions)
+                          if (range.contains(region.ref))
+                            (region: region, color: colors.highlight),
                     ],
                   ),
                 ),

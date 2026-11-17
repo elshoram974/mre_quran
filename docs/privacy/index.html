@@ -69,7 +69,7 @@
 
   <section id="ar" lang="ar">
     <h2>باختصار</h2>
-    <p>مصحفي يعمل على جهازك. لا حسابات، ولا إعلانات، ولا أدوات تحليل أو تتبّع. لا نجمع بياناتك الشخصية ولا نبيعها ولا نشاركها.</p>
+    <p>مصحفي يعمل على جهازك. لا حسابات، ولا إعلانات، ولا أدوات تحليل أو تتبّع. لا نجمع بياناتك الشخصية ولا نبيعها ولا نشاركها. الشيء الوحيد الذي يُرسَل تلقائيًا هو تقارير الأعطال التقنية (انظر أدناه)، ويمكنك إيقافها.</p>
 
     <h2>ما يُحفَظ على جهازك فقط</h2>
     <ul>
@@ -90,14 +90,20 @@
     </ul>
     <p>هذه تنزيلات ملفات فقط: لا نرسل فيها أي معرّف لك. كأي تنزيل، يرى الخادم عنوان IP الخاص بجهازك.</p>
 
-    <h2>تقارير الأعطال (اختيارية)</h2>
-    <p>معطَّلة افتراضيًا. إن فعّلتها من الإعدادات، تُرسَل تقارير الأعطال إلى Firebase Crashlytics من Google لمساعدتنا على إصلاح الأخطاء. يحتوي التقرير على تفاصيل تقنية فقط: مكان العطل في الشيفرة، وطراز الجهاز، ونسخة النظام والتطبيق. لا يحتوي على موقعك ولا على محتوى تكتبه. يمكنك إيقافها في أي وقت.</p>
+    <h2>تقارير الأعطال</h2>
+    <p>مفعّلة افتراضيًا، ويمكنك إيقافها في أي وقت من الإعدادات (تقارير الأعطال). حين يتعطل التطبيق أو يقع فيه خطأ، يُرسَل تقرير إلى Firebase Crashlytics من Google لنعرف المشكلة ونصلحها.</p>
+    <ul>
+      <li><strong>ما فيه:</strong> مكان العطل في الشيفرة وسلسلة الاستدعاءات، وطراز الجهاز ونظامه ونسخته، ونسخة التطبيق، ولغة الواجهة، والذاكرة والمساحة المتاحة، ووقت العطل، ومعرّف تثبيت عشوائي ينشئه Crashlytics ليجمع أعطال الجهاز الواحد (لا يرتبط باسمك ولا بحسابك، ويتغيّر إن حذفت التطبيق).</li>
+      <li><strong>ما ليس فيه:</strong> موقعك، وما تكتبه أو تبحث عنه، وعلاماتك، وأي بيانات شخصية.</li>
+      <li><strong>من يعالجه:</strong> Google بصفتها مزوّد خدمة لنا، وتعالج Google عنوان IP لإيصال التقرير. تحتفظ Crashlytics بالتقارير ٩٠ يومًا. انظر <a href="https://firebase.google.com/support/privacy">خصوصية Firebase</a>.</li>
+      <li>لا تُستخدم التقارير في الإعلانات ولا التتبّع ولا تُباع.</li>
+    </ul>
 
     <h2>الإشعارات والأدوات</h2>
     <p>تذكيرات الصلاة والأذكار إشعارات محلية يجدولها جهازك، ولا تمر بأي خادم. أدوات الشاشة الرئيسية تقرأ من بيانات التطبيق على الجهاز نفسه.</p>
 
     <h2>الأطفال</h2>
-    <p>التطبيق مناسب للجميع، ولا يجمع بيانات من أي أحد، صغيرًا كان أو كبيرًا.</p>
+    <p>التطبيق مناسب للجميع، ولا يجمع بيانات شخصية من أي أحد، صغيرًا كان أو كبيرًا.</p>
 
     <h2>التغييرات والتواصل</h2>
     <p>إن تغيّرت هذه السياسة، نحدّث هذه الصفحة وتاريخها أعلاه. للأسئلة: <span class="contact">[بريد التواصل]</span>.</p>
@@ -105,7 +111,7 @@
 
   <section id="en" lang="en">
     <h2>In short</h2>
-    <p>Mushafi works on your device. There are no accounts, no ads, and no analytics or tracking. We do not collect, sell or share your personal data.</p>
+    <p>Mushafi works on your device. There are no accounts, no ads, and no analytics or tracking. We do not collect, sell or share your personal data. The one thing sent on its own is technical crash reports (see below), and you can turn them off.</p>
 
     <h2>Kept on your device only</h2>
     <ul>
@@ -126,14 +132,20 @@
     </ul>
     <p>These are plain file downloads: nothing that identifies you is sent. As with any download, the server sees your device's IP address.</p>
 
-    <h2>Crash reports (optional)</h2>
-    <p>Off by default. If you turn them on in the settings, crash reports go to Google's Firebase Crashlytics to help us fix bugs. A report holds technical details only: where in the code the crash happened, the device model, and the system and app versions. It holds neither your location nor anything you type. You can turn them off at any time.</p>
+    <h2>Crash reports</h2>
+    <p>On by default; you can turn them off at any time in the settings (Crash reports). When the app crashes or hits an error, a report goes to Google's Firebase Crashlytics so we can find and fix the problem.</p>
+    <ul>
+      <li><strong>What it holds:</strong> where in the code the crash happened and the call stack, the device model, its system and version, the app version, the interface language, free memory and storage, the time of the crash, and a random installation ID that Crashlytics creates to group one device's crashes (it is not tied to your name or any account, and changes if you delete the app).</li>
+      <li><strong>What it does not hold:</strong> your location, anything you type or search for, your bookmarks, or any personal data.</li>
+      <li><strong>Who handles it:</strong> Google, as our service provider; Google processes your IP address to deliver the report. Crashlytics keeps reports for 90 days. See <a href="https://firebase.google.com/support/privacy">Firebase privacy</a>.</li>
+      <li>Reports are never used for ads or tracking, and never sold.</li>
+    </ul>
 
     <h2>Notifications and widgets</h2>
     <p>Prayer and adhkar reminders are local notifications scheduled by your device; they go through no server. Home-screen widgets read the app's data on the device itself.</p>
 
     <h2>Children</h2>
-    <p>The app is suitable for everyone, and collects no data from anyone, young or old.</p>
+    <p>The app is suitable for everyone, and collects no personal data from anyone, young or old.</p>
 
     <h2>Changes and contact</h2>
     <p>If this policy changes, we update this page and its date above. Questions: <span class="contact">[contact email]</span>.</p>

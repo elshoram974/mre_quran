@@ -28,15 +28,20 @@
 - **Alternatives:** Blur the Mushaf page or use a full-screen glass effect.
 - **Reason:** The reader needs stable contrast, lower GPU cost, and reverence.
 
-## D-005: Firebase Crashlytics is configured but opt-in
+## D-005: Firebase Crashlytics is on by default, with an opt-out
 
-- **Decision:** Use the Firebase project configured for MRE Quran (technical ID
-  `mre-golden-quran-2026`) for Android and iOS Crashlytics. Initialise Firebase at startup, disable collection before
-  rendering, and enable it only after the reader switches on the explicit
-  Settings control. Do not add Analytics.
-- **Alternatives:** Add a placeholder configuration or collect automatically.
-- **Reason:** This preserves the offline/private product promise while keeping
-  a real, verified crash-reporting integration ready for consent.
+- **Decision (revised 2026-11-17, by the project owner):** Crash reports are collected from the first
+  launch, without asking first, so problems on real devices are seen. The settings keep a switch to
+  turn them off; the app applies it at every start. Debug builds never report. Collection is enabled
+  natively (`firebase_crashlytics_collection_enabled`, `FirebaseCrashlyticsCollectionEnabled`) so a
+  crash before Dart starts is reported too. The Crashlytics Gradle plugin uploads the R8 mapping of
+  release builds. Do not add Analytics.
+- **Was:** opt-in, off by default (decided before the first release).
+- **Reason:** The owner needs crash data to fix problems before and after release. The privacy policy,
+  the Data safety answers and the App Privacy answers say what a report holds.
+- **Release builds:** they are obfuscated (`--obfuscate --split-debug-info=build/symbols`); upload the
+  Dart symbols after each build or the Dart stack traces stay unreadable:
+  `firebase crashlytics:symbols:upload --app=<Firebase app ID> build/symbols`.
 
 ## D-006: Do not bundle QCF assets yet
 

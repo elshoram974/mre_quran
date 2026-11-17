@@ -15,7 +15,7 @@ class AppSettings {
     this.reduceMotion = false,
     this.hapticsEnabled = true,
     this.useArabicDigits = true,
-    this.crashReportsEnabled = false,
+    this.crashReportsEnabled = true,
     this.startupBehavior = StartupBehavior.lastTab,
     this.readerFontScale = 1,
     this.realisticPageTurn = false,

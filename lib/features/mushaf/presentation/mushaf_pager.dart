@@ -1,8 +1,10 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/haptics/haptics.dart';
 import '../../bookmarks/application/bookmarks_provider.dart';
 import '../../quran_index/domain/quran_metadata.dart';
+import '../../quran_text/domain/ayah_range.dart';
 import '../../quran_text/domain/quran_text.dart';
 import '../../settings/application/settings_provider.dart';
 import '../../settings/application/digits_provider.dart';
@@ -10,11 +12,13 @@ import '../../settings/domain/app_settings.dart';
 import '../application/reader_immersive_provider.dart';
 import '../application/reading_position_provider.dart';
 import '../../../core/l10n/l10n.dart';
+import '../application/ayah_selection_provider.dart';
 import '../application/highlighted_ayah_provider.dart';
 import '../application/page_prefetcher.dart';
 import '../application/svg_page_providers.dart';
 import '../../quran_text/application/ayah_texts_provider.dart';
 import 'ayah_actions_sheet.dart';
+import 'ayah_share_format.dart';
 import 'flip/book_flip.dart';
 import 'mushaf_page_view.dart';
 import 'svg_page_view.dart';
@@ -125,9 +129,15 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
 
   int get _pageCount => widget.metadata.pageCount;
 
-  /// The ayah actions of a page of [edition].
-  ValueChanged<AyahRef> _actionsOf(MushafEdition edition) =>
-      (ayah) => _showActions(edition, ayah);
+  /// What a long press on an ayah of a page of [edition] does: open its
+  /// actions, or, while ayahs are being chosen, take the choice to it.
+  ValueChanged<AyahRef> _actionsOf(MushafEdition edition) => (ayah) {
+    if (ref.read(ayahSelectionProvider) != null) {
+      _extend(edition, ayah);
+    } else {
+      _showActions(edition, ayah);
+    }
+  };
 
   Future<void> _showActions(MushafEdition edition, AyahRef ayah) async {
     final texts = ref.read(editionTextsProvider(edition)).value;
@@ -140,8 +150,48 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
       texts,
       ayah,
       bookmarks: edition.matchesAppText,
+      onSelectMore: () =>
+          ref.read(ayahSelectionProvider.notifier).start(edition, texts, ayah),
     );
     if (mounted) setState(() => _selected = null);
+  }
+
+  /// Takes the ayahs being chosen to [ayah], on a page of [edition].
+  void _extend(MushafEdition edition, AyahRef ayah) {
+    final selection = ref.read(ayahSelectionProvider);
+    if (selection == null || selection.edition != edition) return;
+    if (!selection.texts.has(ayah)) return;
+    Haptics.select();
+    final fits = ref
+        .read(ayahSelectionProvider.notifier)
+        .extendTo(ayah, limit: ayahShareLimit);
+    if (fits) return;
+    final l10n = context.l10n;
+    ScaffoldMessenger.maybeOf(context)
+      ?..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            l10n.selectionLimitReached(
+              ref.read(digitsFormatterProvider)(ayahShareLimit),
+            ),
+          ),
+        ),
+      );
+  }
+
+  /// The ayahs to highlight on a page of [edition]: the ones being chosen,
+  /// the one whose actions are open, or the one the reader arrived at.
+  AyahRange? _highlightOn(
+    MushafEdition edition,
+    AyahSelection? selection,
+    AyahRef? highlighted,
+  ) {
+    if (selection != null && selection.edition == edition) {
+      return selection.range;
+    }
+    final single = _selected ?? highlighted;
+    return single == null ? null : AyahRange.single(single);
   }
 
   /// Keeps the text size a pinch reached.
@@ -194,6 +244,10 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
     final hasText = ref.watch(editionTextsProvider(edition)).value != null;
     final bookmarked = ref.watch(bookmarkedRefsProvider);
     final highlighted = ref.watch(highlightedAyahProvider);
+    final selection = ref.watch(ayahSelectionProvider);
+    // While ayahs are being chosen, a tap on one takes the choice to it.
+    ValueChanged<AyahRef>? tapOf(MushafEdition edition) =>
+        selection == null ? null : (ayah) => _extend(edition, ayah);
 
     final book = Directionality(
       // The Mushaf turns right to left in every app language.
@@ -220,7 +274,7 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
             frame: frame,
             digits: digits,
             bookmarked: bookmarked,
-            selected: _selected ?? highlighted,
+            selected: _highlightOn(MushafEditions.hafs, selection, highlighted),
             // The typeset text and its stand-in are always Hafs.
             onAyahLongPress: _actionsOf(MushafEditions.hafs),
             onFontScaleChanged: _saveFontScale,
@@ -237,8 +291,9 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
             digits: digits,
             fillWidth: !spread,
             spread: spread,
-            selected: _selected,
+            selected: _highlightOn(edition, selection, null),
             onAyahLongPress: hasText ? _actionsOf(edition) : null,
+            onAyahTap: tapOf(edition),
             onTap: _onTap,
           ),
           ReaderMode.printed => SvgPageView(
@@ -248,9 +303,10 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
             fillWidth: !spread,
             spread: spread,
             bookmarked: bookmarked,
-            selected: _selected ?? highlighted,
+            selected: _highlightOn(MushafEditions.hafs, selection, highlighted),
             // The typeset text and its stand-in are always Hafs.
             onAyahLongPress: _actionsOf(MushafEditions.hafs),
+            onAyahTap: tapOf(MushafEditions.hafs),
             onTap: _onTap,
             // Without its artwork the page still reads, as text, once the
             // text is read.
@@ -263,7 +319,11 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
                     frame: frame,
                     digits: digits,
                     bookmarked: bookmarked,
-                    selected: _selected ?? highlighted,
+                    selected: _highlightOn(
+                      MushafEditions.hafs,
+                      selection,
+                      highlighted,
+                    ),
                     // The typeset text and its stand-in are always Hafs.
                     onAyahLongPress: _actionsOf(MushafEditions.hafs),
                     onTap: _onTap,

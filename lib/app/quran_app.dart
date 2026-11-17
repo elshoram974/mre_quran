@@ -71,11 +71,8 @@ class QuranApp extends ConsumerWidget {
         darkTheme: AppTheme.of(settings.theme.nightPaper, settings.accent),
         themeMode: settings.materialThemeMode,
         routerConfig: ref.watch(routerProvider),
-        builder: (context, child) => AdhkarWidgetSyncScope(
-          child: PrayerWidgetSyncScope(
-            child: _SystemBars(child: StartupSplash(child: child!)),
-          ),
-        ),
+        builder: (context, child) =>
+            AdhkarWidgetSyncScope(child: PrayerWidgetSyncScope(child: child!)),
       ),
     );
   }

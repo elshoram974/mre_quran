@@ -329,7 +329,7 @@ abstract class AppLocalizations {
   /// No description provided for @crashReportsDescription.
   ///
   /// In en, this message translates to:
-  /// **'Share anonymous crash reports to help improve the app. Off by default.'**
+  /// **'Technical crash reports, with none of your personal data, are sent so we can fix bugs quickly. You can turn them off.'**
   String get crashReportsDescription;
 
   /// No description provided for @about.
@@ -1754,18 +1754,6 @@ abstract class AppLocalizations {
   /// **'Share ayahs'**
   String get shareAyahsTitle;
 
-  /// No description provided for @shareFromAyah.
-  ///
-  /// In en, this message translates to:
-  /// **'From ayah'**
-  String get shareFromAyah;
-
-  /// No description provided for @shareToAyah.
-  ///
-  /// In en, this message translates to:
-  /// **'To ayah'**
-  String get shareToAyah;
-
   /// No description provided for @shareAsText.
   ///
   /// In en, this message translates to:
@@ -1801,6 +1789,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Up to {count} ayahs at a time'**
   String shareLimit(String count);
+
+  /// No description provided for @shareFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'From'**
+  String get shareFrom;
+
+  /// No description provided for @shareTo.
+  ///
+  /// In en, this message translates to:
+  /// **'To'**
+  String get shareTo;
+
+  /// No description provided for @shareSurah.
+  ///
+  /// In en, this message translates to:
+  /// **'Surah'**
+  String get shareSurah;
+
+  /// No description provided for @shareAyahField.
+  ///
+  /// In en, this message translates to:
+  /// **'Ayah'**
+  String get shareAyahField;
+
+  /// No description provided for @sharePicture.
+  ///
+  /// In en, this message translates to:
+  /// **'Picture {index} of {count}'**
+  String sharePicture(String index, String count);
+
+  /// No description provided for @surahAyah.
+  ///
+  /// In en, this message translates to:
+  /// **'{surah} {ayah}'**
+  String surahAyah(String surah, String ayah);
+
+  /// No description provided for @selectAyahs.
+  ///
+  /// In en, this message translates to:
+  /// **'Select more ayahs'**
+  String get selectAyahs;
+
+  /// No description provided for @selectionHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the last ayah you want, even on another page'**
+  String get selectionHint;
+
+  /// No description provided for @selectionCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 ayah} other{{number} ayahs}}'**
+  String selectionCount(int count, String number);
+
+  /// No description provided for @cancelSelection.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel selection'**
+  String get cancelSelection;
+
+  /// No description provided for @selectionLimitReached.
+  ///
+  /// In en, this message translates to:
+  /// **'That is the most at once: {count} ayahs'**
+  String selectionLimitReached(String count);
 
   /// No description provided for @ayahRange.
   ///

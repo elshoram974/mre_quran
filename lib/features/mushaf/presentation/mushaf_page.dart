@@ -13,8 +13,10 @@ import '../../quran_text/application/quran_text_providers.dart';
 import '../../settings/application/settings_provider.dart';
 import '../../settings/domain/app_settings.dart';
 import '../../settings/application/digits_provider.dart';
+import '../application/ayah_selection_provider.dart';
 import '../application/reader_immersive_provider.dart';
 import '../application/reading_position_provider.dart';
+import 'ayah_selection_bar.dart';
 import 'display_options_sheet.dart';
 import 'go_to_page_sheet.dart';
 import 'mushaf_pager.dart';
@@ -45,6 +47,7 @@ class MushafPage extends ConsumerWidget {
         ReaderMode.text;
     final page = ref.watch(readingPositionProvider).value;
     final immersive = ref.watch(readerImmersiveProvider);
+    final choosing = ref.watch(ayahSelectionProvider) != null;
     // Rebuilds when the screen's insets change (rotation, navigation mode).
     MediaQuery.viewPaddingOf(context);
 
@@ -174,40 +177,59 @@ class MushafPage extends ConsumerWidget {
           ),
         );
     return ReaderOrientationScope(
-      child: ColoredBox(
-        color: scheme.surface,
-        child: Padding(
-          padding: safe,
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: MushafPager(
-                  metadata: structure,
-                  text: text.value,
-                  initialPage: page,
+      // Back ends the choosing of ayahs before it leaves the reader.
+      child: PopScope(
+        canPop: !choosing,
+        onPopInvokedWithResult: (didPop, _) {
+          if (!didPop) ref.read(ayahSelectionProvider.notifier).clear();
+        },
+        child: ColoredBox(
+          color: scheme.surface,
+          child: Padding(
+            padding: safe,
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: MushafPager(
+                    metadata: structure,
+                    text: text.value,
+                    initialPage: page,
+                  ),
                 ),
-              ),
-              PositionedDirectional(
-                top: 4,
-                start: 12,
-                end: 12,
-                child: appear(
-                  toolbar,
-                  shown: !immersive,
-                  from: const Offset(0, -0.4),
+                PositionedDirectional(
+                  top: 4,
+                  start: 12,
+                  end: 12,
+                  child: appear(
+                    toolbar,
+                    shown: !immersive,
+                    from: const Offset(0, -0.4),
+                  ),
                 ),
-              ),
-              PositionedDirectional(
-                bottom: barRoom + 10,
-                start: 12,
-                end: 12,
-                child: appear(
-                  controls,
-                  shown: !immersive,
-                  from: const Offset(0, 0.4),
+                PositionedDirectional(
+                  bottom: barRoom + 10,
+                  start: 12,
+                  end: 12,
+                  child: appear(
+                    controls,
+                    shown: !immersive && !choosing,
+                    from: const Offset(0, 0.4),
+                  ),
                 ),
-              ),
-            ],
+                // While ayahs are being chosen, their count and actions take
+                // the controls' place.
+                PositionedDirectional(
+                  bottom: barRoom + 10,
+                  start: 12,
+                  end: 12,
+                  child: appear(
+                    const AyahSelectionBar(),
+                    shown: choosing,
+                    from: const Offset(0, 0.4),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

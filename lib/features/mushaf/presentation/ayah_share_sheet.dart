@@ -10,53 +10,29 @@ import '../../../core/l10n/l10n.dart';
 import '../../../core/sharing/sharer.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/app_sheet.dart';
+import '../../../core/widgets/app_select_field.dart';
 import '../../quran_index/domain/quran_metadata.dart';
-import '../../quran_text/domain/ayah_span.dart';
+import '../../quran_text/domain/ayah_range.dart';
+import '../../quran_text/domain/ayah_share_text.dart';
 import '../../quran_text/domain/ayah_texts.dart';
 import '../../settings/application/digits_provider.dart';
 import 'ayah_share_card.dart';
+import 'ayah_share_format.dart';
 import '../../settings/domain/app_settings.dart';
 import '../../settings/application/settings_provider.dart';
 
-/// Opens the sharing of [target]: choose from which ayah to which, see the
-/// picture as it will be sent, then copy, send as text, or send as a
-/// picture.
+/// Opens the sharing of [initial]: choose from which ayah to which, across
+/// surahs if wanted, see the pictures as they will be sent, then copy, send
+/// as text, or send as pictures.
 Future<void> showAyahShare(
   BuildContext context,
   AyahTexts text,
-  AyahRef target,
+  AyahRange initial,
 ) => AppSheet.showFilling<void>(
   context: context,
-  builder: (_, scroll) => AyahShareSheet(
-    text: text,
-    initial: AyahSpan.single(target),
-    scroll: scroll,
-  ),
+  builder: (_, scroll) =>
+      AyahShareSheet(text: text, initial: initial, scroll: scroll),
 );
-
-/// The ayahs with their reference, ready to paste:
-/// `﴿… (٢٥٥)﴾` and on the next line `[البقرة: ٢٥٥ · صفحة ٤٢]`, each line
-/// set to read right to left in any app and any language.
-String ayahShareText(
-  BuildContext context,
-  AyahTexts text,
-  AyahSpan span,
-  String Function(int) digits,
-) {
-  final l10n = context.l10n;
-  final pages = AyahShareText.pages(text, span);
-  final page = pages.first == pages.last
-      ? l10n.pageNumber(digits(pages.first))
-      : l10n.pageRange(digits(pages.first), digits(pages.last));
-  final ayahs = span.length == 1
-      ? digits(span.first)
-      : l10n.ayahRange(digits(span.first), digits(span.last));
-  final surah = text.metadata.surah(span.surah).arabicName;
-  return AyahShareText.rightToLeft(
-    '${AyahShareText.body(text, span, digits)}\n'
-    '${l10n.ayahShareReference(surah, ayahs, page)}',
-  );
-}
 
 /// The body of the sharing sheet.
 class AyahShareSheet extends ConsumerStatefulWidget {
@@ -72,14 +48,11 @@ class AyahShareSheet extends ConsumerStatefulWidget {
   final AyahTexts text;
 
   /// The ayahs chosen when the sheet opens.
-  final AyahSpan initial;
+  final AyahRange initial;
 
-  /// The sheet's scroll controller, for the preview.
+  /// The sheet's scroll controller: the whole body scrolls with it, so the
+  /// sheet fits a phone on its side and the largest text.
   final ScrollController scroll;
-
-  /// The most ayahs shared at once: a picture longer than this is too long
-  /// to read on a phone.
-  static const int limit = 10;
 
   /// How sharp the picture is: pixels per logical pixel of the card.
   static const double pixelRatio = 3;
@@ -89,25 +62,27 @@ class AyahShareSheet extends ConsumerStatefulWidget {
 }
 
 class _AyahShareSheetState extends ConsumerState<AyahShareSheet> {
-  late AyahSpan _span = widget.initial;
-  final GlobalKey _card = GlobalKey();
+  late final AyahOrder _order = AyahOrder.of(widget.text);
+  late AyahRange _range = _order.moveEnd(
+    widget.initial,
+    widget.initial.end,
+    limit: ayahShareLimit,
+  );
+  List<GlobalKey> _cards = [];
   bool _busy = false;
 
-  int get _surahLength => widget.text.ayahCount(_span.surah);
+  void _moveStart(AyahRef start) => setState(
+    () => _range = _order.moveStart(_range, start, limit: ayahShareLimit),
+  );
 
-  void _move({int? first, int? last}) => setState(
-    () => _span = _span.adjusted(
-      first: first,
-      last: last,
-      surahLength: _surahLength,
-      limit: AyahShareSheet.limit,
-    ),
+  void _moveEnd(AyahRef end) => setState(
+    () => _range = _order.moveEnd(_range, end, limit: ayahShareLimit),
   );
 
   String _text() => ayahShareText(
     context,
     widget.text,
-    _span,
+    _range,
     ref.read(digitsFormatterProvider),
   );
 
@@ -136,20 +111,26 @@ class _AyahShareSheetState extends ConsumerState<AyahShareSheet> {
   Future<void> _shareText() =>
       _run(() => ref.read(sharerProvider).shareText(_text()));
 
-  Future<void> _shareImage() => _run(() async {
+  Future<void> _shareImages() => _run(() async {
     final text = _text();
-    final boundary =
-        _card.currentContext!.findRenderObject()! as RenderRepaintBoundary;
-    final image = await boundary.toImage(pixelRatio: AyahShareSheet.pixelRatio);
-    final data = await image.toByteData(format: ui.ImageByteFormat.png);
-    image.dispose();
-    await ref
-        .read(sharerProvider)
-        .shareImage(
-          data!.buffer.asUint8List(),
-          name: 'quran-${_span.surah}-${_span.first}-${_span.last}.png',
-          text: text,
-        );
+    final start = _range.start;
+    final end = _range.end;
+    final base = 'quran-${start.surah}-${start.ayah}-${end.surah}-${end.ayah}';
+    final images = <SharedImage>[];
+    for (final (index, key) in _cards.indexed) {
+      final boundary =
+          key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+      final image = await boundary.toImage(
+        pixelRatio: AyahShareSheet.pixelRatio,
+      );
+      final data = await image.toByteData(format: ui.ImageByteFormat.png);
+      image.dispose();
+      images.add((
+        png: data!.buffer.asUint8List(),
+        name: _cards.length == 1 ? '$base.png' : '$base-${index + 1}.png',
+      ));
+    }
+    await ref.read(sharerProvider).shareImages(images, text: text);
   });
 
   @override
@@ -157,114 +138,206 @@ class _AyahShareSheetState extends ConsumerState<AyahShareSheet> {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final digits = ref.watch(digitsFormatterProvider);
-    return Padding(
-      padding: EdgeInsetsDirectional.fromSTEB(
-        AppTokens.gutterCompact,
-        0,
-        AppTokens.gutterCompact,
-        MediaQuery.paddingOf(context).bottom + 12,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          AppSheetDragArea(
+    final frame =
+        ref.watch(settingsProvider).value?.surahFrame ??
+        SurahFrameStyle.cartouche;
+    final pictures = AyahShareText.pictures(widget.text, _order.refs(_range));
+    if (_cards.length != pictures.length) {
+      _cards = [for (final _ in pictures) GlobalKey()];
+    }
+    final surahs = [
+      for (final surah in widget.text.metadata.surahs)
+        if (_order.ayahCount(surah.number) > 0)
+          AppSelectOption<int>(
+            value: surah.number,
+            label: '${digits(surah.number)}. ${surah.arabicName}',
+          ),
+    ];
+    const gutter = EdgeInsetsDirectional.symmetric(
+      horizontal: AppTokens.gutterCompact,
+    );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Expanded(
+          // Not a lazy list: every picture is laid out and painted, so each
+          // can be sent, the ones scrolled out of sight too.
+          child: SingleChildScrollView(
+            controller: widget.scroll,
+            padding: gutter,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(l10n.shareAyahsTitle, style: theme.textTheme.titleLarge),
                 const SizedBox(height: AppTokens.spaceSmall),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _AyahStepper(
-                        label: l10n.shareFromAyah,
-                        value: digits(_span.first),
-                        onLess: _span.first > 1
-                            ? () => _move(first: _span.first - 1)
-                            : null,
-                        onMore: _span.first < _surahLength
-                            ? () => _move(first: _span.first + 1)
-                            : null,
-                      ),
-                    ),
-                    const SizedBox(width: AppTokens.spaceSmall),
-                    Expanded(
-                      child: _AyahStepper(
-                        label: l10n.shareToAyah,
-                        value: digits(_span.last),
-                        onLess: _span.last > 1
-                            ? () => _move(last: _span.last - 1)
-                            : null,
-                        onMore: _span.last < _surahLength
-                            ? () => _move(last: _span.last + 1)
-                            : null,
-                      ),
-                    ),
-                  ],
+                _RangeEnd(
+                  label: l10n.shareFrom,
+                  ayah: _range.start,
+                  surahs: surahs,
+                  digits: digits,
+                  onSurah: (surah) => _moveStart(AyahRef(surah, 1)),
+                  onLess: _order.indexOf(_range.start) > 0
+                      ? () => _moveStart(_order.step(_range.start, -1))
+                      : null,
+                  onMore: _order.indexOf(_range.start) < _order.total - 1
+                      ? () => _moveStart(_order.step(_range.start, 1))
+                      : null,
                 ),
+                const SizedBox(height: AppTokens.spaceSmall),
+                _RangeEnd(
+                  label: l10n.shareTo,
+                  ayah: _range.end,
+                  surahs: surahs,
+                  digits: digits,
+                  onSurah: (surah) => _moveEnd(AyahRef(surah, 1)),
+                  onLess: _order.indexOf(_range.end) > 0
+                      ? () => _moveEnd(_order.step(_range.end, -1))
+                      : null,
+                  onMore: _order.indexOf(_range.end) < _order.total - 1
+                      ? () => _moveEnd(_order.step(_range.end, 1))
+                      : null,
+                ),
+                const SizedBox(height: AppTokens.spaceSmall),
                 Text(
-                  l10n.shareLimit(digits(AyahShareSheet.limit)),
+                  '${l10n.selectionCount(_order.length(_range), digits(_order.length(_range)))}'
+                  ' · ${l10n.shareLimit(digits(ayahShareLimit))}',
                   textAlign: TextAlign.center,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                   ),
                 ),
                 const SizedBox(height: AppTokens.spaceSmall),
+                // The pictures as they will be sent, scaled to the sheet.
+                for (final (index, refs) in pictures.indexed)
+                  Padding(
+                    padding: const EdgeInsetsDirectional.only(
+                      bottom: AppTokens.spaceSmall,
+                    ),
+                    child: FittedBox(
+                      fit: BoxFit.fitWidth,
+                      child: RepaintBoundary(
+                        key: _cards[index],
+                        child: AyahShareCard(
+                          text: widget.text,
+                          refs: refs,
+                          digits: digits,
+                          frame: frame,
+                          part: index + 1,
+                          parts: pictures.length,
+                        ),
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
-          // The picture as it will be sent, scaled to the sheet.
-          Expanded(
-            child: SingleChildScrollView(
-              controller: widget.scroll,
-              child: FittedBox(
-                fit: BoxFit.fitWidth,
-                child: RepaintBoundary(
-                  key: _card,
-                  child: AyahShareCard(
-                    text: widget.text,
-                    span: _span,
-                    digits: digits,
-                    frame:
-                        ref.watch(settingsProvider).value?.surahFrame ??
-                        SurahFrameStyle.cartouche,
-                  ),
+        ),
+        // The actions stay in reach under whatever scrolls.
+        AppSheetDragArea(
+          child: Padding(
+            padding: EdgeInsetsDirectional.fromSTEB(
+              AppTokens.gutterCompact,
+              AppTokens.spaceSmall,
+              AppTokens.gutterCompact,
+              MediaQuery.paddingOf(context).bottom + 12,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: _copy,
+                        icon: const Icon(Icons.copy_outlined),
+                        label: Text(l10n.copyText),
+                      ),
+                    ),
+                    const SizedBox(width: AppTokens.spaceSmall),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: _busy ? null : _shareText,
+                        icon: const Icon(Icons.notes_rounded),
+                        label: Text(
+                          l10n.shareAsText,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
+                const SizedBox(height: AppTokens.spaceSmall),
+                FilledButton.icon(
+                  onPressed: _busy ? null : _shareImages,
+                  icon: const Icon(Icons.image_outlined),
+                  label: Text(l10n.shareAsImage),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: AppTokens.spaceMedium),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: _copy,
-                  icon: const Icon(Icons.copy_outlined),
-                  label: Text(l10n.copyText),
-                ),
+        ),
+      ],
+    );
+  }
+}
+
+/// One end of the range: its surah, picked from the list, and its ayah,
+/// stepped down and up (past a surah's end into the next).
+class _RangeEnd extends StatelessWidget {
+  const _RangeEnd({
+    required this.label,
+    required this.ayah,
+    required this.surahs,
+    required this.digits,
+    required this.onSurah,
+    required this.onLess,
+    required this.onMore,
+  });
+
+  final String label;
+  final AyahRef ayah;
+  final List<AppSelectOption<int>> surahs;
+  final String Function(int) digits;
+  final ValueChanged<int> onSurah;
+  final VoidCallback? onLess;
+  final VoidCallback? onMore;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(label, style: theme.textTheme.labelLarge),
+        const SizedBox(height: 4),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              flex: 3,
+              child: AppSelectField<int>(
+                label: l10n.shareSurah,
+                sheetTitle: '${l10n.shareSurah} · $label',
+                options: surahs,
+                value: ayah.surah,
+                onChanged: onSurah,
               ),
-              const SizedBox(width: AppTokens.spaceSmall),
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: _busy ? null : _shareText,
-                  icon: const Icon(Icons.notes_rounded),
-                  label: Text(
-                    l10n.shareAsText,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
+            ),
+            const SizedBox(width: AppTokens.spaceSmall),
+            Expanded(
+              flex: 2,
+              child: _AyahStepper(
+                label: l10n.shareAyahField,
+                value: digits(ayah.ayah),
+                onLess: onLess,
+                onMore: onMore,
               ),
-            ],
-          ),
-          const SizedBox(height: AppTokens.spaceSmall),
-          FilledButton.icon(
-            onPressed: _busy ? null : _shareImage,
-            icon: const Icon(Icons.image_outlined),
-            label: Text(l10n.shareAsImage),
-          ),
-        ],
-      ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

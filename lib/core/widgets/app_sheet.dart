@@ -7,17 +7,20 @@ import '../theme/app_tokens.dart';
 /// Shared bottom sheet.
 ///
 /// [initialSize] is the share of the screen an expandable sheet opens at.
-/// Short content gets a sheet sized to the content; drag it down to dismiss.
-/// Long content ([expandable]) gets a draggable sheet that snaps between half
-/// and almost full height and scrolls its body.
+/// Short content gets a sheet sized to the content. Long content
+/// ([expandable]) gets a draggable sheet that snaps between half and almost
+/// full height and scrolls its body.
+///
+/// Every sheet closes the same way: drag it down from anywhere. Once what it
+/// holds is scrolled to the top, pulling further down takes the sheet with
+/// the finger, and letting go far enough down, or with a flick, closes it.
 ///
 /// iOS draws a floating liquid glass panel. Android draws the Material 3
 /// container. The body is a plain, non-scrolling widget.
 ///
 /// The sheet always sits above the on-screen keyboard: it is lifted by the
 /// keyboard height and shrinks to the room left, and its body scrolls when
-/// that room is short. Drag the handle or the sheet down to dismiss, with the
-/// keyboard open or closed.
+/// that room is short.
 abstract final class AppSheet {
   /// Smallest and largest share of the screen a draggable sheet takes.
   static const double _minSize = 0.3;
@@ -41,41 +44,44 @@ abstract final class AppSheet {
   );
 
   /// Shows a sheet and returns the value it is popped with.
+  ///
+  /// [above] floats over the dimmed screen just above the sheet, outside
+  /// it: what the sheet acts on, shown where the person can see it.
   static Future<T?> show<T>({
     required BuildContext context,
     required WidgetBuilder builder,
     bool expandable = false,
     double initialSize = 0.6,
+    Widget? above,
   }) => _present<T>(context, (context) {
-    if (!expandable) {
-      // The room left above the keyboard and the status bar.
-      final media = MediaQuery.of(context);
-      final room =
-          media.size.height - media.viewInsets.bottom - media.padding.top;
-      return ConstrainedBox(
-        constraints: BoxConstraints(maxHeight: room * 0.9),
-        child: _SheetSurface(
-          // Clamping physics: short content does not claim the drag,
-          // so dragging the sheet down still dismisses it.
+    if (expandable) {
+      return _FillingSheetHost(
+        initialSize: initialSize,
+        builder: (context, scroll) => SingleChildScrollView(
+          controller: scroll,
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          child: builder(context),
+        ),
+      );
+    }
+    // The room left above the keyboard and the status bar.
+    final media = MediaQuery.of(context);
+    final room =
+        media.size.height - media.viewInsets.bottom - media.padding.top;
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxHeight: room * 0.9),
+      child: _PullToClose(
+        above: above,
+        builder: (scroll) => _SheetSurface(
+          // Clamping physics: short content does not claim the drag, so
+          // dragging the sheet down still dismisses it, and long content
+          // reports the pull past its top that moves the sheet.
           child: SingleChildScrollView(
+            controller: scroll,
             physics: const ClampingScrollPhysics(),
             keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             child: builder(context),
           ),
-        ),
-      );
-    }
-    return DraggableScrollableSheet(
-      expand: false,
-      snap: true,
-      initialChildSize: initialSize,
-      minChildSize: _minSize,
-      maxChildSize: _maxSize,
-      builder: (context, controller) => _SheetSurface(
-        child: SingleChildScrollView(
-          controller: controller,
-          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-          child: builder(context),
         ),
       ),
     );
@@ -88,6 +94,8 @@ abstract final class AppSheet {
       isScrollControlled: true,
       useSafeArea: true,
       useRootNavigator: true,
+      // The sheet draws its own handle, on glass and on Material alike.
+      showDragHandle: false,
       backgroundColor: Colors.transparent,
       elevation: 0,
       barrierColor: Colors.black.withValues(alpha: cupertino ? 0.2 : 0.32),
@@ -95,6 +103,114 @@ abstract final class AppSheet {
           ? AnimationStyle.noAnimation
           : null,
       builder: (sheetContext) => _KeyboardLift(child: Builder(builder: sheet)),
+    );
+  }
+}
+
+/// Lets a sheet sized to its content follow the finger down once its body
+/// is scrolled to the top, and close when let go far enough down or with a
+/// flick. A short body that does not scroll is dragged by the sheet itself.
+class _PullToClose extends StatefulWidget {
+  const _PullToClose({required this.builder, this.above});
+
+  final Widget Function(ScrollController scroll) builder;
+  final Widget? above;
+
+  @override
+  State<_PullToClose> createState() => _PullToCloseState();
+}
+
+class _PullToCloseState extends State<_PullToClose>
+    with SingleTickerProviderStateMixin {
+  /// A pull longer than this share of the sheet closes it.
+  static const double _closeShare = 0.25;
+
+  /// A downward flick faster than this, in pixels a second, closes it.
+  static const double _closeFling = 700;
+
+  final ScrollController _scroll = ScrollController();
+  late final AnimationController _back = AnimationController(
+    vsync: this,
+    duration: AppTokens.motionMedium,
+  );
+  final GlobalKey _surface = GlobalKey();
+  double _pull = 0;
+  double _from = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _back.addListener(() => setState(() => _pull = _from * (1 - _back.value)));
+  }
+
+  @override
+  void dispose() {
+    _scroll.dispose();
+    _back.dispose();
+    super.dispose();
+  }
+
+  bool _onScroll(ScrollNotification notification) {
+    if (notification.depth != 0) return false;
+    switch (notification) {
+      // Pulled down past the top: the sheet follows the finger.
+      case OverscrollNotification(:final overscroll, dragDetails: _?)
+          when overscroll < 0:
+        _back.stop();
+        setState(() => _pull -= overscroll);
+      // Pushed back up while pulled down: the sheet goes up first.
+      case ScrollUpdateNotification(:final scrollDelta?, dragDetails: _?)
+          when _pull > 0 && scrollDelta > 0:
+        setState(() => _pull = (_pull - scrollDelta).clamp(0, double.infinity));
+        _scroll.jumpTo(0);
+      case ScrollEndNotification(:final dragDetails) when _pull > 0:
+        final height = _surface.currentContext?.size?.height ?? 0;
+        final velocity = dragDetails?.primaryVelocity ?? 0;
+        if (velocity > _closeFling || _pull > height * _closeShare) {
+          Navigator.of(context).maybePop();
+          break;
+        }
+        _from = _pull;
+        if (MediaQuery.disableAnimationsOf(context)) {
+          setState(() => _pull = 0);
+        } else {
+          _back.forward(from: 0);
+        }
+      default:
+    }
+    return false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final above = widget.above;
+    return Transform.translate(
+      offset: Offset(0, _pull),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (above != null)
+            Padding(
+              padding: const EdgeInsetsDirectional.fromSTEB(
+                AppTokens.gutterCompact,
+                0,
+                AppTokens.gutterCompact,
+                AppTokens.spaceSmall,
+              ),
+              child: above,
+            ),
+          Flexible(
+            child: NotificationListener<ScrollNotification>(
+              onNotification: _onScroll,
+              child: KeyedSubtree(
+                key: _surface,
+                child: widget.builder(_scroll),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -205,20 +321,35 @@ class _FillingSheetHostState extends State<_FillingSheetHost> {
     super.dispose();
   }
 
+  /// Closes the sheet when the body's drag lets it go far enough down, as
+  /// the handle does.
+  bool _onScrollEnd(ScrollEndNotification notification) {
+    if (notification.dragDetails == null || !_controller.isAttached) {
+      return false;
+    }
+    if (_controller.size < _FillingSheet._closeBelow) {
+      Navigator.of(context).maybePop();
+    }
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) => _FillingSheet(
     controller: _controller,
     restSize: widget.initialSize,
-    child: DraggableScrollableSheet(
-      controller: _controller,
-      expand: false,
-      snap: true,
-      snapSizes: [widget.initialSize],
-      initialChildSize: widget.initialSize,
-      minChildSize: AppSheet._minSize,
-      maxChildSize: AppSheet._maxSize,
-      builder: (context, scroll) =>
-          _SheetSurface(fill: true, child: widget.builder(context, scroll)),
+    child: NotificationListener<ScrollEndNotification>(
+      onNotification: _onScrollEnd,
+      child: DraggableScrollableSheet(
+        controller: _controller,
+        expand: false,
+        snap: true,
+        snapSizes: [widget.initialSize],
+        initialChildSize: widget.initialSize,
+        minChildSize: AppSheet._minSize,
+        maxChildSize: AppSheet._maxSize,
+        builder: (context, scroll) =>
+            _SheetSurface(fill: true, child: widget.builder(context, scroll)),
+      ),
     ),
   );
 }

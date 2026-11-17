@@ -21,8 +21,11 @@ the store sees no location foreground service.
 
 - **Location:** approximate location is *processed on the device only* and not collected or shared. Answer
   "Collected: No".
-- **Crash reports:** opt-in, off by default (`docs/DECISIONS.md`). Answer according to the Firebase
-  Crashlytics setting when it is configured.
+- **Crash reports (Firebase Crashlytics, on by default, can be turned off in the settings):** declare
+  "App info and performance → Crash logs" and "Diagnostics", and "Device or other IDs" (the Crashlytics
+  installation ID). Collected: Yes. Shared: No (Google processes it as a service provider). Processed
+  ephemerally: No. Required: No (the person can turn it off). Purpose: App functionality / Analytics of
+  crashes only. Encrypted in transit: Yes. Deletion: reports expire after 90 days.
 - **No analytics, no ads, no accounts.**
 - **Downloads** (`background_downloader`): its `UIDTJobService` (user-initiated data transfer) and the
   `FOREGROUND_SERVICE` permission come from the Mushaf pack downloads. Play may ask for a foreground-service
@@ -33,6 +36,8 @@ the store sees no location foreground service.
 - **Location:** "Coarse Location", used for App Functionality, not linked to the person, not used for tracking,
   and not collected off the device. The `NSLocationWhenInUseUsageDescription` text (Arabic and English) is in
   `ios/Runner/Info.plist`.
+- **Crash data (Crashlytics):** "Crash Data" and "Other Diagnostic Data", used for App Functionality, not
+  linked to the person, not used for tracking.
 - **Notifications:** local only. No push, no `UIBackgroundModes`.
 - **Privacy manifest:** the plugins used ship their own `PrivacyInfo.xcprivacy`. Before the first App Store
   upload, add an app-level manifest in Xcode if the build report asks for one (this needs the Xcode project, so

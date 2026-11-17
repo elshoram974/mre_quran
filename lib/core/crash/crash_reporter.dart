@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 
-/// Boundary for opt-in crash reporting.
+/// Boundary for crash reporting: on unless the person turns it off.
 abstract interface class CrashReporter {
   Future<void> setCollectionEnabled(bool enabled);
   Future<void> log(String message);
@@ -43,9 +43,11 @@ class FirebaseCrashReporter implements CrashReporter {
 
   final FirebaseCrashlytics _crashlytics;
 
+  /// Debug builds never report: their crashes are the developer's, seen
+  /// in the console, and would bury the real ones.
   @override
   Future<void> setCollectionEnabled(bool enabled) =>
-      _crashlytics.setCrashlyticsCollectionEnabled(enabled);
+      _crashlytics.setCrashlyticsCollectionEnabled(enabled && !kDebugMode);
 
   @override
   Future<void> log(String message) => _crashlytics.log(message);

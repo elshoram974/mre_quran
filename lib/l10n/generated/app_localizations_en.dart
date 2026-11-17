@@ -128,7 +128,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get crashReportsDescription =>
-      'Share anonymous crash reports to help improve the app. Off by default.';
+      'Technical crash reports, with none of your personal data, are sent so we can fix bugs quickly. You can turn them off.';
 
   @override
   String get about => 'About and credits';
@@ -961,12 +961,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shareAyahsTitle => 'Share ayahs';
 
   @override
-  String get shareFromAyah => 'From ayah';
-
-  @override
-  String get shareToAyah => 'To ayah';
-
-  @override
   String get shareAsText => 'Share as text';
 
   @override
@@ -984,6 +978,54 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String shareLimit(String count) {
     return 'Up to $count ayahs at a time';
+  }
+
+  @override
+  String get shareFrom => 'From';
+
+  @override
+  String get shareTo => 'To';
+
+  @override
+  String get shareSurah => 'Surah';
+
+  @override
+  String get shareAyahField => 'Ayah';
+
+  @override
+  String sharePicture(String index, String count) {
+    return 'Picture $index of $count';
+  }
+
+  @override
+  String surahAyah(String surah, String ayah) {
+    return '$surah $ayah';
+  }
+
+  @override
+  String get selectAyahs => 'Select more ayahs';
+
+  @override
+  String get selectionHint =>
+      'Tap the last ayah you want, even on another page';
+
+  @override
+  String selectionCount(int count, String number) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$number ayahs',
+      one: '1 ayah',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get cancelSelection => 'Cancel selection';
+
+  @override
+  String selectionLimitReached(String count) {
+    return 'That is the most at once: $count ayahs';
   }
 
   @override

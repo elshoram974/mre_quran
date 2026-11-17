@@ -10,10 +10,13 @@ abstract interface class Sharer {
   /// Offers [text] to the apps that take text.
   Future<void> shareText(String text);
 
-  /// Offers the PNG [png], named [name], to the apps that take pictures,
-  /// with [text] beside it where the app takes both.
-  Future<void> shareImage(Uint8List png, {required String name, String? text});
+  /// Offers the PNG [images], each with its file name, to the apps that take
+  /// pictures, with [text] beside them where the app takes both.
+  Future<void> shareImages(List<SharedImage> images, {String? text});
 }
+
+/// A PNG picture to share and the file name it is sent under.
+typedef SharedImage = ({Uint8List png, String name});
 
 /// The platform's share sheet.
 class PlatformSharer implements Sharer {
@@ -25,22 +28,17 @@ class PlatformSharer implements Sharer {
       SharePlus.instance.share(ShareParams(text: text));
 
   @override
-  Future<void> shareImage(
-    Uint8List png, {
-    required String name,
-    String? text,
-  }) async {
-    // A file in the cache: the receiving app reads it from there, and the
-    // system clears it in time.
+  Future<void> shareImages(List<SharedImage> images, {String? text}) async {
+    // Files in the cache: the receiving app reads them from there, and the
+    // system clears them in time.
     final folder = await getTemporaryDirectory();
-    final file = File('${folder.path}/$name');
-    await file.writeAsBytes(png, flush: true);
-    await SharePlus.instance.share(
-      ShareParams(
-        files: [XFile(file.path, mimeType: 'image/png')],
-        text: text,
-      ),
-    );
+    final files = <XFile>[];
+    for (final image in images) {
+      final file = File('${folder.path}/${image.name}');
+      await file.writeAsBytes(image.png, flush: true);
+      files.add(XFile(file.path, mimeType: 'image/png'));
+    }
+    await SharePlus.instance.share(ShareParams(files: files, text: text));
   }
 }
 

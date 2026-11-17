@@ -6,6 +6,7 @@ import '../../../core/theme/app_tokens.dart';
 import '../../../core/theme/quran_colors.dart';
 import '../../../core/widgets/pinch_zoom.dart';
 import '../../quran_index/domain/quran_metadata.dart';
+import '../../quran_text/domain/ayah_range.dart';
 import '../../quran_text/domain/quran_text.dart';
 import '../../settings/application/digits_provider.dart';
 import '../../settings/domain/app_settings.dart';
@@ -67,8 +68,9 @@ class MushafPageView extends StatefulWidget {
   /// Ayahs the reader bookmarked. Their markers are coloured differently.
   final Set<AyahRef> bookmarked;
 
-  /// The ayah whose actions are open, highlighted on the page.
-  final AyahRef? selected;
+  /// The ayahs highlighted on the page: the one whose actions are open, or
+  /// the ones chosen to share.
+  final AyahRange? selected;
 
   /// Whether to draw the page's own frame and labels. Off when the page is
   /// shown inside another frame, as the stand-in of a printed page.
@@ -140,7 +142,9 @@ class _MushafPageViewState extends State<MushafPageView> {
           segments.add(_Basmala(text.mushafBasmala));
         }
       }
-      final highlight = ayah.ref == widget.selected ? colors.highlight : null;
+      final highlight = widget.selected?.contains(ayah.ref) ?? false
+          ? colors.highlight
+          : null;
       final recognizer = widget.onAyahLongPress == null
           ? null
           : _recognizerFor(ayah.ref);

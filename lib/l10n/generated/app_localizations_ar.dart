@@ -126,7 +126,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get crashReportsDescription =>
-      'أرسل تقارير أعطال مجهولة لتحسين التطبيق. متوقفة افتراضياً.';
+      'تُرسَل تقارير أعطال تقنية لا تحتوي على بياناتك الشخصية، لنصلح الأخطاء بسرعة. يمكنك إيقافها.';
 
   @override
   String get about => 'عن التطبيق والنسب';
@@ -958,12 +958,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get shareAyahsTitle => 'مشاركة الآيات';
 
   @override
-  String get shareFromAyah => 'من الآية';
-
-  @override
-  String get shareToAyah => 'إلى الآية';
-
-  @override
   String get shareAsText => 'مشاركة كنص';
 
   @override
@@ -981,6 +975,55 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String shareLimit(String count) {
     return 'حتى $count آية في المرة الواحدة';
+  }
+
+  @override
+  String get shareFrom => 'من';
+
+  @override
+  String get shareTo => 'إلى';
+
+  @override
+  String get shareSurah => 'السورة';
+
+  @override
+  String get shareAyahField => 'الآية';
+
+  @override
+  String sharePicture(String index, String count) {
+    return 'صورة $index من $count';
+  }
+
+  @override
+  String surahAyah(String surah, String ayah) {
+    return '$surah $ayah';
+  }
+
+  @override
+  String get selectAyahs => 'تحديد أكثر من آية';
+
+  @override
+  String get selectionHint => 'اضغط على آخر آية تريدها، ولو في صفحة أخرى';
+
+  @override
+  String selectionCount(int count, String number) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$number آية',
+      few: '$number آيات',
+      two: 'آيتان',
+      one: 'آية واحدة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get cancelSelection => 'إلغاء التحديد';
+
+  @override
+  String selectionLimitReached(String count) {
+    return 'هذا أقصى عدد في المرة الواحدة: $count آية';
   }
 
   @override

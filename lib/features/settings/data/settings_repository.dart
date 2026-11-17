@@ -70,7 +70,7 @@ class LocalSettingsRepository implements SettingsRepository {
       reduceMotion: reduceMotion ?? false,
       hapticsEnabled: haptics ?? true,
       useArabicDigits: useArabicDigits ?? true,
-      crashReportsEnabled: crashReports ?? false,
+      crashReportsEnabled: crashReports ?? true,
       startupBehavior: StartupBehavior.values.firstWhere(
         (item) => item.name == startup,
         orElse: () => StartupBehavior.lastTab,

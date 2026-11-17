@@ -38,7 +38,8 @@
 - Arabic is the default locale; every user-facing string belongs in ARB files.
 - Support compact, medium, and expanded widths. Branch on constraints, never device names.
 - Respect `MediaQuery.disableAnimations`; do not use blur over reader content.
-- No analytics. Crash reporting must be opt-in and cannot initialise until a Firebase project is configured.
+- No analytics. Crash reporting (Firebase Crashlytics) is on by default with an opt-out in the settings
+  (`docs/DECISIONS.md` D-005); debug builds never report.
 - Do not request permissions at launch.
 - Use `AppLogger` for diagnostic output and crash reporting. Do not emit PII,
   do not write errors to Firestore, and do not call `print` directly outside

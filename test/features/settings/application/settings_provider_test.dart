@@ -79,7 +79,11 @@ void main() {
       await pending;
     });
 
-    test('persists explicit crash-report consent', () async {
+    test('crash reports are on until the person turns them off', () {
+      expect(const AppSettings().crashReportsEnabled, isTrue);
+    });
+
+    test('persists turning crash reports off', () async {
       final repository = MemorySettingsRepository();
       final crashReporter = FakeCrashReporter();
       final container = ProviderContainer(
@@ -93,10 +97,10 @@ void main() {
 
       await container
           .read(settingsProvider.notifier)
-          .save(const AppSettings(crashReportsEnabled: true));
+          .save(const AppSettings(crashReportsEnabled: false));
 
-      expect(repository.settings.crashReportsEnabled, isTrue);
-      expect(crashReporter.enabledValues, [true]);
+      expect(repository.settings.crashReportsEnabled, isFalse);
+      expect(crashReporter.enabledValues, [false]);
     });
   });
 }
