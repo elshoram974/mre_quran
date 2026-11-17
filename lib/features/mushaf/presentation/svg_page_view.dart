@@ -433,7 +433,6 @@ class _SvgArtwork extends StatelessWidget {
     required double top,
   }) {
     final colors = QuranColors.of(context);
-    final scheme = Theme.of(context).colorScheme;
     final height = (title.bottom - title.top) * scale;
     final middle = ((title.top + title.bottom) / 2 - top) * stretch * scale;
     // The same margin on both sides, so the frame sits alike whichever way
@@ -448,9 +447,9 @@ class _SvgArtwork extends StatelessWidget {
         surah: metadata.surah(title.surah),
         number: number,
         showTitle: false,
-        fill: scheme.secondaryContainer.withValues(alpha: 0.55),
-        stroke: colors.ayahNumber.withValues(alpha: 0.8),
-        ink: colors.ink,
+        paper: colors.paper,
+        band: colors.ayahNumber.withValues(alpha: 0.12),
+        stroke: colors.ayahNumber.withValues(alpha: 0.85),
       ),
     );
   }

@@ -5,149 +5,153 @@ import 'package:flutter/material.dart';
 /// Drawn ornaments for the Mushaf page. Vector shapes only, no image assets,
 /// all coloured from the theme so they follow light, sepia, and dark.
 
-/// The frame of a surah opening, after the printed Madinah Mushaf: a long
-/// panel with a double border; at each end a lattice panel with a rosette;
-/// and beside the name two round medallions, which hold the surah's details
-/// (see [SurahBannerGeometry]).
-class SurahBannerPainter extends CustomPainter {
+/// The frame of a surah's name: a long panel, and in its middle a cartouche
+/// with pointed ends that holds the name. Between the cartouche and the
+/// panel's ends runs a band of small stars on a tint, and each end carries a
+/// rosette. The design is the app's own, after the way printed Mushafs frame
+/// their surah titles.
+///
+/// It is symmetric, so it reads the same in either direction. The name is
+/// written over it by the caller, inside [SurahFrameGeometry.cartouche].
+class SurahFramePainter extends CustomPainter {
   /// Creates the painter.
-  const SurahBannerPainter({required this.fill, required this.stroke});
+  const SurahFramePainter({
+    required this.paper,
+    required this.band,
+    required this.stroke,
+  });
 
-  /// Inside colour.
-  final Color fill;
+  /// Inside of the cartouche, under the name.
+  final Color paper;
 
-  /// Line and ornament colour.
+  /// Tint of the panel around the cartouche.
+  final Color band;
+
+  /// Lines and ornaments.
   final Color stroke;
 
   @override
   void paint(Canvas canvas, Size size) {
     final h = size.height;
-    final rect = Offset.zero & size;
     final line = Paint()
       ..color = stroke
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.8;
+      ..strokeWidth = math.max(1.2, h * 0.032);
     final thin = Paint()
-      ..color = stroke.withValues(alpha: stroke.a * 0.7)
+      ..color = stroke.withValues(alpha: stroke.a * 0.75)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 0.8;
-    final faint = Paint()
-      ..color = stroke.withValues(alpha: stroke.a * 0.45)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 0.7;
+      ..strokeWidth = math.max(0.7, h * 0.016);
     final solid = Paint()..color = stroke;
+
+    // The panel, with a second rule inside it.
     final outer = RRect.fromRectAndRadius(
-      rect.deflate(0.9),
-      const Radius.circular(3),
+      (Offset.zero & size).deflate(line.strokeWidth / 2),
+      Radius.circular(h * 0.2),
     );
-
+    final inner = RRect.fromRectAndRadius(
+      (Offset.zero & size).deflate(h * 0.11),
+      Radius.circular(h * 0.13),
+    );
     canvas
-      ..drawRRect(outer, Paint()..color = fill)
+      ..drawRRect(outer, Paint()..color = band)
       ..drawRRect(outer, line)
-      ..drawRRect(
-        RRect.fromRectAndRadius(rect.deflate(4.5), const Radius.circular(2)),
-        thin,
-      );
+      ..drawRRect(inner, thin);
 
-    final inner = rect.deflate(4.5);
-    final end = SurahBannerGeometry.endWidth(size.width, h);
-    for (final start in [true, false]) {
-      final panel = start
-          ? Rect.fromLTRB(inner.left, inner.top, inner.left + end, inner.bottom)
-          : Rect.fromLTRB(
-              inner.right - end,
-              inner.top,
-              inner.right,
-              inner.bottom,
-            );
-      _panel(canvas, panel, start, faint, thin, solid, line);
-      final centre = Offset(
-        start
-            ? SurahBannerGeometry.circleCentreX(size.width, h, left: true)
-            : SurahBannerGeometry.circleCentreX(size.width, h, left: false),
-        h / 2,
-      );
-      _medallion(
-        canvas,
-        centre,
-        SurahBannerGeometry.circleDiameter(size.width, h) / 2,
-        line,
-        thin,
-        Paint()..color = stroke.withValues(alpha: stroke.a * 0.1),
-      );
-    }
-  }
+    final cartouche = SurahFrameGeometry.cartouche(size);
+    final rosetteRadius = SurahFrameGeometry.rosetteRadius(size);
 
-  /// An end panel: a lattice of diagonals with a dot at each crossing, and a
-  /// rosette in the middle, inside a double rule.
-  void _panel(
-    Canvas canvas,
-    Rect panel,
-    bool towardNameOnRight,
-    Paint faint,
-    Paint thin,
-    Paint solid,
-    Paint line,
-  ) {
-    canvas.save();
-    canvas.clipRect(panel);
-    final pitch = panel.height / 5;
-    final span = panel.width + panel.height;
-    for (var k = -panel.height; k < span; k += pitch) {
-      canvas
-        ..drawLine(
-          Offset(panel.left + k, panel.top),
-          Offset(panel.left + k + panel.height, panel.bottom),
-          faint,
-        )
-        ..drawLine(
-          Offset(panel.left + k, panel.bottom),
-          Offset(panel.left + k + panel.height, panel.top),
-          faint,
-        );
+    // A rosette at each end.
+    for (final x in [inner.left + h * 0.36, inner.right - h * 0.36]) {
+      _rosette(canvas, Offset(x, h / 2), rosetteRadius, solid, thin);
     }
-    for (var x = panel.left; x < panel.right + pitch; x += pitch) {
-      for (var y = panel.top; y < panel.bottom + pitch; y += pitch) {
-        canvas.drawCircle(Offset(x, y), 0.9, solid);
+
+    // Small four-pointed stars between the rosettes and the cartouche.
+    final step = h * 0.42;
+    for (final side in [-1, 1]) {
+      final from = side < 0
+          ? inner.left + h * 0.36 + rosetteRadius * 1.6
+          : cartouche.right + h * 0.32;
+      final to = side < 0
+          ? cartouche.left - h * 0.32
+          : inner.right - h * 0.36 - rosetteRadius * 1.6;
+      final count = ((to - from) / step).floor();
+      if (count < 1) continue;
+      final gap = (to - from) / count;
+      for (var i = 0; i <= count; i++) {
+        _star(canvas, Offset(from + gap * i, h / 2), h * 0.1, solid);
       }
     }
-    canvas.restore();
-    // The rosette's disc clears the lattice behind it, so the lattice reads
-    // as a border around it.
-    _rosette(canvas, panel.center, panel.height * 0.3, solid, thin);
-    // The rule closing the panel on the side of the name.
-    final x = towardNameOnRight ? panel.right : panel.left;
-    canvas.drawLine(Offset(x, panel.top), Offset(x, panel.bottom), line);
-  }
 
-  /// A medallion: a double ring around a tinted disc.
-  void _medallion(
-    Canvas canvas,
-    Offset centre,
-    double radius,
-    Paint line,
-    Paint thin,
-    Paint tint,
-  ) {
+    // The cartouche: pointed ends, a double outline, paper inside.
+    final shape = _cartouche(cartouche);
     canvas
-      ..drawCircle(centre, radius, tint)
-      ..drawCircle(centre, radius, line)
-      ..drawCircle(centre, radius - 3.2, thin);
-    // Small beads on the outer ring at the four directions.
-    final bead = Paint()..color = line.color;
-    for (var i = 0; i < 4; i++) {
-      final a = i * math.pi / 2 + math.pi / 4;
-      canvas.drawCircle(
-        centre + Offset(math.cos(a), math.sin(a)) * (radius + 2.6),
-        1.1,
-        bead,
-      );
+      ..drawPath(shape, Paint()..color = paper)
+      ..drawPath(shape, line)
+      ..drawPath(_cartouche(cartouche.deflate(h * 0.07)), thin);
+    // A bead at each point.
+    for (final x in [cartouche.left, cartouche.right]) {
+      canvas.drawCircle(Offset(x, h / 2), h * 0.045, solid);
     }
   }
 
-  /// Eight petals around a small disc.
+  /// A long shape whose ends come to a point in curves, like a cartouche.
+  Path _cartouche(Rect r) {
+    final end = r.height * 0.62;
+    final mid = r.center.dy;
+    return Path()
+      ..moveTo(r.left + end, r.top)
+      ..lineTo(r.right - end, r.top)
+      ..cubicTo(
+        r.right - end * 0.35,
+        r.top,
+        r.right - end * 0.2,
+        mid - r.height * 0.18,
+        r.right,
+        mid,
+      )
+      ..cubicTo(
+        r.right - end * 0.2,
+        mid + r.height * 0.18,
+        r.right - end * 0.35,
+        r.bottom,
+        r.right - end,
+        r.bottom,
+      )
+      ..lineTo(r.left + end, r.bottom)
+      ..cubicTo(
+        r.left + end * 0.35,
+        r.bottom,
+        r.left + end * 0.2,
+        mid + r.height * 0.18,
+        r.left,
+        mid,
+      )
+      ..cubicTo(
+        r.left + end * 0.2,
+        mid - r.height * 0.18,
+        r.left + end * 0.35,
+        r.top,
+        r.left + end,
+        r.top,
+      )
+      ..close();
+  }
+
+  /// A four-pointed star.
+  void _star(Canvas canvas, Offset c, double r, Paint paint) {
+    final path = Path()
+      ..moveTo(c.dx, c.dy - r)
+      ..quadraticBezierTo(c.dx, c.dy, c.dx + r, c.dy)
+      ..quadraticBezierTo(c.dx, c.dy, c.dx, c.dy + r)
+      ..quadraticBezierTo(c.dx, c.dy, c.dx - r, c.dy)
+      ..quadraticBezierTo(c.dx, c.dy, c.dx, c.dy - r)
+      ..close();
+    canvas.drawPath(path, paint);
+  }
+
+  /// Eight petals around a small disc, on a disc of paper.
   void _rosette(Canvas canvas, Offset c, double r, Paint solid, Paint thin) {
-    canvas.drawCircle(c, r * 1.05, Paint()..color = fill);
+    canvas.drawCircle(c, r * 1.05, Paint()..color = paper);
     for (var i = 0; i < 8; i++) {
       final a = i * math.pi / 4;
       canvas.drawCircle(
@@ -157,43 +161,31 @@ class SurahBannerPainter extends CustomPainter {
       );
     }
     canvas
-      ..drawCircle(c, r * 0.3, solid)
+      ..drawCircle(c, r * 0.28, solid)
       ..drawCircle(c, r * 1.02, thin);
   }
 
   @override
-  bool shouldRepaint(SurahBannerPainter old) =>
-      old.fill != fill || old.stroke != stroke;
+  bool shouldRepaint(SurahFramePainter old) =>
+      old.paper != paper || old.band != band || old.stroke != stroke;
 }
 
-/// Where the parts of a surah banner of a given size lie, shared by the
-/// painter and the widgets that put text inside it. On a narrow page the
-/// ornaments shrink so the name keeps its room.
-abstract final class SurahBannerGeometry {
-  /// Width of a lattice panel at each end.
-  static double endWidth(double width, double height) =>
-      math.min(height * 1.45, width * 0.15);
-
-  /// Diameter of a medallion.
-  static double circleDiameter(double width, double height) =>
-      math.min(height * 0.74, width * 0.15);
-
-  /// Space between a lattice panel and its medallion.
-  static const double circleGap = 6;
-
-  /// Distance from a side edge to the start of its medallion.
-  static double circleInset(double width, double height) =>
-      4.5 + endWidth(width, height) + circleGap;
-
-  /// Distance of a medallion's centre from the banner's left edge when
-  /// [left], or from its right edge.
-  static double circleCentreX(
-    double width,
-    double height, {
-    required bool left,
-  }) {
-    final fromEdge =
-        circleInset(width, height) + circleDiameter(width, height) / 2;
-    return left ? fromEdge : width - fromEdge;
+/// Where the parts of a surah frame of a given size lie, shared by the
+/// painter and the widgets that write the name in it.
+abstract final class SurahFrameGeometry {
+  /// The cartouche that holds the name: half the frame's width, or less on a
+  /// narrow frame so the rosettes keep their room.
+  static Rect cartouche(Size size) {
+    final h = size.height;
+    final room = size.width - 2 * (h * 0.11 + h * 0.72 + h * 0.3);
+    final width = math.max(h * 2.2, math.min(size.width * 0.5, room));
+    return Rect.fromCenter(
+      center: size.center(Offset.zero),
+      width: width,
+      height: h * 0.74,
+    );
   }
+
+  /// Radius of the rosette at each end.
+  static double rosetteRadius(Size size) => size.height * 0.26;
 }
