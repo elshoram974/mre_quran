@@ -7,10 +7,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../application/startup_providers.dart';
+import '../data/launch_screen.dart';
 
-/// Covers the app while it starts: an eight-pointed star turning slowly on
-/// the paper, where the platform's launch screen draws it still, and the
-/// app's name fading in under it. The first screen is built and loads
+/// Keeps the app covered while it starts, so no loading is ever seen.
+///
+/// On Android the platform's own launch screen does it: its star turns
+/// until this lets it go. Where a launch screen can neither turn nor wait
+/// (iOS), this draws the same star turning on the paper, in the place the
+/// launch screen draws it still, with the app's name fading in under it. The first screen is built and loads
 /// underneath (the Quran text and the Mushaf page, at the same time), and
 /// the splash fades away once it is ready, so no loading is ever seen.
 ///
@@ -24,7 +28,12 @@ class StartupSplash extends ConsumerStatefulWidget {
     required this.child,
     this.least = AppTokens.splashLeast,
     this.most = AppTokens.splashMost,
+    this.overlay,
   });
+
+  /// Whether this draws the splash itself; by default only on iOS, whose
+  /// launch screen cannot wait.
+  final bool? overlay;
 
   /// The app.
   final Widget child;
@@ -61,7 +70,7 @@ class _StartupSplashState extends ConsumerState<StartupSplash>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (MediaQuery.disableAnimationsOf(context)) {
+    if (!_overlay || MediaQuery.disableAnimationsOf(context)) {
       _turn.stop();
     } else if (!_turn.isAnimating && !_fading) {
       unawaited(_turn.repeat());
@@ -73,6 +82,9 @@ class _StartupSplashState extends ConsumerState<StartupSplash>
       );
     }
   }
+
+  bool get _overlay =>
+      widget.overlay ?? Theme.of(context).platform == TargetPlatform.iOS;
 
   void _update(VoidCallback change) {
     if (mounted) setState(change);
@@ -89,7 +101,11 @@ class _StartupSplashState extends ConsumerState<StartupSplash>
   @override
   Widget build(BuildContext context) {
     final ready = ref.watch(startupReadyProvider);
-    if (!_fading && ((ready && _leastPassed) || _timedOut)) _fading = true;
+    if (!_fading && ((ready && _leastPassed) || _timedOut)) {
+      _fading = true;
+      unawaited(ref.read(launchScreenProvider).release());
+    }
+    if (!_overlay) return widget.child;
     // Without animations there is no fade to wait for.
     if (_gone || (_fading && MediaQuery.disableAnimationsOf(context))) {
       // Nothing turns behind the app once the splash is gone.

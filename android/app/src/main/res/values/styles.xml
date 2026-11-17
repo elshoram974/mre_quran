@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Theme applied to the Android Window while the process is starting when the OS's Dark Mode setting is off -->
-    <style name="LaunchTheme" parent="@android:style/Theme.Light.NoTitleBar">
-        <!-- Show a splash screen on the activity. Automatically removed when
-             the Flutter engine draws its first frame -->
-        <item name="android:windowBackground">@drawable/launch_background</item>
+    <style name="LaunchTheme" parent="Theme.SplashScreen">
+        <!-- The launch screen (androidx core-splashscreen): sepia paper and
+             the turning star. MainActivity holds it until the app's first
+             screen is ready, so no loading is ever seen. -->
+        <item name="windowSplashScreenBackground">@color/launch_paper</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_star</item>
+        <item name="windowSplashScreenAnimationDuration">1600</item>
+        <item name="postSplashScreenTheme">@style/NormalTheme</item>
     </style>
     <!-- Theme applied to the Android Window as soon as the process has started.
          This theme determines the color of the Android Window while your

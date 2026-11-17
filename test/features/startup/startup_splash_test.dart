@@ -8,6 +8,7 @@ import 'package:mre_quran/core/l10n/l10n.dart';
 import 'package:mre_quran/features/quran_text/application/quran_text_providers.dart';
 import 'package:mre_quran/features/quran_text/domain/quran_text.dart';
 import 'package:mre_quran/features/startup/application/startup_providers.dart';
+import 'package:mre_quran/features/startup/data/launch_screen.dart';
 import 'package:mre_quran/features/startup/presentation/reader_painted_mark.dart';
 import 'package:mre_quran/features/startup/presentation/startup_splash.dart';
 import 'package:mre_quran/l10n/generated/app_localizations.dart';
@@ -20,9 +21,12 @@ void main() {
     required Completer<QuranText> text,
     String location = '/reader',
     bool reduceMotion = false,
+    bool overlay = true,
+    _HeldLaunchScreen? launch,
   }) async {
     final container = ProviderContainer(
       overrides: [
+        launchScreenProvider.overrideWithValue(launch ?? _HeldLaunchScreen()),
         quranTextProvider.overrideWith((ref) => text.future),
         initialLocationProvider.overrideWithValue(location),
       ],
@@ -33,11 +37,11 @@ void main() {
         container: container,
         child: MediaQuery(
           data: MediaQueryData(disableAnimations: reduceMotion),
-          child: const MaterialApp(
-            locale: Locale('ar'),
+          child: MaterialApp(
+            locale: const Locale('ar'),
             supportedLocales: AppLocalizations.supportedLocales,
             localizationsDelegates: appLocalizationsDelegates,
-            home: StartupSplash(child: Text('screen')),
+            home: StartupSplash(overlay: overlay, child: const Text('screen')),
           ),
         ),
       ),
@@ -93,6 +97,28 @@ void main() {
     expect(name, findsNothing);
   });
 
+  testWidgets('on Android it draws nothing itself, and lets the platform\'s '
+      'turning launch screen go once the app is ready', (tester) async {
+    final text = Completer<QuranText>();
+    final launch = _HeldLaunchScreen();
+    final container = await pump(
+      tester,
+      text: text,
+      overlay: false,
+      launch: launch,
+    );
+    expect(name, findsNothing);
+    expect(find.text('screen'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 1));
+    expect(launch.released, 0);
+    text.completeError(StateError('no text'));
+    container.read(readerPaintedProvider.notifier).painted();
+    await tester.pump();
+    expect(launch.released, 1);
+    await tester.pump(const Duration(seconds: 5));
+    expect(launch.released, 1, reason: 'once only');
+  });
+
   testWidgets('a page view marks the reader painted once it has faded in', (
     tester,
   ) async {
@@ -109,4 +135,12 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
     expect(container.read(readerPaintedProvider), isTrue);
   });
+}
+
+/// A launch screen that counts how often it was let go.
+class _HeldLaunchScreen implements LaunchScreen {
+  int released = 0;
+
+  @override
+  Future<void> release() async => released++;
 }

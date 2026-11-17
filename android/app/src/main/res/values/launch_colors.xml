@@ -2,4 +2,6 @@
 <resources>
     <!-- The sepia paper, AppPaper.sepia's surface in lib/core/theme/app_palette.dart. -->
     <color name="launch_paper">#F4EBD8</color>
+    <!-- Behind the adaptive icon: the navy of the icon's drawing. -->
+    <color name="ic_launcher_background">#161B26</color>
 </resources>

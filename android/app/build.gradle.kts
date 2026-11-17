@@ -61,6 +61,8 @@ kotlin {
 
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
+    // The launch screen: animated on Android 12+, held until the app is ready.
+    implementation("androidx.core:core-splashscreen:1.0.1")
 }
 
 flutter {
