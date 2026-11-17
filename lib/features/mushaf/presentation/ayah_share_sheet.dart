@@ -12,7 +12,7 @@ import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/app_sheet.dart';
 import '../../quran_index/domain/quran_metadata.dart';
 import '../../quran_text/domain/ayah_span.dart';
-import '../../quran_text/domain/quran_text.dart';
+import '../../quran_text/domain/ayah_texts.dart';
 import '../../settings/application/digits_provider.dart';
 import 'ayah_share_card.dart';
 
@@ -21,7 +21,7 @@ import 'ayah_share_card.dart';
 /// picture.
 Future<void> showAyahShare(
   BuildContext context,
-  QuranText text,
+  AyahTexts text,
   AyahRef target,
 ) => AppSheet.showFilling<void>(
   context: context,
@@ -36,7 +36,7 @@ Future<void> showAyahShare(
 /// `﴿… (٢٥٥)﴾` and on the next line `[البقرة: ٢٥٥ · صفحة ٤٢]`.
 String ayahShareText(
   BuildContext context,
-  QuranText text,
+  AyahTexts text,
   AyahSpan span,
   String Function(int) digits,
 ) {
@@ -63,8 +63,8 @@ class AyahShareSheet extends ConsumerStatefulWidget {
     required this.scroll,
   });
 
-  /// The verified text.
-  final QuranText text;
+  /// The reading's text.
+  final AyahTexts text;
 
   /// The ayahs chosen when the sheet opens.
   final AyahSpan initial;
@@ -88,7 +88,7 @@ class _AyahShareSheetState extends ConsumerState<AyahShareSheet> {
   final GlobalKey _card = GlobalKey();
   bool _busy = false;
 
-  int get _surahLength => widget.text.metadata.surah(_span.surah).ayahCount;
+  int get _surahLength => widget.text.ayahCount(_span.surah);
 
   void _move({int? first, int? last}) => setState(
     () => _span = _span.adjusted(

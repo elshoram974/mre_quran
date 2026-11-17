@@ -1,7 +1,7 @@
 import 'package:meta/meta.dart';
 
 import '../../quran_index/domain/quran_metadata.dart';
-import 'quran_text.dart';
+import 'ayah_texts.dart';
 
 /// A run of ayahs of one surah, chosen to copy or share.
 @immutable
@@ -63,23 +63,23 @@ class AyahSpan {
 
 /// Writes ayahs out as text to paste or send.
 abstract final class AyahShareText {
-  /// The ayahs of [span] in the copyable Uthmani text, with tashkeel, each
+  /// The ayahs of [span] in the reading's copyable text, with tashkeel, each
   /// followed by its number in [digits], inside the ornate brackets:
   /// `﴿… (١) … (٢)﴾`.
   static String body(
-    QuranText text,
+    AyahTexts text,
     AyahSpan span,
     String Function(int) digits,
   ) {
     final ayahs = [
-      for (final ref in span.refs) '${text.uthmani(ref)} (${digits(ref.ayah)})',
+      for (final ref in span.refs) '${text.copy(ref)} (${digits(ref.ayah)})',
     ];
     return '﴿${ayahs.join(' ')}﴾';
   }
 
   /// The pages [span] lies on: its first ayah's page and its last ayah's.
-  static ({int first, int last}) pages(QuranText text, AyahSpan span) => (
-    first: text.metadata.pageOf(span.surah, span.first),
-    last: text.metadata.pageOf(span.surah, span.last),
+  static ({int first, int last}) pages(AyahTexts text, AyahSpan span) => (
+    first: text.pageOf(AyahRef(span.surah, span.first)),
+    last: text.pageOf(AyahRef(span.surah, span.last)),
   );
 }

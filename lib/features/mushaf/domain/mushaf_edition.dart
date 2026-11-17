@@ -7,6 +7,32 @@ enum MushafPageKind {
   svg,
 }
 
+/// A reading's own text, bundled with the app: copied and shared from its
+/// pages. See `docs/QURAN_SOURCES.md`, section 15.
+@immutable
+class EditionText {
+  /// Describes the text in [asset], drawn in [fontFamily].
+  const EditionText({
+    required this.asset,
+    required this.sha256,
+    required this.fontFamily,
+    this.unmatchedSurahs = const {},
+  });
+
+  /// The bundled text file.
+  final String asset;
+
+  /// SHA-256 of the file's bytes, checked before it is used.
+  final String sha256;
+
+  /// The King Fahd Complex font of the reading.
+  final String fontFamily;
+
+  /// Surahs whose ayahs the text and the printed pages count differently.
+  /// Their ayahs give no text, so none is ever tied to the wrong words.
+  final Set<int> unmatchedSurahs;
+}
+
 /// One printed Mushaf the reader can show.
 ///
 /// Every edition is a single entry in [MushafEditions.all]. Adding one takes
@@ -23,7 +49,12 @@ class MushafEdition {
     this.matchesAppText = false,
     this.spreadsLines = false,
     this.downloadGroupName,
+    this.text,
   });
+
+  /// The reading's own text, when the edition is not the app's text and
+  /// its text is bundled.
+  final EditionText? text;
 
   /// The edition's name in its source, its folder on the device, and the
   /// value saved in the settings. Never change it once released.
@@ -94,6 +125,12 @@ abstract final class MushafEditions {
   static const shubah = MushafEdition(
     id: 'shubah-kfqc',
     names: {'ar': 'شعبة عن عاصم', 'en': "Shu'bah from Asim"},
+    text: EditionText(
+      asset: 'assets/quran/riwayat/shubah_kfqc.txt',
+      sha256:
+          '5cd0a2e1ce5ed51e2e5638455a3b0d666acfc9d58cc1eb514f45dcac464ed00e',
+      fontFamily: 'KfgqpcShubah',
+    ),
     manifestSha256:
         '59ad875d1ab8f84c45c68adf22e2c252f7221b51f68f299dafbfb9714977ffa9',
   );
@@ -102,6 +139,15 @@ abstract final class MushafEditions {
   static const warsh = MushafEdition(
     id: 'warsh-kfqc',
     names: {'ar': 'ورش عن نافع', 'en': "Warsh from Nafi'"},
+    // 469 of its 604 pages draw their script line by line; the others keep
+    // their printed height.
+    spreadsLines: true,
+    text: EditionText(
+      asset: 'assets/quran/riwayat/warsh_kfqc.txt',
+      sha256:
+          'cbeedd60925ef4a88bee92480a197aa8c22026d433ceaaf79005a37d1d2c5890',
+      fontFamily: 'KfgqpcWarsh',
+    ),
     manifestSha256:
         'df541939a31ce75511ce73eabe02fdd9974157828566d5d16d747e529bf02ff3',
   );
@@ -110,6 +156,12 @@ abstract final class MushafEditions {
   static const qalon = MushafEdition(
     id: 'qalon-kfqc',
     names: {'ar': 'قالون عن نافع', 'en': "Qalun from Nafi'"},
+    text: EditionText(
+      asset: 'assets/quran/riwayat/qalon_kfqc.txt',
+      sha256:
+          '86aba2d384f5e2f0927c81a70c8062af8765924243c9ae304e5c5642388d8fcd',
+      fontFamily: 'KfgqpcQalon',
+    ),
     manifestSha256:
         'da6f77792cc2047a3d28af22ef2b9f6564337c4c1724a30e3259236bd2369084',
   );
@@ -118,6 +170,15 @@ abstract final class MushafEditions {
   static const douri = MushafEdition(
     id: 'douri-kfqc',
     names: {'ar': 'الدوري عن أبي عمرو', 'en': 'Al-Duri from Abu Amr'},
+    text: EditionText(
+      asset: 'assets/quran/riwayat/douri_kfqc.txt',
+      sha256:
+          '9b5e13f4ee7a952f886baf6e1810ad32d4adb13138848da7a02ff9ea7bc08083',
+      fontFamily: 'KfgqpcDouri',
+      // Al-Mulk: 30 ayahs in the text, 31 on the pages (a known difference
+      // in counting; see the quran-svg repository's qiraat_map notes).
+      unmatchedSurahs: {67},
+    ),
     manifestSha256:
         '14e2a34164c3ccd8507cdda714629d9a5e3870f3ede4cbefe3efea22fce7a90e',
   );

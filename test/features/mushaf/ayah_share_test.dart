@@ -9,6 +9,7 @@ import 'package:mre_quran/features/mushaf/presentation/ayah_share_sheet.dart';
 import 'package:mre_quran/features/quran_index/application/quran_metadata_provider.dart';
 import 'package:mre_quran/features/quran_index/domain/quran_metadata.dart';
 import 'package:mre_quran/features/quran_text/application/quran_text_providers.dart';
+import 'package:mre_quran/features/quran_text/domain/ayah_texts.dart';
 import 'package:mre_quran/features/quran_text/domain/ayah_span.dart';
 import 'package:mre_quran/features/quran_text/domain/quran_text.dart';
 import 'package:mre_quran/l10n/generated/app_localizations.dart';
@@ -110,8 +111,11 @@ void main() {
             home: Builder(
               builder: (context) => Scaffold(
                 body: TextButton(
-                  onPressed: () =>
-                      showAyahShare(context, text, const AyahRef(2, 255)),
+                  onPressed: () => showAyahShare(
+                    context,
+                    HafsAyahTexts(text, fontFamily: 'KfgqpcHafs'),
+                    const AyahRef(2, 255),
+                  ),
                   child: const Text('open'),
                 ),
               ),

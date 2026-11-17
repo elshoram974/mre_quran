@@ -6,27 +6,37 @@ import '../../../core/l10n/l10n.dart';
 import '../../../core/widgets/app_sheet.dart';
 import '../../bookmarks/application/bookmarks_provider.dart';
 import '../../quran_index/domain/quran_metadata.dart';
-import '../../quran_text/domain/quran_text.dart';
+import '../../quran_text/domain/ayah_texts.dart';
 import '../../quran_text/domain/ayah_span.dart';
 import '../../settings/application/digits_provider.dart';
 import 'ayah_share_sheet.dart';
 
-/// Opens the actions for [target]: copy with its reference, share, and
-/// bookmark.
+/// Opens the actions for [target]: copy with its reference, share, and,
+/// when [bookmarks] is on, bookmark.
+///
+/// Bookmarks hold the app's own ayah numbers, so another reading, which may
+/// number its ayahs differently, offers none.
 Future<void> showAyahActions(
   BuildContext context,
-  QuranText text,
-  AyahRef target,
-) => AppSheet.show<void>(
+  AyahTexts text,
+  AyahRef target, {
+  bool bookmarks = true,
+}) => AppSheet.show<void>(
   context: context,
-  builder: (_) => _AyahActions(text: text, target: target),
+  builder: (_) =>
+      _AyahActions(text: text, target: target, bookmarks: bookmarks),
 );
 
 class _AyahActions extends ConsumerWidget {
-  const _AyahActions({required this.text, required this.target});
+  const _AyahActions({
+    required this.text,
+    required this.target,
+    required this.bookmarks,
+  });
 
-  final QuranText text;
+  final AyahTexts text;
   final AyahRef target;
+  final bool bookmarks;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -78,31 +88,32 @@ class _AyahActions extends ConsumerWidget {
               showAyahShare(root.context, text, target);
             },
           ),
-          ListTile(
-            leading: Icon(
-              bookmarked
-                  ? Icons.bookmark_remove_outlined
-                  : Icons.bookmark_add_outlined,
+          if (bookmarks)
+            ListTile(
+              leading: Icon(
+                bookmarked
+                    ? Icons.bookmark_remove_outlined
+                    : Icons.bookmark_add_outlined,
+              ),
+              title: Text(bookmarked ? l10n.removeBookmark : l10n.addBookmark),
+              onTap: () async {
+                await ref.read(bookmarksProvider.notifier).toggle(target);
+                if (!context.mounted) return;
+                Navigator.of(context).pop();
+                messenger?.showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      bookmarked ? l10n.bookmarkRemoved : l10n.bookmarkAdded,
+                    ),
+                    action: SnackBarAction(
+                      label: l10n.undo,
+                      onPressed: () =>
+                          ref.read(bookmarksProvider.notifier).toggle(target),
+                    ),
+                  ),
+                );
+              },
             ),
-            title: Text(bookmarked ? l10n.removeBookmark : l10n.addBookmark),
-            onTap: () async {
-              await ref.read(bookmarksProvider.notifier).toggle(target);
-              if (!context.mounted) return;
-              Navigator.of(context).pop();
-              messenger?.showSnackBar(
-                SnackBar(
-                  content: Text(
-                    bookmarked ? l10n.bookmarkRemoved : l10n.bookmarkAdded,
-                  ),
-                  action: SnackBarAction(
-                    label: l10n.undo,
-                    onPressed: () =>
-                        ref.read(bookmarksProvider.notifier).toggle(target),
-                  ),
-                ),
-              );
-            },
-          ),
         ],
       ),
     );

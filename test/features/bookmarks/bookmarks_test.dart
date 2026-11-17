@@ -10,6 +10,7 @@ import 'package:mre_quran/features/mushaf/presentation/ayah_actions_sheet.dart';
 import 'package:mre_quran/features/quran_index/application/quran_metadata_provider.dart';
 import 'package:mre_quran/features/quran_index/domain/quran_metadata.dart';
 import 'package:mre_quran/features/quran_text/application/quran_text_providers.dart';
+import 'package:mre_quran/features/quran_text/domain/ayah_texts.dart';
 import 'package:mre_quran/l10n/generated/app_localizations.dart';
 
 import '../../helpers/fake_quran_metadata_source.dart';
@@ -108,8 +109,11 @@ void main() {
           home: Builder(
             builder: (context) => Scaffold(
               body: TextButton(
-                onPressed: () =>
-                    showAyahActions(context, text, const AyahRef(2, 255)),
+                onPressed: () => showAyahActions(
+                  context,
+                  HafsAyahTexts(text, fontFamily: 'KfgqpcHafs'),
+                  const AyahRef(2, 255),
+                ),
                 child: const Text('open'),
               ),
             ),
@@ -150,8 +154,11 @@ void main() {
               builder: (context, ref, _) => Column(
                 children: [
                   TextButton(
-                    onPressed: () =>
-                        showAyahActions(context, text, const AyahRef(2, 255)),
+                    onPressed: () => showAyahActions(
+                      context,
+                      HafsAyahTexts(text, fontFamily: 'KfgqpcHafs'),
+                      const AyahRef(2, 255),
+                    ),
                     child: const Text('open'),
                   ),
                   const Expanded(child: BookmarksPage()),

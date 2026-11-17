@@ -13,6 +13,7 @@ import '../../../core/l10n/l10n.dart';
 import '../application/highlighted_ayah_provider.dart';
 import '../application/page_prefetcher.dart';
 import '../application/svg_page_providers.dart';
+import '../../quran_text/application/ayah_texts_provider.dart';
 import 'ayah_actions_sheet.dart';
 import 'flip/book_flip.dart';
 import 'mushaf_page_view.dart';
@@ -111,9 +112,22 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
 
   int get _pageCount => widget.text.metadata.pageCount;
 
-  Future<void> _showActions(AyahRef ayah) async {
+  /// The ayah actions of a page of [edition].
+  ValueChanged<AyahRef> _actionsOf(MushafEdition edition) =>
+      (ayah) => _showActions(edition, ayah);
+
+  Future<void> _showActions(MushafEdition edition, AyahRef ayah) async {
+    final texts = ref.read(editionTextsProvider(edition)).value;
+    // In a reading whose text and pages count this surah differently, the
+    // ayah is shown selected but its words are not offered.
+    if (texts == null || !texts.has(ayah)) return;
     setState(() => _selected = ayah);
-    await showAyahActions(context, widget.text, ayah);
+    await showAyahActions(
+      context,
+      texts,
+      ayah,
+      bookmarks: edition.matchesAppText,
+    );
     if (mounted) setState(() => _selected = null);
   }
 
@@ -158,6 +172,8 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
     }
     final edition = ref.watch(printedEditionProvider);
     final ownText = edition.matchesAppText;
+    // Its text is read ahead, so a long press finds it ready.
+    final hasText = ref.watch(editionTextsProvider(edition)).value != null;
     final bookmarked = ref.watch(bookmarkedRefsProvider);
     final highlighted = ref.watch(highlightedAyahProvider);
 
@@ -184,20 +200,25 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
             digits: digits,
             bookmarked: bookmarked,
             selected: _selected ?? highlighted,
-            onAyahLongPress: _showActions,
+            // The typeset text and its stand-in are always Hafs.
+            onAyahLongPress: _actionsOf(MushafEditions.hafs),
             onFontScaleChanged: _saveFontScale,
             onTap: _onTap,
             spread: spread,
           ),
           ReaderMode.printed when !ownText => SvgPageView(
-            // Another reading: its ayahs are not the app's text, so nothing
-            // of that text is tied to the page or stands in for it.
+            // Another reading: its ayahs are numbered its own way, so the
+            // app's bookmarks and highlights (Hafs numbers) are not tied to
+            // the page, and the app's text does not stand in for it. Its own
+            // text is copied and shared.
             metadata: widget.text.metadata,
             page: number,
             digits: digits,
             fillWidth: !spread,
             spreadLines: edition.spreadsLines,
             spread: spread,
+            selected: _selected,
+            onAyahLongPress: hasText ? _actionsOf(edition) : null,
             onTap: _onTap,
           ),
           ReaderMode.printed => SvgPageView(
@@ -209,7 +230,8 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
             spread: spread,
             bookmarked: bookmarked,
             selected: _selected ?? highlighted,
-            onAyahLongPress: _showActions,
+            // The typeset text and its stand-in are always Hafs.
+            onAyahLongPress: _actionsOf(MushafEditions.hafs),
             onTap: _onTap,
             // Without its artwork the page still reads, as text.
             fallbackBuilder: (_) => MushafPageView(
@@ -219,7 +241,8 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
               digits: digits,
               bookmarked: bookmarked,
               selected: _selected ?? highlighted,
-              onAyahLongPress: _showActions,
+              // The typeset text and its stand-in are always Hafs.
+              onAyahLongPress: _actionsOf(MushafEditions.hafs),
               onTap: _onTap,
               framed: false,
               spread: spread,

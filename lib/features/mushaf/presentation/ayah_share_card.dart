@@ -4,7 +4,7 @@ import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/theme/quran_colors.dart';
 import '../../quran_text/domain/ayah_span.dart';
-import '../../quran_text/domain/quran_text.dart';
+import '../../quran_text/domain/ayah_texts.dart';
 import 'surah_banner.dart';
 
 /// Ayahs set as a card to share as a picture: the surah's name in its
@@ -23,8 +23,8 @@ class AyahShareCard extends StatelessWidget {
     this.width = 360,
   });
 
-  /// The verified text.
-  final QuranText text;
+  /// The reading's text.
+  final AyahTexts text;
 
   /// The ayahs shown.
   final AyahSpan span;
@@ -42,9 +42,7 @@ class AyahShareCard extends StatelessWidget {
     final colors = QuranColors.of(context);
     final surah = text.metadata.surah(span.surah);
     final pages = AyahShareText.pages(text, span);
-    final family = text.hasMushafScript
-        ? AppTokens.mushafFontFamily
-        : AppTokens.quranFontFamily;
+    final family = text.fontFamily;
     final verse = TextStyle(
       fontFamily: family,
       fontSize: 22,
@@ -99,7 +97,7 @@ class AyahShareCard extends StatelessWidget {
                         child: Text.rich(
                           TextSpan(
                             children: [
-                              TextSpan(text: text.mushaf(ref)),
+                              TextSpan(text: text.display(ref)),
                               // The Mushaf font's own ayah-number ornament,
                               // or the number in brackets without it.
                               TextSpan(
