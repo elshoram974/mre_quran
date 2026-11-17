@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mre_quran/core/l10n/l10n.dart';
 import 'package:mre_quran/core/notifications/reminder_scheduler_provider.dart';
 import 'package:mre_quran/core/theme/app_theme.dart';
 import 'package:mre_quran/core/widgets/app_card.dart';
@@ -60,7 +61,7 @@ Future<_Harness> _pump(
       ],
       child: MaterialApp(
         locale: Locale(locale),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         theme: theme ?? AppTheme.light,
         builder: (context, child) => MediaQuery(

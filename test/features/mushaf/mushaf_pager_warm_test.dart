@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mre_quran/core/l10n/l10n.dart';
 import 'package:mre_quran/features/bookmarks/application/bookmarks_provider.dart';
 import 'package:mre_quran/features/mushaf/application/page_prefetcher.dart';
 import 'package:mre_quran/features/mushaf/application/reading_position_provider.dart';
@@ -81,7 +82,7 @@ Future<Set<int>> _pump(
       child: const MaterialApp(
         locale: Locale('ar'),
         supportedLocales: AppLocalizations.supportedLocales,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         home: Scaffold(body: MushafPage()),
       ),
     ),

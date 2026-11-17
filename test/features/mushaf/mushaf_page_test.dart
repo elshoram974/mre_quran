@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mre_quran/core/l10n/l10n.dart';
 import 'package:mre_quran/features/mushaf/application/reader_immersive_provider.dart';
 import 'package:mre_quran/features/mushaf/application/reading_position_provider.dart';
 import 'package:mre_quran/features/mushaf/presentation/flip/book_flip.dart';
@@ -66,7 +67,7 @@ Future<(ProviderContainer, MemoryReadingPositionRepository)> _pump(
         child: MaterialApp(
           locale: Locale(locale),
           supportedLocales: AppLocalizations.supportedLocales,
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           home: const Scaffold(body: MushafPage()),
         ),
       ),

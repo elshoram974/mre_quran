@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mre_quran/core/l10n/l10n.dart';
 import 'package:mre_quran/features/quran_index/application/quran_metadata_provider.dart';
 import 'package:mre_quran/features/quran_index/domain/quran_metadata.dart';
 import 'package:mre_quran/features/quran_index/domain/reader_destination.dart';
@@ -62,7 +63,7 @@ Future<List<ReaderDestination?>> _pumpSearch(
         child: MaterialApp.router(
           locale: Locale(locale),
           supportedLocales: AppLocalizations.supportedLocales,
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           routerConfig: router,
         ),
       ),

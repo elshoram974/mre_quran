@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mre_quran/core/l10n/l10n.dart';
 import 'package:mre_quran/core/theme/app_palette.dart';
 import 'package:mre_quran/core/theme/app_theme.dart';
 import 'package:mre_quran/core/theme/app_tokens.dart';
@@ -53,7 +54,7 @@ void main() {
           locale: locale,
           theme: theme ?? AppTheme.light,
           supportedLocales: AppLocalizations.supportedLocales,
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           home: Scaffold(
             body: SvgPageView(
               metadata: metadata,

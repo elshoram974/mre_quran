@@ -1,8 +1,6 @@
-import 'package:cupertino_ui/cupertino_ui.dart';
-import 'package:flutter_localizations/flutter_localizations.dart'
-    hide GlobalCupertinoLocalizations, GlobalMaterialLocalizations;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mre_quran/core/l10n/l10n.dart';
 import 'package:mre_quran/core/widgets/app_select_field.dart';
 import 'package:mre_quran/l10n/generated/app_localizations.dart';
 
@@ -12,12 +10,7 @@ Widget _host({
   Locale locale = const Locale('ar'),
 }) => MaterialApp(
   locale: locale,
-  localizationsDelegates: const [
-    AppLocalizations.delegate,
-    GlobalMaterialLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-  ],
+  localizationsDelegates: appLocalizationsDelegates,
   supportedLocales: AppLocalizations.supportedLocales,
   home: Scaffold(
     body: AppSelectField<int>(

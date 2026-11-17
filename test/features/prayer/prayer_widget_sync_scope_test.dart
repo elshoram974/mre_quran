@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mre_quran/core/l10n/l10n.dart';
 import 'package:mre_quran/features/prayer/application/prayer_provider.dart';
 import 'package:mre_quran/features/prayer/domain/prayer_alerts.dart';
 import 'package:mre_quran/features/prayer/presentation/prayer_widget_sync_scope.dart';
@@ -57,7 +58,7 @@ void main() {
         ],
         child: const MaterialApp(
           supportedLocales: AppLocalizations.supportedLocales,
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           home: PrayerWidgetSyncScope(child: SizedBox()),
         ),
       ),

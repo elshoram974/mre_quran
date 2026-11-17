@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mre_quran/core/l10n/l10n.dart';
 import 'package:mre_quran/features/bookmarks/application/bookmarks_provider.dart';
 import 'package:mre_quran/features/bookmarks/domain/bookmark.dart';
 import 'package:mre_quran/features/bookmarks/presentation/bookmarks_page.dart';
@@ -105,7 +106,7 @@ void main() {
         child: MaterialApp(
           locale: const Locale('ar'),
           supportedLocales: AppLocalizations.supportedLocales,
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           home: Builder(
             builder: (context) => Scaffold(
               body: TextButton(
@@ -148,7 +149,7 @@ void main() {
         child: MaterialApp(
           locale: const Locale('ar'),
           supportedLocales: AppLocalizations.supportedLocales,
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: appLocalizationsDelegates,
           home: Scaffold(
             body: Consumer(
               builder: (context, ref, _) => Column(

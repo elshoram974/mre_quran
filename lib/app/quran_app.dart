@@ -63,7 +63,7 @@ class QuranApp extends ConsumerWidget {
         debugShowCheckedModeBanner: false,
         locale: settings.locale,
         supportedLocales: AppLocalizations.supportedLocales,
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         // A change of paper or accent animates: MaterialApp interpolates
         // the themes, extensions included.
         theme: AppTheme.of(settings.theme.dayPaper, settings.accent),

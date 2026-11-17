@@ -48,7 +48,6 @@ app.*.map.json
 .widget_preview/
 
 # Local FVM SDK links
-.fvm/
 
 # Local environment and signing material. Firebase app configuration files are
 # intentionally tracked; they identify the public mobile app and are required
