@@ -172,14 +172,19 @@ void main() {
       await tester.tap(find.byTooltip('التنبيه متوقف').first);
       await tester.pumpAndSettle();
       expect(find.byTooltip('التنبيه مفعّل'), findsOneWidget);
-      // 09:00 on the fixed day: today's Fajr has passed, six more follow.
-      expect(harness.scheduler.once, hasLength(6));
+      // 09:00 on the fixed day: today's Fajr has passed, the rest of the
+      // planned days follow, each with its reminder before it.
+      final days = PrayerNotifier.planDays - 1;
+      final items = harness.scheduler.once.values;
       expect(
-        harness.scheduler.once.values.every(
-          (item) => item.channel == ReminderChannel.prayer && item.exact,
-        ),
-        isTrue,
+        items.where((i) => i.channel == ReminderChannel.prayer),
+        hasLength(days),
       );
+      expect(
+        items.where((i) => i.channel == ReminderChannel.prayerSoon),
+        hasLength(days),
+      );
+      expect(items.every((item) => item.exact), isTrue);
 
       await tester.tap(find.byTooltip('التنبيه مفعّل'));
       await tester.pumpAndSettle();
@@ -196,8 +201,14 @@ void main() {
       await _reveal(tester, find.text('تنبيه للصلوات الخمس'));
       await tester.tap(find.text('تنبيه للصلوات الخمس'));
       await tester.pumpAndSettle();
-      // Four prayers are left today, then five a day for six days.
-      expect(harness.scheduler.once, hasLength(34));
+      // As many as the system is given at once.
+      expect(
+        harness.scheduler.once,
+        hasLength(PrayerNotifier.notificationLimit),
+      );
+      // The reminder before them can be moved.
+      await _reveal(tester, find.text('تذكير قبل الصلاة'));
+      expect(find.text('١٥ دقيقة'), findsOneWidget);
       // Back up to the day's times, which the page scrolled past.
       await tester.drag(find.byType(Scrollable).first, const Offset(0, 1500));
       await tester.pumpAndSettle();
@@ -226,7 +237,12 @@ void main() {
       await tester.tap(find.text('ذكّرني بعد كل صلاة'));
       await tester.pumpAndSettle();
       expect(harness.repository.settings.adhkarReminder, isTrue);
-      expect(harness.scheduler.once, hasLength(34));
+      // Today's Fajr reminder has passed; every other prayer of the planned
+      // days has one.
+      expect(
+        harness.scheduler.once,
+        hasLength(PrayerNotifier.planDays * 5 - 1),
+      );
     });
 
     testWidgets('updating the location asks again', (tester) async {

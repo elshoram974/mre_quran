@@ -94,7 +94,10 @@ void main() {
 
     test('an alert for each chosen prayer, at its time, for a week', () {
       final alerts = plan(
-        const PrayerSettings(alerts: {DailyPrayer.fajr, DailyPrayer.maghrib}),
+        const PrayerSettings(
+          alerts: {DailyPrayer.fajr, DailyPrayer.maghrib},
+          beforeReminder: false,
+        ),
       );
       expect(alerts, hasLength(14));
       expect(alerts.every((a) => a.kind == PrayerAlertKind.atTime), isTrue);
@@ -358,9 +361,13 @@ void main() {
         expect(result, PrayerResult.ok);
         expect(scheduler.permissionRequests, 1);
         expect(location.requests, 1);
-        expect(scheduler.once, hasLength(7));
-        final sample = scheduler.once.values.first;
-        expect(sample.channel, ReminderChannel.prayer);
+        final atTime = scheduler.once.values.where(
+          (value) => value.channel == ReminderChannel.prayer,
+        );
+        expect(atTime, hasLength(PrayerNotifier.planDays));
+        // And as many reminders before it.
+        expect(scheduler.once, hasLength(2 * PrayerNotifier.planDays));
+        final sample = atTime.first;
         expect(sample.exact, isTrue);
         expect(sample.payload, 'prayer:times');
         expect(sample.title, 'حان وقت صلاة الفجر');
@@ -395,7 +402,9 @@ void main() {
       await c.read(prayerProvider.future);
       final notifier = c.read(prayerProvider.notifier);
       await notifier.setAllAlerts(true);
-      expect(scheduler.once, hasLength(35));
+      // As many as the system is given at once; the rest come on a later
+      // start.
+      expect(scheduler.once, hasLength(PrayerNotifier.notificationLimit));
       await notifier.setAllAlerts(false);
       expect(scheduler.once, isEmpty);
     });
@@ -493,7 +502,7 @@ void main() {
         expect(location.requests, 0);
         expect(location.quietReads, 1);
         expect(scheduler.permissionRequests, 0);
-        expect(scheduler.once, hasLength(7));
+        expect(scheduler.once, hasLength(2 * PrayerNotifier.planDays));
       },
     );
 
@@ -512,7 +521,9 @@ void main() {
       await c.read(settingsProvider.future);
       await c.read(prayerProvider.future);
       await Future<void>.delayed(Duration.zero);
-      expect(scheduler.once.values.first.title, 'Time for the Fajr prayer');
+      final titles = scheduler.once.values.map((value) => value.title);
+      expect(titles.first, 'Fajr is near');
+      expect(titles, contains('Time for the Fajr prayer'));
     });
   });
 }

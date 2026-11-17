@@ -218,3 +218,50 @@
   per-screen copies in Settings, Adhkar and Prayer. `PrayerNoPlace` is shared by the prayer and Qibla pages.
 - **Reason:** The same row, heading and message were written three or four times with small differences.
 
+
+## D-027: Every sheet closes by pulling it down, from anywhere
+
+- **Decision:** `AppSheet` draws its own handle only (the theme's `showDragHandle` drew a second one). A sheet
+  sized to its content follows the finger down once its body is scrolled to the top and closes when let go a
+  quarter of the way down or with a flick; a draggable sheet closes when its body lets it go below half the
+  screen. `AppSheet.show(above:)` floats what the sheet acts on above it, outside it (the pressed ayah).
+- **Reason:** A sheet whose body scrolled could only be closed from its handle.
+
+## D-028: Ayahs are shared as a range that may cross surahs
+
+- **Decision:** `AyahRange` (start and end `AyahRef`) replaces the one-surah span; `AyahOrder` numbers a
+  reading's ayahs so a range is counted, stepped and cut per surah with that reading's own counts. Up to 50
+  ayahs at once. The copied text puts each surah's ayahs in their own brackets with their reference. A long
+  choice becomes several pictures of whole ayahs (about 650 letters each), all shared together. In the reader,
+  "choose more ayahs" from an ayah's actions highlights a range that grows to each ayah tapped (or pressed),
+  on any page, with a bar to copy or share it.
+- **Alternatives:** Raise the old ten-ayah limit inside one surah; one tall picture.
+- **Reason:** Passages often run across a surah's end (the end of Al-Baqarah into Al Imran). A picture taller
+  than a phone screen is unreadable where it is sent.
+
+## D-029: The adhan plays as announcement, adhan, dua; Fajr has its own adhan
+
+- **Decision:** At prayer time Android plays, in order: the announcement of the prayer (when its recording
+  exists), the chosen adhan (at Fajr the chosen Fajr adhan, with "الصلاة خير من النوم"), and the dua after the
+  adhan; each can be turned off. A reminder comes 15 minutes before each alerting prayer (5 to 45, or off).
+  The recordings are built by `tool/audio/build_adhan_audio.py` (cut, cleaned, -16 LUFS), bundled ones in
+  `res/raw`, the rest served from the media repository's tag. See `docs/AUDIO_SOURCES.md`, which also lists
+  the licences still to obtain.
+- **Was:** One adhan for every prayer from Wikimedia Commons, too loud and with long silences.
+
+## D-030: A month of adhan with one system alarm
+
+- **Decision:** Android plans 30 days of prayers. The native scheduler keeps the list and arms only the next
+  adhan; each one, when it fires, arms the one after it (and a restart arms the next). Notifications (the
+  reminder before, the after-prayer adhkar, and the at-time alerts when the adhan does not play) are capped at
+  the earliest 150. iOS plans 7 days and at most 48 notifications, inside its limit of 64.
+- **Alternatives:** A background task (WorkManager, BGAppRefresh) that plans again daily: it needs the Dart
+  engine and the adhan's method channel in the background, and iOS runs it when it chooses.
+- **Reason:** The adhan must go on when the app is not opened for days, without nearing the alarm limit a
+  phone sets an app.
+
+## D-031: Shortcuts on the app's icon
+
+- **Decision:** `quick_actions` (Flutter team) offers prayer times and adhan, Qibla, adhkar, and continue
+  reading on a long press of the icon, named in the app's language and opened through the typed routes. Their
+  icons are the app's own Material icons, drawn by `tool/app_icon/render_shortcut_icons_test.dart`.

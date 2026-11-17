@@ -461,6 +461,15 @@ class AppLocalizationsAr extends AppLocalizations {
   String get qiblaTitle => 'القبلة';
 
   @override
+  String get shortcutPrayer => 'مواقيت الصلاة والأذان';
+
+  @override
+  String get shortcutAdhkar => 'الأذكار والأدعية';
+
+  @override
+  String get shortcutReader => 'متابعة القراءة';
+
+  @override
   String get qiblaTileSubtitle => 'بوصلة تشير إلى الكعبة';
 
   @override

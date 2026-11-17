@@ -101,10 +101,17 @@ void main() {
       await _pump(tester);
       expect(find.text('تشغيل الأذان وقت الصلاة'), findsOneWidget);
       expect(find.text('إيقاف الأذان عند قلب الهاتف'), findsOneWidget);
-      expect(find.text('الأذان الافتراضي'), findsOneWidget);
-      expect(find.text('قيد الاستخدام'), findsOneWidget);
+      expect(find.text('إعلان الصلاة قبل الأذان'), findsOneWidget);
+      expect(find.text('الدعاء بعد الأذان'), findsOneWidget);
+      await _reveal(tester, find.text('الأذان الافتراضي'));
+      expect(_inCard('الأذان الافتراضي', find.text('قيد الاستخدام')), findsOne);
       await _reveal(tester, find.text('أذان المسجد الحرام'));
       expect(find.textContaining('تنزيل'), findsWidgets);
+      // Fajr has its own voices, its bundled one in use.
+      await _reveal(tester, find.text('أذان فجر للتنزيل'));
+      expect(find.text('أذان الفجر'), findsWidgets);
+      await _reveal(tester, find.text('أذان الفجر').last);
+      expect(_inCard('أذان الفجر', find.text('قيد الاستخدام')), findsOne);
     },
   );
 
@@ -236,6 +243,7 @@ void main() {
     tester,
   ) async {
     await _pump(tester);
+    await _reveal(tester, find.text('الأذان الافتراضي'));
     await tester.tap(
       _inCard('الأذان الافتراضي', find.byTooltip('المصدر والترخيص')),
     );
@@ -261,6 +269,7 @@ void main() {
   ) async {
     final h = await _pump(tester, exact: false);
     expect(find.textContaining('يؤخّر أندرويد'), findsOneWidget);
+    await _reveal(tester, find.text('السماح بالتوقيت الدقيق'));
     await tester.tap(find.text('السماح بالتوقيت الدقيق'));
     await tester.pumpAndSettle();
     expect(h.scheduler.exactRequests, 1);
@@ -290,8 +299,8 @@ void main() {
   testWidgets('English LTR in dark mode', (tester) async {
     await _pump(tester, locale: 'en', theme: AppTheme.dark);
     expect(find.text('Play the adhan at prayer time'), findsOneWidget);
-    expect(find.text('Default adhan'), findsOneWidget);
-    expect(find.text('In use'), findsOneWidget);
+    await _reveal(tester, find.text('Default adhan'));
+    expect(_inCard('Default adhan', find.text('In use')), findsOne);
     await _reveal(tester, find.text('Grand Mosque'));
     expect(find.textContaining('Download'), findsWidgets);
     expect(tester.takeException(), isNull);

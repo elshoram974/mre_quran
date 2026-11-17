@@ -461,6 +461,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get qiblaTitle => 'Qibla';
 
   @override
+  String get shortcutPrayer => 'Prayer times and adhan';
+
+  @override
+  String get shortcutAdhkar => 'Adhkar and duas';
+
+  @override
+  String get shortcutReader => 'Continue reading';
+
+  @override
   String get qiblaTileSubtitle => 'A compass that points to the Kaaba';
 
   @override

@@ -95,7 +95,8 @@ class AyahPreview extends ConsumerWidget {
               ),
               const SizedBox(height: 2),
               Text(
-                ayahPlace(context, text, ayah, digits),
+                '${text.metadata.surah(ayah.surah).arabicName} · '
+                '${context.l10n.ayahNumber(digits(ayah.ayah))}',
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.labelMedium?.copyWith(

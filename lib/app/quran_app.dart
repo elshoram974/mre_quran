@@ -16,6 +16,7 @@ import '../features/adhkar/application/reminders_provider.dart';
 import '../features/settings/application/settings_provider.dart';
 import '../features/settings/domain/app_settings.dart';
 import '../l10n/generated/app_localizations.dart';
+import 'app_shortcuts.dart';
 import 'reminder_opener.dart';
 import 'router.dart';
 import '../core/notifications/reminder_scheduler_provider.dart';
@@ -71,8 +72,11 @@ class QuranApp extends ConsumerWidget {
         darkTheme: AppTheme.of(settings.theme.nightPaper, settings.accent),
         themeMode: settings.materialThemeMode,
         routerConfig: ref.watch(routerProvider),
-        builder: (context, child) =>
-            AdhkarWidgetSyncScope(child: PrayerWidgetSyncScope(child: child!)),
+        builder: (context, child) => AppShortcutsScope(
+          child: AdhkarWidgetSyncScope(
+            child: PrayerWidgetSyncScope(child: child!),
+          ),
+        ),
       ),
     );
   }

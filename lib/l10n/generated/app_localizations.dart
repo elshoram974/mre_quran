@@ -896,6 +896,24 @@ abstract class AppLocalizations {
   /// **'Qibla'**
   String get qiblaTitle;
 
+  /// No description provided for @shortcutPrayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Prayer times and adhan'**
+  String get shortcutPrayer;
+
+  /// No description provided for @shortcutAdhkar.
+  ///
+  /// In en, this message translates to:
+  /// **'Adhkar and duas'**
+  String get shortcutAdhkar;
+
+  /// No description provided for @shortcutReader.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue reading'**
+  String get shortcutReader;
+
   /// No description provided for @qiblaTileSubtitle.
   ///
   /// In en, this message translates to:
