@@ -105,6 +105,34 @@ class SvgPageLayout {
     return null;
   }
 
+  /// Printed lines on a full page.
+  static const int printedLines = 15;
+
+  /// The line each surah that opens on this page has its name on, in page
+  /// units, top first.
+  ///
+  /// A full page has fifteen even lines. A surah's name stands on the line
+  /// above its basmala, which stands on the line above its first ayah;
+  /// At-Tawbah has no basmala. The two opening pages are set apart in their
+  /// own ornate frames, and get none here.
+  List<({int surah, double top, double bottom})> get surahTitles {
+    if (content != viewBox) return const [];
+    final line = pageBoxHeight(viewBox) / printedLines;
+    return [
+      for (final region in regions)
+        if (region.ref.ayah == 1)
+          () {
+            final basmala = region.ref.surah != 9;
+            final bottom = region.bounds.top - (basmala ? line : 0);
+            return (
+              surah: region.ref.surah,
+              top: bottom - line,
+              bottom: bottom,
+            );
+          }(),
+    ].where((title) => title.top >= viewBox.top - line / 4).toList();
+  }
+
   /// The part of the page to fit on screen.
   ///
   /// Every page declares the same box, but the two opening pages fill about

@@ -81,10 +81,7 @@ class LocalSettingsRepository implements SettingsRepository {
         (item) => item.name == readerMode,
         orElse: () => ReaderMode.printed,
       ),
-      mushafEdition: MushafEdition.values.firstWhere(
-        (item) => item.id == edition,
-        orElse: () => MushafEdition.hafs,
-      ),
+      mushafEdition: MushafEditions.byId(edition) ?? MushafEditions.hafs,
       readerPageLayout: ReaderPageLayout.values.firstWhere(
         (item) => item.name == readerPageLayout,
         orElse: () => ReaderPageLayout.auto,

@@ -228,4 +228,73 @@ void main() {
       expect(page.marks, contains('M2 2L3 3Z'));
     });
   });
+
+  group('surah names on a printed page', () {
+    AyahRegion band(int surah, int ayah, double top, double bottom) =>
+        AyahRegion(
+          ref: AyahRef(surah, ayah),
+          rings: [
+            [
+              (x: 0, y: top),
+              (x: 345, y: top),
+              (x: 345, y: bottom),
+              (x: 0, y: bottom),
+            ],
+          ],
+        );
+    const line = 550 / 15;
+
+    test('a name stands two lines above its first ayah, over the basmala', () {
+      // Page 50: Al Imran opens on the third line.
+      final layout = SvgPageLayout(
+        viewBox: (left: 0, top: 0, right: 345, bottom: 550),
+        regions: [band(3, 1, 74.8, 112.8), band(3, 2, 112.8, 550)],
+      );
+      final title = layout.surahTitles.single;
+      expect(title.surah, 3);
+      expect(title.bottom, closeTo(74.8 - line, 0.01));
+      expect(title.top, closeTo(74.8 - 2 * line, 0.01));
+    });
+
+    test('At-Tawbah has no basmala: its name is on the line above', () {
+      final layout = SvgPageLayout(
+        viewBox: (left: 0, top: 0, right: 345, bottom: 550),
+        regions: [band(8, 75, 0, 39.5), band(9, 1, 39.5, 550)],
+      );
+      final title = layout.surahTitles.single;
+      expect(title.surah, 9);
+      expect(title.bottom, closeTo(39.5, 0.01));
+    });
+
+    test('several surahs on one page each get their name, top first', () {
+      // Page 604: Al-Ikhlas, Al-Falaq, An-Nas.
+      final layout = SvgPageLayout(
+        viewBox: (left: 0, top: 0, right: 345, bottom: 550),
+        regions: [
+          band(112, 1, 74.2, 112.8),
+          band(113, 1, 218.5, 257.2),
+          band(114, 1, 398.5, 550),
+        ],
+      );
+      expect([for (final t in layout.surahTitles) t.surah], [112, 113, 114]);
+    });
+
+    test('a page with no opening has no name, and the cropped opening pages '
+        'keep their own frames', () {
+      expect(
+        SvgPageParser.page(
+          3,
+          svg: _svg,
+          json: File('test/fixtures/svg/003.json').readAsStringSync(),
+        ).layout.surahTitles,
+        isEmpty,
+      );
+      final cropped = SvgPageLayout(
+        viewBox: (left: 0, top: 0, right: 345, bottom: 550),
+        regions: [band(1, 1, 200, 230), band(1, 2, 230, 260)],
+      );
+      expect(cropped.content, isNot(cropped.viewBox));
+      expect(cropped.surahTitles, isEmpty);
+    });
+  });
 }

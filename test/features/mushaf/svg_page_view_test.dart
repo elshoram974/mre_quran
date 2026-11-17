@@ -382,4 +382,16 @@ void main() {
     await pump(tester, load: (request) async => fixturePicture(request));
     expect(find.byType(ReaderPageLabels), findsNothing);
   });
+
+  testWidgets('offline, a page with no text to stand in says so and points '
+      'to the offline download', (tester) async {
+    await pump(
+      tester,
+      load: (_) async => throw const SocketException('offline'),
+    );
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(find.textContaining('لا يوجد اتصال بالإنترنت'), findsOneWidget);
+    expect(find.text('إعادة المحاولة'), findsOneWidget);
+    expect(find.text('المصحف دون اتصال'), findsOneWidget);
+  });
 }

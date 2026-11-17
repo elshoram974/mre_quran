@@ -14,7 +14,6 @@ import '../../settings/domain/app_settings.dart';
 import '../application/mushaf_packs.dart';
 import '../application/svg_page_providers.dart';
 import '../data/pack_downloader.dart';
-import 'edition_labels.dart';
 
 /// The settings section for reading the printed Mushaf without internet:
 /// what is on the device, and a button to download, stop, or delete it. The
@@ -37,7 +36,7 @@ class _OfflinePacksSectionState extends ConsumerState<OfflinePacksSection> {
     _lifecycle = AppLifecycleListener(
       // Downloads go on while the app is away; collect what finished.
       onResume: () {
-        for (final edition in MushafEdition.values) {
+        for (final edition in MushafEditions.all) {
           ref.read(mushafPackProvider(edition).notifier).refresh();
         }
       },
@@ -78,7 +77,7 @@ class _OfflinePacksSectionState extends ConsumerState<OfflinePacksSection> {
             color: theme.colorScheme.onSurfaceVariant,
           ),
         ),
-        for (final edition in MushafEdition.values) ...[
+        for (final edition in MushafEditions.all) ...[
           const SizedBox(height: 12),
           PackTile(edition: edition),
         ],
@@ -99,7 +98,7 @@ class PackTile extends ConsumerWidget {
 
   /// Words of the download's notification.
   PackNotificationText _text(AppLocalizations l10n) {
-    final name = editionName(l10n, edition);
+    final name = edition.name(l10n.localeName);
     return PackNotificationText(
       runningTitle: l10n.packNotifyRunningTitle(name),
       // The downloader fills in the percentage.
@@ -125,7 +124,7 @@ class PackTile extends ConsumerWidget {
     if (!context.mounted) return;
     final confirmed = await _confirm(
       context,
-      title: l10n.packDownloadTitle(editionName(l10n, edition)),
+      title: l10n.packDownloadTitle(edition.name(l10n.localeName)),
       body: l10n.packDownloadBody(digits(megabytes)),
       action: l10n.packDownload,
     );
@@ -147,7 +146,7 @@ class PackTile extends ConsumerWidget {
     final confirmed = await AppSheet.show<bool>(
       context: context,
       builder: (sheet) => _DeleteWarning(
-        title: l10n.packDeleteWarnTitle(editionName(l10n, edition)),
+        title: l10n.packDeleteWarnTitle(edition.name(l10n.localeName)),
         body: l10n.packDeleteWarnBody(digits(progress.done), digits(megabytes)),
       ),
     );
@@ -258,7 +257,7 @@ class PackTile extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      editionName(l10n, edition),
+                      edition.name(l10n.localeName),
                       style: theme.textTheme.titleMedium,
                     ),
                     if (inUse)

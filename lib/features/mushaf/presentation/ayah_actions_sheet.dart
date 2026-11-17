@@ -7,9 +7,12 @@ import '../../../core/widgets/app_sheet.dart';
 import '../../bookmarks/application/bookmarks_provider.dart';
 import '../../quran_index/domain/quran_metadata.dart';
 import '../../quran_text/domain/quran_text.dart';
+import '../../quran_text/domain/ayah_span.dart';
 import '../../settings/application/digits_provider.dart';
+import 'ayah_share_sheet.dart';
 
-/// Opens the actions for [target]: copy with its reference, and bookmark.
+/// Opens the actions for [target]: copy with its reference, share, and
+/// bookmark.
 Future<void> showAyahActions(
   BuildContext context,
   QuranText text,
@@ -18,13 +21,6 @@ Future<void> showAyahActions(
   context: context,
   builder: (_) => _AyahActions(text: text, target: target),
 );
-
-/// The text of an ayah with its reference, ready to paste:
-/// `﴿…﴾ [البقرة: 255]`.
-String ayahWithReference(QuranText text, AyahRef target) {
-  final surah = text.metadata.surah(target.surah);
-  return '﴿${text.uthmani(target)}﴾ [${surah.arabicName}: ${target.ayah}]';
-}
 
 class _AyahActions extends ConsumerWidget {
   const _AyahActions({required this.text, required this.target});
@@ -59,11 +55,27 @@ class _AyahActions extends ConsumerWidget {
             title: Text(l10n.copyAyah),
             onTap: () async {
               await Clipboard.setData(
-                ClipboardData(text: ayahWithReference(text, target)),
+                ClipboardData(
+                  text: ayahShareText(
+                    context,
+                    text,
+                    AyahSpan.single(target),
+                    digits,
+                  ),
+                ),
               );
               if (!context.mounted) return;
               Navigator.of(context).pop();
               messenger?.showSnackBar(SnackBar(content: Text(l10n.ayahCopied)));
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.share_outlined),
+            title: Text(l10n.shareAyah),
+            onTap: () {
+              final root = Navigator.of(context, rootNavigator: true);
+              Navigator.of(context).pop();
+              showAyahShare(root.context, text, target);
             },
           ),
           ListTile(

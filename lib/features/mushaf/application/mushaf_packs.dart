@@ -110,10 +110,8 @@ class MushafPack extends AsyncNotifier<PackProgress> {
   SvgPageStore get _store => ref.read(svgPageStoreProvider(edition));
   PackDownloader get _downloader => ref.read(packDownloaderProvider);
 
-  /// Name of the download group of [edition]. Hafs keeps the name it had
-  /// when it was the only edition, so a download begun then is still found.
-  static String groupOf(MushafEdition edition) =>
-      edition == MushafEdition.hafs ? 'mushaf-svg' : 'mushaf-svg-${edition.id}';
+  /// Name of the download group of [edition].
+  static String groupOf(MushafEdition edition) => edition.downloadGroup;
 
   /// Name of this pack's download group.
   String get group => groupOf(edition);

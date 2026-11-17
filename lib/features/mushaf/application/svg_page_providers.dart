@@ -13,7 +13,7 @@ import '../domain/svg_page.dart';
 final printedEditionProvider = Provider<MushafEdition>(
   (ref) => ref.watch(
     settingsProvider.select(
-      (settings) => settings.value?.mushafEdition ?? MushafEdition.hafs,
+      (settings) => settings.value?.mushafEdition ?? MushafEditions.hafs,
     ),
   ),
 );
@@ -21,7 +21,7 @@ final printedEditionProvider = Provider<MushafEdition>(
 /// The bundled list of an edition's page files and their checksums.
 final svgManifestProvider = FutureProvider.family<SvgManifest, MushafEdition>(
   (ref, edition) async => SvgManifestParser.parse(
-    await rootBundle.loadString(SvgManifest.assetOf(edition)),
+    await rootBundle.loadString(edition.manifestAsset),
   ),
 );
 

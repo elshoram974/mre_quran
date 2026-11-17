@@ -93,4 +93,34 @@ void main() {
     expect(find.text('Index'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('the tabs and the search stay on screen while a list scrolls', (
+    tester,
+  ) async {
+    await _pumpIndex(tester);
+    final search = find.byType(TextField);
+    final top = tester.getTopLeft(search).dy;
+    await tester.fling(
+      find.byType(Scrollable).last,
+      const Offset(0, -2000),
+      3000,
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('الفاتحة'), findsNothing, reason: 'the list moved');
+    expect(search.hitTestable(), findsOneWidget);
+    expect(tester.getTopLeft(search).dy, top);
+    expect(find.text('الأجزاء').hitTestable(), findsOneWidget);
+  });
+
+  testWidgets('a swipe goes from the surahs to the juz and the tab follows', (
+    tester,
+  ) async {
+    await _pumpIndex(tester);
+    // The Mushaf's lists run right to left like the app: the next tab is
+    // to the left, so a swipe to the right brings it.
+    await tester.fling(find.byType(TabBarView), const Offset(300, 0), 1500);
+    await tester.pumpAndSettle();
+    expect(find.text('الجزء ٢'), findsOneWidget);
+    expect(find.text('الفاتحة'), findsNothing);
+  });
 }

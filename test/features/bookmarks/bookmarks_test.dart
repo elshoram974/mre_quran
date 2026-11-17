@@ -122,9 +122,13 @@ void main() {
     expect(find.text('البقرة · آية ٢٥٥'), findsOneWidget);
     await tester.tap(find.text('نسخ الآية'));
     await tester.pumpAndSettle();
-    expect(copied, ayahWithReference(text, const AyahRef(2, 255)));
-    expect(copied, startsWith('﴿'));
-    expect(copied, endsWith('﴾ [البقرة: 255]'));
+    // The ayah with tashkeel and its number, then where it is: surah, ayah
+    // and page.
+    expect(
+      copied,
+      startsWith('﴿${text.uthmani(const AyahRef(2, 255))} (٢٥٥)﴾'),
+    );
+    expect(copied, endsWith('\n[البقرة: ٢٥٥ · صفحة ٤٢]'));
     expect(find.text('تم نسخ الآية'), findsOneWidget);
   });
 

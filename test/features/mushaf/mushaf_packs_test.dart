@@ -59,7 +59,7 @@ void main() {
   const jsonPath = 'svg/hafs-kfqc/pack/hafs-kfqc-json.zip';
 
   Future<PackProgress> progress() =>
-      container.read(mushafPackProvider(MushafEdition.hafs).future);
+      container.read(mushafPackProvider(MushafEditions.hafs).future);
 
   Future<void> settled() =>
       Future<void>.delayed(const Duration(milliseconds: 400));
@@ -74,18 +74,18 @@ void main() {
   test('start downloads the two archives as one notified group', () async {
     await progress();
     await container
-        .read(mushafPackProvider(MushafEdition.hafs).notifier)
+        .read(mushafPackProvider(MushafEditions.hafs).notifier)
         .start(_text);
     expect(downloader.notificationRequests, 1);
     expect(
       [
         for (final f
-            in downloader.enqueued[MushafPack.groupOf(MushafEdition.hafs)]!)
+            in downloader.enqueued[MushafPack.groupOf(MushafEditions.hafs)]!)
           f.path,
       ],
       [svgPath, jsonPath],
     );
-    expect(downloader.texts[MushafPack.groupOf(MushafEdition.hafs)], _text);
+    expect(downloader.texts[MushafPack.groupOf(MushafEditions.hafs)], _text);
     final state = await progress();
     expect((state.active, state.transfer), (true, 0.0));
   });
@@ -93,11 +93,11 @@ void main() {
   test('the progress follows the slower archive', () async {
     await progress();
     await container
-        .read(mushafPackProvider(MushafEdition.hafs).notifier)
+        .read(mushafPackProvider(MushafEditions.hafs).notifier)
         .start(_text);
     downloader
-      ..move(MushafPack.groupOf(MushafEdition.hafs), jsonPath, 1)
-      ..move(MushafPack.groupOf(MushafEdition.hafs), svgPath, 0.4);
+      ..move(MushafPack.groupOf(MushafEditions.hafs), jsonPath, 1)
+      ..move(MushafPack.groupOf(MushafEditions.hafs), svgPath, 0.4);
     await Future<void>.delayed(Duration.zero);
     expect((await progress()).transfer, 0.4);
     // Another group's download does not move it.
@@ -109,13 +109,13 @@ void main() {
   test('arrived archives are installed, and the download ends', () async {
     await progress();
     await container
-        .read(mushafPackProvider(MushafEdition.hafs).notifier)
+        .read(mushafPackProvider(MushafEditions.hafs).notifier)
         .start(_text);
     arrived('svg');
     arrived('json');
     downloader
-      ..finish(MushafPack.groupOf(MushafEdition.hafs), svgPath)
-      ..finish(MushafPack.groupOf(MushafEdition.hafs), jsonPath);
+      ..finish(MushafPack.groupOf(MushafEditions.hafs), svgPath)
+      ..finish(MushafPack.groupOf(MushafEditions.hafs), jsonPath);
     await settled();
     final state = await progress();
     expect((state.done, state.total), (6, 6));
@@ -129,7 +129,7 @@ void main() {
     await progress();
     arrived('svg', bytes: '<html>503</html>'.codeUnits);
     downloader.finish(
-      MushafPack.groupOf(MushafEdition.hafs),
+      MushafPack.groupOf(MushafEditions.hafs),
       svgPath,
       ok: false,
     );
@@ -147,7 +147,7 @@ void main() {
       arrived('svg');
       arrived('json');
       final seen = <PackProgress>[];
-      container.listen(mushafPackProvider(MushafEdition.hafs), (_, next) {
+      container.listen(mushafPackProvider(MushafEditions.hafs), (_, next) {
         if (next.value case final value?) seen.add(value);
       }, fireImmediately: true);
       await progress();
@@ -181,7 +181,7 @@ void main() {
   test('a download cannot be started twice', () async {
     await progress();
     final notifier = container.read(
-      mushafPackProvider(MushafEdition.hafs).notifier,
+      mushafPackProvider(MushafEditions.hafs).notifier,
     );
     await notifier.start(_text);
     await notifier.start(_text);
@@ -194,10 +194,10 @@ void main() {
     await progress();
     await settled();
     final notifier = container.read(
-      mushafPackProvider(MushafEdition.hafs).notifier,
+      mushafPackProvider(MushafEditions.hafs).notifier,
     );
     await notifier.cancel();
-    expect(downloader.cancelled, [MushafPack.groupOf(MushafEdition.hafs)]);
+    expect(downloader.cancelled, [MushafPack.groupOf(MushafEditions.hafs)]);
     expect((await progress()).done, 6);
     await notifier.delete();
     expect((await progress()).done, 0);
@@ -212,7 +212,7 @@ void main() {
     arrived('svg');
     arrived('json');
     await container
-        .read(mushafPackProvider(MushafEdition.hafs).notifier)
+        .read(mushafPackProvider(MushafEditions.hafs).notifier)
         .refresh();
     expect(downloader.resumes, 1);
     expect((await progress()).complete, isTrue);

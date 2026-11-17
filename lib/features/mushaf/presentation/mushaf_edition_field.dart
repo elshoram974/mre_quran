@@ -6,7 +6,6 @@ import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/app_select_field.dart';
 import '../../settings/application/settings_provider.dart';
 import '../../settings/domain/app_settings.dart';
-import 'edition_labels.dart';
 
 /// Chooses the reading whose printed Mushaf the reader shows, and says what
 /// a reading other than the app's own text cannot do.
@@ -26,10 +25,10 @@ class MushafEditionField extends ConsumerWidget {
           label: l10n.mushafEdition,
           value: settings.mushafEdition,
           options: [
-            for (final edition in MushafEdition.values)
+            for (final edition in MushafEditions.all)
               AppSelectOption(
                 value: edition,
-                label: editionName(l10n, edition),
+                label: edition.name(l10n.localeName),
                 icon: Icons.menu_book_outlined,
               ),
           ],

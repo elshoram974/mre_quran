@@ -1730,6 +1730,96 @@ abstract class AppLocalizations {
   /// **'Ayah copied'**
   String get ayahCopied;
 
+  /// No description provided for @shareAyah.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get shareAyah;
+
+  /// No description provided for @shareAyahsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Share ayahs'**
+  String get shareAyahsTitle;
+
+  /// No description provided for @shareFromAyah.
+  ///
+  /// In en, this message translates to:
+  /// **'From ayah'**
+  String get shareFromAyah;
+
+  /// No description provided for @shareToAyah.
+  ///
+  /// In en, this message translates to:
+  /// **'To ayah'**
+  String get shareToAyah;
+
+  /// No description provided for @shareAsText.
+  ///
+  /// In en, this message translates to:
+  /// **'Share as text'**
+  String get shareAsText;
+
+  /// No description provided for @shareAsImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Share as image'**
+  String get shareAsImage;
+
+  /// No description provided for @copyText.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get copyText;
+
+  /// No description provided for @ayahsCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied'**
+  String get ayahsCopied;
+
+  /// No description provided for @shareFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not share'**
+  String get shareFailed;
+
+  /// No description provided for @shareLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'Up to {count} ayahs at a time'**
+  String shareLimit(String count);
+
+  /// No description provided for @ayahRange.
+  ///
+  /// In en, this message translates to:
+  /// **'{first}–{last}'**
+  String ayahRange(String first, String last);
+
+  /// No description provided for @pageRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Pages {first}–{last}'**
+  String pageRange(String first, String last);
+
+  /// No description provided for @ayahShareReference.
+  ///
+  /// In en, this message translates to:
+  /// **'[{surah}: {ayahs} · {page}]'**
+  String ayahShareReference(String surah, String ayahs, String page);
+
+  /// No description provided for @previousAyah.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous ayah'**
+  String get previousAyah;
+
+  /// No description provided for @nextAyah.
+  ///
+  /// In en, this message translates to:
+  /// **'Next ayah'**
+  String get nextAyah;
+
   /// No description provided for @addBookmark.
   ///
   /// In en, this message translates to:
@@ -1850,6 +1940,12 @@ abstract class AppLocalizations {
   /// **'Couldn\'t load this page. Check your internet connection.'**
   String get printedPageError;
 
+  /// No description provided for @printedPageOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'You are offline and this page is not on the device yet. Download the Mushaf from \"Offline Mushaf\" to read without internet.'**
+  String get printedPageOffline;
+
   /// No description provided for @printedPageLabel.
   ///
   /// In en, this message translates to:
@@ -1885,36 +1981,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Reading'**
   String get mushafEdition;
-
-  /// No description provided for @editionHafs.
-  ///
-  /// In en, this message translates to:
-  /// **'Hafs from Asim'**
-  String get editionHafs;
-
-  /// No description provided for @editionShubah.
-  ///
-  /// In en, this message translates to:
-  /// **'Shu\'bah from Asim'**
-  String get editionShubah;
-
-  /// No description provided for @editionWarsh.
-  ///
-  /// In en, this message translates to:
-  /// **'Warsh from Nafi\''**
-  String get editionWarsh;
-
-  /// No description provided for @editionQalon.
-  ///
-  /// In en, this message translates to:
-  /// **'Qalun from Nafi\''**
-  String get editionQalon;
-
-  /// No description provided for @editionDouri.
-  ///
-  /// In en, this message translates to:
-  /// **'Al-Duri from Abu Amr'**
-  String get editionDouri;
 
   /// No description provided for @editionLimitedNote.
   ///

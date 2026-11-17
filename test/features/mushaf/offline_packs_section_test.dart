@@ -70,7 +70,7 @@ void main() {
             // Each reading has its own folder; only Hafs has files in these
             // tests.
             (ref, edition) => SvgPageStore(
-              root: () async => edition == MushafEdition.hafs
+              root: () async => edition == MushafEditions.hafs
                   ? root
                   : Directory('${root.path}/${edition.id}'),
               manifest: () async => fixtureManifest(),
@@ -100,7 +100,7 @@ void main() {
   /// [finder] inside the tile of the Hafs reading.
   Finder inHafs(Finder finder) => find.descendant(
     of: find.byWidgetPredicate(
-      (widget) => widget is PackTile && widget.edition == MushafEdition.hafs,
+      (widget) => widget is PackTile && widget.edition == MushafEditions.hafs,
     ),
     matching: finder,
   );
@@ -133,7 +133,7 @@ void main() {
     await tester.scrollUntilVisible(find.text('ورش عن نافع'), 200);
     await tester.tap(find.text('ورش عن نافع'));
     await settle(tester);
-    expect(settings.settings.mushafEdition, MushafEdition.warsh);
+    expect(settings.settings.mushafEdition, MushafEditions.warsh);
     expect(find.text('تُقرأ الآن', skipOffstage: false), findsOneWidget);
     expect(inHafs(find.text('تُقرأ الآن', skipOffstage: false)), findsNothing);
   });
@@ -149,18 +149,18 @@ void main() {
     await tester.tap(find.widgetWithText(FilledButton, 'تحميل').last);
     await until(tester, () => downloader.enqueued.isNotEmpty);
     expect(
-      downloader.enqueued[MushafPack.groupOf(MushafEdition.hafs)],
+      downloader.enqueued[MushafPack.groupOf(MushafEditions.hafs)],
       hasLength(2),
     );
     expect(
-      downloader.texts[MushafPack.groupOf(MushafEdition.hafs)]!.runningTitle,
+      downloader.texts[MushafPack.groupOf(MushafEditions.hafs)]!.runningTitle,
       'جارٍ تحميل حفص عن عاصم',
     );
     expect(find.text('جارٍ التحميل · ٠٪'), findsOneWidget);
     expect(find.byType(LinearProgressIndicator), findsOneWidget);
     await tester.tap(find.text('إلغاء'));
     await until(tester, () => downloader.cancelled.isNotEmpty);
-    expect(downloader.cancelled, [MushafPack.groupOf(MushafEdition.hafs)]);
+    expect(downloader.cancelled, [MushafPack.groupOf(MushafEditions.hafs)]);
   });
 
   /// Puts the pack's archives on the device, as the system downloader

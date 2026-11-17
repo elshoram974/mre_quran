@@ -32,7 +32,7 @@ Future<Set<int>> _pump(
   required int page,
   Size size = const Size(390, 844),
   ReaderPageLayout layout = ReaderPageLayout.auto,
-  MushafEdition edition = MushafEdition.hafs,
+  MushafEdition edition = MushafEditions.hafs,
 }) async {
   _stretches.clear();
   tester.view.physicalSize = size;
@@ -124,7 +124,7 @@ void main() {
     testWidgets('shows its pages only: no ayah actions, no text standing in', (
       tester,
     ) async {
-      await _pump(tester, page: 10, edition: MushafEdition.warsh);
+      await _pump(tester, page: 10, edition: MushafEditions.warsh);
       final view = tester.widget<SvgPageView>(find.byType(SvgPageView));
       expect(view.onAyahLongPress, isNull);
       expect(view.fallbackBuilder, isNull);
@@ -135,7 +135,7 @@ void main() {
     testWidgets('keeps its printed height: its lines are not spread', (
       tester,
     ) async {
-      await _pump(tester, page: 10, edition: MushafEdition.warsh);
+      await _pump(tester, page: 10, edition: MushafEditions.warsh);
       expect(_stretches.values.toSet(), {1000});
     });
   });

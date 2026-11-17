@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_palette.dart';
+import '../../mushaf/domain/mushaf_edition.dart';
+
+export '../../mushaf/domain/mushaf_edition.dart';
 
 /// Persisted choices that affect the whole application.
 @immutable
@@ -18,7 +21,7 @@ class AppSettings {
     this.realisticPageTurn = false,
     this.readerMode = ReaderMode.printed,
     this.readerPageLayout = ReaderPageLayout.auto,
-    this.mushafEdition = MushafEdition.hafs,
+    this.mushafEdition = MushafEditions.hafs,
   });
 
   /// The reading (riwaya) whose printed pages the reader shows.
@@ -147,46 +150,6 @@ enum ReaderMode {
 
   /// Images of the printed Madinah Mushaf, downloaded page by page.
   printed,
-}
-
-/// A reading (riwaya) of the Quran whose printed Mushaf the app can show.
-///
-/// All five are the King Fahd Complex's own Mushafs, with the same 604 pages
-/// and every surah starting on the same page. The wording differs between
-/// readings, and three of them number some ayahs differently.
-enum MushafEdition {
-  /// Hafs from Asim: the reading of the app's text, search and tafsir.
-  hafs('hafs-kfqc'),
-
-  /// Shu'bah from Asim.
-  shubah('shubah-kfqc'),
-
-  /// Warsh from Nafi'.
-  warsh('warsh-kfqc'),
-
-  /// Qalun from Nafi'.
-  qalon('qalon-kfqc'),
-
-  /// Al-Duri from Abu Amr.
-  douri('douri-kfqc');
-
-  const MushafEdition(this.id);
-
-  /// The edition's name in its source, its folder on the device, and the
-  /// value saved in the settings.
-  final String id;
-
-  /// Whether the app's own text matches these pages word for word and ayah
-  /// for ayah. Only then may a page's ayah be copied, explained, bookmarked
-  /// or highlighted from the app's text, and the text stand in for a page.
-  bool get matchesAppText => this == MushafEdition.hafs;
-
-  /// Whether this edition's pages have their lines spread to fill a tall
-  /// screen. Only an edition whose files draw the script line by line on
-  /// nearly every page does; the others are shown at their printed height
-  /// throughout, so that neighbouring pages never differ. The check that
-  /// decides this is `tool/check_svg_lines.dart`.
-  bool get spreadsLines => this == MushafEdition.hafs;
 }
 
 /// The arrangement of pages in the printed Mushaf reader.

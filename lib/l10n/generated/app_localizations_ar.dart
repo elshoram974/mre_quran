@@ -946,6 +946,59 @@ class AppLocalizationsAr extends AppLocalizations {
   String get ayahCopied => 'تم نسخ الآية';
 
   @override
+  String get shareAyah => 'مشاركة';
+
+  @override
+  String get shareAyahsTitle => 'مشاركة الآيات';
+
+  @override
+  String get shareFromAyah => 'من الآية';
+
+  @override
+  String get shareToAyah => 'إلى الآية';
+
+  @override
+  String get shareAsText => 'مشاركة كنص';
+
+  @override
+  String get shareAsImage => 'مشاركة كصورة';
+
+  @override
+  String get copyText => 'نسخ';
+
+  @override
+  String get ayahsCopied => 'تم النسخ';
+
+  @override
+  String get shareFailed => 'تعذّرت المشاركة';
+
+  @override
+  String shareLimit(String count) {
+    return 'حتى $count آية في المرة الواحدة';
+  }
+
+  @override
+  String ayahRange(String first, String last) {
+    return '$first–$last';
+  }
+
+  @override
+  String pageRange(String first, String last) {
+    return 'صفحة $first–$last';
+  }
+
+  @override
+  String ayahShareReference(String surah, String ayahs, String page) {
+    return '[$surah: $ayahs · $page]';
+  }
+
+  @override
+  String get previousAyah => 'الآية السابقة';
+
+  @override
+  String get nextAyah => 'الآية التالية';
+
+  @override
   String get addBookmark => 'إضافة علامة';
 
   @override
@@ -1009,6 +1062,10 @@ class AppLocalizationsAr extends AppLocalizations {
       'تعذّر تحميل الصفحة. تأكد من الاتصال بالإنترنت.';
 
   @override
+  String get printedPageOffline =>
+      'لا يوجد اتصال بالإنترنت، وهذه الصفحة ليست على الجهاز بعد. حمّل المصحف من «المصحف دون اتصال» ليعمل بلا إنترنت.';
+
+  @override
   String printedPageLabel(String number) {
     return 'الصفحة $number من المصحف المطبوع';
   }
@@ -1030,21 +1087,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get mushafEdition => 'الرواية';
-
-  @override
-  String get editionHafs => 'حفص عن عاصم';
-
-  @override
-  String get editionShubah => 'شعبة عن عاصم';
-
-  @override
-  String get editionWarsh => 'ورش عن نافع';
-
-  @override
-  String get editionQalon => 'قالون عن نافع';
-
-  @override
-  String get editionDouri => 'الدوري عن أبي عمرو';
 
   @override
   String get editionLimitedNote =>

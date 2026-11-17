@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
@@ -17,6 +18,9 @@ void main() {
   final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   testWidgets('turning pages stays smooth', (tester) async {
+    // The app installs its own error handlers; keep the test's, so a failed
+    // expectation fails the test instead of being logged as a crash.
+    final testErrors = FlutterError.onError;
     app.main();
 
     /// Lets the app run for [time]. Not `pumpAndSettle`: a page that is
@@ -29,6 +33,7 @@ void main() {
     }
 
     await run(const Duration(seconds: 6));
+    FlutterError.onError = testErrors;
     final mushaf = find.text('المصحف');
     if (mushaf.evaluate().isNotEmpty) {
       await tester.tap(mushaf.first);

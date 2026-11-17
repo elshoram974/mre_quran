@@ -9,8 +9,8 @@ import '../../quran_index/domain/quran_metadata.dart';
 import '../../quran_text/domain/quran_text.dart';
 import '../../settings/application/digits_provider.dart';
 import '../../settings/domain/app_settings.dart';
-import 'mushaf_ornaments.dart';
 import 'mushaf_page_frame.dart';
+import 'surah_banner.dart';
 
 /// One Mushaf page drawn like a printed copy: a banner at each surah opening,
 /// the basmala, and the ayahs with their markers, inside the reader's frame.
@@ -267,9 +267,12 @@ class _MushafPageViewState extends State<MushafPageView> {
               children: [
                 for (final segment in segments)
                   switch (segment) {
-                    _Banner(:final surah) => _SurahBanner(
-                      surah: surah,
-                      number: _n,
+                    _Banner(:final surah) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: SizedBox(
+                        height: MushafPageView._bannerExtent - 16,
+                        child: SurahBanner(surah: surah, number: _n),
+                      ),
                     ),
                     _Basmala(:final text) => Padding(
                       padding: const EdgeInsets.only(bottom: 4),
@@ -334,108 +337,4 @@ class _Basmala extends _Segment {
 class _Paragraph extends _Segment {
   const _Paragraph(this.spans);
   final List<InlineSpan> spans;
-}
-
-class _SurahBanner extends StatelessWidget {
-  const _SurahBanner({required this.surah, required this.number});
-
-  final Surah surah;
-  final String Function(int) number;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final l10n = context.l10n;
-    const height = MushafPageView._bannerExtent - 16;
-    final ink = scheme.onSurface;
-    TextStyle quran(double size, {double? opacity}) => TextStyle(
-      fontFamily: AppTokens.quranFontFamily,
-      fontSize: size,
-      height: 1.2,
-      color: opacity == null ? ink : ink.withValues(alpha: opacity),
-    );
-    // A medallion holds a number over its caption.
-    Widget medallion(double diameter, String value, String caption) => SizedBox(
-      width: diameter,
-      child: FittedBox(
-        fit: BoxFit.scaleDown,
-        child: Padding(
-          padding: const EdgeInsets.all(6),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(value, textScaler: TextScaler.noScaling, style: quran(17)),
-              Text(
-                caption,
-                textScaler: TextScaler.noScaling,
-                style: quran(10, opacity: 0.75),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-    final revelation = surah.revelation == Revelation.meccan
-        ? l10n.revelationMeccan
-        : l10n.revelationMedinan;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: SizedBox(
-        height: height,
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final width = constraints.maxWidth;
-            // The medallions sit where the painter draws their rings.
-            final inset = SurahBannerGeometry.circleInset(width, height);
-            final diameter = SurahBannerGeometry.circleDiameter(width, height);
-            return CustomPaint(
-              painter: SurahBannerPainter(
-                fill: scheme.secondaryContainer,
-                stroke: scheme.primary.withValues(alpha: 0.75),
-              ),
-              child: Padding(
-                padding: EdgeInsetsDirectional.symmetric(horizontal: inset),
-                child: Row(
-                  children: [
-                    medallion(
-                      diameter,
-                      number(surah.number),
-                      l10n.surahOrderCaption,
-                    ),
-                    Expanded(
-                      child: Center(
-                        child: FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                l10n.surahTitle(surah.arabicName),
-                                textScaler: TextScaler.noScaling,
-                                style: quran(22),
-                              ),
-                              Text(
-                                revelation,
-                                textScaler: TextScaler.noScaling,
-                                style: quran(11, opacity: 0.75),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    medallion(
-                      diameter,
-                      number(surah.ayahCount),
-                      l10n.surahAyahsCaption,
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        ),
-      ),
-    );
-  }
 }

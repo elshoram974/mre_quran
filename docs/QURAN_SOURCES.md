@@ -388,3 +388,33 @@ Source quirks handled, not edited: these editions list the ayah polygons
 before the artwork, and a few Qalun pages (141, 381, 589) carry an ornament
 whose number group is empty and self-closed. The parser reads both; the page
 is drawn as shipped.
+
+### Adding a Mushaf
+
+Every printed Mushaf is one entry in `MushafEditions`
+(`lib/features/mushaf/domain/mushaf_edition.dart`) and one bundled manifest.
+The reader, the edition chooser, the offline tile and its download all read
+the list; nothing else changes.
+
+1. Take the edition's two archives from the quran-ws/quran-svg release:
+   `<edition>-svg.zip` and `<edition>-json.zip`. Record their source and
+   licence here, as for the five above.
+2. Build its manifest. The tool prints the entry to paste, with the
+   manifest's content hash:
+
+   ```
+   python3 tool/build_svg_manifest.py <edition> <svg zip> <json zip>
+   ```
+
+3. Add the printed entry to `MushafEditions` and to `MushafEditions.all`,
+   with its names. Add the manifest to the assets in `pubspec.yaml`.
+4. Decide its two switches, never by default:
+   - `matchesAppText`: only when its words and ayah numbers are exactly the
+     app's text (Hafs). Otherwise its pages show without ayah actions.
+   - `spreadsLines`: only when `dart run tool/check_svg_lines.dart` spreads
+     nearly every page with exactly 15 lines.
+5. Run the tests: they check every entry's manifest hash, that its manifest
+   is bundled, and that no two editions share a page file.
+
+`MushafPageKind` names how pages are drawn. Only `svg` exists; another kind
+of page (images, say) needs its own renderer before an edition can use it.

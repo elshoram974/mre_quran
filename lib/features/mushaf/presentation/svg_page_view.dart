@@ -1,13 +1,16 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:vector_graphics/vector_graphics_compat.dart'
     show RenderingStrategy;
 
+import '../../../app/router.dart';
 import '../../../core/haptics/haptics.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_tokens.dart';
@@ -19,6 +22,7 @@ import '../../settings/application/digits_provider.dart';
 import '../application/svg_page_providers.dart';
 import '../domain/svg_page.dart';
 import 'mushaf_page_frame.dart';
+import 'surah_banner.dart';
 
 /// One page of the printed Mushaf, drawn from its vector artwork from edge
 /// to edge, with nothing over it: where the reader is shows in the bars a
@@ -101,6 +105,8 @@ class SvgPageView extends StatelessWidget {
       // picture of the page to ask for.
       builder: (context, slow, restart) => LayoutBuilder(
         builder: (context, constraints) => _SvgBody(
+          metadata: metadata,
+          number: digits ?? (value) => formatDigits(value, arabic: true),
           request: (
             page: page,
             stretch: _stretchFor(
@@ -192,6 +198,8 @@ class _SlowGateState extends State<_SlowGate> {
 /// or loading.
 class _SvgBody extends ConsumerWidget {
   const _SvgBody({
+    required this.metadata,
+    required this.number,
     required this.request,
     required this.label,
     required this.onTap,
@@ -204,6 +212,8 @@ class _SvgBody extends ConsumerWidget {
     required this.onRetry,
   });
 
+  final QuranMetadata metadata;
+  final String Function(int) number;
   final SvgPageRequest request;
   final String label;
   final VoidCallback onTap;
@@ -227,6 +237,8 @@ class _SvgBody extends ConsumerWidget {
     final Widget child = switch (artwork) {
       AsyncValue(:final value?) => _SvgArtwork(
         key: const ValueKey('artwork'),
+        metadata: metadata,
+        number: number,
         page: value,
         label: label,
         onTap: onTap,
@@ -245,13 +257,27 @@ class _SvgBody extends ConsumerWidget {
           onRetry: retry,
           child: fallbackBuilder!(context),
         ),
-      AsyncValue(hasError: true) => EmptyState(
+      // No text can stand in (another reading): say why, and how to read
+      // it without a connection next time.
+      AsyncValue(:final error?) => Column(
         key: const ValueKey('error'),
-        icon: Icons.cloud_off_outlined,
-        title: l10n.readerLoadError,
-        message: l10n.printedPageError,
-        actionLabel: l10n.retry,
-        onAction: retry,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          EmptyState(
+            icon: Icons.cloud_off_outlined,
+            title: l10n.readerLoadError,
+            message: error is SocketException || error is HttpException
+                ? l10n.printedPageOffline
+                : l10n.printedPageError,
+            actionLabel: l10n.retry,
+            onAction: retry,
+          ),
+          TextButton.icon(
+            onPressed: () => context.go(AppRoute.settings.path),
+            icon: const Icon(Icons.download_for_offline_outlined),
+            label: Text(l10n.offlineMushaf),
+          ),
+        ],
       ),
       // A page on the device is ready in a moment; the placeholder only
       // comes if it is not, so a quick turn never flashes one.
@@ -331,6 +357,8 @@ class _CompiledLayer extends BytesLoader {
 class _SvgArtwork extends StatelessWidget {
   const _SvgArtwork({
     super.key,
+    required this.metadata,
+    required this.number,
     required this.page,
     required this.label,
     required this.onTap,
@@ -340,6 +368,8 @@ class _SvgArtwork extends StatelessWidget {
     required this.fillWidth,
   });
 
+  final QuranMetadata metadata;
+  final String Function(int) number;
   final SvgPagePicture page;
   final String label;
   final VoidCallback onTap;
@@ -390,6 +420,40 @@ class _SvgArtwork extends StatelessWidget {
       );
     },
   );
+
+  /// The frame of [title], where its line is drawn: spreading moves a line's
+  /// middle as far as stretching the page would, and leaves its height.
+  ///
+  Widget _titleFrame(
+    BuildContext context,
+    ({int surah, double top, double bottom}) title, {
+    required double scale,
+    required double stretch,
+    required double width,
+    required double top,
+  }) {
+    final colors = QuranColors.of(context);
+    final scheme = Theme.of(context).colorScheme;
+    final height = (title.bottom - title.top) * scale;
+    final middle = ((title.top + title.bottom) / 2 - top) * stretch * scale;
+    // The same margin on both sides, so the frame sits alike whichever way
+    // the app reads.
+    const margin = 0.015;
+    return PositionedDirectional(
+      start: width * scale * margin,
+      end: width * scale * margin,
+      top: middle - height * 0.47,
+      height: height * 0.94,
+      child: SurahBanner(
+        surah: metadata.surah(title.surah),
+        number: number,
+        showTitle: false,
+        fill: scheme.secondaryContainer.withValues(alpha: 0.55),
+        stroke: colors.ayahNumber.withValues(alpha: 0.8),
+        ink: colors.ink,
+      ),
+    );
+  }
 
   /// The page at [scale] screen pixels per page unit, its lines spread for
   /// a page [stretch] times as tall.
@@ -456,6 +520,18 @@ class _SvgArtwork extends StatelessWidget {
                   ),
                 ),
               ),
+              // A frame under each surah's name, as printed Mushafs set
+              // it. The name itself is the page's own calligraphy, drawn
+              // over the frame.
+              for (final title in layout.surahTitles)
+                _titleFrame(
+                  context,
+                  title,
+                  scale: scale,
+                  stretch: stretch,
+                  width: pageBoxWidth(content),
+                  top: content.top,
+                ),
               layer(page.ink, colors.ink),
               layer(page.marks, colors.ayahNumber),
             ],

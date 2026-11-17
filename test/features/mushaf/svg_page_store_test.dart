@@ -5,7 +5,6 @@ import 'package:crypto/crypto.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mre_quran/features/mushaf/data/svg_manifest_parser.dart';
 import 'package:mre_quran/features/mushaf/data/svg_page_store.dart';
-import 'package:mre_quran/features/mushaf/domain/svg_manifest.dart';
 import 'package:mre_quran/features/settings/domain/app_settings.dart';
 
 import '../../helpers/svg_page_fixtures.dart';
@@ -29,14 +28,14 @@ void main() {
   File stored(String name) => File('${root.path}/mushaf/svg/hafs-kfqc/$name');
 
   group('the bundled manifests', () {
-    for (final edition in MushafEdition.values) {
-      final file = File(SvgManifest.assetOf(edition));
+    for (final edition in MushafEditions.all) {
+      final file = File(edition.manifestAsset);
 
       test('${edition.id}: content matches the recorded SHA-256', () {
         final compact = jsonEncode(jsonDecode(file.readAsStringSync()));
         expect(
           sha256.convert(utf8.encode(compact)).toString(),
-          SvgManifest.contentSha256[edition],
+          edition.manifestSha256,
         );
       });
 
@@ -62,9 +61,9 @@ void main() {
     test('no two editions share a page file', () {
       // A page of one reading must never pass for a page of another.
       final seen = <String>{};
-      for (final edition in MushafEdition.values) {
+      for (final edition in MushafEditions.all) {
         final manifest = SvgManifestParser.parse(
-          File(SvgManifest.assetOf(edition)).readAsStringSync(),
+          File(edition.manifestAsset).readAsStringSync(),
         );
         for (final page in manifest.pages) {
           expect(seen.add(page.svgSha256), isTrue, reason: edition.id);
@@ -72,7 +71,7 @@ void main() {
       }
     });
 
-    final file = File(SvgManifest.assetOf(MushafEdition.hafs));
+    final file = File(MushafEditions.hafs.manifestAsset);
 
     test('lists all 604 pages on the versioned, immutable folder', () {
       final manifest = SvgManifestParser.parse(file.readAsStringSync());

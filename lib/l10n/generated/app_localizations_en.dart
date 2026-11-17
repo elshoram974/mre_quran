@@ -948,6 +948,59 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ayahCopied => 'Ayah copied';
 
   @override
+  String get shareAyah => 'Share';
+
+  @override
+  String get shareAyahsTitle => 'Share ayahs';
+
+  @override
+  String get shareFromAyah => 'From ayah';
+
+  @override
+  String get shareToAyah => 'To ayah';
+
+  @override
+  String get shareAsText => 'Share as text';
+
+  @override
+  String get shareAsImage => 'Share as image';
+
+  @override
+  String get copyText => 'Copy';
+
+  @override
+  String get ayahsCopied => 'Copied';
+
+  @override
+  String get shareFailed => 'Could not share';
+
+  @override
+  String shareLimit(String count) {
+    return 'Up to $count ayahs at a time';
+  }
+
+  @override
+  String ayahRange(String first, String last) {
+    return '$first–$last';
+  }
+
+  @override
+  String pageRange(String first, String last) {
+    return 'Pages $first–$last';
+  }
+
+  @override
+  String ayahShareReference(String surah, String ayahs, String page) {
+    return '[$surah: $ayahs · $page]';
+  }
+
+  @override
+  String get previousAyah => 'Previous ayah';
+
+  @override
+  String get nextAyah => 'Next ayah';
+
+  @override
   String get addBookmark => 'Add bookmark';
 
   @override
@@ -1011,6 +1064,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Couldn\'t load this page. Check your internet connection.';
 
   @override
+  String get printedPageOffline =>
+      'You are offline and this page is not on the device yet. Download the Mushaf from \"Offline Mushaf\" to read without internet.';
+
+  @override
   String printedPageLabel(String number) {
     return 'Page $number of the printed Mushaf';
   }
@@ -1032,21 +1089,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mushafEdition => 'Reading';
-
-  @override
-  String get editionHafs => 'Hafs from Asim';
-
-  @override
-  String get editionShubah => 'Shu\'bah from Asim';
-
-  @override
-  String get editionWarsh => 'Warsh from Nafi\'';
-
-  @override
-  String get editionQalon => 'Qalun from Nafi\'';
-
-  @override
-  String get editionDouri => 'Al-Duri from Abu Amr';
 
   @override
   String get editionLimitedNote =>

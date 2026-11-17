@@ -1,7 +1,5 @@
 import 'package:meta/meta.dart';
 
-import '../../settings/domain/app_settings.dart';
-
 /// The checksums of one page's two files.
 typedef SvgPageEntry = ({String svgSha256, String jsonSha256, int bytes});
 
@@ -25,27 +23,6 @@ class SvgManifest {
     required List<SvgPageEntry> pages,
   }) : archives = List.unmodifiable(archives),
        pages = List.unmodifiable(pages);
-
-  /// Bundled asset holding the manifest of [edition].
-  static String assetOf(MushafEdition edition) =>
-      'assets/quran/svg/${edition.id.replaceAll('-', '_')}_manifest.json';
-
-  /// SHA-256 of each manifest's content, compactly re-encoded
-  /// (`jsonEncode(jsonDecode(file))`), checked by a test. Hashing the content
-  /// instead of the bytes keeps the check true when an editor re-indents the
-  /// file, and still fails on any changed value.
-  static const Map<MushafEdition, String> contentSha256 = {
-    MushafEdition.hafs:
-        '198cd724391c97dd1c93d8bf5db5961403a1dce31d901293baa46442b7f24cc4',
-    MushafEdition.shubah:
-        '59ad875d1ab8f84c45c68adf22e2c252f7221b51f68f299dafbfb9714977ffa9',
-    MushafEdition.warsh:
-        'df541939a31ce75511ce73eabe02fdd9974157828566d5d16d747e529bf02ff3',
-    MushafEdition.qalon:
-        'da6f77792cc2047a3d28af22ef2b9f6564337c4c1724a30e3259236bd2369084',
-    MushafEdition.douri:
-        '14e2a34164c3ccd8507cdda714629d9a5e3870f3ede4cbefe3efea22fce7a90e',
-  };
 
   /// Name of the edition, used as its folder on the device.
   final String edition;
