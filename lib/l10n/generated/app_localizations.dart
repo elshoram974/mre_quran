@@ -308,6 +308,18 @@ abstract class AppLocalizations {
   /// **'Privacy'**
   String get privacy;
 
+  /// No description provided for @privacyPolicy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy policy'**
+  String get privacyPolicy;
+
+  /// No description provided for @privacyPolicyDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'What the app keeps, what it sends, and why'**
+  String get privacyPolicyDescription;
+
   /// No description provided for @crashReports.
   ///
   /// In en, this message translates to:

@@ -34,6 +34,8 @@
   "arabicDigits": "الأرقام العربية",
   "arabicDigitsDescription": "اعرض الأرقام العربية في الواجهة.",
   "privacy": "الخصوصية",
+  "privacyPolicy": "سياسة الخصوصية",
+  "privacyPolicyDescription": "ما يحفظه التطبيق، وما يرسله، ولماذا",
   "crashReports": "تقارير الأعطال",
   "crashReportsDescription": "أرسل تقارير أعطال مجهولة لتحسين التطبيق. متوقفة افتراضياً.",
   "about": "عن التطبيق والنسب",

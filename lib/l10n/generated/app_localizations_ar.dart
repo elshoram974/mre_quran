@@ -116,6 +116,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get privacy => 'الخصوصية';
 
   @override
+  String get privacyPolicy => 'سياسة الخصوصية';
+
+  @override
+  String get privacyPolicyDescription => 'ما يحفظه التطبيق، وما يرسله، ولماذا';
+
+  @override
   String get crashReports => 'تقارير الأعطال';
 
   @override

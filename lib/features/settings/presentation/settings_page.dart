@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/router.dart';
+import '../../../core/links/link_opener.dart';
 import '../../../core/haptics/haptics.dart';
 import '../../../core/haptics/haptics_provider.dart';
 import '../../../core/l10n/l10n.dart';
@@ -233,6 +234,15 @@ class _SettingsContent extends ConsumerWidget {
             ),
           ],
         ),
+        if (ref.watch(privacyPolicyProvider) case final policy?) ...[
+          const SizedBox(height: _gap),
+          AppTileCard(
+            icon: Icons.policy_outlined,
+            title: l10n.privacyPolicy,
+            subtitle: l10n.privacyPolicyDescription,
+            onTap: () => ref.read(linkOpenerProvider).open(policy),
+          ),
+        ],
         const SizedBox(height: _gap),
         AppTileCard(
           icon: Icons.info_outline,

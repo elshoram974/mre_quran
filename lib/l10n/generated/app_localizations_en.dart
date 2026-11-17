@@ -117,6 +117,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get privacy => 'Privacy';
 
   @override
+  String get privacyPolicy => 'Privacy policy';
+
+  @override
+  String get privacyPolicyDescription =>
+      'What the app keeps, what it sends, and why';
+
+  @override
   String get crashReports => 'Crash reports';
 
   @override

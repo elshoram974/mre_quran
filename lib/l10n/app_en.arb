@@ -34,6 +34,8 @@
   "arabicDigits": "Arabic-Indic digits",
   "arabicDigitsDescription": "Use Arabic-Indic digits in the interface.",
   "privacy": "Privacy",
+  "privacyPolicy": "Privacy policy",
+  "privacyPolicyDescription": "What the app keeps, what it sends, and why",
   "crashReports": "Crash reports",
   "crashReportsDescription": "Share anonymous crash reports to help improve the app. Off by default.",
   "about": "About and credits",
