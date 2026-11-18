@@ -41,28 +41,15 @@ void main() {
       bytesOf(uri.path.endsWith('.svg') ? fixtureSvg : fixtureJson);
 
   test('fetches several pages at once, nearest first', () async {
-    final started = <int>[];
-    final gates = <int, Completer<Uint8List>>{};
-    final p = prefetcher((uri) {
-      final page = artworkPage(uri);
-      if (page == null) return Future.value(answer(uri));
-      started.add(page);
-      return (gates[page] = Completer<Uint8List>()).future;
-    });
-    p.around(page: 10, pageCount: 604);
-    await until(() => started.length >= 3);
-    await idle();
-    // Three at a time, the nearest ahead of the page first; nothing waits for
-    // the first to finish, and no fourth starts while three are running.
-    // The three start together, so their own order depends on the disk.
-    expect(started, unorderedEquals([11, 12, 13]));
-    gates[11]!.complete(bytesOf(fixtureSvg));
-    await until(() => started.length >= 4);
-    expect(started.last, 14);
-    for (final gate in gates.values) {
-      if (!gate.isCompleted) gate.complete(bytesOf(fixtureSvg));
+    final store = _GatedPageStore();
+    PagePrefetcher(store).around(page: 10, pageCount: 604);
+    expect(store.started, [11, 12, 13]);
+    store.gates[11]!.complete();
+    await store.fourthStarted.future;
+    expect(store.started, [11, 12, 13, 14]);
+    for (final gate in store.gates.values) {
+      if (!gate.isCompleted) gate.complete();
     }
-    await idle();
   });
 
   test(
@@ -102,7 +89,7 @@ void main() {
     p
       ..around(page: 10, pageCount: 604)
       ..around(page: 100, pageCount: 604);
-    await Future<void>.delayed(const Duration(milliseconds: 400));
+    await until(() => started.any((page) => page > 90));
     expect(started.where((page) => page > 90), isNotEmpty);
     expect(started.where((page) => page > 14 && page < 90), isEmpty);
   });
@@ -119,4 +106,20 @@ void main() {
     await idle();
     expect(started, unorderedEquals([603, 602]));
   });
+}
+
+/// Holds the first batch at the store boundary so disk timing cannot decide
+/// which page the scheduler starts next.
+class _GatedPageStore extends Fake implements SvgPageStore {
+  final started = <int>[];
+  final gates = <int, Completer<void>>{};
+  final fourthStarted = Completer<void>();
+
+  @override
+  Future<void> fetch(int page) {
+    started.add(page);
+    if (started.length == 4) fourthStarted.complete();
+    if (started.length > 4) return Future<void>.value();
+    return (gates[page] = Completer<void>()).future;
+  }
 }

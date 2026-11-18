@@ -162,8 +162,9 @@ class FileVoiceStore implements VoiceStore {
       // Downloads are hash-checked before installation; a stat is enough to
       // distinguish the larger retired files without decoding them on launch.
       final stat = await file.stat();
-      if (stat.type == FileSystemEntityType.file && stat.size == from.bytes)
+      if (stat.type == FileSystemEntityType.file && stat.size == from.bytes) {
         return file;
+      }
     }
     return null;
   }

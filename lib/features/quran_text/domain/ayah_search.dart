@@ -79,6 +79,11 @@ class AyahSearchIndex {
     final phrase = normalizeSearchKey(query).replaceAll(_spaces, ' ');
     if (phrase.isEmpty || limit <= 0) return AyahSearchResult.empty;
     final words = phrase.split(' ');
+    // Most verses miss the longest word. Reject them before testing the
+    // complete phrase or checking the other words in each spelling.
+    final longest = words.reduce((a, b) => a.length >= b.length ? a : b);
+    final remaining = words.where((word) => word != longest).toList();
+    final singleWord = words.length == 1;
     final padded = ' $phrase ';
 
     final whole = <int>[];
@@ -88,15 +93,15 @@ class AyahSearchIndex {
       var best = _Rank.none;
       for (final keys in _keys) {
         final key = keys[i];
-        if (' $key '.contains(padded)) {
-          best = _Rank.whole;
-          break;
-        }
-        if (key.contains(phrase)) {
+        if (!key.contains(longest)) continue;
+        if (singleWord || key.contains(phrase)) {
+          // Only check word boundaries on verses that contain the phrase.
+          if (' $key '.contains(padded)) {
+            best = _Rank.whole;
+            break;
+          }
           best = _Rank.partial;
-        } else if (best == _Rank.none &&
-            words.length > 1 &&
-            words.every(key.contains)) {
+        } else if (best == _Rank.none && remaining.every(key.contains)) {
           best = _Rank.loose;
         }
       }

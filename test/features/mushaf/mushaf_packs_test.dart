@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -116,8 +117,23 @@ void main() {
     downloader
       ..finish(MushafPack.groupOf(MushafEditions.hafs), svgPath)
       ..finish(MushafPack.groupOf(MushafEditions.hafs), jsonPath);
-    await settled();
-    final state = await progress();
+    final ready = Completer<PackProgress>();
+    final subscription = container.listen(
+      mushafPackProvider(MushafEditions.hafs),
+      (_, next) {
+        final value = next.value;
+        if (value != null &&
+            value.complete &&
+            !value.active &&
+            !value.installing &&
+            !ready.isCompleted) {
+          ready.complete(value);
+        }
+      },
+      fireImmediately: true,
+    );
+    addTearDown(subscription.close);
+    final state = await ready.future.timeout(const Duration(seconds: 10));
     expect((state.done, state.total), (6, 6));
     expect(state.complete, isTrue);
     expect(state.active, isFalse);
