@@ -266,9 +266,16 @@ private struct ScheduleView: View {
         let afterLastPrayer = !day.rows.contains { $0.id != "sunrise" && $0.at > entry.date }
         VStack(alignment: .leading, spacing: family == .systemLarge ? 6 : 1) {
           if showDate {
-            HStack(spacing: 4) {
-              Text(day.date).bold().layoutPriority(1)
-              Text(day.hijri).foregroundStyle(.secondary)
+            let date = Text(day.date).bold()
+            let hijri = Text(day.hijri).foregroundStyle(.secondary)
+            let stacked = VStack(alignment: .leading, spacing: 0) { date; hijri }
+            Group {
+              if #available(iOS 16.0, *) {
+                ViewThatFits(in: .horizontal) {
+                  HStack(spacing: 4) { date; hijri }
+                  stacked
+                }
+              } else { stacked }
             }.font(.caption2).lineLimit(1)
           }
           GeometryReader { space in
