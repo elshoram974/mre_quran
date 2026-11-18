@@ -16,19 +16,26 @@ internal object AdhkarWidgetRenderer {
     private const val REQUEST_CODE = 402
 
     fun save(context: Context, values: Map<String, Any?>?) {
+        val before = read(context)
         val editor = context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE).edit()
         if (values == null) editor.clear() else editor.putString(PAYLOAD, JSONObject(values).toString())
         editor.apply()
         updateAll(context)
+        val after = read(context)
+        if (before?.rtl != after?.rtl || before?.useArabicDigits != after?.useArabicDigits ||
+            before?.tasbihLabel != after?.tasbihLabel || before?.tasbihResetLabel != after?.tasbihResetLabel ||
+            before?.tasbihCountLabel != after?.tasbihCountLabel) TasbihWidgetProvider.refresh(context)
     }
+
+    fun read(context: Context): AdhkarWidgetModel? = AdhkarWidgetModel.parse(
+        context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE).getString(PAYLOAD, null),
+    )
 
     fun updateAll(context: Context) {
         val manager = AppWidgetManager.getInstance(context)
         val ids = manager.getAppWidgetIds(ComponentName(context, AdhkarWidgetProvider::class.java))
         if (ids.isEmpty()) return
-        val model = AdhkarWidgetModel.parse(
-            context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE).getString(PAYLOAD, null),
-        )
+        val model = read(context)
         for (id in ids) {
             val views = views(context, model)
             // Base: two cells by one.
@@ -54,7 +61,7 @@ internal object AdhkarWidgetRenderer {
         views.setTextViewText(R.id.adhkar_widget_title, model.title)
         views.setTextViewText(
             R.id.adhkar_widget_count,
-            context.getString(R.string.adhkar_widget_progress, model.done, model.total),
+            model.progressLabel ?: context.getString(R.string.adhkar_widget_progress, model.done, model.total),
         )
         views.setProgressBar(R.id.adhkar_widget_progress, model.total.coerceAtLeast(1), model.done.coerceAtLeast(0), false)
         views.setInt(

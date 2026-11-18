@@ -116,7 +116,7 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
     final settings = await _repository.loadSettings();
     var place = await _repository.loadPlace();
     if (settings.needsSchedule) {
-      final fresh = await _location.quiet();
+      final fresh = settings.automaticLocation ? await _location.quiet() : null;
       if (fresh != null) {
         place = fresh;
         unawaited(_repository.savePlace(fresh));
@@ -134,18 +134,27 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
     final place = await _location.request();
     if (place == null) return PrayerResult.locationDenied;
     unawaited(_repository.savePlace(place));
-    await _apply(current.settings, place);
+    await _apply(current.settings.copyWith(automaticLocation: true), place);
     return PrayerResult.ok;
   }
 
-  /// Saves a location selected manually on the map without requesting device
-  /// location permission.
-  Future<void> setPlace(PrayerPlace place) async {
+  /// Saves a selected map location. A confirmed device fix can refresh later;
+  /// a manually adjusted place remains fixed.
+  Future<void> setPlace(
+    PrayerPlace place, {
+    bool automaticLocation = false,
+  }) async {
     final current = state.value;
     if (current == null) return;
     unawaited(_repository.savePlace(place));
-    await _apply(current.settings, place);
+    await _apply(
+      current.settings.copyWith(automaticLocation: automaticLocation),
+      place,
+    );
   }
+
+  /// Reads the device location for a map preview without saving it.
+  Future<PrayerPlace?> previewDeviceLocation() => _location.request();
 
   /// Turns the alert at the time of [prayer] on or off.
   Future<PrayerResult> setAlert(DailyPrayer prayer, bool on) => setAlerts({

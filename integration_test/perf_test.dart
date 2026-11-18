@@ -1,8 +1,11 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:mre_quran/app/shell/expanding_nav_bar.dart';
+import 'package:mre_quran/app/quran_app.dart';
+import 'package:mre_quran/core/hints/hints.dart';
 import 'package:mre_quran/core/widgets/app_select_field.dart';
 import 'package:mre_quran/features/quran_index/presentation/quran_index_page.dart';
 import 'package:mre_quran/main.dart' as app;
@@ -27,6 +30,9 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
     }
     expect(brand, findsNothing);
+    await ProviderScope.containerOf(tester.element(find.byType(QuranApp)))
+        .read(hintsProvider.notifier)
+        .take(AppHint.configureAdhan);
     await tester.pumpAndSettle();
     // A first run may offer the offline Mushaf before the reader is used.
     if (find.text('لاحقًا').evaluate().isNotEmpty) {
@@ -69,11 +75,11 @@ void main() {
         await tapTab(0);
       },
       'index_open': () async {
-        if (find.byTooltip('الفهرس').evaluate().isEmpty) {
+        if (find.byTooltip('الفهرس').hitTestable().evaluate().isEmpty) {
           await tester.tapAt(tester.getCenter(find.byType(Scaffold).first));
           await tester.pumpAndSettle();
         }
-        await tester.tap(find.byTooltip('الفهرس'));
+        await tester.tap(find.byTooltip('الفهرس').hitTestable().first);
         await tester.pumpAndSettle();
       },
       'index_scroll': () async {

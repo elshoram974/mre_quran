@@ -57,9 +57,19 @@ class TasbihWidgetProvider : AppWidgetProvider() {
 
     private fun redraw(context: Context, manager: AppWidgetManager, ids: IntArray) {
         val count = context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE).getInt(COUNT, 0)
+        val settings = AdhkarWidgetRenderer.read(context)
         for (id in ids) {
             val views = RemoteViews(context.packageName, R.layout.tasbih_widget)
-            views.setTextViewText(R.id.tasbih_widget_count, String.format("%d", count))
+            val text = count.toString().let { value ->
+                if (settings?.useArabicDigits == true) value.map { if (it in '0'..'9') '٠' + (it - '0') else it }.joinToString("") else value
+            }
+            views.setTextViewText(R.id.tasbih_widget_count, text)
+            if (settings != null) {
+                views.setInt(R.id.tasbih_widget_root, "setLayoutDirection", if (settings.rtl) android.view.View.LAYOUT_DIRECTION_RTL else android.view.View.LAYOUT_DIRECTION_LTR)
+                settings.tasbihLabel?.let { views.setTextViewText(R.id.tasbih_widget_name, it) }
+                settings.tasbihResetLabel?.let { views.setContentDescription(R.id.tasbih_widget_reset, it) }
+                settings.tasbihCountLabel?.let { views.setContentDescription(R.id.tasbih_widget_count_area, it) }
+            }
             views.setOnClickPendingIntent(R.id.tasbih_widget_count_area, broadcast(context, ACTION_COUNT, 1))
             views.setOnClickPendingIntent(R.id.tasbih_widget_reset, broadcast(context, ACTION_RESET, 2))
             // A bigger widget gets a bigger name and reset button; the count
@@ -81,6 +91,10 @@ class TasbihWidgetProvider : AppWidgetProvider() {
         )
 
     companion object {
+        fun refresh(context: Context) {
+            val manager = AppWidgetManager.getInstance(context)
+            TasbihWidgetProvider().redraw(context, manager, manager.getAppWidgetIds(ComponentName(context, TasbihWidgetProvider::class.java)))
+        }
         fun setHapticsEnabled(context: Context, enabled: Boolean) {
             context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE)
                 .edit().putBoolean(HAPTICS, enabled).apply()

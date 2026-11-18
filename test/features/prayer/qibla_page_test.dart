@@ -117,6 +117,14 @@ void main() {
     expect(find.textContaining('در يسارًا'), findsOneWidget);
   });
 
+  testWidgets('Arabic calibration hint uses the western figure 8', (
+    tester,
+  ) async {
+    await _pump(tester, _FakeCompass(), place: _cairo);
+    expect(find.textContaining('رقم 8'), findsOneWidget);
+    expect(find.textContaining('رقم ٨'), findsNothing);
+  });
+
   testWidgets('says so when the phone faces the Qibla, without vibrating', (
     tester,
   ) async {

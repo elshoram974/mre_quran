@@ -10,6 +10,11 @@ internal data class AdhkarWidgetModel(
     val total: Int,
     val payload: String,
     val rtl: Boolean,
+    val progressLabel: String?,
+    val useArabicDigits: Boolean,
+    val tasbihLabel: String?,
+    val tasbihResetLabel: String?,
+    val tasbihCountLabel: String?,
 ) {
     companion object {
         fun parse(json: String?): AdhkarWidgetModel? {
@@ -23,6 +28,11 @@ internal data class AdhkarWidgetModel(
                     total = root.getInt("total"),
                     payload = root.getString("payload"),
                     rtl = root.optBoolean("rtl", true),
+                    progressLabel = root.optString("progressLabel").takeIf { it.isNotEmpty() },
+                    useArabicDigits = root.optBoolean("useArabicDigits", true),
+                    tasbihLabel = root.optString("tasbihLabel").takeIf { it.isNotEmpty() },
+                    tasbihResetLabel = root.optString("tasbihResetLabel").takeIf { it.isNotEmpty() },
+                    tasbihCountLabel = root.optString("tasbihCountLabel").takeIf { it.isNotEmpty() },
                 )
             } catch (_: Exception) {
                 null

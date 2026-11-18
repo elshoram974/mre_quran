@@ -8,6 +8,7 @@ import '../core/haptics/haptics.dart';
 import '../core/l10n/l10n.dart';
 import '../core/theme/app_theme.dart';
 import '../features/adhan/application/adhan_providers.dart';
+import '../features/adhan/presentation/adhan_suggestion_scope.dart';
 import '../features/startup/application/startup_providers.dart';
 import '../features/startup/presentation/startup_splash.dart';
 import '../features/adhkar/presentation/adhkar_widget_sync_scope.dart';
@@ -84,9 +85,11 @@ class QuranApp extends ConsumerWidget {
         // The native launch screen hands over to the bounded Flutter overlay.
         builder: (context, child) => _SystemBars(
           child: StartupSplash(
-            child: AppShortcutsScope(
-              child: AdhkarWidgetSyncScope(
-                child: PrayerWidgetSyncScope(child: child!),
+            child: AdhanSuggestionScope(
+              child: AppShortcutsScope(
+                child: AdhkarWidgetSyncScope(
+                  child: PrayerWidgetSyncScope(child: child!),
+                ),
               ),
             ),
           ),

@@ -89,6 +89,27 @@ void main() {
     expect(await sent(tester, _NoPlace.new), contains(null));
   });
 
+  testWidgets('sends sunrise and both calendar dates for every widget day', (
+    tester,
+  ) async {
+    final updates = await sent(tester, _WithPlace.new);
+    final payload = updates.whereType<Map<Object?, Object?>>().last;
+    final days = payload['days'] as List<Object?>;
+    expect(days, hasLength(7));
+    final today = days.first as Map<Object?, Object?>;
+    final rows = today['rows'] as List<Object?>;
+    expect(rows.map((row) => (row as Map<Object?, Object?>)['id']), [
+      'fajr',
+      'sunrise',
+      'dhuhr',
+      'asr',
+      'maghrib',
+      'isha',
+    ]);
+    expect((today['dateLabel'] as String), isNotEmpty);
+    expect((today['hijriLabel'] as String), isNotEmpty);
+  });
+
   testWidgets('waits for Material localizations before syncing prayer times', (
     tester,
   ) async {

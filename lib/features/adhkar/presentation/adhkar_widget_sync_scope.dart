@@ -8,6 +8,7 @@ import '../../../core/notifications/reminder_payload.dart';
 import '../../../core/time/ticking_clock.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../settings/application/settings_provider.dart';
+import '../../settings/application/digits_provider.dart';
 import '../application/adhkar_providers.dart';
 import '../application/adhkar_widget_sync.dart';
 import '../domain/adhkar_collection.dart';
@@ -34,6 +35,10 @@ class _AdhkarWidgetSyncScopeState extends ConsumerState<AdhkarWidgetSyncScope> {
       ref.listenManual(adhkarProgressProvider, (_, _) => _scheduleSync()),
       ref.listenManual(
         settingsProvider.select((value) => value.value?.localeCode),
+        (_, _) => _scheduleSync(),
+      ),
+      ref.listenManual(
+        settingsProvider.select((value) => value.value?.useArabicDigits),
         (_, _) => _scheduleSync(),
       ),
     ]);
@@ -93,6 +98,20 @@ class _AdhkarWidgetSyncScopeState extends ConsumerState<AdhkarWidgetSyncScope> {
         total: collection.totalRepeats,
         payload: ReminderPayload.forCollection(collection.id),
         rtl: Directionality.of(context) == TextDirection.rtl,
+        progressLabel: l10n.adhkarProgress(
+          formatDigits(
+            settled.doneRepeats(collection),
+            arabic: settings.useArabicDigits,
+          ),
+          formatDigits(
+            collection.totalRepeats,
+            arabic: settings.useArabicDigits,
+          ),
+        ),
+        useArabicDigits: settings.useArabicDigits,
+        tasbihLabel: l10n.widgetTasbih,
+        tasbihResetLabel: l10n.widgetTasbihReset,
+        tasbihCountLabel: l10n.widgetTasbihCount,
       ),
     );
   }

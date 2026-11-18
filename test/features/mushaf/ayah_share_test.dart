@@ -246,26 +246,41 @@ void main() {
       expect(shared.text, endsWith('[البقرة: ٢٥٥ · صفحة ٤٢]'));
     });
 
-    testWidgets('prints the rendered verse and produces a multi-page PDF', (
-      tester,
-    ) async {
-      await open(tester);
-      await tester.runAsync(() async {
-        await tester.tap(find.text('طباعة الآيات'));
-        for (var i = 0; i < 100 && printer.images.isEmpty; i++) {
-          await Future<void>.delayed(const Duration(milliseconds: 50));
-          await tester.pump();
-        }
-      });
-      expect(printer.images, hasLength(1));
-      expect(printer.images.single.sublist(1, 4), 'PNG'.codeUnits);
-      final document = await buildAyahPrintPdf([
-        printer.images.single,
-        printer.images.single,
-      ], PdfPageFormat.a4);
-      expect(String.fromCharCodes(document.take(4)), '%PDF');
-      expect(String.fromCharCodes(document), contains('/Count 2'));
-    });
+    for (final (language, button) in [
+      ('ar', 'طباعة الآيات'),
+      ('en', 'Print verses'),
+    ]) {
+      testWidgets(
+        'prints RTL verse and produces a multi-page PDF in $language',
+        (tester) async {
+          await open(tester, locale: Locale(language));
+          final verse = tester.widget<Directionality>(
+            find
+                .descendant(
+                  of: find.byType(AyahShareCard),
+                  matching: find.byType(Directionality),
+                )
+                .first,
+          );
+          expect(verse.textDirection, TextDirection.rtl);
+          await tester.runAsync(() async {
+            await tester.tap(find.text(button));
+            for (var i = 0; i < 100 && printer.images.isEmpty; i++) {
+              await Future<void>.delayed(const Duration(milliseconds: 50));
+              await tester.pump();
+            }
+          });
+          expect(printer.images, hasLength(1));
+          expect(printer.images.single.sublist(1, 4), 'PNG'.codeUnits);
+          final document = await buildAyahPrintPdf([
+            printer.images.single,
+            printer.images.single,
+          ], PdfPageFormat.a4);
+          expect(String.fromCharCodes(document.take(4)), '%PDF');
+          expect(String.fromCharCodes(document), contains('/Count 2'));
+        },
+      );
+    }
 
     testWidgets('the last ayahs of a surah and the first of the next are '
         'copied together, each surah in its own brackets', (tester) async {

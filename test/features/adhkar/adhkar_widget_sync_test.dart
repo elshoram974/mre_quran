@@ -21,4 +21,23 @@ void main() {
       'rtl': true,
     });
   });
+
+  test('preserves localized progress text for native widgets', () {
+    const data = AdhkarWidgetData(
+      label: 'ذكر مقترح',
+      title: 'أذكار الصباح',
+      done: 12,
+      total: 33,
+      payload: 'adhkar:morning',
+      rtl: true,
+      progressLabel: '١٢ من ٣٣',
+      useArabicDigits: true,
+      tasbihLabel: 'المسبحة',
+      tasbihResetLabel: 'تصفير',
+      tasbihCountLabel: 'أضف واحدة',
+    );
+    expect(data.toMap()['progressLabel'], '١٢ من ٣٣');
+    expect(data.toMap()['useArabicDigits'], isTrue);
+    expect(data.toMap()['tasbihLabel'], 'المسبحة');
+  });
 }

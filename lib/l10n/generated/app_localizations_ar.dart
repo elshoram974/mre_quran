@@ -168,7 +168,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get hintPermissionsBody =>
-      'لننبّهك بالأذان نحتاج إذن الإشعارات، ولحساب المواقيت نحتاج موقعك التقريبي. يُحسب كل شيء على جهازك، ولا يُرسل موقعك إلى أي خادم.';
+      'لننبّهك بالأذان نحتاج إذن الإشعارات، ولحساب المواقيت نحتاج موقعك. يمكنك اختيار موقع تقريبي أو دقيق، أو تحديده على الخريطة. تُحسب المواقيت على جهازك.';
 
   @override
   String get hintPermissionsAction => 'متابعة';
@@ -243,7 +243,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get widgetPrayerCardDescription =>
-      'الصلاة القادمة والوقت المتبقي لها، وصلوات اليوم الخمس.';
+      'الصلاة القادمة والوقت المتبقي، وصلوات اليوم والشروق والتاريخ.';
 
   @override
   String get widgetNextPrayer => 'الصلاة القادمة';
@@ -257,10 +257,16 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get widgetPrayerScheduleDescription =>
-      'صلوات اليوم الخمس والشروق مع التاريخ الهجري.';
+      'صلوات اليوم الخمس والشروق مع اليوم والتاريخين الميلادي والهجري.';
 
   @override
   String get widgetTasbih => 'المسبحة';
+
+  @override
+  String get widgetTasbihReset => 'تصفير';
+
+  @override
+  String get widgetTasbihCount => 'أضف واحدة إلى عدّاد المسبحة';
 
   @override
   String get widgetTasbihDescription => 'سبّح وعُدّ تسبيحك من الشاشة الرئيسية.';
@@ -531,7 +537,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get prayerNoPlaceBody =>
-      'شارك موقعك التقريبي مرة واحدة. تُحسب المواقيت على هاتفك ولا يُرسَل شيء إلى أي جهة.';
+      'اختر موقعك التقريبي أو الدقيق، أو حدده على الخريطة. تُحسب المواقيت على هاتفك.';
 
   @override
   String get prayerLocate => 'استخدم موقعي';
@@ -550,7 +556,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get prayerMapHint =>
-      'حرّك الخريطة حتى تصبح العلامة فوق مكانك. لا يطلب هذا الإذن لموقع الجهاز.';
+      'حرّك الخريطة حتى يشير رأس العلامة إلى مكانك. تستخدم الخريطة والبحث الإنترنت؛ وزر موقعي يطلب إذن الموقع.';
 
   @override
   String get prayerMapCurrentLocation => 'استخدم موقعي الحالي';
@@ -565,6 +571,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get prayerMapNoResults => 'لم نجد مكانًا بهذا الاسم.';
 
   @override
+  String get prayerLocationUnavailable =>
+      'تعذّر تحديد موقعك. تأكد من تشغيل الموقع ومنح الإذن، أو اختر مكانك على الخريطة.';
+
+  @override
   String get prayerMapSave => 'استخدم هذا الموقع';
 
   @override
@@ -572,7 +582,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String prayerPlaceLine(String latitude, String longitude) {
-    return 'المكان التقريبي: $latitude، $longitude';
+    return 'الإحداثيات: $latitude، $longitude';
   }
 
   @override
@@ -708,7 +718,17 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get qiblaHintCalibrate =>
-      'إن اضطربت البوصلة فحرّك الهاتف على هيئة رقم ٨ لمعايرتها.';
+      'إن اضطربت البوصلة فحرّك الهاتف على هيئة رقم 8 لمعايرتها.';
+
+  @override
+  String get adhanSuggestionTitle => 'فعّل تنبيهات الصلاة والأذان';
+
+  @override
+  String get adhanSuggestionBody =>
+      'اضبط موقعك والصلوات التي تريد التنبيه لها، واختر صوت الأذان المناسب لك.';
+
+  @override
+  String get adhanSuggestionAction => 'إعداد مواقيت الصلاة';
 
   @override
   String get qiblaNoSensor =>

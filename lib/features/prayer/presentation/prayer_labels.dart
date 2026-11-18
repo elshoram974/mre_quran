@@ -5,6 +5,10 @@ import '../domain/hijri_date.dart';
 import '../domain/prayer_times.dart';
 import '../domain/qibla.dart';
 
+/// Keeps a signed coordinate readable inside either an Arabic or English line.
+String formatPrayerCoordinate(double value, String Function(String) digits) =>
+    '\u2066${digits(value.toStringAsFixed(4))}\u2069';
+
 /// The name of a calculation method.
 String prayerMethodLabel(AppLocalizations l10n, PrayerMethod method) =>
     switch (method) {

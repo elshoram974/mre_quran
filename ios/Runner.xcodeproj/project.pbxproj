@@ -19,6 +19,7 @@
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
 		A10000000000000000000001 /* PrayerWidget.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = A10000000000000000000002 /* PrayerWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		A10000000000000000000003 /* PrayerWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000004 /* PrayerWidget.swift */; };
+		A20000000000000000000014 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000015 /* Localizable.strings */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -79,6 +80,8 @@
 		A10000000000000000000006 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A10000000000000000000007 /* PrayerWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PrayerWidget.entitlements; sourceTree = "<group>"; };
 		A10000000000000000000008 /* Runner.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Runner.entitlements; sourceTree = "<group>"; };
+		A20000000000000000000016 /* ar */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ar; path = ar.lproj/Localizable.strings; sourceTree = "<group>"; };
+		A20000000000000000000017 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -158,6 +161,7 @@
 				A10000000000000000000004 /* PrayerWidget.swift */,
 				A10000000000000000000006 /* Info.plist */,
 				A10000000000000000000007 /* PrayerWidget.entitlements */,
+				A20000000000000000000015 /* Localizable.strings */,
 			);
 			path = PrayerWidget;
 			sourceTree = "<group>";
@@ -211,6 +215,7 @@
 			buildConfigurationList = A10000000000000000000011 /* Build configuration list for PBXNativeTarget "PrayerWidget" */;
 			buildPhases = (
 				A10000000000000000000012 /* Sources */,
+				A20000000000000000000018 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -250,6 +255,7 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				ar,
 				Base,
 			);
 			mainGroup = 97C146E51CF9000F007C117D;
@@ -268,6 +274,12 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		A20000000000000000000018 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (A20000000000000000000014 /* Localizable.strings in Resources */,);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		331C807F294A63A400263BE5 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -361,6 +373,12 @@
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
+		A20000000000000000000015 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (A20000000000000000000016 /* ar */, A20000000000000000000017 /* en */,);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
 		97C146FA1CF9000F007C117D /* Main.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (

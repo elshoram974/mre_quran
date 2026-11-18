@@ -75,12 +75,17 @@ import WidgetKit
       }
       let values = call.arguments as? [String: Any]
       let defaults = UserDefaults(suiteName: "group.net.mrecode.mreQuran")
+      let previous = defaults?.dictionary(forKey: "adhkarWidgetPayload")
       if let values {
         defaults?.set(values, forKey: "adhkarWidgetPayload")
       } else {
         defaults?.removeObject(forKey: "adhkarWidgetPayload")
       }
       WidgetCenter.shared.reloadTimelines(ofKind: "SuggestedDhikrWidget")
+      if (previous?["rtl"] as? Bool) != (values?["rtl"] as? Bool) ||
+         (previous?["useArabicDigits"] as? Bool) != (values?["useArabicDigits"] as? Bool) {
+        WidgetCenter.shared.reloadTimelines(ofKind: "TasbihWidget")
+      }
       callback(nil)
     }
   }

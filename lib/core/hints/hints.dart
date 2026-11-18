@@ -10,6 +10,9 @@ enum AppHint {
   /// Once prayer alerts are on: hear the adhan now, before the first prayer.
   tryAdhan,
 
+  /// An invitation to configure prayer alerts and the adhan.
+  configureAdhan,
+
   /// After the adhan was tried: put the prayer times on the home screen.
   tryWidgets,
 

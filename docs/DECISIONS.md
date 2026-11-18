@@ -165,11 +165,10 @@
 
 ## D-020: After-prayer reminders use prayer times worked out on the device
 
-- **Decision:** `adhan` computes the five times from an approximate location read when the person turns the feature on
-  (and quietly at start-up when already allowed). Seven days of one-time notifications are scheduled each time the app opens.
+- **Decision:** `adhan` computes the five times from a foreground location chosen by the person; Android offers precise or approximate access. The stored coordinates are rounded to four decimal places. A map-selected place stays fixed, while a device-selected place may refresh quietly when already allowed. No location permission is requested at launch.
 - **Alternatives:** A fixed daily time (wrong as the day moves); a server or API for times (sends the location away);
   background location (store review and battery cost).
-- **Reason:** No network, only coarse foreground location, and the reminder follows the real prayer.
+- **Reason:** Prayer times are calculated locally, while a more precise foreground fix or a manually selected place can avoid an incorrect nearby village. The map uses Google Maps and the internet.
 
 ## D-021: Vibration goes through one class, with a switch
 

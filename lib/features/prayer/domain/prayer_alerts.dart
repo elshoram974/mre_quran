@@ -14,6 +14,7 @@ class PrayerSettings {
     this.alerts = const {},
     this.beforeReminder = true,
     this.beforeMinutes = 15,
+    this.automaticLocation = true,
   });
 
   /// Reads settings saved by [toJson]. Anything unreadable gives the defaults.
@@ -30,6 +31,9 @@ class PrayerSettings {
       beforeMinutes: before is int && beforeChoices.contains(before)
           ? before
           : 15,
+      // Older settings did not record how the place was chosen. Preserve the
+      // saved place until the person explicitly chooses device location again.
+      automaticLocation: json['automaticLocation'] == true,
       alerts: {
         if (alerts is List<Object?>)
           for (final name in alerts)
@@ -64,6 +68,9 @@ class PrayerSettings {
   /// Minutes before the prayer time for that reminder.
   final int beforeMinutes;
 
+  /// Whether a previously granted device location may refresh the place.
+  final bool automaticLocation;
+
   /// Whether anything needs the prayer times scheduled.
   bool get needsSchedule => adhkarReminder || alerts.isNotEmpty;
 
@@ -76,6 +83,7 @@ class PrayerSettings {
     Set<DailyPrayer>? alerts,
     bool? beforeReminder,
     int? beforeMinutes,
+    bool? automaticLocation,
   }) => PrayerSettings(
     adhkarReminder: adhkarReminder ?? this.adhkarReminder,
     method: automaticMethod ? null : (method ?? this.method),
@@ -83,6 +91,7 @@ class PrayerSettings {
     alerts: alerts ?? this.alerts,
     beforeReminder: beforeReminder ?? this.beforeReminder,
     beforeMinutes: beforeMinutes ?? this.beforeMinutes,
+    automaticLocation: automaticLocation ?? this.automaticLocation,
   );
 
   /// Compact form for storage.
@@ -93,6 +102,7 @@ class PrayerSettings {
     'alerts': [for (final prayer in alerts) prayer.name],
     'beforeOn': beforeReminder,
     'before': beforeMinutes,
+    'automaticLocation': automaticLocation,
   };
 }
 

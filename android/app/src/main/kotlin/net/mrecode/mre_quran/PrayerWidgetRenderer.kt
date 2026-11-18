@@ -36,15 +36,15 @@ internal object PrayerWidgetRenderer {
     )
 
     private val cellIds = intArrayOf(
-        R.id.card_cell_0, R.id.card_cell_1, R.id.card_cell_2, R.id.card_cell_3, R.id.card_cell_4,
+        R.id.card_cell_0, R.id.card_cell_1, R.id.card_cell_2, R.id.card_cell_3, R.id.card_cell_4, R.id.card_cell_5,
     )
     private val cellNameIds = intArrayOf(
         R.id.card_cell_name_0, R.id.card_cell_name_1, R.id.card_cell_name_2,
-        R.id.card_cell_name_3, R.id.card_cell_name_4,
+        R.id.card_cell_name_3, R.id.card_cell_name_4, R.id.card_cell_name_5,
     )
     private val cellTimeIds = intArrayOf(
         R.id.card_cell_time_0, R.id.card_cell_time_1, R.id.card_cell_time_2,
-        R.id.card_cell_time_3, R.id.card_cell_time_4,
+        R.id.card_cell_time_3, R.id.card_cell_time_4, R.id.card_cell_time_5,
     )
 
     private val leftIds = intArrayOf(
@@ -80,6 +80,7 @@ internal object PrayerWidgetRenderer {
             val scale = WidgetScale.of(manager, id, 140f, 60f)
             WidgetScale.text(views, R.id.prayer_widget_label, 11f, scale)
             WidgetScale.text(views, R.id.prayer_widget_name, 16f, scale)
+            WidgetScale.text(views, R.id.prayer_widget_date, 9f, scale)
             WidgetScale.text(views, R.id.prayer_widget_time, 15f, scale)
             WidgetScale.text(views, R.id.prayer_widget_remaining, 11f, scale)
             WidgetScale.text(views, R.id.prayer_widget_seconds, 11f, scale)
@@ -104,13 +105,14 @@ internal object PrayerWidgetRenderer {
             val scale = WidgetScale.of(manager, id, 280f, 150f)
             WidgetScale.text(views, R.id.card_label, 11f, scale)
             WidgetScale.text(views, R.id.card_name, 26f, scale)
-            WidgetScale.text(views, R.id.card_time, 18f, scale)
-            WidgetScale.text(views, R.id.card_remaining, 13f, scale)
-            WidgetScale.text(views, R.id.card_seconds, 13f, scale)
-            WidgetScale.text(views, R.id.card_hijri, 10f, scale)
+            WidgetScale.text(views, R.id.card_time, 16f, scale)
+            WidgetScale.text(views, R.id.card_remaining, 11f, scale)
+            WidgetScale.text(views, R.id.card_seconds, 11f, scale)
+            WidgetScale.text(views, R.id.card_date, 9f, scale)
+            WidgetScale.text(views, R.id.card_hijri, 9f, scale)
             for (index in cellIds.indices) {
-                WidgetScale.text(views, cellNameIds[index], 11f, scale)
-                WidgetScale.text(views, cellTimeIds[index], 12f, scale)
+                WidgetScale.text(views, cellNameIds[index], 10f, scale)
+                WidgetScale.text(views, cellTimeIds[index], 10f, scale)
             }
             manager.updateAppWidget(id, views)
         }
@@ -132,10 +134,14 @@ internal object PrayerWidgetRenderer {
             views.setViewVisibility(R.id.prayer_widget_time, View.GONE)
             views.setViewVisibility(R.id.prayer_widget_remaining, View.GONE)
             views.setViewVisibility(R.id.prayer_widget_seconds, View.GONE)
+            views.setViewVisibility(R.id.prayer_widget_date, View.GONE)
         } else {
             views.setTextViewText(R.id.prayer_widget_label, model.labels.next)
             views.setTextViewText(R.id.prayer_widget_name, next.name)
             views.setTextViewText(R.id.prayer_widget_time, next.time)
+            val day = model.dayAt(now)
+            views.setViewVisibility(R.id.prayer_widget_date, if (day == null) View.GONE else View.VISIBLE)
+            if (day != null) views.setTextViewText(R.id.prayer_widget_date, "${day.dateLabel} · ${day.hijriLabel}")
             views.setViewVisibility(R.id.prayer_widget_time, View.VISIBLE)
             countdown(views, R.id.prayer_widget_remaining, R.id.prayer_widget_seconds, model, next, now)
         }
@@ -151,26 +157,27 @@ internal object PrayerWidgetRenderer {
         if (model == null || next == null || day == null) {
             views.setTextViewText(R.id.card_label, context.getString(R.string.prayer_widget_name))
             views.setTextViewText(R.id.card_name, model?.labels?.empty ?: context.getString(R.string.prayer_widget_empty))
-            listOf(R.id.card_time, R.id.card_remaining, R.id.card_seconds, R.id.card_hijri)
+            listOf(R.id.card_time, R.id.card_remaining, R.id.card_seconds, R.id.card_date, R.id.card_hijri)
                 .forEach { views.setViewVisibility(it, View.GONE) }
             cellIds.forEach { views.setViewVisibility(it, View.GONE) }
         } else {
             views.setTextViewText(R.id.card_label, model.labels.next)
             views.setTextViewText(R.id.card_name, next.name)
             views.setTextViewText(R.id.card_time, next.time)
+            views.setTextViewText(R.id.card_date, day.dateLabel)
             views.setTextViewText(R.id.card_hijri, day.hijriLabel)
             views.setViewVisibility(R.id.card_time, View.VISIBLE)
+            views.setViewVisibility(R.id.card_date, View.VISIBLE)
             views.setViewVisibility(R.id.card_hijri, View.VISIBLE)
             countdown(views, R.id.card_remaining, R.id.card_seconds, model, next, now)
             // After the day's last prayer the coming one is tomorrow's Fajr,
             // shown in Fajr's place with tomorrow's time.
-            val prayers = day.rows.filter { it.isPrayer }
-            val tomorrow = prayers.none { it.at > now }
+            val tomorrow = day.rows.none { it.isPrayer && it.at > now }
             cellIds.forEachIndexed { index, cellId ->
-                val row = prayers.getOrNull(index)
+                val row = day.rows.getOrNull(index)
                 views.setViewVisibility(cellId, if (row == null) View.GONE else View.VISIBLE)
                 if (row == null) return@forEachIndexed
-                val coming = row.id == next.id && (tomorrow || row.at == next.at)
+                val coming = row.isPrayer && row.id == next.id && (tomorrow || row.at == next.at)
                 views.setTextViewText(cellNameIds[index], row.name)
                 views.setTextViewText(cellTimeIds[index], if (coming) next.time else row.time)
                 views.setInt(cellId, "setBackgroundResource", if (coming) R.drawable.widget_card_cell_next else 0)

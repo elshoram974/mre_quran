@@ -143,7 +143,7 @@ permission, which Google Play restricts). The permission is requested only when 
 reminder on. Nothing is sent off the device.
 
 **Prayer times and alerts** live in `lib/features/prayer` (`adhan`, MIT): times are worked out on the device from
-an approximate location (rounded to about a kilometre, read once while the app is open, kept only on the device).
+a foreground location rounded to four decimals and saved in app preferences (which may be included in device backups); the person may also choose a place on the map.
 The calculation method follows the place (a coarse map of regions in `PrayerMethod.forPlace`: Egyptian for Egypt,
 Sudan, Libya, the Levant and Iraq; Umm al-Qura for Arabia; Dubai, Kuwait, Qatar, Turkey, Karachi for South Asia,
 Singapore for the Malay world, ISNA for North America; Muslim World League elsewhere) until the person chooses one.

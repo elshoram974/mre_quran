@@ -170,7 +170,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get hintPermissionsBody =>
-      'To alert you with the adhan we need permission for notifications, and to work out the times, your approximate location. Everything is worked out on your device; your location is never sent to any server.';
+      'Prayer alerts need notification permission and a location. You can choose approximate or precise location, or select a place on the map. Times are calculated on your device.';
 
   @override
   String get hintPermissionsAction => 'Continue';
@@ -246,7 +246,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get widgetPrayerCardDescription =>
-      'The coming prayer with the time left, and the day\'s five prayers.';
+      'The next prayer and countdown, today\'s prayers, sunrise and date.';
 
   @override
   String get widgetNextPrayer => 'Next prayer';
@@ -260,10 +260,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get widgetPrayerScheduleDescription =>
-      'Today\'s five prayers and sunrise, with the Hijri date.';
+      'Today\'s five prayers and sunrise, with the day and Gregorian and Hijri dates.';
 
   @override
   String get widgetTasbih => 'Tasbih';
+
+  @override
+  String get widgetTasbihReset => 'Reset';
+
+  @override
+  String get widgetTasbihCount => 'Add one to the tasbih count';
 
   @override
   String get widgetTasbihDescription =>
@@ -537,7 +543,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get prayerNoPlaceBody =>
-      'Share your approximate location once. The times are worked out on your phone and nothing is sent anywhere.';
+      'Choose approximate or precise location, or select a place on the map. Times are calculated on your phone.';
 
   @override
   String get prayerLocate => 'Use my location';
@@ -556,7 +562,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get prayerMapHint =>
-      'Move the map until the pin is over your place. This does not request your device location.';
+      'Move the map until the tip of the pin points to your place. The map and search use the internet; the location button requests permission.';
 
   @override
   String get prayerMapCurrentLocation => 'Use my current location';
@@ -571,6 +577,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get prayerMapNoResults => 'No place matched that name.';
 
   @override
+  String get prayerLocationUnavailable =>
+      'Could not find your location. Check location services and permission, or choose a place on the map.';
+
+  @override
   String get prayerMapSave => 'Use this place';
 
   @override
@@ -578,7 +588,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String prayerPlaceLine(String latitude, String longitude) {
-    return 'Approximate place: $latitude, $longitude';
+    return 'Coordinates: $latitude, $longitude';
   }
 
   @override
@@ -711,6 +721,16 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get qiblaHintCalibrate =>
       'If the dial jumps, move the phone in a figure 8 to calibrate it.';
+
+  @override
+  String get adhanSuggestionTitle => 'Set up prayer alerts and adhan';
+
+  @override
+  String get adhanSuggestionBody =>
+      'Choose your location and prayer alerts, then choose the adhan voice you prefer.';
+
+  @override
+  String get adhanSuggestionAction => 'Set up prayer times';
 
   @override
   String get qiblaNoSensor =>

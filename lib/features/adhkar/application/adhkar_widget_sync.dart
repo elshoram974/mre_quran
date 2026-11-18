@@ -12,6 +12,11 @@ class AdhkarWidgetData {
     required this.total,
     required this.payload,
     required this.rtl,
+    this.progressLabel,
+    this.useArabicDigits,
+    this.tasbihLabel,
+    this.tasbihResetLabel,
+    this.tasbihCountLabel,
   });
 
   /// Whether this is a suggestion or an active list to resume.
@@ -32,6 +37,17 @@ class AdhkarWidgetData {
   /// Direction of the app's selected language.
   final bool rtl;
 
+  /// Localized progress text using the app's digit preference.
+  final String? progressLabel;
+
+  /// Native tasbih presentation follows the app's digit preference.
+  final bool? useArabicDigits;
+
+  /// Localized native tasbih labels.
+  final String? tasbihLabel;
+  final String? tasbihResetLabel;
+  final String? tasbihCountLabel;
+
   Map<String, Object> toMap() => {
     'label': label,
     'title': title,
@@ -39,6 +55,11 @@ class AdhkarWidgetData {
     'total': total,
     'payload': payload,
     'rtl': rtl,
+    'progressLabel': ?progressLabel,
+    'useArabicDigits': ?useArabicDigits,
+    'tasbihLabel': ?tasbihLabel,
+    'tasbihResetLabel': ?tasbihResetLabel,
+    'tasbihCountLabel': ?tasbihCountLabel,
   };
 }
 

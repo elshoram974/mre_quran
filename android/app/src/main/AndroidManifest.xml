@@ -23,12 +23,10 @@
          app is closed and is not cut off after nine minutes. -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"/>
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
-    <!-- Approximate location, asked for only when the person turns on the
-         after-prayer reminders, to work out prayer times on the device.
-         Precise and background location are not used. -->
+    <!-- Foreground location is requested only after a location action. On
+         Android 12+ the person may choose approximate or precise location. -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"
-        tools:node="remove"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"
         tools:node="remove"/>
     <application

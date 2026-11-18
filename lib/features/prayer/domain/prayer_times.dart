@@ -19,14 +19,13 @@ enum DailyPrayer {
   isha,
 }
 
-/// A rounded place, enough for prayer times and never more precise than
-/// about a kilometre.
+/// A place rounded to four decimal degrees, about eleven metres of latitude.
 @immutable
 class PrayerPlace {
-  /// Creates a place, rounding to two decimals.
+  /// Creates a place, rounding to four decimals.
   PrayerPlace(double latitude, double longitude)
-    : latitude = (latitude * 100).roundToDouble() / 100,
-      longitude = (longitude * 100).roundToDouble() / 100;
+    : latitude = (latitude * 10000).roundToDouble() / 10000,
+      longitude = (longitude * 10000).roundToDouble() / 10000;
 
   /// Reads a place saved by [toJson], or null.
   static PrayerPlace? tryFromJson(Object? json) {
@@ -34,7 +33,14 @@ class PrayerPlace {
     final lat = json['lat'];
     final lng = json['lng'];
     if (lat is! num || lng is! num) return null;
-    if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null;
+    if (!lat.isFinite ||
+        !lng.isFinite ||
+        lat < -90 ||
+        lat > 90 ||
+        lng < -180 ||
+        lng > 180) {
+      return null;
+    }
     return PrayerPlace(lat.toDouble(), lng.toDouble());
   }
 

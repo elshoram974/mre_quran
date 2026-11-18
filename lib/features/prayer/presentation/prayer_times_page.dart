@@ -365,8 +365,8 @@ class _Content extends ConsumerWidget {
             Expanded(
               child: Text(
                 l10n.prayerPlaceLine(
-                  _coordinate(place.latitude, formatDisplayDigits),
-                  _coordinate(place.longitude, formatDisplayDigits),
+                  formatPrayerCoordinate(place.latitude, formatDisplayDigits),
+                  formatPrayerCoordinate(place.longitude, formatDisplayDigits),
                 ),
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
@@ -402,18 +402,6 @@ class _Content extends ConsumerWidget {
   }
 
   static const String _auto = 'auto';
-
-  static String _coordinate(
-    double value,
-    String Function(String) formatDigits,
-  ) {
-    final whole = value.truncate().abs();
-    final fraction = ((value.abs() - whole) * 100).round().toString().padLeft(
-      2,
-      '0',
-    );
-    return formatDigits('${value < 0 ? '-' : ''}$whole.$fraction');
-  }
 }
 
 class _NextCard extends ConsumerWidget {

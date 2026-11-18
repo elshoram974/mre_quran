@@ -15,6 +15,7 @@ import '../../settings/application/digits_provider.dart';
 import '../application/place_search_provider.dart';
 import '../application/prayer_provider.dart';
 import '../domain/prayer_times.dart';
+import 'prayer_labels.dart';
 
 /// Lets a person choose the coordinates used for prayer times without asking
 /// for device-location permission.
@@ -33,11 +34,13 @@ class _PrayerLocationPickerPageState
       Completer<GoogleMapController>();
   final TextEditingController _searchController = TextEditingController();
   PrayerPlace? _selected;
+  PrayerPlace? _deviceFix;
   LatLng? _cameraTarget;
   List<PrayerPlace> _searchResults = const [];
   bool _mapInteractionStarted = false;
   bool _restoredSavedPlace = false;
   bool _searching = false;
+  bool _locating = false;
 
   /// Whether the last search found no place at all. A search that found one
   /// and moved the map there is not a failed search.
@@ -87,7 +90,11 @@ class _PrayerLocationPickerPageState
                     child: MRETextField(
                       controller: _searchController,
                       hintText: l10n.prayerMapSearchHint,
-                      prefixIcon: const Icon(Icons.search),
+                      suffixIcon: IconButton(
+                        tooltip: l10n.prayerMapSearch,
+                        onPressed: _searching ? null : _search,
+                        icon: const Icon(Icons.search),
+                      ),
                       showClearButton: true,
                       textInputAction: TextInputAction.search,
                       onFieldSubmitted: (_) => _search(),
@@ -96,14 +103,14 @@ class _PrayerLocationPickerPageState
                   const SizedBox(width: AppTokens.spaceSmall),
                   IconButton.filledTonal(
                     tooltip: l10n.prayerMapCurrentLocation,
-                    onPressed: _useDeviceLocation,
+                    onPressed: _locating ? null : _useDeviceLocation,
                     icon: const Icon(Icons.my_location_outlined),
                   ),
                 ],
               ),
             ),
           ),
-          if (_searching) const LinearProgressIndicator(),
+          if (_searching || _locating) const LinearProgressIndicator(),
           Expanded(
             child: Stack(
               children: [
@@ -131,11 +138,17 @@ class _PrayerLocationPickerPageState
                     onCameraIdle: _selectCameraTarget,
                   ),
                 ),
-                const IgnorePointer(
+                IgnorePointer(
                   child: Center(
-                    // The pin sits on the camera target, the centre of the
-                    // map; nothing covers the map, so no offset is needed.
-                    child: Icon(Icons.location_pin, size: AppTokens.minTarget),
+                    // Align the pin's tip, rather than its centre, to the
+                    // camera target at the centre of the map.
+                    child: Transform.translate(
+                      offset: const Offset(0, -AppTokens.minTarget / 2),
+                      child: const Icon(
+                        Icons.location_pin,
+                        size: AppTokens.minTarget,
+                      ),
+                    ),
                   ),
                 ),
                 if (_notFound || results.isNotEmpty)
@@ -158,11 +171,11 @@ class _PrayerLocationPickerPageState
                                           _selectSearchResult(result),
                                       child: Text(
                                         l10n.prayerPlaceLine(
-                                          _coordinate(
+                                          formatPrayerCoordinate(
                                             result.latitude,
                                             formatDigits,
                                           ),
-                                          _coordinate(
+                                          formatPrayerCoordinate(
                                             result.longitude,
                                             formatDigits,
                                           ),
@@ -191,17 +204,36 @@ class _PrayerLocationPickerPageState
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  AppNotice(
-                    selected == null
-                        ? l10n.prayerMapHint
-                        : l10n.prayerPlaceLine(
-                            _coordinate(selected.latitude, formatDigits),
-                            _coordinate(selected.longitude, formatDigits),
+                  AppCard(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          l10n.prayerMapHint,
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                        if (selected != null) ...[
+                          const SizedBox(height: AppTokens.spaceSmall),
+                          Text(
+                            l10n.prayerPlaceLine(
+                              formatPrayerCoordinate(
+                                selected.latitude,
+                                formatDigits,
+                              ),
+                              formatPrayerCoordinate(
+                                selected.longitude,
+                                formatDigits,
+                              ),
+                            ),
+                            style: Theme.of(context).textTheme.labelLarge,
                           ),
+                        ],
+                      ],
+                    ),
                   ),
                   if (_locationResult == PrayerResult.locationDenied) ...[
                     const SizedBox(height: AppTokens.spaceSmall),
-                    AppNotice(l10n.adhkarLocationDenied, error: true),
+                    AppNotice(l10n.prayerLocationUnavailable, error: true),
                   ],
                   const SizedBox(height: AppTokens.spaceSmall),
                   FilledButton(
@@ -218,20 +250,24 @@ class _PrayerLocationPickerPageState
   }
 
   Future<void> _useDeviceLocation() async {
-    final result = await ref.read(prayerProvider.notifier).locate();
+    if (_locating) return;
+    setState(() => _locating = true);
+    final place = await ref
+        .read(prayerProvider.notifier)
+        .previewDeviceLocation();
     if (!mounted) return;
-    if (result == PrayerResult.ok) {
-      final place = ref.read(prayerProvider).value?.place;
-      if (place == null) return;
+    setState(() => _locating = false);
+    if (place != null) {
       final target = LatLng(place.latitude, place.longitude);
       setState(() {
         _selected = place;
+        _deviceFix = place;
         _cameraTarget = target;
         _locationResult = PrayerResult.ok;
       });
       await _animateTo(target);
     } else {
-      setState(() => _locationResult = result);
+      setState(() => _locationResult = PrayerResult.locationDenied);
     }
   }
 
@@ -270,6 +306,7 @@ class _PrayerLocationPickerPageState
     final target = LatLng(place.latitude, place.longitude);
     setState(() {
       _selected = place;
+      _deviceFix = null;
       _cameraTarget = target;
       _searchResults = const [];
     });
@@ -293,7 +330,9 @@ class _PrayerLocationPickerPageState
   Future<void> _save() async {
     final selected = _selected;
     if (selected == null) return;
-    await ref.read(prayerProvider.notifier).setPlace(selected);
+    await ref
+        .read(prayerProvider.notifier)
+        .setPlace(selected, automaticLocation: selected == _deviceFix);
     if (mounted) context.pop();
   }
 
@@ -304,9 +343,4 @@ class _PrayerLocationPickerPageState
 
   /// Zoom that shows a neighbourhood around a chosen place.
   static const double _placeZoom = 14;
-
-  static String _coordinate(
-    double value,
-    String Function(String) formatDigits,
-  ) => formatDigits(value.toStringAsFixed(2));
 }

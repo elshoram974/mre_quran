@@ -407,7 +407,7 @@ abstract class AppLocalizations {
   /// No description provided for @hintPermissionsBody.
   ///
   /// In en, this message translates to:
-  /// **'To alert you with the adhan we need permission for notifications, and to work out the times, your approximate location. Everything is worked out on your device; your location is never sent to any server.'**
+  /// **'Prayer alerts need notification permission and a location. You can choose approximate or precise location, or select a place on the map. Times are calculated on your device.'**
   String get hintPermissionsBody;
 
   /// No description provided for @hintPermissionsAction.
@@ -533,7 +533,7 @@ abstract class AppLocalizations {
   /// No description provided for @widgetPrayerCardDescription.
   ///
   /// In en, this message translates to:
-  /// **'The coming prayer with the time left, and the day\'s five prayers.'**
+  /// **'The next prayer and countdown, today\'s prayers, sunrise and date.'**
   String get widgetPrayerCardDescription;
 
   /// No description provided for @widgetNextPrayer.
@@ -557,7 +557,7 @@ abstract class AppLocalizations {
   /// No description provided for @widgetPrayerScheduleDescription.
   ///
   /// In en, this message translates to:
-  /// **'Today\'s five prayers and sunrise, with the Hijri date.'**
+  /// **'Today\'s five prayers and sunrise, with the day and Gregorian and Hijri dates.'**
   String get widgetPrayerScheduleDescription;
 
   /// No description provided for @widgetTasbih.
@@ -565,6 +565,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tasbih'**
   String get widgetTasbih;
+
+  /// No description provided for @widgetTasbihReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset'**
+  String get widgetTasbihReset;
+
+  /// No description provided for @widgetTasbihCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Add one to the tasbih count'**
+  String get widgetTasbihCount;
 
   /// No description provided for @widgetTasbihDescription.
   ///
@@ -1036,7 +1048,7 @@ abstract class AppLocalizations {
   /// No description provided for @prayerNoPlaceBody.
   ///
   /// In en, this message translates to:
-  /// **'Share your approximate location once. The times are worked out on your phone and nothing is sent anywhere.'**
+  /// **'Choose approximate or precise location, or select a place on the map. Times are calculated on your phone.'**
   String get prayerNoPlaceBody;
 
   /// No description provided for @prayerLocate.
@@ -1072,7 +1084,7 @@ abstract class AppLocalizations {
   /// No description provided for @prayerMapHint.
   ///
   /// In en, this message translates to:
-  /// **'Move the map until the pin is over your place. This does not request your device location.'**
+  /// **'Move the map until the tip of the pin points to your place. The map and search use the internet; the location button requests permission.'**
   String get prayerMapHint;
 
   /// No description provided for @prayerMapCurrentLocation.
@@ -1099,6 +1111,12 @@ abstract class AppLocalizations {
   /// **'No place matched that name.'**
   String get prayerMapNoResults;
 
+  /// No description provided for @prayerLocationUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not find your location. Check location services and permission, or choose a place on the map.'**
+  String get prayerLocationUnavailable;
+
   /// No description provided for @prayerMapSave.
   ///
   /// In en, this message translates to:
@@ -1114,7 +1132,7 @@ abstract class AppLocalizations {
   /// No description provided for @prayerPlaceLine.
   ///
   /// In en, this message translates to:
-  /// **'Approximate place: {latitude}, {longitude}'**
+  /// **'Coordinates: {latitude}, {longitude}'**
   String prayerPlaceLine(String latitude, String longitude);
 
   /// No description provided for @prayerMethodAuto.
@@ -1308,6 +1326,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'If the dial jumps, move the phone in a figure 8 to calibrate it.'**
   String get qiblaHintCalibrate;
+
+  /// No description provided for @adhanSuggestionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Set up prayer alerts and adhan'**
+  String get adhanSuggestionTitle;
+
+  /// No description provided for @adhanSuggestionBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your location and prayer alerts, then choose the adhan voice you prefer.'**
+  String get adhanSuggestionBody;
+
+  /// No description provided for @adhanSuggestionAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Set up prayer times'**
+  String get adhanSuggestionAction;
 
   /// No description provided for @qiblaNoSensor.
   ///

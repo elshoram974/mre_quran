@@ -4,17 +4,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:mre_quran/app/app_shortcuts.dart';
 import 'package:mre_quran/app/quran_app.dart';
 import 'package:mre_quran/app/reminder_opener.dart';
 import 'package:mre_quran/app/router.dart';
 import 'package:mre_quran/app/shell/expanding_nav_bar.dart';
 import 'package:mre_quran/core/notifications/reminder_payload.dart';
+import 'package:mre_quran/core/hints/hints.dart';
 import 'package:mre_quran/features/adhan/presentation/adhan_page.dart';
 import 'package:mre_quran/features/mushaf/application/reading_position_provider.dart';
 import 'package:mre_quran/features/mushaf/presentation/mushaf_page_view.dart';
 import 'package:mre_quran/features/mushaf/presentation/tafsir_sheet.dart';
 import 'package:mre_quran/features/prayer/presentation/prayer_times_page.dart';
+import 'package:mre_quran/features/prayer/presentation/prayer_location_picker_page.dart';
 import 'package:mre_quran/features/quran_index/presentation/quran_index_page.dart';
 import 'package:mre_quran/features/settings/application/settings_provider.dart';
 import 'package:mre_quran/features/settings/domain/app_settings.dart';
@@ -56,6 +59,9 @@ void main() {
     final container = ProviderScope.containerOf(
       tester.element(find.byType(QuranApp)),
     );
+    // This scenario focuses on reader and shortcut navigation; the adhan
+    // suggestion has its own interaction tests and must not cover them.
+    await container.read(hintsProvider.notifier).take(AppHint.configureAdhan);
     final settings = container.read(settingsProvider).value!;
     final position = await container.read(readingPositionProvider.future);
     final router = container.read(routerProvider);
@@ -68,11 +74,11 @@ void main() {
       await container.read(readingPositionProvider.notifier).setPage(1);
       router.go(AppRoute.reader.path);
       await run(const Duration(seconds: 3));
-      if (find.byTooltip('الفهرس').evaluate().isEmpty) {
+      if (find.byTooltip('الفهرس').hitTestable().evaluate().isEmpty) {
         await tester.tapAt(tester.getCenter(find.byType(Scaffold).first));
         await run();
       }
-      await tester.tap(find.byTooltip('الفهرس'));
+      await tester.tap(find.byTooltip('الفهرس').hitTestable().first);
       await run();
       expect(find.byType(QuranIndexPage), findsOneWidget);
       await tester.tap(find.text('الأجزاء'));
@@ -126,6 +132,16 @@ void main() {
       unawaited(AppShortcut.prayerTimes.open(router));
       await run(const Duration(seconds: 2));
       expect(find.byType(PrayerTimesPage).hitTestable(), findsOneWidget);
+      unawaited(router.push(AppRoute.prayerLocationPicker.path));
+      await run(const Duration(seconds: 3));
+      expect(
+        find.byType(PrayerLocationPickerPage).hitTestable(),
+        findsOneWidget,
+      );
+      expect(find.byType(GoogleMap), findsOneWidget);
+      expect(find.text('استخدم هذا الموقع'), findsOneWidget);
+      await tester.binding.handlePopRoute();
+      await run();
       unawaited(openReminder(router, ReminderPayload.adhanSettings));
       await run(const Duration(seconds: 2));
       expect(find.byType(AdhanPage).hitTestable(), findsOneWidget);

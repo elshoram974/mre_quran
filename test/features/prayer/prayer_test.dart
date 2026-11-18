@@ -6,6 +6,7 @@ import 'package:mre_quran/core/time/ticking_clock.dart';
 import 'package:mre_quran/features/prayer/application/prayer_provider.dart';
 import 'package:mre_quran/features/prayer/domain/prayer_alerts.dart';
 import 'package:mre_quran/features/prayer/domain/prayer_times.dart';
+import 'package:mre_quran/features/prayer/presentation/prayer_labels.dart';
 import 'package:mre_quran/features/settings/application/settings_provider.dart';
 import 'package:mre_quran/features/settings/domain/app_settings.dart';
 
@@ -42,6 +43,16 @@ void main() {
   });
 
   group('PrayerDay and the next prayer', () {
+    test('coordinates keep signs, precision and direction in mixed text', () {
+      expect(
+        formatPrayerCoordinate(-30.9994, (value) => value),
+        '\u2066-30.9994\u2069',
+      );
+      expect(
+        formatPrayerCoordinate(30.9999, (value) => value),
+        '\u206630.9999\u2069',
+      );
+    });
     test('the five times and sunrise come in order', () {
       final day = PrayerDay.compute(_cairo, PrayerMethod.egyptian, _now);
       final order = [
@@ -71,13 +82,27 @@ void main() {
       expect(tomorrow.at.day, isNot(day.fajr.day));
     });
 
-    test('a place is rounded to about a kilometre', () {
+    test('a place is rounded to four decimal degrees', () {
       final place = PrayerPlace(30.04449, 31.23571);
-      expect(place.latitude, 30.04);
-      expect(place.longitude, 31.24);
+      expect(place.latitude, 30.0445);
+      expect(place.longitude, 31.2357);
       expect(PrayerPlace.tryFromJson({'lat': 120, 'lng': 0}), isNull);
+      expect(PrayerPlace.tryFromJson({'lat': double.nan, 'lng': 0}), isNull);
       expect(PrayerPlace.tryFromJson('x'), isNull);
     });
+
+    test(
+      'legacy settings keep the saved location fixed until chosen again',
+      () {
+        expect(
+          PrayerSettings.fromJson({
+            'alerts': ['fajr'],
+          }).automaticLocation,
+          isFalse,
+        );
+        expect(PrayerSettings.fromJson(null).automaticLocation, isTrue);
+      },
+    );
   });
 
   group('PrayerAlertPlan', () {
@@ -329,6 +354,7 @@ void main() {
         expect(location.requests, 0);
         expect(c.read(prayerProvider).value!.place, selected);
         expect(repo.place, selected);
+        expect(repo.settings.automaticLocation, isFalse);
         expect(c.read(prayerProvider).value!.method, PrayerMethod.ummAlQura);
       },
     );
@@ -505,6 +531,65 @@ void main() {
         expect(scheduler.once, hasLength(2 * PrayerNotifier.planDays));
       },
     );
+
+    test(
+      'a manually selected place is not replaced by device location on startup',
+      () async {
+        final location = FakeLocationSource(
+          quietResult: PrayerPlace(24.71, 46.68),
+        );
+        final repo = MemoryPrayerRepository()
+          ..settings = const PrayerSettings(
+            alerts: {DailyPrayer.dhuhr},
+            automaticLocation: false,
+          )
+          ..place = _cairo;
+        final c = container(
+          scheduler: FakeReminderScheduler(),
+          location: location,
+          repository: repo,
+        );
+        final state = await c.read(prayerProvider.future);
+        expect(state.place, _cairo);
+        expect(location.quietReads, 0);
+        expect(
+          PrayerSettings.fromJson(repo.settings.toJson()).automaticLocation,
+          isFalse,
+        );
+      },
+    );
+
+    test('previewing device location does not save it', () async {
+      final repo = MemoryPrayerRepository()..place = _cairo;
+      final newPlace = PrayerPlace(24.71, 46.68);
+      final c = container(
+        scheduler: FakeReminderScheduler(),
+        location: FakeLocationSource(requestResult: newPlace),
+        repository: repo,
+      );
+      await c.read(prayerProvider.future);
+      expect(
+        await c.read(prayerProvider.notifier).previewDeviceLocation(),
+        newPlace,
+      );
+      expect(repo.place, _cairo);
+      expect(c.read(prayerProvider).value!.place, _cairo);
+    });
+
+    test('confirming a device fix allows later automatic refresh', () async {
+      final repo = MemoryPrayerRepository();
+      final c = container(
+        scheduler: FakeReminderScheduler(),
+        location: FakeLocationSource(),
+        repository: repo,
+      );
+      await c.read(prayerProvider.future);
+      await c
+          .read(prayerProvider.notifier)
+          .setPlace(_cairo, automaticLocation: true);
+      expect(repo.settings.automaticLocation, isTrue);
+      expect(repo.place, _cairo);
+    });
 
     test('the texts follow the app language', () async {
       final scheduler = FakeReminderScheduler();

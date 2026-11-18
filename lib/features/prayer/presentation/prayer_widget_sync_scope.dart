@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart' show DateFormat;
 
 import '../../../core/l10n/l10n.dart';
 import '../../../core/time/ticking_clock.dart';
@@ -148,12 +149,14 @@ class _PrayerWidgetSyncScopeState extends ConsumerState<PrayerWidgetSyncScope> {
     String Function(String) digits,
   ) {
     final today = ref.read(clockProvider)();
-    final material = MaterialLocalizations.of(context);
+    final dateFormat = DateFormat.yMMMEd(
+      Localizations.localeOf(context).toString(),
+    );
     return [
       for (var offset = 0; offset < _daysAhead; offset++)
         _day(
           l10n,
-          material,
+          dateFormat,
           place,
           method,
           digits,
@@ -164,7 +167,7 @@ class _PrayerWidgetSyncScopeState extends ConsumerState<PrayerWidgetSyncScope> {
 
   PrayerWidgetDay _day(
     AppLocalizations l10n,
-    MaterialLocalizations material,
+    DateFormat dateFormat,
     PrayerPlace place,
     PrayerMethod method,
     String Function(String) digits,
@@ -180,7 +183,7 @@ class _PrayerWidgetSyncScopeState extends ConsumerState<PrayerWidgetSyncScope> {
     return PrayerWidgetDay(
       start: date,
       end: DateTime(date.year, date.month, date.day + 1),
-      dateLabel: digits(material.formatMediumDate(date)),
+      dateLabel: digits(dateFormat.format(date)),
       hijriLabel: hijriLabel(l10n, HijriDate.of(date), digits),
       rows: [
         row('fajr', l10n.prayerFajr, times.fajr),
