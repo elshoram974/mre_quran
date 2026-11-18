@@ -2,6 +2,7 @@ package net.mrecode.mre_quran
 
 import android.appwidget.AppWidgetManager
 import android.content.Context
+import android.content.res.Configuration
 import android.util.TypedValue
 import android.widget.RemoteViews
 import kotlin.math.min
@@ -18,16 +19,21 @@ internal object WidgetScale {
     private const val MOST = 2.2f
 
     /**
-     * How much bigger than [baseWidthDp] x [baseHeightDp] widget [id] is
+     * How much bigger than [baseWidthDp] x [baseHeightDp] widget is
      * drawn: 1 at its base size or smaller, more when the person resized it.
      */
-    fun of(manager: AppWidgetManager, id: Int, baseWidthDp: Float, baseHeightDp: Float): Float {
-        val options = manager.getAppWidgetOptions(id)
-        // Portrait size: the narrowest width and the tallest height.
-        val width = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 0)
-        val height = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 0)
+    fun of(width: Int, height: Int, baseWidthDp: Float, baseHeightDp: Float): Float {
         if (width <= 0 || height <= 0) return 1f
         return min(width / baseWidthDp, height / baseHeightDp).coerceIn(1f, MOST)
+    }
+
+    /** Launchers report a range across portrait and landscape orientations. */
+    fun size(context: Context, manager: AppWidgetManager, id: Int): Pair<Int, Int> {
+        val options = manager.getAppWidgetOptions(id)
+        val landscape = context.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        val widthKey = if (landscape) AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH else AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH
+        val heightKey = if (landscape) AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT else AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT
+        return options.getInt(widthKey, 0) to options.getInt(heightKey, 0)
     }
 
     /** Sets view [id]'s text to [sp] scaled by [scale]. */

@@ -17,3 +17,6 @@ enum HomeWidget {
   /// A suggested dhikr with its saved progress.
   dhikr,
 }
+
+/// Background used by all home-screen widgets in full colour.
+enum WidgetAppearance { automatic, navy, green }

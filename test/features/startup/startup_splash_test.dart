@@ -56,7 +56,7 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
     expect(name, findsOneWidget);
     // The screen is built underneath all along.
-    expect(find.text('screen'), findsOneWidget);
+    final screen = tester.element(find.text('screen'));
 
     text.completeError(StateError('no text'));
     await tester.pump(const Duration(milliseconds: 100));
@@ -67,14 +67,17 @@ void main() {
     await tester.pump(const Duration(milliseconds: 400));
     await tester.pump();
     expect(name, findsNothing);
-    expect(find.text('screen'), findsOneWidget);
+    expect(
+      tester.element(find.text('screen')),
+      same(screen),
+      reason: 'the destination stays mounted through the fade',
+    );
   });
 
-  testWidgets('a screen other than the Mushaf waits only for the text, and '
+  testWidgets('a screen other than the Mushaf opens with text still loading, '
       'never less than the least time', (tester) async {
     final text = Completer<QuranText>();
     await pump(tester, text: text, location: '/prayer');
-    text.completeError(StateError('none'));
     await tester.pump(const Duration(milliseconds: 300));
     expect(name, findsOneWidget);
     await tester.pump(const Duration(milliseconds: 500));
@@ -130,11 +133,10 @@ void main() {
   });
 
   testWidgets('when a notification or widget opens another screen over the '
-      'Mushaf, it waits only for the text', (tester) async {
+      'Mushaf, it opens even with the text still loading', (tester) async {
     final text = Completer<QuranText>();
     final container = await pump(tester, text: text, overlay: false);
     container.read(opensOnReaderProvider.notifier).openedElsewhere();
-    text.completeError(StateError('no text'));
     await tester.pump();
     expect(container.read(startupReadyProvider), isTrue);
     expect(container.read(readerPaintedProvider), isFalse);

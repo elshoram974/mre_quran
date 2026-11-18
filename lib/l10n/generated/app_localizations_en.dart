@@ -208,23 +208,27 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get widgetsPreviewHint =>
-      'These are illustrative previews; appearance and size vary by device and home screen.';
+      'Previews show the original colours. Resize a widget on your home screen to show more detail.';
 
   @override
-  String get widgetSizeSmall =>
-      'Suggested Android size: two columns by one row.';
+  String get widgetAppearance => 'Widget colours';
 
   @override
-  String get widgetSizeFlexible =>
-      'On Android: two columns and one or two rows, depending on the home screen.';
+  String get widgetDefaultStyle => 'Original widget colours';
 
   @override
-  String get widgetSizeTall =>
-      'Suggested Android size: two columns by two rows.';
+  String get widgetStyleSaveFailed =>
+      'Could not save the widget colour. Try again.';
+
+  @override
+  String get widgetSizeSmall => 'Minimum Android size: two columns by one row.';
+
+  @override
+  String get widgetSizeTall => 'Minimum Android size: two columns by two rows.';
 
   @override
   String get widgetSizeWide =>
-      'Suggested Android size: three columns by two rows.';
+      'Minimum Android size: three columns by two rows.';
 
   @override
   String get widgetIosTasbihHint =>
@@ -1316,7 +1320,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get widgetPreviewIosHint =>
-      'These Android previews are illustrative; widgets may look different on iPhone.';
+      'Previews show the original Android designs. On iPhone, widgets adapt to your Home Screen appearance.';
 
   @override
   String get copyText => 'Copy';

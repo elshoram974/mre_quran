@@ -6,6 +6,7 @@ import '../../../core/layout/adaptive_layout.dart';
 import '../../../core/theme/app_platform.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/app_notice.dart';
+import '../../../core/widgets/app_select_field.dart';
 import '../../../core/widgets/app_page_scaffold.dart';
 import '../../../core/widgets/app_tile_card.dart';
 import '../../../l10n/generated/app_localizations.dart';
@@ -23,6 +24,7 @@ class HomeWidgetsPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final canPin = ref.watch(canPinWidgetsProvider).value ?? false;
+    final appearance = ref.watch(widgetAppearanceProvider).value;
     final messenger = ScaffoldMessenger.maybeOf(context);
 
     Future<void> add(HomeWidget widget) async {
@@ -57,6 +59,40 @@ class HomeWidgetsPage extends ConsumerWidget {
                         : l10n.widgetsPreviewHint,
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
+                  if (appearance case final style?) ...[
+                    const SizedBox(height: AppTokens.spaceMedium),
+                    AppSelectField<WidgetAppearance>(
+                      label: l10n.widgetAppearance,
+                      value: style,
+                      options: [
+                        AppSelectOption(
+                          value: WidgetAppearance.automatic,
+                          label: l10n.widgetDefaultStyle,
+                        ),
+                        AppSelectOption(
+                          value: WidgetAppearance.navy,
+                          label: l10n.themeDark,
+                        ),
+                        AppSelectOption(
+                          value: WidgetAppearance.green,
+                          label: l10n.themeGreen,
+                        ),
+                      ],
+                      onChanged: (value) async {
+                        final saved = await ref
+                            .read(homeWidgetsPlatformProvider)
+                            .setAppearance(value);
+                        if (!context.mounted) return;
+                        if (saved) {
+                          ref.invalidate(widgetAppearanceProvider);
+                        } else {
+                          messenger?.showSnackBar(
+                            SnackBar(content: Text(l10n.widgetStyleSaveFailed)),
+                          );
+                        }
+                      },
+                    ),
+                  ],
                   if (!canPin) ...[
                     const SizedBox(height: AppTokens.spaceMedium),
                     AppNotice(
@@ -74,7 +110,7 @@ class HomeWidgetsPage extends ConsumerWidget {
             final size = switch (widget) {
               HomeWidget.prayerCard => l10n.widgetSizeWide,
               HomeWidget.prayerSchedule => l10n.widgetSizeTall,
-              HomeWidget.tasbih || HomeWidget.dhikr => l10n.widgetSizeFlexible,
+
               _ => l10n.widgetSizeSmall,
             };
             final subtitle = [

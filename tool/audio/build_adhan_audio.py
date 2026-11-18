@@ -25,7 +25,7 @@ and SHA-256, so the app checks every download.
 "global" (default: the cleaned files at --base, the media repository
 mre_quran_global on GitHub Pages, with each recording's own file as the
 fallback when that fails), "media"
-(the cleaned files only) or "source" (each recording's own file only).
+(the cleaned files only) or "source" (originals for uncut recordings; edited recordings always use the hosted edit).
 
 Needs ffmpeg and ffprobe. Run from the repository root:
 
@@ -131,7 +131,7 @@ def main() -> None:
     parser.add_argument("--serve", choices=["global", "media", "source"],
                         default="global")
     options = parser.parse_args()
-    if options.serve != "source" and not options.base.startswith("https://"):
+    if not options.base.startswith("https://"):
         sys.exit(f"--serve {options.serve} needs an https --base")
     base = options.base.rstrip("/") + "/"
     spec = json.loads(SOURCES.read_text())
@@ -151,6 +151,7 @@ def main() -> None:
         else:
             target = options.media / "adhan" / f"{recording['id']}.m4a"
             build(source, recording, spec["loudness"], target, "96k", work)
+        cropped = "start" in recording or "end" in recording
         clip = recording.get("iosClip")
         if clip:
             IOS.mkdir(parents=True, exist_ok=True)
@@ -183,10 +184,11 @@ def main() -> None:
         }
         if bundled:
             voice["builtIn"] = True
-        elif options.serve in ("media", "global"):
+        elif options.serve in ("media", "global") or cropped:
             voice["url"] = f"{base}adhan/{recording['id']}.m4a"
             voice["extension"] = "m4a"
-            if options.serve == "global":
+            # The original of a cut recording includes audio excluded from playback.
+            if options.serve == "global" and not cropped:
                 voice["fallback"] = {
                     "url": recording["url"],
                     "bytes": source.stat().st_size,

@@ -78,9 +78,16 @@ internal object PrayerWidgetRenderer {
         )
         val now = System.currentTimeMillis()
         for (id in next) {
+            val (width, height) = WidgetScale.size(context, manager, id)
             val views = nextPrayerViews(context, model, now)
+            HomeWidgets.applyBackground(context, views, R.id.prayer_widget_root)
+            if (width in 1..139 && model?.nextAfter(now) != null) {
+                views.setViewVisibility(R.id.prayer_widget_label, View.GONE)
+                views.setViewVisibility(R.id.prayer_widget_remaining, View.GONE)
+                views.setViewVisibility(R.id.prayer_widget_seconds, View.GONE)
+            }
             // Base: two cells by one.
-            val scale = WidgetScale.of(manager, id, 140f, 60f)
+            val scale = WidgetScale.of(width, height, 140f, 60f)
             WidgetScale.text(views, R.id.prayer_widget_label, 11f, scale)
             WidgetScale.text(views, R.id.prayer_widget_name, 16f, scale)
             WidgetScale.text(views, R.id.prayer_widget_date, 9f, scale)
@@ -90,14 +97,13 @@ internal object PrayerWidgetRenderer {
             manager.updateAppWidget(id, views)
         }
         for (id in schedule) {
-            val options = manager.getAppWidgetOptions(id)
-            val width = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 0)
-            val height = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 0)
+            val (width, height) = WidgetScale.size(context, manager, id)
             val compact = width <= 0 || width < 140
             val short = height in 1..134
             val views = scheduleViews(context, model, now, compact, short)
+            HomeWidgets.applyBackground(context, views, R.id.schedule_root)
             // Base: two cells by two.
-            val scale = WidgetScale.of(manager, id, 140f, 150f)
+            val scale = WidgetScale.of(width, height, 140f, 150f)
             WidgetScale.text(views, R.id.schedule_date, if (compact) 9f else if (short) 10f else 12f, scale)
             WidgetScale.text(views, R.id.schedule_hijri, if (compact) 8f else if (short) 9f else 10f, scale)
             for (index in rowIds.indices) {
@@ -108,9 +114,14 @@ internal object PrayerWidgetRenderer {
             manager.updateAppWidget(id, views)
         }
         for (id in cards) {
+            val (width, height) = WidgetScale.size(context, manager, id)
             val views = cardViews(context, model, now)
+            HomeWidgets.applyBackground(context, views, R.id.card_root)
+            if (width in 1..199 && model?.nextAfter(now) != null) {
+                views.setViewVisibility(R.id.card_label, View.GONE)
+            }
             // Base: three cells by two.
-            val scale = WidgetScale.of(manager, id, 210f, 150f)
+            val scale = WidgetScale.of(width, height, 210f, 150f)
             WidgetScale.text(views, R.id.card_label, 11f, scale)
             WidgetScale.text(views, R.id.card_name, 26f, scale)
             WidgetScale.text(views, R.id.card_time, 16f, scale)

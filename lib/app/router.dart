@@ -152,15 +152,31 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
     ],
   );
+  // WidgetKit supplies an absolute deep link through Flutter's router.
+  void trackWidgetLink() {
+    if (router.routeInformationProvider.value.uri.scheme == 'mrequran') {
+      ref.read(opensOnReaderProvider.notifier).openedElsewhere();
+    }
+  }
+
+  router.routeInformationProvider.addListener(trackWidgetLink);
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (ref.mounted) trackWidgetLink();
+  });
   // A reminder that launched the app opens what it points at, once the first
   // frame is up.
   final launch = ref.read(reminderSchedulerProvider).launchPayload;
   if (launch != null) {
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) => unawaited(openReminder(router, launch)),
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!ref.mounted) return;
+      ref.read(opensOnReaderProvider.notifier).openedElsewhere();
+      unawaited(openReminder(router, launch));
+    });
   }
-  ref.onDispose(router.dispose);
+  ref.onDispose(() {
+    router.routeInformationProvider.removeListener(trackWidgetLink);
+    router.dispose();
+  });
   return router;
 });
 

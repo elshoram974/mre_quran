@@ -13,6 +13,8 @@ import 'package:mre_quran/app/shell/expanding_nav_bar.dart';
 import 'package:mre_quran/core/notifications/reminder_payload.dart';
 import 'package:mre_quran/core/hints/hints.dart';
 import 'package:mre_quran/features/adhan/presentation/adhan_page.dart';
+import 'package:mre_quran/features/home_widgets/application/home_widgets_providers.dart';
+import 'package:mre_quran/features/home_widgets/domain/home_widget.dart';
 import 'package:mre_quran/features/mushaf/application/reading_position_provider.dart';
 import 'package:mre_quran/features/mushaf/presentation/mushaf_page_view.dart';
 import 'package:mre_quran/features/mushaf/presentation/tafsir_sheet.dart';
@@ -158,6 +160,23 @@ void main() {
         tester.widget<ExpandingNavBar>(find.byType(ExpandingNavBar)).index,
         1,
       );
+      unawaited(router.push(AppRoute.widgets.path));
+      await run();
+      final widgets = container.read(homeWidgetsPlatformProvider);
+      final original = await widgets.appearance();
+      try {
+        final navy = original != WidgetAppearance.navy;
+        await tester.tap(find.text('ألوان الويدجت'));
+        await run();
+        await tester.tap(find.text(navy ? 'كحلي' : 'أخضر'));
+        await run();
+        expect(
+          await widgets.appearance(),
+          navy ? WidgetAppearance.navy : WidgetAppearance.green,
+        );
+      } finally {
+        await widgets.setAppearance(original);
+      }
       expect(tester.takeException(), isNull);
     } finally {
       await container.read(settingsProvider.notifier).save(settings);

@@ -10,7 +10,7 @@
         <!-- As long as the launch screen can stay (MainActivity.LONGEST_SPLASH_MS):
              Android 12 and 13 stop the turning star after this time, so it turns
              until the app opens. -->
-        <item name="windowSplashScreenAnimationDuration">4000</item>
+        <item name="windowSplashScreenAnimationDuration">720</item>
         <!-- The maker's name under the star (Android 12 and later only). -->
         <item name="android:windowSplashScreenBrandingImage">@drawable/splash_brand</item>
         <item name="postSplashScreenTheme">@style/NormalTheme</item>

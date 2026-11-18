@@ -40,6 +40,8 @@ class MainActivity : FlutterActivity() {
                 when (call.method) {
                     "canPin" -> result.success(HomeWidgets.canPin(this))
                     "pin" -> result.success(HomeWidgets.pin(this, call.arguments as? String))
+                    "appearance" -> result.success(HomeWidgets.appearance(this))
+                    "setAppearance" -> result.success(HomeWidgets.setAppearance(this, call.arguments as? String))
                     "placed" -> result.success(HomeWidgets.placed(this))
                     else -> result.notImplemented()
                 }
@@ -69,7 +71,6 @@ class MainActivity : FlutterActivity() {
         // Flutter paints can make the two wait for each other indefinitely.
         installSplashScreen()
         super.onCreate(savedInstanceState)
-        PrayerWidgetRenderer.updateAll(this)
     }
 
     @Deprecated("Flutter's activity still reports results this way")

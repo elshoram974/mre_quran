@@ -158,7 +158,12 @@ class FileVoiceStore implements VoiceStore {
     if (voice.builtIn) return null;
     for (final from in voice.files) {
       final file = await _file(voice, from);
-      if (await file.exists()) return file;
+      // A previously downloaded edition may still include a spoken outro.
+      // Downloads are hash-checked before installation; a stat is enough to
+      // distinguish the larger retired files without decoding them on launch.
+      final stat = await file.stat();
+      if (stat.type == FileSystemEntityType.file && stat.size == from.bytes)
+        return file;
     }
     return null;
   }

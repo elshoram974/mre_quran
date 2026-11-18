@@ -50,6 +50,16 @@ void main() {
     },
   );
 
+  test('a superseded cached recording needs the edited download', () async {
+    final target = store(FakeVoiceFetcher());
+    await target.download(kMadinahVoice);
+    final old = (await target.fileOf(kMadinahVoice))!;
+    await old.writeAsBytes([1], mode: FileMode.append);
+    expect(await target.fileOf(kMadinahVoice), isNull);
+    await target.download(kMadinahVoice);
+    expect(await target.fileOf(kMadinahVoice), isNotNull);
+  });
+
   test('a failed connection leaves nothing behind', () async {
     final target = store(FakeVoiceFetcher(fail: true));
     await expectLater(

@@ -19,10 +19,12 @@ class AdhanAlarmReceiver : BroadcastReceiver() {
                 } else {
                     val found = AdhanScheduler.find(context, id) ?: return
                     // A real prayer: arm the one after it before playing.
-                    AdhanScheduler.armAfter(
-                        context,
-                        maxOf(System.currentTimeMillis(), found.first.getLong("at")),
-                    )
+                    val at = found.first.getLong("at")
+                    val now = System.currentTimeMillis()
+                    // A broadcast may survive a clock change or be delivered
+                    // late on wake. Play only in the scheduled minute.
+                    AdhanScheduler.armAfter(context, now)
+                    if (now < at || now / 60_000L != at / 60_000L) return
                     found
                 }
                 try {

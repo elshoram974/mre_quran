@@ -13,6 +13,12 @@ abstract interface class HomeWidgetsPlatform {
   /// Asks the launcher to add [widget]; false when it could not ask.
   Future<bool> pin(HomeWidget widget);
 
+  /// Reads the shared appearance used by the launcher.
+  Future<WidgetAppearance> appearance();
+
+  /// Saves a style and refreshes the widgets already placed.
+  Future<bool> setAppearance(WidgetAppearance value);
+
   /// Whether any of the app's widgets is on the home screen now.
   Future<bool> placed();
 }
@@ -41,6 +47,19 @@ class MethodChannelHomeWidgets implements HomeWidgetsPlatform {
 
   @override
   Future<bool> pin(HomeWidget widget) => _ask('pin', widget.name);
+
+  @override
+  Future<WidgetAppearance> appearance() async {
+    final name = await _channel.invokeMethod<String>('appearance');
+    return WidgetAppearance.values.firstWhere(
+      (value) => value.name == name,
+      orElse: () => WidgetAppearance.automatic,
+    );
+  }
+
+  @override
+  Future<bool> setAppearance(WidgetAppearance value) =>
+      _ask('setAppearance', value.name);
 
   @override
   Future<bool> placed() => _ask('placed');

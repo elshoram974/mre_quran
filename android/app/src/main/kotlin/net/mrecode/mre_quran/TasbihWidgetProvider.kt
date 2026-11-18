@@ -74,10 +74,12 @@ class TasbihWidgetProvider : AppWidgetProvider() {
             views.setOnClickPendingIntent(R.id.tasbih_widget_reset, broadcast(context, ACTION_RESET, 2))
             // A bigger widget gets a bigger name and reset button; the count
             // sizes itself to fill what is left.
-            val scale = WidgetScale.of(manager, id, BASE_WIDTH_DP, BASE_HEIGHT_DP)
-            WidgetScale.text(views, R.id.tasbih_widget_name, 11f, scale)
-            WidgetScale.text(views, R.id.tasbih_widget_reset_icon, 14f, scale)
-            WidgetScale.padding(context, views, R.id.tasbih_widget_reset_icon, 8f, 2f, scale)
+            HomeWidgets.applyBackground(context, views, R.id.tasbih_widget_root)
+            val (width, height) = WidgetScale.size(context, manager, id)
+            val scale = WidgetScale.of(width, height, BASE_WIDTH_DP, BASE_HEIGHT_DP)
+            WidgetScale.text(views, R.id.tasbih_widget_name, 11f, scale.coerceAtMost(1.2f))
+            WidgetScale.text(views, R.id.tasbih_widget_reset_icon, 14f, scale.coerceAtMost(1.2f))
+            WidgetScale.padding(context, views, R.id.tasbih_widget_reset_icon, 8f, 2f, scale.coerceAtMost(1.2f))
             manager.updateAppWidget(id, views)
         }
     }

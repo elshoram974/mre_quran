@@ -1,5 +1,8 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../../app/router.dart';
 
 import '../../../core/hints/hints.dart';
 import '../../../core/l10n/l10n.dart';
@@ -28,8 +31,15 @@ class OfflineMushafHint extends ConsumerStatefulWidget {
 class _OfflineMushafHintState extends ConsumerState<OfflineMushafHint> {
   bool _checking = false;
 
+  bool get _readerVisible {
+    if (!mounted || !TickerMode.of(context)) return false;
+    final router = GoRouter.maybeOf(context);
+    return router == null ||
+        router.state.matchedLocation == AppRoute.reader.path;
+  }
+
   Future<void> _check(int page) async {
-    if (_checking) return;
+    if (_checking || !_readerVisible) return;
     _checking = true;
     try {
       final hints = await ref.read(hintsProvider.future);
@@ -44,7 +54,7 @@ class _OfflineMushafHintState extends ConsumerState<OfflineMushafHint> {
         return;
       }
       final manifest = await ref.read(svgManifestProvider(edition).future);
-      if (!mounted) return;
+      if (!_readerVisible || !mounted) return;
       final l10n = context.l10n;
       final digits = ref.read(digitsFormatterProvider);
       final megabytes = (manifest.downloadBytes / (1024 * 1024)).ceil();
@@ -74,13 +84,13 @@ class _OfflineMushafHintState extends ConsumerState<OfflineMushafHint> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    ref.listenManual<AsyncValue<int>>(readingPositionProvider, (_, next) {
-      if (next.value case final page?) _check(page);
-    }, fireImmediately: true);
+  Widget build(BuildContext context) {
+    final page = ref.watch(readingPositionProvider).value;
+    if (page != null && TickerMode.of(context)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _check(page);
+      });
+    }
+    return const SizedBox.shrink();
   }
-
-  @override
-  Widget build(BuildContext context) => const SizedBox.shrink();
 }

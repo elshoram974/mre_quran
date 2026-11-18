@@ -19,12 +19,13 @@
         "ar": "تسجيل استوديو",
         "en": "Studio recording"
       },
-      "credit": "Nasser Al-Qatami (recitation)",
+      "credit": "Nasser Al-Qatami (recitation) · TVQuran.com",
       "source": "https://github.com/abodehq/Athan-MP3/tree/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds",
       "url": "https://raw.githubusercontent.com/abodehq/Athan-MP3/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds/Athan%20Nasser%20Alqatami.mp3",
       "sha256": "b30f4e2c44d6fcb975d2c2f797590dfb11061b11ab7e8fc5d2cdb3ea86b92fbe",
-      "checked": "Whisper transcript: a full regular adhan.",
-      "iosClip": "adhan_regular"
+      "checked": "Whisper transcript: a full regular adhan. Ends in the pause after the final takbir and shahada, before the spoken TVQuran.com attribution.",
+      "iosClip": "adhan_regular",
+      "end": 131.85
     },
     {
       "id": "dua_after_adhan_mishary",
@@ -129,11 +130,12 @@
         "ar": "تسجيل استوديو",
         "en": "Studio recording"
       },
-      "credit": "Mansoor Az-Zahrani (recitation)",
+      "credit": "Mansoor Az-Zahrani (recitation) · TVQuran.com",
       "source": "https://github.com/abodehq/Athan-MP3/tree/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds",
       "url": "https://raw.githubusercontent.com/abodehq/Athan-MP3/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds/Athan%20Mansoor%20Az-Zahrani.mp3",
       "sha256": "b4d596a8d60f3120ed6a3d0709dd63cd589b35d4bcc9a792bfc74da80f2a14f2",
-      "checked": "Whisper transcript: it says «الصلاة خير من النوم», so it is a Fajr adhan though the file name does not say so."
+      "checked": "Whisper transcript: it says «الصلاة خير من النوم», so it is a Fajr adhan though the file name does not say so. Ends in the pause after the final takbir and shahada, before the spoken TVQuran.com attribution.",
+      "end": 183.55
     },
     {
       "id": "malek_chebae_fajr",
@@ -146,11 +148,12 @@
         "ar": "تسجيل استوديو",
         "en": "Studio recording"
       },
-      "credit": "Malek Chebae (recitation)",
+      "credit": "Malek Chebae (recitation) · TVQuran.com",
       "source": "https://github.com/abodehq/Athan-MP3/tree/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds",
       "url": "https://raw.githubusercontent.com/abodehq/Athan-MP3/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds/Athan%20Al-fajer%20-%20Malek%20chebae.mp3",
       "sha256": "89580ee0304ba7812822ba3b2de0cf4a0534bb4a1ee9220c5c98f9075da318c6",
-      "checked": "Whisper transcript: «الصلاة خير من النوم»."
+      "checked": "Whisper transcript: «الصلاة خير من النوم». Ends in the pause after the final takbir and shahada, before the spoken TVQuran.com attribution.",
+      "end": 243.0
     }
   ]
 }

@@ -39,7 +39,11 @@ internal object AdhkarWidgetRenderer {
         for (id in ids) {
             val views = views(context, model)
             // Base: two cells by one.
-            val scale = WidgetScale.of(manager, id, 140f, 60f)
+            HomeWidgets.applyBackground(context, views, R.id.adhkar_widget_root)
+            val (width, height) = WidgetScale.size(context, manager, id)
+            if (width in 1..139) views.setViewVisibility(R.id.adhkar_widget_count, View.GONE)
+            views.setInt(R.id.adhkar_widget_title, "setMaxLines", if (height >= 90) 2 else 1)
+            val scale = WidgetScale.of(width, height, 140f, 60f)
             WidgetScale.text(views, R.id.adhkar_widget_label, 12f, scale)
             WidgetScale.text(views, R.id.adhkar_widget_count, 12f, scale)
             WidgetScale.text(views, R.id.adhkar_widget_title, 18f, scale)

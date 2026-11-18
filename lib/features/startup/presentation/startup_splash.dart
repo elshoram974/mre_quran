@@ -72,6 +72,7 @@ class _StartupSplashState extends ConsumerState<StartupSplash>
     super.didChangeDependencies();
     if (!_overlay || MediaQuery.disableAnimationsOf(context)) {
       _turn.stop();
+      _turn.value = 0;
       _intro.value = 1;
     } else if (!_turn.isAnimating && !_fading) {
       unawaited(_turn.repeat());
@@ -115,43 +116,45 @@ class _StartupSplashState extends ConsumerState<StartupSplash>
     }
     if (!_overlay) return widget.child;
     // Without animations there is no fade to wait for.
-    if (_gone || (_fading && MediaQuery.disableAnimationsOf(context))) {
+    final hidden =
+        _gone || (_fading && MediaQuery.disableAnimationsOf(context));
+    if (hidden) {
       // Nothing turns behind the app once the splash is gone.
       _turn.stop();
-      return widget.child;
     }
     final scheme = Theme.of(context).colorScheme;
     return Stack(
       children: [
         widget.child,
-        Positioned.fill(
-          child: IgnorePointer(
-            ignoring: _fading,
-            child: AnimatedOpacity(
-              opacity: _fading ? 0 : 1,
-              duration: MediaQuery.disableAnimationsOf(context)
-                  ? Duration.zero
-                  : AppTokens.motionMedium,
-              onEnd: () => _update(() {
-                _gone = _fading;
-                if (_gone) _turn.stop();
-              }),
-              child: ColoredBox(
-                color: scheme.surface,
-                child: Semantics(
-                  label: context.l10n.appTitle,
-                  excludeSemantics: true,
-                  child: _Emblem(
-                    turn: _turn,
-                    intro: _intro,
-                    named: _named,
-                    color: scheme.primary,
+        if (!hidden)
+          Positioned.fill(
+            child: IgnorePointer(
+              ignoring: _fading,
+              child: AnimatedOpacity(
+                opacity: _fading ? 0 : 1,
+                duration: MediaQuery.disableAnimationsOf(context)
+                    ? Duration.zero
+                    : AppTokens.motionMedium,
+                onEnd: () => _update(() {
+                  _gone = _fading;
+                  if (_gone) _turn.stop();
+                }),
+                child: ColoredBox(
+                  color: scheme.surface,
+                  child: Semantics(
+                    label: context.l10n.appTitle,
+                    excludeSemantics: true,
+                    child: _Emblem(
+                      turn: _turn,
+                      intro: _intro,
+                      named: _named,
+                      color: scheme.primary,
+                    ),
                   ),
                 ),
               ),
             ),
           ),
-        ),
       ],
     );
   }
@@ -181,14 +184,24 @@ class _Emblem extends StatelessWidget {
         AnimatedBuilder(
           animation: Listenable.merge([turn, intro]),
           builder: (context, child) {
-            final wave = math.sin(turn.value * 2 * math.pi);
-            final bounce = math.max(0.0, wave);
-            final entrance = Curves.easeOutBack.transform(intro.value);
+            // A parabolic hop reaches the floor with velocity. The squash
+            // belongs to the brief contact phase, then relaxes before takeoff.
+            final phase = turn.value;
+            final flight = (phase / .76).clamp(0.0, 1.0);
+            final height = 4 * flight * (1 - flight);
+            final contact = math.sin(
+              math.pi * ((phase - .76) / .24).clamp(0.0, 1.0),
+            );
+            final entrance =
+                .68 + .32 * Curves.easeOutBack.transform(intro.value);
             return Transform.translate(
-              offset: Offset(0, -bounce * AppTokens.spaceSmall),
+              offset: Offset(0, -height * AppTokens.spaceMedium),
               child: Transform.scale(
-                scaleX: entrance * (1 - bounce * 0.035),
-                scaleY: entrance * (1 + bounce * 0.05),
+                alignment: AlignmentDirectional.bottomCenter.resolve(
+                  Directionality.of(context),
+                ),
+                scaleX: entrance * (1 + contact * .10 - height * .035),
+                scaleY: entrance * (1 - contact * .11 + height * .04),
                 child: child,
               ),
             );
@@ -273,9 +286,12 @@ class _StarPainter extends CustomPainter {
       star,
       Paint()..color = color.withValues(alpha: 0.14 * intro.value),
     );
+    var contour = 0;
     for (final metric in star.computeMetrics()) {
+      final drawn = ((intro.value - contour * .18) / .82).clamp(0.0, 1.0);
+      contour++;
       canvas.drawPath(
-        metric.extractPath(0, metric.length * intro.value),
+        metric.extractPath(0, metric.length * drawn),
         Paint()
           ..color = color
           ..style = PaintingStyle.stroke

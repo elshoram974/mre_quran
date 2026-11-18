@@ -473,31 +473,43 @@ abstract class AppLocalizations {
   /// No description provided for @widgetsPreviewHint.
   ///
   /// In en, this message translates to:
-  /// **'These are illustrative previews; appearance and size vary by device and home screen.'**
+  /// **'Previews show the original colours. Resize a widget on your home screen to show more detail.'**
   String get widgetsPreviewHint;
+
+  /// No description provided for @widgetAppearance.
+  ///
+  /// In en, this message translates to:
+  /// **'Widget colours'**
+  String get widgetAppearance;
+
+  /// No description provided for @widgetDefaultStyle.
+  ///
+  /// In en, this message translates to:
+  /// **'Original widget colours'**
+  String get widgetDefaultStyle;
+
+  /// No description provided for @widgetStyleSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save the widget colour. Try again.'**
+  String get widgetStyleSaveFailed;
 
   /// No description provided for @widgetSizeSmall.
   ///
   /// In en, this message translates to:
-  /// **'Suggested Android size: two columns by one row.'**
+  /// **'Minimum Android size: two columns by one row.'**
   String get widgetSizeSmall;
-
-  /// No description provided for @widgetSizeFlexible.
-  ///
-  /// In en, this message translates to:
-  /// **'On Android: two columns and one or two rows, depending on the home screen.'**
-  String get widgetSizeFlexible;
 
   /// No description provided for @widgetSizeTall.
   ///
   /// In en, this message translates to:
-  /// **'Suggested Android size: two columns by two rows.'**
+  /// **'Minimum Android size: two columns by two rows.'**
   String get widgetSizeTall;
 
   /// No description provided for @widgetSizeWide.
   ///
   /// In en, this message translates to:
-  /// **'Suggested Android size: three columns by two rows.'**
+  /// **'Minimum Android size: three columns by two rows.'**
   String get widgetSizeWide;
 
   /// No description provided for @widgetIosTasbihHint.
@@ -2338,7 +2350,7 @@ abstract class AppLocalizations {
   /// No description provided for @widgetPreviewIosHint.
   ///
   /// In en, this message translates to:
-  /// **'These Android previews are illustrative; widgets may look different on iPhone.'**
+  /// **'Previews show the original Android designs. On iPhone, widgets adapt to your Home Screen appearance.'**
   String get widgetPreviewIosHint;
 
   /// No description provided for @copyText.

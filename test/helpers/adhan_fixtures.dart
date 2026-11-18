@@ -26,7 +26,7 @@ const AdhanVoice kMadinahVoice = AdhanVoice(
   id: 'madinah',
   titles: {'ar': 'أذان المسجد النبوي', 'en': 'Prophet\'s Mosque'},
   places: {'ar': 'المدينة المنورة', 'en': 'Madinah'},
-  bytes: 3000000,
+  bytes: 8,
   sha256: kVoiceSha256,
   url: 'https://example.test/madinah.ogg',
   extension: 'ogg',

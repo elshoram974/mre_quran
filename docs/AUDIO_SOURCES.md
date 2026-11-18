@@ -44,15 +44,17 @@ repository (branch `global`); every new media file goes there; see its `README.m
 
 | id | Kind | Source | File SHA-256 | Bytes |
 |---|---|---|---|---|
-| `default` (bundled, `adhan_default.m4a`) | Adhan | Nasser Al-Qatami, [abodehq/Athan-MP3](https://github.com/abodehq/Athan-MP3/tree/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds); original `b30f4e2c…6b92fbe` | `3e5c8af7…1364273` | 1,138,523 |
+| `default` (bundled, `adhan_default.m4a`) | Adhan | Nasser Al-Qatami, [abodehq/Athan-MP3](https://github.com/abodehq/Athan-MP3/tree/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds); original `b30f4e2c…6b92fbe` | `d275029f…74cad298` | 1,080,038 |
 | `default_fajr` (bundled, `adhan_fajr.m4a`) | Fajr | Mishary Rashid Alafasy, Maqam Hijaz, [archive.org](https://archive.org/details/adhan-call-to-prayer-mishary-rashid-alafasy-fajr-maqam-hijaz-hd-320-kbps-1) | `12dc0334…50ffea2` | 1,818,143 |
 | dua (bundled, `dua_after_adhan_mishary.m4a`) | Dua | The same Mishary recording as `mishary_alafasy`, from 3:55 | `9fada8bd…f89647f4` | 143,511 |
 | dua (bundled, `dua_after_adhan_shaarawy.m4a`) | Dua | Sheikh Al-Shaarawy, the whole first file of [his duas on archive.org](https://archive.org/details/AD3YA---SHEKH---METOLLYAL---SHA3RAWY---MP3---Qass--nabwy--MP3) (68 s) | `d03e57bf…e268bc2` | 562,360 |
 | `egypt_harak` | Adhan | Abdulnasser Harak, Egypt, [archive.org](https://archive.org/details/adhan-from-egypt-abdulnasser-harak) | `8183c49c…c14590b` (2,616,292 B, cleaned); original `38a60f60…0d4c648` | 4,323,885 |
 | `mishary_alafasy` | Adhan | Mishary Rashid Alafasy, [archive.org](https://archive.org/details/VeryBeautifulAdhaanByMisharyAlAfasy), up to 3:51 | `fbacac1c…c889ca6` (2,828,271 B, cleaned); original `abba1e6a…b086a627` | 4,124,871 |
 | `makkah_ali_mullah_fajr` | Fajr | Ali Mullah, the Grand Mosque, 6 Sep 2013, [archive.org](https://archive.org/details/MakkahFajrAdhan6913SheikhAliMullah) | `644c3b8a…817c25d` (2,936,610 B, cleaned); original `da68a481…b67a9ec` | 2,911,537 |
-| `mansoor_zahrani_fajr` | Fajr | Mansoor Az-Zahrani, [abodehq/Athan-MP3](https://github.com/abodehq/Athan-MP3/tree/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds) | `8c231212…ade6506` (2,334,044 B, cleaned); original `b4d596a8…f2a14f2` | 1,532,448 |
-| `malek_chebae_fajr` | Fajr | Malek Chebae, [abodehq/Athan-MP3](https://github.com/abodehq/Athan-MP3/tree/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds) | `8df72cb6…d7ca603` (3,047,630 B, cleaned); original `89580ee0…da318c6` | 2,008,922 |
+| `mansoor_zahrani_fajr` | Fajr | Mansoor Az-Zahrani, [abodehq/Athan-MP3](https://github.com/abodehq/Athan-MP3/tree/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds) | `b9cafb1b…848f764f` (2,245,065 B, cleaned); original `b4d596a8…f2a14f2` | 1,532,448 |
+| `malek_chebae_fajr` | Fajr | Malek Chebae, [abodehq/Athan-MP3](https://github.com/abodehq/Athan-MP3/tree/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds) | `4e62f7e2…711c7b80` (2,960,608 B, cleaned); original `89580ee0…da318c6` | 2,008,922 |
+
+The TVQuran.com spoken credit follows the closing shahada in the Al-Qatami, Az-Zahrani and Malek recordings. Their source cuts end in the intervening silence at 131.85, 183.55 and 243.00 seconds respectively. TVQuran.com remains in each in-app recording credit. Cropped voices play only their edited file, including Mishary’s regular adhan whose source continues into a separate dua.
 
 The source files' own SHA-256 are in `tool/audio/adhan_sources.json`.
 

@@ -17,6 +17,7 @@ import 'core/notifications/reminder_scheduler.dart';
 import 'firebase_options.dart';
 import 'features/settings/application/settings_provider.dart';
 import 'features/settings/data/settings_repository.dart';
+import 'features/settings/domain/app_settings.dart';
 import 'features/startup/application/startup_providers.dart';
 import 'features/startup/data/last_tab_repository.dart';
 import 'core/notifications/reminder_scheduler_provider.dart';
@@ -29,18 +30,31 @@ Future<void> main() async {
   final preferences = SharedPreferencesAsync();
   // Independent start-up work runs in parallel so the first frame waits only
   // for the slowest item, not the sum of all of them.
-  final (_, settings, lastTab, _, reminderScheduler) = await (
-    Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform),
-    LocalSettingsRepository(preferences).load(),
-    LocalLastTabRepository(preferences).load(),
-    LiquidGlassWidgets.initialize(),
+  // Shader warm-up has no bearing on whether the destination can open.
+  unawaited(_optionalStartup('glass', LiquidGlassWidgets.initialize()));
+  final (firebase, storedSettings, lastTab, reminderScheduler) = await (
+    _optionalStartup(
+      'Firebase',
+      Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform),
+    ),
+    _optionalStartup('settings', LocalSettingsRepository(preferences).load()),
+    _optionalStartup('last tab', LocalLastTabRepository(preferences).load()),
     LocalReminderScheduler.create(),
   ).wait;
-  // Crashlytics exists only after Firebase is initialised above.
+  final settings = storedSettings ?? const AppSettings();
   Haptics.enabled = settings.hapticsEnabled;
   unawaited(Haptics.syncWidgetSetting(settings.hapticsEnabled));
-  final crashReporter = FirebaseCrashReporter();
-  await crashReporter.setCollectionEnabled(settings.crashReportsEnabled);
+  final CrashReporter crashReporter = firebase == null
+      ? const NoopCrashReporter()
+      : FirebaseCrashReporter();
+  if (storedSettings != null) {
+    unawaited(
+      _optionalStartup(
+        'crash collection',
+        crashReporter.setCollectionEnabled(settings.crashReportsEnabled),
+      ),
+    );
+  }
   FlutterError.onError = (details) =>
       AppLogger.flutterError(crashReporter, details);
   PlatformDispatcher.instance.onError = (error, stackTrace) {
@@ -66,10 +80,20 @@ Future<void> main() async {
           crashReporterProvider.overrideWithValue(crashReporter),
           reminderSchedulerProvider.overrideWithValue(reminderScheduler),
           initialLocationProvider.overrideWithValue(initialLocation),
-          initialSettingsProvider.overrideWithValue((settings: settings)),
+          initialSettingsProvider.overrideWithValue((settings: storedSettings)),
         ],
         child: const QuranApp(),
       ),
     ),
   );
+}
+
+/// An unavailable platform service must not strand the native launch window.
+Future<T?> _optionalStartup<T>(String service, Future<T> task) async {
+  try {
+    return await task.timeout(const Duration(seconds: 2));
+  } on Object catch (error) {
+    AppLogger.debug('Startup $service unavailable: ${error.runtimeType}');
+    return null;
+  }
 }

@@ -66,8 +66,8 @@ class OpensOnReader extends Notifier<bool> {
 /// opens on the Mushaf, its page is on screen. The text and the page load at
 /// the same time, both behind the splash.
 final startupReadyProvider = Provider<bool>((ref) {
+  if (!ref.watch(opensOnReaderProvider)) return true;
   final text = ref.watch(quranTextProvider);
   final read = text.hasValue || text.hasError;
-  if (!ref.watch(opensOnReaderProvider)) return read;
   return read && ref.watch(readerPaintedProvider);
 });

@@ -206,23 +206,25 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get widgetsPreviewHint =>
-      'هذه معاينات توضيحية؛ قد يختلف الشكل والمقاس حسب الجهاز والشاشة الرئيسية.';
+      'المعاينات بالألوان الأصلية. كبّر الويدجت على الشاشة الرئيسية لعرض تفاصيل أكثر.';
 
   @override
-  String get widgetSizeSmall =>
-      'المقاس المقترح على أندرويد: خليتان عرضًا وصف واحد.';
+  String get widgetAppearance => 'ألوان الويدجت';
 
   @override
-  String get widgetSizeFlexible =>
-      'على أندرويد: خليتان عرضًا، وصف أو صفان حسب الشاشة الرئيسية.';
+  String get widgetDefaultStyle => 'ألوان كل ويدجت الأصلية';
 
   @override
-  String get widgetSizeTall =>
-      'المقاس المقترح على أندرويد: خليتان عرضًا وصفان.';
+  String get widgetStyleSaveFailed => 'تعذّر حفظ لون الويدجت. حاول مرة أخرى.';
 
   @override
-  String get widgetSizeWide =>
-      'المقاس المقترح على أندرويد: ثلاث خلايا عرضًا وصفان.';
+  String get widgetSizeSmall => 'أصغر مقاس على أندرويد: خليتان عرضًا وصف واحد.';
+
+  @override
+  String get widgetSizeTall => 'أصغر مقاس على أندرويد: خليتان عرضًا وصفان.';
+
+  @override
+  String get widgetSizeWide => 'أصغر مقاس على أندرويد: ثلاث خلايا عرضًا وصفان.';
 
   @override
   String get widgetIosTasbihHint => 'العد من الويدجت يتطلب iOS 17 أو أحدث.';
@@ -1313,7 +1315,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get widgetPreviewIosHint =>
-      'هذه معاينات أندرويد للتوضيح؛ قد يختلف شكل الويدجت على iPhone.';
+      'تعرض الصور تصميم أندرويد بالألوان الأصلية. على iPhone يتبع المظهر تخصيص الشاشة الرئيسية.';
 
   @override
   String get copyText => 'نسخ';

@@ -4,6 +4,7 @@ import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.Context
 import android.os.Build
+import android.widget.RemoteViews
 
 /**
  * The app's home-screen widgets, by the names the app gives them
@@ -18,6 +19,29 @@ object HomeWidgets {
         "tasbih" to TasbihWidgetProvider::class.java,
         "dhikr" to AdhkarWidgetProvider::class.java,
     )
+
+    fun appearance(context: Context): String =
+        context.getSharedPreferences("home_widgets", Context.MODE_PRIVATE)
+            .getString("appearance", "automatic") ?: "automatic"
+
+    fun setAppearance(context: Context, style: String?): Boolean {
+        if (style !in setOf("automatic", "navy", "green")) return false
+        context.getSharedPreferences("home_widgets", Context.MODE_PRIVATE).edit()
+            .putString("appearance", style).apply()
+        PrayerWidgetRenderer.updateAll(context)
+        AdhkarWidgetRenderer.updateAll(context)
+        TasbihWidgetProvider.refresh(context)
+        return true
+    }
+
+    internal fun applyBackground(context: Context, views: RemoteViews, root: Int) {
+        val background = when (appearance(context)) {
+            "navy" -> R.drawable.widget_card_bg
+            "green" -> R.drawable.widget_bg
+            else -> if (root == R.id.card_root) R.drawable.widget_card_bg else R.drawable.widget_bg
+        }
+        views.setInt(root, "setBackgroundResource", background)
+    }
 
     /** Android 8 and later, on a launcher that takes the request. */
     fun canPin(context: Context): Boolean =

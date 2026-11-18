@@ -76,6 +76,23 @@ void main() {
     expect(find.textContaining('أكّد الإضافة'), findsOneWidget);
   });
 
+  for (final (locale, field, colour) in [
+    ('en', 'Widget colours', 'Navy'),
+    ('ar', 'ألوان الويدجت', 'كحلي'),
+  ]) {
+    testWidgets('changes the launcher widget colour in $locale', (
+      tester,
+    ) async {
+      final widgets = await _pump(tester, locale: locale);
+      await tester.tap(find.text(field));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(colour));
+      await tester.pumpAndSettle();
+      expect(widgets.style, WidgetAppearance.navy);
+      expect(find.text(colour), findsOneWidget);
+    });
+  }
+
   testWidgets('shows localized preview assets', (tester) async {
     await _pump(tester);
     expect(

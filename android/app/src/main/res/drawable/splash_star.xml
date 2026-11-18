@@ -1,44 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The launch screen's icon: the app's eight-pointed star in gold, turning
-     an eighth of a circle again and again (after which it looks as it began,
-     so the turn never jumps). Android 12 and later play it; earlier versions
-     show it still. A splash icon without a background is 288 units with its
-     drawing inside the middle 192; the star's radius is 80. -->
+<!-- The contours draw in sequence. One short hop lands on the complete emblem.
+     The static vector is also the resting frame on older launchers. -->
 <animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:aapt="http://schemas.android.com/aapt">
     <aapt:attr name="android:drawable">
-        <vector
-            android:width="288dp"
-            android:height="288dp"
-            android:viewportWidth="288"
-            android:viewportHeight="288">
-            <group
-                android:name="star"
-                android:pivotX="144"
-                android:pivotY="144">
-                <path
-                    android:fillColor="#248A6416"
-                    android:pathData="M144,64 L224,144 L144,224 L64,144 Z M200.57,87.43 L200.57,200.57 L87.43,200.57 L87.43,87.43 Z" />
-                <path
-                    android:pathData="M144,64 L224,144 L144,224 L64,144 Z M200.57,87.43 L200.57,200.57 L87.43,200.57 L87.43,87.43 Z"
-                    android:strokeColor="#8A6416"
-                    android:strokeLineJoin="round"
-                    android:strokeWidth="6.5" />
+        <vector android:width="288dp" android:height="288dp"
+            android:viewportWidth="288" android:viewportHeight="288">
+            <group android:name="emblem" android:pivotX="144" android:pivotY="224">
+                <path android:name="diamond" android:fillColor="#248A6416"
+                    android:pathData="M144,64 L224,144 L144,224 L64,144 Z"
+                    android:strokeColor="#8A6416" android:strokeLineJoin="round" android:strokeWidth="6.5" />
+                <path android:name="square" android:fillColor="#248A6416"
+                    android:pathData="M200.57,87.43 L200.57,200.57 L87.43,200.57 L87.43,87.43 Z"
+                    android:strokeColor="#8A6416" android:strokeLineJoin="round" android:strokeWidth="6.5" />
+                <path android:fillColor="#8A6416"
+                    android:pathData="M144,131.2 A12.8,12.8 0 1,1 143.99,131.2 Z" />
             </group>
-            <path
-                android:fillColor="#8A6416"
-                android:pathData="M144,131.2 A12.8,12.8 0 1,1 143.99,131.2 Z" />
         </vector>
     </aapt:attr>
-    <target android:name="star">
+    <target android:name="diamond">
         <aapt:attr name="android:animation">
-            <objectAnimator
-                android:duration="1600"
-                android:interpolator="@android:anim/linear_interpolator"
-                android:propertyName="rotation"
-                android:repeatCount="infinite"
-                android:valueFrom="0"
-                android:valueTo="45" />
+            <objectAnimator android:propertyName="trimPathEnd" android:duration="380"
+                android:valueFrom="0" android:valueTo="1" android:valueType="floatType" />
+        </aapt:attr>
+    </target>
+    <target android:name="square">
+        <aapt:attr name="android:animation">
+            <objectAnimator android:propertyName="trimPathEnd" android:duration="520"
+                android:valueFrom="0" android:valueTo="1" android:valueType="floatType" />
+        </aapt:attr>
+    </target>
+    <target android:name="emblem">
+        <aapt:attr name="android:animation">
+            <set android:ordering="sequentially">
+                <objectAnimator android:propertyName="translateY" android:duration="260"
+                    android:interpolator="@android:anim/decelerate_interpolator"
+                    android:valueFrom="0" android:valueTo="-15" android:valueType="floatType" />
+                <objectAnimator android:propertyName="translateY" android:duration="230"
+                    android:interpolator="@android:anim/accelerate_interpolator"
+                    android:valueFrom="-15" android:valueTo="0" android:valueType="floatType" />
+                <objectAnimator android:propertyName="scaleY" android:duration="90"
+                    android:valueFrom="1" android:valueTo="0.91" android:valueType="floatType" />
+                <objectAnimator android:propertyName="scaleY" android:duration="140"
+                    android:valueFrom="0.91" android:valueTo="1" android:valueType="floatType" />
+            </set>
         </aapt:attr>
     </target>
 </animated-vector>

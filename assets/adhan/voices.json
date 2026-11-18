@@ -12,14 +12,14 @@
         "ar": "تسجيل استوديو",
         "en": "Studio recording"
       },
-      "bytes": 1138523,
-      "sha256": "3e5c8af77eb17287f4451343f9cbadd3aa6de225cae046c06ad57260f1364273",
+      "bytes": 1080038,
+      "sha256": "d275029f10ebd9e1cbbdbdba6aa1d5f07f2915b4a52d4aae36d9d7bc74cad298",
       "source": "https://github.com/abodehq/Athan-MP3/tree/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds",
       "license": {
         "name": "Permission pending",
         "url": "https://github.com/abodehq/Athan-MP3/tree/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds"
       },
-      "credit": "Nasser Al-Qatami (recitation)",
+      "credit": "Nasser Al-Qatami (recitation) · TVQuran.com",
       "builtIn": true
     },
     {
@@ -91,13 +91,7 @@
       },
       "credit": "Mishary Rashid Alafasy (recitation)",
       "url": "https://elshoram974.github.io/mre_quran_global/adhan/mishary_alafasy.m4a",
-      "extension": "m4a",
-      "fallback": {
-        "url": "https://archive.org/download/VeryBeautifulAdhaanByMisharyAlAfasy/Very%20Beautiful%20Adhaan%20by%20Mishary%20Al-Afasy.mp3",
-        "bytes": 4124871,
-        "sha256": "abba1e6a792551f73f0e02748caf03ca1a7d1811bb595820eb724878b086a627",
-        "extension": "mp3"
-      }
+      "extension": "m4a"
     },
     {
       "id": "makkah_ali_mullah_fajr",
@@ -138,22 +132,16 @@
         "ar": "تسجيل استوديو",
         "en": "Studio recording"
       },
-      "bytes": 2334044,
-      "sha256": "8c231212c2496d66624c0fcdda9eda66e6c3c103b80e886e371e7db3bade6506",
+      "bytes": 2245065,
+      "sha256": "b9cafb1b9656339d488cdcec2e57097f5ef839acfcd04c7998269cf5848f764f",
       "source": "https://github.com/abodehq/Athan-MP3/tree/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds",
       "license": {
         "name": "Permission pending",
         "url": "https://github.com/abodehq/Athan-MP3/tree/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds"
       },
-      "credit": "Mansoor Az-Zahrani (recitation)",
+      "credit": "Mansoor Az-Zahrani (recitation) · TVQuran.com",
       "url": "https://elshoram974.github.io/mre_quran_global/adhan/mansoor_zahrani_fajr.m4a",
-      "extension": "m4a",
-      "fallback": {
-        "url": "https://raw.githubusercontent.com/abodehq/Athan-MP3/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds/Athan%20Mansoor%20Az-Zahrani.mp3",
-        "bytes": 1532448,
-        "sha256": "b4d596a8d60f3120ed6a3d0709dd63cd589b35d4bcc9a792bfc74da80f2a14f2",
-        "extension": "mp3"
-      }
+      "extension": "m4a"
     },
     {
       "id": "malek_chebae_fajr",
@@ -166,22 +154,16 @@
         "ar": "تسجيل استوديو",
         "en": "Studio recording"
       },
-      "bytes": 3047630,
-      "sha256": "8df72cb6916f56f78a89a6a6f5129f977017185fffdaa283590422066d7ca603",
+      "bytes": 2960608,
+      "sha256": "4e62f7e262829971b0e01b68b298adbd644d92b212603851b463e212711c7b80",
       "source": "https://github.com/abodehq/Athan-MP3/tree/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds",
       "license": {
         "name": "Permission pending",
         "url": "https://github.com/abodehq/Athan-MP3/tree/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds"
       },
-      "credit": "Malek Chebae (recitation)",
+      "credit": "Malek Chebae (recitation) · TVQuran.com",
       "url": "https://elshoram974.github.io/mre_quran_global/adhan/malek_chebae_fajr.m4a",
-      "extension": "m4a",
-      "fallback": {
-        "url": "https://raw.githubusercontent.com/abodehq/Athan-MP3/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds/Athan%20Al-fajer%20-%20Malek%20chebae.mp3",
-        "bytes": 2008922,
-        "sha256": "89580ee0304ba7812822ba3b2de0cf4a0534bb4a1ee9220c5c98f9075da318c6",
-        "extension": "mp3"
-      }
+      "extension": "m4a"
     }
   ]
 }

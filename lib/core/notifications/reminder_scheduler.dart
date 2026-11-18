@@ -95,27 +95,57 @@ class LocalReminderScheduler implements ReminderScheduler {
   /// Starts the plugin. Asks for no permission.
   static Future<LocalReminderScheduler> create() async {
     final plugin = FlutterLocalNotificationsPlugin();
-    final taps = StreamController<String>.broadcast();
+    String? pendingTap;
+    late final StreamController<String> taps;
+    taps = StreamController<String>.broadcast(
+      onListen: () {
+        final payload = pendingTap;
+        pendingTap = null;
+        if (payload != null) taps.add(payload);
+      },
+    );
+    void deliver(String payload) {
+      if (taps.hasListener) {
+        taps.add(payload);
+      } else {
+        pendingTap = payload;
+      }
+    }
+
+    var opened = false;
     String? launchPayload;
     try {
-      await plugin.initialize(
-        settings: const InitializationSettings(
-          android: AndroidInitializationSettings('@mipmap/ic_launcher'),
-          iOS: DarwinInitializationSettings(
-            requestAlertPermission: false,
-            requestBadgePermission: false,
-            requestSoundPermission: false,
+      Future<String?> initialize() async {
+        await plugin.initialize(
+          settings: const InitializationSettings(
+            android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+            iOS: DarwinInitializationSettings(
+              requestAlertPermission: false,
+              requestBadgePermission: false,
+              requestSoundPermission: false,
+            ),
           ),
-        ),
-        onDidReceiveNotificationResponse: (response) {
-          final payload = response.payload;
-          if (payload != null && payload.isNotEmpty) taps.add(payload);
+          onDidReceiveNotificationResponse: (response) {
+            final payload = response.payload;
+            if (payload != null && payload.isNotEmpty) deliver(payload);
+          },
+        );
+        final launch = await plugin.getNotificationAppLaunchDetails();
+        if (launch != null && launch.didNotificationLaunchApp) {
+          final payload = launch.notificationResponse?.payload;
+          if (opened && payload != null) deliver(payload);
+          return payload;
+        }
+        return null;
+      }
+
+      launchPayload = await initialize().timeout(
+        const Duration(seconds: 2),
+        onTimeout: () {
+          opened = true;
+          return null;
         },
       );
-      final launch = await plugin.getNotificationAppLaunchDetails();
-      if (launch != null && launch.didNotificationLaunchApp) {
-        launchPayload = launch.notificationResponse?.payload;
-      }
     } on Object catch (error) {
       AppLogger.debug('Notifications unavailable: ${error.runtimeType}');
     }

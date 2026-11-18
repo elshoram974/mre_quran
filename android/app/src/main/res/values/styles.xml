@@ -7,7 +7,7 @@
         <item name="windowSplashScreenBackground">@color/launch_paper</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/splash_star</item>
         <!-- Android 12 and later animate the native icon during launch. -->
-        <item name="windowSplashScreenAnimationDuration">4000</item>
+        <item name="windowSplashScreenAnimationDuration">720</item>
         <!-- Before Android 12 the launch window is this picture: the paper,
              the star and the maker's mark (Android 12 and later draw their own
              from the items above and values-v31). -->

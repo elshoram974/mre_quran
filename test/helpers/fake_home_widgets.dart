@@ -26,6 +26,15 @@ class FakeHomeWidgets implements HomeWidgetsPlatform {
     return true;
   }
 
+  WidgetAppearance style = WidgetAppearance.automatic;
+  @override
+  Future<WidgetAppearance> appearance() async => style;
+  @override
+  Future<bool> setAppearance(WidgetAppearance value) async {
+    style = value;
+    return true;
+  }
+
   @override
   Future<bool> placed() async => isPlaced;
 }

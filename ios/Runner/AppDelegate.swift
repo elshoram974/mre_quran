@@ -47,6 +47,18 @@ import WidgetKit
     }
     // iOS lets no app add a widget (the widgets page says how); it can only
     // tell whether one of the app's widgets is on the home screen.
+    let hapticsChannel = FlutterMethodChannel(
+      name: "net.mrecode.mre_quran/widget_haptics",
+      binaryMessenger: engineBridge.applicationRegistrar.messenger()
+    )
+    hapticsChannel.setMethodCallHandler { call, callback in
+      guard call.method == "setEnabled", let enabled = call.arguments as? Bool else {
+        callback(FlutterMethodNotImplemented)
+        return
+      }
+      UserDefaults(suiteName: "group.net.mrecode.mreQuran")?.set(enabled, forKey: "tasbihHaptics")
+      callback(nil)
+    }
     let homeWidgetsChannel = FlutterMethodChannel(
       name: "net.mrecode.mre_quran/home_widgets",
       binaryMessenger: engineBridge.applicationRegistrar.messenger()
@@ -55,6 +67,17 @@ import WidgetKit
       switch call.method {
       case "canPin", "pin":
         callback(false)
+      case "appearance":
+        callback(UserDefaults(suiteName: "group.net.mrecode.mreQuran")?.string(forKey: "widgetAppearance") ?? "automatic")
+      case "setAppearance":
+        guard let style = call.arguments as? String, ["automatic", "navy", "green"].contains(style),
+          let defaults = UserDefaults(suiteName: "group.net.mrecode.mreQuran") else {
+          callback(false)
+          return
+        }
+        defaults.set(style, forKey: "widgetAppearance")
+        WidgetCenter.shared.reloadAllTimelines()
+        callback(true)
       case "placed":
         WidgetCenter.shared.getCurrentConfigurations { result in
           let placed = (try? result.get())?.isEmpty == false

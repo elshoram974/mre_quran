@@ -86,14 +86,27 @@ private struct Provider: TimelineProvider {
     completion(Timeline(entries: [entry], policy: .after(refresh)))
   }
 }
-private struct Empty: View { var body: some View { Text(Payload.read()?.labels["empty"] ?? NSLocalizedString("Open Mushafi to set your location", comment: "")).font(.caption).frame(maxWidth:.infinity,maxHeight:.infinity,alignment:.leading).background(Color(uiColor:.secondarySystemBackground)) } }
+private struct Empty: View { var body: some View { Text(Payload.read()?.labels["empty"] ?? NSLocalizedString("Open Mushafi to set your location", comment: "")).font(.caption).frame(maxWidth:.infinity,maxHeight:.infinity,alignment:.leading) } }
 private struct NextView: View {
+  @Environment(\.widgetFamily) private var family
   let entry: Entry
   var body: some View {
     let data = entry.payload ?? (entry.isPreview ? Payload.sample(entry.date) : nil)
     Group {
       if let data, let next = data.next(entry.date), let day = data.day(entry.date) {
-        VStack(alignment:.leading,spacing:3) { Text(data.labels["next"] ?? "Next prayer").font(.caption).foregroundStyle(.secondary); Text(next.name).font(.headline); Text(next.time).font(.title3.weight(.semibold)); TimeLeft(data: data, at: next.at, now: entry.date).font(.caption).foregroundStyle(.secondary); Text(day.date).font(.caption2).lineLimit(1); Text(day.hijri).font(.caption2).foregroundStyle(.secondary).lineLimit(1) }.frame(maxWidth:.infinity,maxHeight:.infinity,alignment:.leading).background(Color(uiColor:.secondarySystemBackground))
+        VStack(alignment: .leading, spacing: 3) {
+          if family != .systemSmall {
+            Text(data.labels["next"] ?? "").font(.caption).foregroundStyle(.secondary)
+          }
+          Text(next.name).font(.headline)
+          Text(next.time).font(.title3.weight(.semibold))
+          TimeLeft(data: data, at: next.at, now: entry.date).font(.caption).foregroundStyle(.secondary)
+          Text(day.date).font(.caption2).lineLimit(1)
+          Text(day.hijri).font(.caption2).foregroundStyle(.secondary).lineLimit(1)
+          if family != .systemSmall, let sunrise = day.rows.first(where: { $0.id == "sunrise" }) {
+            HStack { Text(sunrise.name); Text(sunrise.time).monospacedDigit() }.font(.caption)
+          }
+        }.frame(maxWidth:.infinity,maxHeight:.infinity,alignment:.leading)
       } else { Empty() }
     }.environment(\.layoutDirection, (data?.rtl ?? (systemIsArabic)) ? .rightToLeft : .leftToRight)
       .widgetURL(URL(string:"mrequran://mre-quran/prayer-times"))
@@ -112,6 +125,33 @@ private let cardNavy = Color(red: 0x16 / 255, green: 0x1B / 255, blue: 0x26 / 25
 private let cardNavyEnd = Color(red: 0x23 / 255, green: 0x2B / 255, blue: 0x3D / 255)
 private let cardGold = Color(red: 0xE3 / 255, green: 0xC2 / 255, blue: 0x7A / 255)
 private let cardCream = Color(red: 0xF4 / 255, green: 0xEB / 255, blue: 0xD8 / 255)
+/// WidgetKit owns the removable background, including Home Screen clear and tinted modes.
+private struct WidgetSurface: ViewModifier {
+  var card: Bool = false
+  @Environment(\.colorScheme) private var scheme
+  private let style = UserDefaults(suiteName: appGroup)?.string(forKey: "widgetAppearance") ?? "automatic"
+
+  @ViewBuilder private var backdrop: some View {
+    if style == "green" {
+      LinearGradient(colors: [Color(red: 0.09, green: 0.22, blue: 0.18), Color(red: 0.17, green: 0.35, blue: 0.29)],
+        startPoint: .topLeading, endPoint: .bottomTrailing)
+    } else if style == "navy" || card {
+      LinearGradient(colors: [cardNavy, cardNavyEnd], startPoint: .topLeading, endPoint: .bottomTrailing)
+    } else {
+      Color(uiColor: .secondarySystemBackground)
+    }
+  }
+
+  @ViewBuilder func body(content: Content) -> some View {
+    let ink = content.environment(\.colorScheme, style == "automatic" && !card ? scheme : .dark)
+    if #available(iOS 17.0, *) {
+      ink.containerBackground(for: .widget) { backdrop }
+    } else {
+      ink.padding(8).background(backdrop)
+    }
+  }
+}
+
 /// The prayer card: the coming prayer large, its time and the time left, and
 /// the day's five prayers along the bottom with the coming one framed in
 /// gold; the app icon's navy and gold.
@@ -157,18 +197,31 @@ private struct CardView: View {
     }
     .padding(10)
     .frame(maxWidth: .infinity, maxHeight: .infinity)
-    .background(LinearGradient(colors: [cardNavy, cardNavyEnd], startPoint: .topLeading, endPoint: .bottomTrailing))
     .environment(\.layoutDirection, (data?.rtl ?? (systemIsArabic)) ? .rightToLeft : .leftToRight)
     .widgetURL(URL(string: "mrequran://mre-quran/prayer-times"))
   }
 }
 private struct ScheduleView: View {
+  @Environment(\.widgetFamily) private var family
   let entry: Entry
   var body: some View {
     let data = entry.payload ?? (entry.isPreview ? Payload.sample(entry.date) : nil)
     Group {
       if let data, let day = data.day(entry.date) {
-        VStack(alignment:.leading,spacing:2) { Text(day.date).font(.caption).foregroundStyle(.secondary); Text(day.hijri).font(.caption2).foregroundStyle(.secondary); ForEach(day.rows) { row in HStack { Text(row.name); Spacer(); Text(row.time).monospacedDigit() }.font(.caption) } }.frame(maxWidth:.infinity,maxHeight:.infinity,alignment:.leading).background(Color(uiColor:.secondarySystemBackground))
+        VStack(alignment: .leading, spacing: family == .systemLarge ? 8 : 1) {
+          Text(day.date).font(.caption).lineLimit(1).minimumScaleFactor(0.7)
+          Text(day.hijri).font(.caption2).foregroundStyle(.secondary).lineLimit(1).minimumScaleFactor(0.7)
+          ForEach(day.rows) { row in
+            HStack {
+              Text(row.name)
+              Spacer(minLength: 2)
+              Text(row.time).monospacedDigit()
+            }.font(family == .systemLarge ? .body : .caption2).lineLimit(1).minimumScaleFactor(0.7)
+          }
+          if family != .systemSmall, let next = data.next(entry.date) {
+            TimeLeft(data: data, at: next.at, now: entry.date).font(.caption).foregroundStyle(.secondary)
+          }
+        }.frame(maxWidth:.infinity,maxHeight:.infinity,alignment:.leading)
       } else { Empty() }
     }.environment(\.layoutDirection, (data?.rtl ?? (systemIsArabic)) ? .rightToLeft : .leftToRight)
       .widgetURL(URL(string:"mrequran://mre-quran/prayer-times"))
@@ -181,17 +234,18 @@ private struct AdhkarProvider: TimelineProvider {
   func getTimeline(in context: Context, completion: @escaping (Timeline<AdhkarEntry>) -> Void) { completion(Timeline(entries: [AdhkarEntry(date: .now, payload: .read())], policy: .atEnd)) }
 }
 private struct SuggestedDhikrView: View {
+  @Environment(\.widgetFamily) private var family
   let entry: AdhkarEntry
   var body: some View {
     Group { if let data = entry.payload {
       VStack(alignment:.leading,spacing:6) {
         Text(data.label).font(.caption).foregroundStyle(.secondary)
-        Text(data.title).font(.headline).lineLimit(2)
+        Text(data.title).font(.headline).lineLimit(family == .systemSmall ? 2 : 3)
         ProgressView(value: Double(data.done), total: Double(max(data.total, 1)))
-        Text(data.progressLabel ?? "\(data.done) / \(data.total)").font(.caption2).foregroundStyle(.secondary)
-      }.frame(maxWidth:.infinity,maxHeight:.infinity,alignment:.leading).background(Color(uiColor:.secondarySystemBackground))
+        if family != .systemSmall { Text(data.progressLabel ?? "\(data.done) / \(data.total)").font(.caption2).foregroundStyle(.secondary) }
+      }.frame(maxWidth:.infinity,maxHeight:.infinity,alignment:.leading)
     } else {
-      Text("Open Mushafi to load your adhkar.").font(.caption).frame(maxWidth:.infinity,maxHeight:.infinity,alignment:.leading).background(Color(uiColor:.secondarySystemBackground))
+      Text("Open Mushafi to load your adhkar.").font(.caption).frame(maxWidth:.infinity,maxHeight:.infinity,alignment:.leading)
     } }.environment(\.layoutDirection, (entry.payload?.rtl ?? (systemIsArabic)) ? .rightToLeft : .leftToRight)
       .widgetURL(URL(string: entry.payload.map { "mrequran://mre-quran/adhkar/\($0.payload.replacingOccurrences(of: "adhkar:", with: ""))" } ?? "mrequran://mre-quran/duas"))
   }
@@ -203,6 +257,9 @@ struct TasbihCountIntent: AppIntent {
   func perform() async throws -> some IntentResult {
     let defaults = UserDefaults(suiteName: appGroup)
     defaults?.set((defaults?.integer(forKey: tasbihKey) ?? 0) + 1, forKey: tasbihKey)
+    if defaults?.object(forKey: "tasbihHaptics") as? Bool ?? true {
+      await MainActor.run { UIImpactFeedbackGenerator(style: .light).impactOccurred() }
+    }
     return .result()
   }
 }
@@ -243,9 +300,9 @@ private struct InteractiveTasbihView: View {
     let count = displayDigits(entry.count, arabic: AdhkarPayload.read()?.arabicDigits ?? systemIsArabic)
     VStack(spacing: 6) {
       Text("Tasbih").font(.caption).foregroundStyle(.secondary)
-      Button(intent: TasbihCountIntent()) { Text(verbatim: count).font(.system(size: 44, weight: .bold)).minimumScaleFactor(0.5).frame(maxWidth: .infinity, maxHeight: .infinity) }.buttonStyle(.plain)
+      Button(intent: TasbihCountIntent()) { Text(verbatim: count).widgetAccentable().font(.system(size: 44, weight: .bold)).minimumScaleFactor(0.5).frame(maxWidth: .infinity, maxHeight: .infinity) }.buttonStyle(.plain)
       Button(intent: TasbihResetIntent()) { Text("Reset").font(.caption2) }.buttonStyle(.bordered)
-    }.frame(maxWidth: .infinity, maxHeight: .infinity).background(Color(uiColor: .secondarySystemBackground))
+    }.frame(maxWidth: .infinity, maxHeight: .infinity)
   }
 }
 private struct LegacyTasbihView: View {
@@ -256,12 +313,12 @@ private struct LegacyTasbihView: View {
       Text("Tasbih").font(.caption).foregroundStyle(.secondary)
       Text(verbatim: count).font(.system(size: 44, weight: .bold))
       Text("Update iOS to use the tasbih").font(.caption2).foregroundStyle(.secondary)
-    }.frame(maxWidth: .infinity, maxHeight: .infinity).background(Color(uiColor: .secondarySystemBackground))
+    }.frame(maxWidth: .infinity, maxHeight: .infinity)
   }
 }
-struct TasbihWidget: Widget { let kind="TasbihWidget"; var body: some WidgetConfiguration { StaticConfiguration(kind:kind,provider:TasbihProvider()){TasbihView(entry:$0)}.configurationDisplayName("Tasbih").description("Count your tasbih from the home screen").supportedFamilies([.systemSmall,.systemMedium]) } }
-struct PrayerCardWidget: Widget { let kind="PrayerCardWidget"; var body: some WidgetConfiguration { StaticConfiguration(kind:kind,provider:Provider()){CardView(entry:$0)}.configurationDisplayName("Prayer card").description("The next prayer, countdown, prayers, sunrise and date").supportedFamilies([.systemMedium]) } }
-struct PrayerWidget: Widget { let kind="NextPrayerWidget"; var body: some WidgetConfiguration { StaticConfiguration(kind:kind,provider:Provider()){NextView(entry:$0)}.configurationDisplayName("Prayer times").description("The next prayer and countdown").supportedFamilies([.systemSmall,.systemMedium]) } }
-struct PrayerScheduleWidget: Widget { let kind="PrayerScheduleWidget"; var body: some WidgetConfiguration { StaticConfiguration(kind:kind,provider:Provider()){ScheduleView(entry:$0)}.configurationDisplayName("Today’s prayer times").description("Today’s prayers, sunrise and date").supportedFamilies([.systemMedium,.systemLarge]) } }
-struct SuggestedDhikrWidget: Widget { let kind="SuggestedDhikrWidget"; var body: some WidgetConfiguration { StaticConfiguration(kind:kind,provider:AdhkarProvider()){SuggestedDhikrView(entry:$0)}.configurationDisplayName("Suggested dhikr").description("A suggested dhikr and your saved progress").supportedFamilies([.systemSmall,.systemMedium]) } }
+struct TasbihWidget: Widget { let kind="TasbihWidget"; var body: some WidgetConfiguration { StaticConfiguration(kind:kind,provider:TasbihProvider()){TasbihView(entry:$0).modifier(WidgetSurface())}.configurationDisplayName("Tasbih").description("Count your tasbih from the home screen").supportedFamilies([.systemSmall,.systemMedium]) } }
+struct PrayerCardWidget: Widget { let kind="PrayerCardWidget"; var body: some WidgetConfiguration { StaticConfiguration(kind:kind,provider:Provider()){CardView(entry:$0).modifier(WidgetSurface(card: true))}.configurationDisplayName("Prayer card").description("The next prayer, countdown, prayers, sunrise and date").supportedFamilies([.systemMedium]) } }
+struct PrayerWidget: Widget { let kind="NextPrayerWidget"; var body: some WidgetConfiguration { StaticConfiguration(kind:kind,provider:Provider()){NextView(entry:$0).modifier(WidgetSurface())}.configurationDisplayName("Prayer times").description("The next prayer and countdown").supportedFamilies([.systemSmall,.systemMedium]) } }
+struct PrayerScheduleWidget: Widget { let kind="PrayerScheduleWidget"; var body: some WidgetConfiguration { StaticConfiguration(kind:kind,provider:Provider()){ScheduleView(entry:$0).modifier(WidgetSurface())}.configurationDisplayName("Today’s prayer times").description("Today’s prayers, sunrise and date").supportedFamilies([.systemSmall,.systemMedium,.systemLarge]) } }
+struct SuggestedDhikrWidget: Widget { let kind="SuggestedDhikrWidget"; var body: some WidgetConfiguration { StaticConfiguration(kind:kind,provider:AdhkarProvider()){SuggestedDhikrView(entry:$0).modifier(WidgetSurface())}.configurationDisplayName("Suggested dhikr").description("A suggested dhikr and your saved progress").supportedFamilies([.systemSmall,.systemMedium]) } }
 @main struct PrayerWidgetBundle: WidgetBundle { var body: some Widget { PrayerWidget(); PrayerCardWidget(); PrayerScheduleWidget(); SuggestedDhikrWidget(); TasbihWidget() } }
