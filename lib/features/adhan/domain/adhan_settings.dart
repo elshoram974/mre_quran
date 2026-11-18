@@ -7,7 +7,7 @@ enum AdhanDua {
   /// Sheikh Muhammad Metwalli Al-Shaarawy.
   shaarawy('dua_after_adhan_shaarawy'),
 
-  /// Sheikh Mishary Rashid Alafasy, the voice of the bundled adhan.
+  /// Sheikh Mishary Rashid Alafasy, the voice of the bundled Fajr adhan.
   mishary('dua_after_adhan_mishary');
 
   const AdhanDua(this.recording);

@@ -11,6 +11,10 @@
              Android 12 and 13 stop the turning star after this time, so it turns
              until the app opens. -->
         <item name="windowSplashScreenAnimationDuration">4000</item>
+        <!-- Before Android 12 the launch window is this picture: the paper,
+             the star and the maker's mark (Android 12 and later draw their own
+             from the items above and values-v31). -->
+        <item name="android:windowBackground">@drawable/launch_compat</item>
         <item name="postSplashScreenTheme">@style/NormalTheme</item>
     </style>
     <!-- Theme applied to the Android Window as soon as the process has started.

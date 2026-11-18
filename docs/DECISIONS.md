@@ -355,7 +355,15 @@
 ## D-042: The `global` branch
 
 - **Decision:** The files the app downloads (cleaned adhan recordings) and the privacy policy live in the
-  folder `mre_quran_global` beside the repository, pushed as the branch `global` of `elshoram974/mre_quran`.
-  Voices come from it through jsDelivr, and from each recording's original when that fails. The policy is
+  folder `mre_quran_global` beside the repository, pushed as the branch `global` of the repository
+  `elshoram974/mre_quran_global` and published with GitHub Pages at
+  `https://elshoram974.github.io/mre_quran_global/` (`AppConfig.mediaBase`). Every new media file goes there.
+  Voices come from it, and from each recording's original when that fails. The policy is
   published from it with GitHub Pages. Its `LINKS.md` lists every address the app downloads from.
-- **Splash:** "MRECode" under the star (Android 12+ branding image, iOS storyboard and StartupSplash).
+- **Splash:** "made by" over "MRECode" under the star, one picture (Marcellus and Cormorant Garamond
+  Italic, OFL, drawn by `tool/app_icon/render_splash_brand_test.dart`): Android 12+ branding image, the launch
+  window before Android 12 (`drawable/launch_compat.xml`), the iOS storyboard and StartupSplash.
+- **Default adhan:** Nasser Al-Qatami (bundled); Mishary Alafasy's adhan is a download. Mishary's Fajr adhan
+  stays the bundled Fajr default.
+- **App facts:** names, version, and every outside address (media, privacy policy, WhatsApp, email) are in
+  `lib/core/config/app_config.dart`.

@@ -1,9 +1,6 @@
 package net.mrecode.mre_quran
 
-import android.appwidget.AppWidgetManager
-import android.content.ComponentName
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -16,6 +13,7 @@ class MainActivity : FlutterActivity() {
     private val widgetChannel = "net.mrecode.mre_quran/prayer_widget"
     private val adhkarWidgetChannel = "net.mrecode.mre_quran/adhkar_widget"
     private val startupChannel = "net.mrecode.mre_quran/startup"
+    private val homeWidgetsChannel = "net.mrecode.mre_quran/home_widgets"
     private var adhan: AdhanChannel? = null
 
     /** Whether the app's first screen is ready, so the launch screen can go. */
@@ -31,19 +29,15 @@ class MainActivity : FlutterActivity() {
                         PrayerWidgetRenderer.save(this, call.arguments as? Map<String, Any?>)
                         result.success(null)
                     }
-                    // Asks the launcher to add the prayer card; false where
-                    // it cannot.
-                    "pin" -> {
-                        val manager = AppWidgetManager.getInstance(this)
-                        val pinned = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
-                            manager.isRequestPinAppWidgetSupported &&
-                            manager.requestPinAppWidget(
-                                ComponentName(this, PrayerCardWidgetProvider::class.java),
-                                null,
-                                null,
-                            )
-                        result.success(pinned)
-                    }
+                    else -> result.notImplemented()
+                }
+            }
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, homeWidgetsChannel)
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "canPin" -> result.success(HomeWidgets.canPin(this))
+                    "pin" -> result.success(HomeWidgets.pin(this, call.arguments as? String))
+                    "placed" -> result.success(HomeWidgets.placed(this))
                     else -> result.notImplemented()
                 }
             }

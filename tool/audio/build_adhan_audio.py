@@ -22,14 +22,15 @@ assets/adhan/voices.json is written from the results, with each file's size
 and SHA-256, so the app checks every download.
 
 --serve says where the app downloads the voices that are not bundled:
-"global" (default: the cleaned files at --base, the app's `global` branch,
-with each recording's own file as the fallback when that fails), "media"
+"global" (default: the cleaned files at --base, the media repository
+mre_quran_global on GitHub Pages, with each recording's own file as the
+fallback when that fails), "media"
 (the cleaned files only) or "source" (each recording's own file only).
 
 Needs ffmpeg and ffprobe. Run from the repository root:
 
   python3 tool/audio/build_adhan_audio.py --cache <folder> \
-      --media app_assets/media --base <https URL of the media repository>
+      --media ../mre_quran_global
 """
 
 import argparse
@@ -124,7 +125,8 @@ def main() -> None:
     parser.add_argument("--media", required=True, type=pathlib.Path)
     parser.add_argument(
         "--base",
-        default="https://cdn.jsdelivr.net/gh/elshoram974/mre_quran@global",
+        # AppConfig.mediaBase: GitHub Pages of mre_quran_global.
+        default="https://elshoram974.github.io/mre_quran_global",
         help="https address the media folder is served from")
     parser.add_argument("--serve", choices=["global", "media", "source"],
                         default="global")

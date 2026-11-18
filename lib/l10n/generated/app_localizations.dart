@@ -104,12 +104,6 @@ abstract class AppLocalizations {
   /// **'Mushafi'**
   String get appTitle;
 
-  /// No description provided for @brandName.
-  ///
-  /// In en, this message translates to:
-  /// **'MRECode'**
-  String get brandName;
-
   /// No description provided for @reader.
   ///
   /// In en, this message translates to:
@@ -362,6 +356,36 @@ abstract class AppLocalizations {
   /// **'Credits'**
   String get creditsTitle;
 
+  /// No description provided for @contactUs.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact us'**
+  String get contactUs;
+
+  /// No description provided for @contactWhatsApp.
+  ///
+  /// In en, this message translates to:
+  /// **'WhatsApp'**
+  String get contactWhatsApp;
+
+  /// No description provided for @contactEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get contactEmail;
+
+  /// No description provided for @contactFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing on this device can open that.'**
+  String get contactFailed;
+
+  /// No description provided for @appVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Version {version}'**
+  String appVersion(String version);
+
   /// No description provided for @hintNever.
   ///
   /// In en, this message translates to:
@@ -419,32 +443,110 @@ abstract class AppLocalizations {
   /// No description provided for @hintWidgetsBody.
   ///
   /// In en, this message translates to:
-  /// **'The Prayer card widget shows the coming prayer, the time left and the day\'s prayers, without opening the app.'**
+  /// **'Put the prayer times, a tasbih or a dhikr on your home screen, to see them without opening the app.'**
   String get hintWidgetsBody;
-
-  /// No description provided for @hintWidgetsBodyIos.
-  ///
-  /// In en, this message translates to:
-  /// **'The Prayer card widget shows the coming prayer, the time left and the day\'s prayers. To add it: touch and hold the home screen, tap +, and search for Mushafi.'**
-  String get hintWidgetsBodyIos;
 
   /// No description provided for @hintWidgetsAction.
   ///
   /// In en, this message translates to:
-  /// **'Add the widget'**
+  /// **'Choose a widget'**
   String get hintWidgetsAction;
-
-  /// No description provided for @hintWidgetsActionIos.
-  ///
-  /// In en, this message translates to:
-  /// **'OK'**
-  String get hintWidgetsActionIos;
 
   /// No description provided for @hintWidgetsManual.
   ///
   /// In en, this message translates to:
   /// **'Touch and hold the home screen, tap Widgets, and search for Mushafi.'**
   String get hintWidgetsManual;
+
+  /// No description provided for @widgetsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Home-screen widgets'**
+  String get widgetsTitle;
+
+  /// No description provided for @widgetsIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'See the prayer times, count your tasbih and read a dhikr right from the home screen, without opening the app.'**
+  String get widgetsIntro;
+
+  /// No description provided for @widgetsAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get widgetsAdd;
+
+  /// No description provided for @widgetsAddAsked.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm on the screen that appears to place the widget.'**
+  String get widgetsAddAsked;
+
+  /// No description provided for @widgetsStepsIos.
+  ///
+  /// In en, this message translates to:
+  /// **'To add a widget: touch and hold an empty spot on the home screen, tap + at the top, search for Mushafi, choose the widget and its size, then tap Add Widget.'**
+  String get widgetsStepsIos;
+
+  /// No description provided for @widgetPrayerCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Prayer card'**
+  String get widgetPrayerCard;
+
+  /// No description provided for @widgetPrayerCardDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'The coming prayer with the time left, and the day\'s five prayers.'**
+  String get widgetPrayerCardDescription;
+
+  /// No description provided for @widgetNextPrayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Next prayer'**
+  String get widgetNextPrayer;
+
+  /// No description provided for @widgetNextPrayerDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'The next prayer, its time and how long until it.'**
+  String get widgetNextPrayerDescription;
+
+  /// No description provided for @widgetPrayerSchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s prayer times'**
+  String get widgetPrayerSchedule;
+
+  /// No description provided for @widgetPrayerScheduleDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s five prayers and sunrise, with the Hijri date.'**
+  String get widgetPrayerScheduleDescription;
+
+  /// No description provided for @widgetTasbih.
+  ///
+  /// In en, this message translates to:
+  /// **'Tasbih'**
+  String get widgetTasbih;
+
+  /// No description provided for @widgetTasbihDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Count your tasbih right from the home screen.'**
+  String get widgetTasbihDescription;
+
+  /// No description provided for @widgetDhikr.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggested dhikr'**
+  String get widgetDhikr;
+
+  /// No description provided for @widgetDhikrDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggested adhkar with your saved progress.'**
+  String get widgetDhikrDescription;
 
   /// No description provided for @hintOfflineTitle.
   ///
@@ -481,6 +583,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Icons: Material Icons by Google (Apache License 2.0). The app icon and the launch star are the app\'s own design.'**
   String get creditsIcons;
+
+  /// No description provided for @creditsBrandFont.
+  ///
+  /// In en, this message translates to:
+  /// **'The \"made by MRECode\" mark on the launch screen: drawn in Marcellus (Brian J. Bonislawsky, Astigmatic) and Cormorant Garamond Italic (the Cormorant Project), both SIL Open Font License 1.1, from Google Fonts.'**
+  String get creditsBrandFont;
 
   /// No description provided for @creditsPrayer.
   ///

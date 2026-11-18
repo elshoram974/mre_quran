@@ -15,7 +15,7 @@ import '../../../core/widgets/empty_state.dart';
 import '../application/adhan_providers.dart';
 import '../domain/adhan_settings.dart';
 import '../domain/adhan_voice.dart';
-import '../../prayer/presentation/widget_hint.dart';
+import '../../home_widgets/presentation/widget_hint.dart';
 import 'custom_voice_card.dart';
 import 'voice_card.dart';
 

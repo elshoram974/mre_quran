@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/config/app_config.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../application/startup_providers.dart';
@@ -191,20 +192,18 @@ class _Emblem extends StatelessWidget {
             ),
           ),
         ),
-        // The maker's name, where the platform's launch screen writes it.
+        // The maker's mark, the same picture and place as
+        // LaunchScreen.storyboard, so the hand-over from it does not move.
         PositionedDirectional(
           start: 0,
           end: 0,
-          bottom: MediaQuery.paddingOf(context).bottom + 32,
-          child: Text(
-            context.l10n.brandName,
-            textAlign: TextAlign.center,
-            // As LaunchScreen.storyboard writes it, so the hand-over from
-            // it does not move.
-            style: theme.textTheme.titleMedium?.copyWith(
-              color: color,
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
+          bottom: MediaQuery.paddingOf(context).bottom + 16,
+          child: const Center(
+            child: Image(
+              image: AssetImage(_brand),
+              width: 200,
+              height: 80,
+              excludeFromSemantics: true,
             ),
           ),
         ),
@@ -212,6 +211,11 @@ class _Emblem extends StatelessWidget {
     );
   }
 }
+
+/// "made by MRECode" ([AppConfig.brand]), drawn by
+/// tool/app_icon/render_splash_brand_test.dart; bundled for iOS only, the
+/// one platform whose splash this draws.
+const String _brand = 'assets/brand/splash_brand.png';
 
 /// An eight-pointed star of two squares, lightly filled, with a disc at its
 /// heart: turned by [turn] through an eighth of a circle, after which it

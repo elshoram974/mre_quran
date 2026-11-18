@@ -13,9 +13,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appTitle => 'Mushafi';
 
   @override
-  String get brandName => 'MRECode';
-
-  @override
   String get reader => 'Mushaf';
 
   @override
@@ -146,6 +143,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get creditsTitle => 'Credits';
 
   @override
+  String get contactUs => 'Contact us';
+
+  @override
+  String get contactWhatsApp => 'WhatsApp';
+
+  @override
+  String get contactEmail => 'Email';
+
+  @override
+  String get contactFailed => 'Nothing on this device can open that.';
+
+  @override
+  String appVersion(String version) {
+    return 'Version $version';
+  }
+
+  @override
   String get hintNever => 'Don\'t remind me again';
 
   @override
@@ -176,21 +190,67 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get hintWidgetsBody =>
-      'The Prayer card widget shows the coming prayer, the time left and the day\'s prayers, without opening the app.';
+      'Put the prayer times, a tasbih or a dhikr on your home screen, to see them without opening the app.';
 
   @override
-  String get hintWidgetsBodyIos =>
-      'The Prayer card widget shows the coming prayer, the time left and the day\'s prayers. To add it: touch and hold the home screen, tap +, and search for Mushafi.';
-
-  @override
-  String get hintWidgetsAction => 'Add the widget';
-
-  @override
-  String get hintWidgetsActionIos => 'OK';
+  String get hintWidgetsAction => 'Choose a widget';
 
   @override
   String get hintWidgetsManual =>
       'Touch and hold the home screen, tap Widgets, and search for Mushafi.';
+
+  @override
+  String get widgetsTitle => 'Home-screen widgets';
+
+  @override
+  String get widgetsIntro =>
+      'See the prayer times, count your tasbih and read a dhikr right from the home screen, without opening the app.';
+
+  @override
+  String get widgetsAdd => 'Add';
+
+  @override
+  String get widgetsAddAsked =>
+      'Confirm on the screen that appears to place the widget.';
+
+  @override
+  String get widgetsStepsIos =>
+      'To add a widget: touch and hold an empty spot on the home screen, tap + at the top, search for Mushafi, choose the widget and its size, then tap Add Widget.';
+
+  @override
+  String get widgetPrayerCard => 'Prayer card';
+
+  @override
+  String get widgetPrayerCardDescription =>
+      'The coming prayer with the time left, and the day\'s five prayers.';
+
+  @override
+  String get widgetNextPrayer => 'Next prayer';
+
+  @override
+  String get widgetNextPrayerDescription =>
+      'The next prayer, its time and how long until it.';
+
+  @override
+  String get widgetPrayerSchedule => 'Today\'s prayer times';
+
+  @override
+  String get widgetPrayerScheduleDescription =>
+      'Today\'s five prayers and sunrise, with the Hijri date.';
+
+  @override
+  String get widgetTasbih => 'Tasbih';
+
+  @override
+  String get widgetTasbihDescription =>
+      'Count your tasbih right from the home screen.';
+
+  @override
+  String get widgetDhikr => 'Suggested dhikr';
+
+  @override
+  String get widgetDhikrDescription =>
+      'Suggested adhkar with your saved progress.';
 
   @override
   String get hintOfflineTitle => 'Note: the Mushaf needs the internet';
@@ -214,6 +274,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get creditsIcons =>
       'Icons: Material Icons by Google (Apache License 2.0). The app icon and the launch star are the app\'s own design.';
+
+  @override
+  String get creditsBrandFont =>
+      'The \"made by MRECode\" mark on the launch screen: drawn in Marcellus (Brian J. Bonislawsky, Astigmatic) and Cormorant Garamond Italic (the Cormorant Project), both SIL Open Font License 1.1, from Google Fonts.';
 
   @override
   String get creditsPrayer =>

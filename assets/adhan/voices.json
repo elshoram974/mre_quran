@@ -5,21 +5,21 @@
       "id": "default",
       "kind": "regular",
       "title": {
-        "ar": "مشاري راشد العفاسي",
-        "en": "Mishary Rashid Alafasy"
+        "ar": "ناصر القطامي",
+        "en": "Nasser Al-Qatami"
       },
       "place": {
         "ar": "تسجيل استوديو",
         "en": "Studio recording"
       },
-      "bytes": 1895196,
-      "sha256": "ab1ffab2f99432931936ce05320feb308e53fc15329fe7a95f69b7d4bff40f88",
-      "source": "https://archive.org/details/VeryBeautifulAdhaanByMisharyAlAfasy",
+      "bytes": 1138523,
+      "sha256": "3e5c8af77eb17287f4451343f9cbadd3aa6de225cae046c06ad57260f1364273",
+      "source": "https://github.com/abodehq/Athan-MP3/tree/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds",
       "license": {
         "name": "Permission pending",
-        "url": "https://archive.org/details/VeryBeautifulAdhaanByMisharyAlAfasy"
+        "url": "https://github.com/abodehq/Athan-MP3/tree/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds"
       },
-      "credit": "Mishary Rashid Alafasy (recitation)",
+      "credit": "Nasser Al-Qatami (recitation)",
       "builtIn": true
     },
     {
@@ -62,7 +62,7 @@
         "url": "https://archive.org/details/adhan-from-egypt-abdulnasser-harak"
       },
       "credit": "Abdulnasser Harak (recitation); uploaded by Summernight",
-      "url": "https://cdn.jsdelivr.net/gh/elshoram974/mre_quran@global/adhan/egypt_harak.m4a",
+      "url": "https://elshoram974.github.io/mre_quran_global/adhan/egypt_harak.m4a",
       "extension": "m4a",
       "fallback": {
         "url": "https://archive.org/download/adhan-from-egypt-abdulnasser-harak/Adhan%20from%20Egypt%20Abdulnasser%20Harak.mp3",
@@ -72,30 +72,30 @@
       }
     },
     {
-      "id": "nasser_alqatami",
+      "id": "mishary_alafasy",
       "kind": "regular",
       "title": {
-        "ar": "ناصر القطامي",
-        "en": "Nasser Al-Qatami"
+        "ar": "مشاري راشد العفاسي",
+        "en": "Mishary Rashid Alafasy"
       },
       "place": {
         "ar": "تسجيل استوديو",
         "en": "Studio recording"
       },
-      "bytes": 1697947,
-      "sha256": "600b972bb3c5f53b568b2dfd66d8d4a4c789fb4c8a31f47d9ddc47e68580df97",
-      "source": "https://github.com/abodehq/Athan-MP3/tree/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds",
+      "bytes": 2828271,
+      "sha256": "fbacac1c970492a3e736c82fbbe9c2897eb86987f49a98d539adbd842c889ca6",
+      "source": "https://archive.org/details/VeryBeautifulAdhaanByMisharyAlAfasy",
       "license": {
         "name": "Permission pending",
-        "url": "https://github.com/abodehq/Athan-MP3/tree/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds"
+        "url": "https://archive.org/details/VeryBeautifulAdhaanByMisharyAlAfasy"
       },
-      "credit": "Nasser Al-Qatami (recitation)",
-      "url": "https://cdn.jsdelivr.net/gh/elshoram974/mre_quran@global/adhan/nasser_alqatami.m4a",
+      "credit": "Mishary Rashid Alafasy (recitation)",
+      "url": "https://elshoram974.github.io/mre_quran_global/adhan/mishary_alafasy.m4a",
       "extension": "m4a",
       "fallback": {
-        "url": "https://raw.githubusercontent.com/abodehq/Athan-MP3/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds/Athan%20Nasser%20Alqatami.mp3",
-        "bytes": 1119975,
-        "sha256": "b30f4e2c44d6fcb975d2c2f797590dfb11061b11ab7e8fc5d2cdb3ea86b92fbe",
+        "url": "https://archive.org/download/VeryBeautifulAdhaanByMisharyAlAfasy/Very%20Beautiful%20Adhaan%20by%20Mishary%20Al-Afasy.mp3",
+        "bytes": 4124871,
+        "sha256": "abba1e6a792551f73f0e02748caf03ca1a7d1811bb595820eb724878b086a627",
         "extension": "mp3"
       }
     },
@@ -118,7 +118,7 @@
         "url": "https://archive.org/details/MakkahFajrAdhan6913SheikhAliMullah"
       },
       "credit": "Sheikh Ali Mullah (recitation)",
-      "url": "https://cdn.jsdelivr.net/gh/elshoram974/mre_quran@global/adhan/makkah_ali_mullah_fajr.m4a",
+      "url": "https://elshoram974.github.io/mre_quran_global/adhan/makkah_ali_mullah_fajr.m4a",
       "extension": "m4a",
       "fallback": {
         "url": "https://archive.org/download/MakkahFajrAdhan6913SheikhAliMullah/Makkah%20Fajr%20Adhan%206-9-13%20Sheikh%20Ali%20Mullah.mp3",
@@ -146,7 +146,7 @@
         "url": "https://github.com/abodehq/Athan-MP3/tree/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds"
       },
       "credit": "Mansoor Az-Zahrani (recitation)",
-      "url": "https://cdn.jsdelivr.net/gh/elshoram974/mre_quran@global/adhan/mansoor_zahrani_fajr.m4a",
+      "url": "https://elshoram974.github.io/mre_quran_global/adhan/mansoor_zahrani_fajr.m4a",
       "extension": "m4a",
       "fallback": {
         "url": "https://raw.githubusercontent.com/abodehq/Athan-MP3/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds/Athan%20Mansoor%20Az-Zahrani.mp3",
@@ -174,7 +174,7 @@
         "url": "https://github.com/abodehq/Athan-MP3/tree/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds"
       },
       "credit": "Malek Chebae (recitation)",
-      "url": "https://cdn.jsdelivr.net/gh/elshoram974/mre_quran@global/adhan/malek_chebae_fajr.m4a",
+      "url": "https://elshoram974.github.io/mre_quran_global/adhan/malek_chebae_fajr.m4a",
       "extension": "m4a",
       "fallback": {
         "url": "https://raw.githubusercontent.com/abodehq/Athan-MP3/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds/Athan%20Al-fajer%20-%20Malek%20chebae.mp3",

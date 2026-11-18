@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/router.dart';
+import '../../../core/config/app_config.dart';
 import '../../../core/links/link_opener.dart';
 import '../../../core/haptics/haptics.dart';
 import '../../../core/haptics/haptics_provider.dart';
@@ -228,6 +229,13 @@ class _SettingsContent extends ConsumerWidget {
             ),
           ],
         ),
+        const SizedBox(height: _gap),
+        AppTileCard(
+          icon: Icons.widgets_outlined,
+          title: l10n.widgetsTitle,
+          subtitle: l10n.widgetsIntro,
+          onTap: () => context.push(AppRoute.widgets.path),
+        ),
         const SizedBox(height: _sectionGap),
         AppSectionHeader(title: l10n.privacy),
         AppGroupCard(
@@ -251,13 +259,41 @@ class _SettingsContent extends ConsumerWidget {
             onTap: () => ref.read(linkOpenerProvider).open(policy),
           ),
         ],
+        const SizedBox(height: _sectionGap),
+        AppSectionHeader(title: l10n.contactUs),
+        AppTileCard(
+          icon: Icons.chat_outlined,
+          title: l10n.contactWhatsApp,
+          subtitle: '\u2066+${AppConfig.whatsAppNumber}\u2069',
+          onTap: () => _open(context, ref, AppConfig.whatsApp),
+        ),
+        const SizedBox(height: _gap),
+        AppTileCard(
+          icon: Icons.mail_outline,
+          title: l10n.contactEmail,
+          subtitle: '\u2066${AppConfig.email}\u2069',
+          onTap: () => _open(context, ref, AppConfig.mail),
+        ),
         const SizedBox(height: _gap),
         AppTileCard(
           icon: Icons.info_outline,
           title: l10n.about,
+          subtitle: l10n.appVersion(AppConfig.version),
           onTap: () => context.push(AppRoute.about.path),
         ),
       ],
     );
+  }
+
+  /// Opens [uri] outside the app, and says so when nothing could.
+  static Future<void> _open(
+    BuildContext context,
+    WidgetRef ref,
+    Uri uri,
+  ) async {
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    final failed = context.l10n.contactFailed;
+    if (await ref.read(linkOpenerProvider).open(uri)) return;
+    messenger?.showSnackBar(SnackBar(content: Text(failed)));
   }
 }

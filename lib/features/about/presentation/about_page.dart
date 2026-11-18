@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/config/app_config.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/layout/adaptive_layout.dart';
 import '../../../core/theme/app_tokens.dart';
@@ -33,6 +34,11 @@ class AboutPage extends ConsumerWidget {
           child: ListView(
             padding: pagePadding(context),
             children: [
+              Text(
+                '${l10n.appTitle} · ${l10n.appVersion(AppConfig.version)}',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: AppTokens.spaceSmall),
               Text(
                 l10n.sourcesIntro,
                 style: Theme.of(context).textTheme.bodyMedium,
@@ -70,7 +76,11 @@ class AboutPage extends ConsumerWidget {
               ),
               _Section(
                 title: l10n.sourcesDesign,
-                entries: [l10n.creditsQuranFont, l10n.creditsIcons],
+                entries: [
+                  l10n.creditsQuranFont,
+                  l10n.creditsIcons,
+                  l10n.creditsBrandFont,
+                ],
               ),
               const SizedBox(height: AppTokens.spaceMedium),
               AppTileCard(
@@ -79,6 +89,7 @@ class AboutPage extends ConsumerWidget {
                 onTap: () => showLicensePage(
                   context: context,
                   applicationName: l10n.appTitle,
+                  applicationVersion: AppConfig.version,
                 ),
               ),
             ],

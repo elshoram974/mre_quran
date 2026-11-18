@@ -45,6 +45,25 @@ import WidgetKit
       WidgetCenter.shared.reloadTimelines(ofKind: "PrayerCardWidget")
       callback(nil)
     }
+    // iOS lets no app add a widget (the widgets page says how); it can only
+    // tell whether one of the app's widgets is on the home screen.
+    let homeWidgetsChannel = FlutterMethodChannel(
+      name: "net.mrecode.mre_quran/home_widgets",
+      binaryMessenger: engineBridge.applicationRegistrar.messenger()
+    )
+    homeWidgetsChannel.setMethodCallHandler { call, callback in
+      switch call.method {
+      case "canPin", "pin":
+        callback(false)
+      case "placed":
+        WidgetCenter.shared.getCurrentConfigurations { result in
+          let placed = (try? result.get())?.isEmpty == false
+          DispatchQueue.main.async { callback(placed) }
+        }
+      default:
+        callback(FlutterMethodNotImplemented)
+      }
+    }
     let adhkarWidgetChannel = FlutterMethodChannel(
       name: "net.mrecode.mre_quran/adhkar_widget",
       binaryMessenger: engineBridge.applicationRegistrar.messenger()

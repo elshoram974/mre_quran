@@ -25,6 +25,14 @@
 - Keep derived search keys separate from verbatim Quran text.
 - Do not add images, page scans, fonts, audio, tafsir, or translations without recording source, licence, checksum, and attribution.
 
+## Media and app facts
+
+- Host every file the app downloads (audio, images, any media) in `mre_quran_global`, the folder beside this
+  repository (branch `global`, GitHub Pages `https://elshoram974.github.io/mre_quran_global/`). Record its
+  SHA-256 in the app's catalogue; keep the original source only as a fallback.
+- Keep the app's names, version, and every outside address (media base, privacy policy, contact) in
+  `lib/core/config/app_config.dart`. Never hard-code them elsewhere.
+
 ## Housekeeping
 
 - Delete any file you create only to extract or inspect something (scripts, dumps,

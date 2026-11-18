@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The launch window before Android 12 (values/styles.xml), where
+     core-splashscreen draws only the paper and the icon: the same paper and
+     still star as its own drawable (compat_splash_screen_no_icon_background),
+     and under them the maker's mark, where Android 12 and later put their
+     branding image. Every layer here works from API 23; the app's minSdk is
+     24. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:gravity="fill">
+        <color android:color="@color/launch_paper" />
+    </item>
+    <item
+        android:drawable="@drawable/splash_star"
+        android:gravity="center"
+        android:width="288dp"
+        android:height="288dp" />
+    <item
+        android:drawable="@drawable/splash_brand"
+        android:gravity="bottom|center_horizontal"
+        android:width="200dp"
+        android:height="80dp"
+        android:bottom="48dp" />
+</layer-list>

@@ -18,18 +18,19 @@
                         <subviews>
                             <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" image="LaunchImage" translatesAutoresizingMaskIntoConstraints="NO" id="YRO-k0-Ey4">
                             </imageView>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="MRECode" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Brd-Mr-Cd1" userLabel="Brand">
-                                <fontDescription key="fontDescription" type="boldSystem" pointSize="18"/>
-                                <color key="textColor" red="0.5412" green="0.3922" blue="0.0863" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                <nil key="highlightedColor"/>
-                            </label>
+                            <imageView userLabel="Brand" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleAspectFit" image="LaunchBrand" translatesAutoresizingMaskIntoConstraints="NO" id="Brd-Mr-Cd1">
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="200" id="Brd-wd-003"/>
+                                    <constraint firstAttribute="height" constant="80" id="Brd-ht-004"/>
+                                </constraints>
+                            </imageView>
                         </subviews>
                         <color key="backgroundColor" red="0.9569" green="0.9216" blue="0.8471" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="YRO-k0-Ey4" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="1a2-6s-vTC"/>
                             <constraint firstItem="YRO-k0-Ey4" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" id="4X2-HB-R7a"/>
                             <constraint firstItem="Brd-Mr-Cd1" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="Brd-cX-001"/>
-                            <constraint firstItem="xbc-2k-c8Z" firstAttribute="top" secondItem="Brd-Mr-Cd1" secondAttribute="bottom" constant="32" id="Brd-bt-002"/>
+                            <constraint firstItem="xbc-2k-c8Z" firstAttribute="top" secondItem="Brd-Mr-Cd1" secondAttribute="bottom" constant="16" id="Brd-bt-002"/>
                         </constraints>
                     </view>
                 </viewController>
@@ -40,5 +41,6 @@
     </scenes>
     <resources>
         <image name="LaunchImage" width="96" height="96"/>
+        <image name="LaunchBrand" width="200" height="80"/>
     </resources>
 </document>

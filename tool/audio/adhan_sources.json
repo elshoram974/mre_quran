@@ -12,19 +12,18 @@
       "kind": "regular",
       "bundled": "adhan_default",
       "title": {
-        "ar": "مشاري راشد العفاسي",
-        "en": "Mishary Rashid Alafasy"
+        "ar": "ناصر القطامي",
+        "en": "Nasser Al-Qatami"
       },
       "place": {
         "ar": "تسجيل استوديو",
         "en": "Studio recording"
       },
-      "credit": "Mishary Rashid Alafasy (recitation)",
-      "source": "https://archive.org/details/VeryBeautifulAdhaanByMisharyAlAfasy",
-      "url": "https://archive.org/download/VeryBeautifulAdhaanByMisharyAlAfasy/Very%20Beautiful%20Adhaan%20by%20Mishary%20Al-Afasy.mp3",
-      "sha256": "abba1e6a792551f73f0e02748caf03ca1a7d1811bb595820eb724878b086a627",
-      "end": 231.4,
-      "checked": "Whisper transcript: twelve phrases, no «الصلاة خير من النوم»; the dua after it is cut off (see dua_after_adhan).",
+      "credit": "Nasser Al-Qatami (recitation)",
+      "source": "https://github.com/abodehq/Athan-MP3/tree/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds",
+      "url": "https://raw.githubusercontent.com/abodehq/Athan-MP3/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds/Athan%20Nasser%20Alqatami.mp3",
+      "sha256": "b30f4e2c44d6fcb975d2c2f797590dfb11061b11ab7e8fc5d2cdb3ea86b92fbe",
+      "checked": "Whisper transcript: a full regular adhan.",
       "iosClip": "adhan_regular"
     },
     {
@@ -85,21 +84,22 @@
       "checked": "Whisper transcript: a full regular adhan. The upload is marked Public Domain Mark 1.0 by the uploader."
     },
     {
-      "id": "nasser_alqatami",
+      "id": "mishary_alafasy",
       "kind": "regular",
       "title": {
-        "ar": "ناصر القطامي",
-        "en": "Nasser Al-Qatami"
+        "ar": "مشاري راشد العفاسي",
+        "en": "Mishary Rashid Alafasy"
       },
       "place": {
         "ar": "تسجيل استوديو",
         "en": "Studio recording"
       },
-      "credit": "Nasser Al-Qatami (recitation)",
-      "source": "https://github.com/abodehq/Athan-MP3/tree/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds",
-      "url": "https://raw.githubusercontent.com/abodehq/Athan-MP3/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds/Athan%20Nasser%20Alqatami.mp3",
-      "sha256": "b30f4e2c44d6fcb975d2c2f797590dfb11061b11ab7e8fc5d2cdb3ea86b92fbe",
-      "checked": "Whisper transcript: a full regular adhan."
+      "credit": "Mishary Rashid Alafasy (recitation)",
+      "source": "https://archive.org/details/VeryBeautifulAdhaanByMisharyAlAfasy",
+      "url": "https://archive.org/download/VeryBeautifulAdhaanByMisharyAlAfasy/Very%20Beautiful%20Adhaan%20by%20Mishary%20Al-Afasy.mp3",
+      "sha256": "abba1e6a792551f73f0e02748caf03ca1a7d1811bb595820eb724878b086a627",
+      "end": 231.4,
+      "checked": "Whisper transcript: twelve phrases, no «الصلاة خير من النوم»; the dua after it is cut off (see dua_after_adhan)."
     },
     {
       "id": "makkah_ali_mullah_fajr",

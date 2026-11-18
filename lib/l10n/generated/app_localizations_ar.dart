@@ -13,9 +13,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get appTitle => 'مصحفي';
 
   @override
-  String get brandName => 'MRECode';
-
-  @override
   String get reader => 'المصحف';
 
   @override
@@ -144,6 +141,23 @@ class AppLocalizationsAr extends AppLocalizations {
   String get creditsTitle => 'النسب والمصادر';
 
   @override
+  String get contactUs => 'تواصل معنا';
+
+  @override
+  String get contactWhatsApp => 'واتساب';
+
+  @override
+  String get contactEmail => 'البريد الإلكتروني';
+
+  @override
+  String get contactFailed => 'لا يوجد على جهازك ما يفتح هذا.';
+
+  @override
+  String appVersion(String version) {
+    return 'الإصدار $version';
+  }
+
+  @override
   String get hintNever => 'لا تذكرني مرة أخرى';
 
   @override
@@ -174,21 +188,65 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get hintWidgetsBody =>
-      'أداة «بطاقة الصلاة» تعرض الصلاة القادمة والوقت المتبقي لها وصلوات اليوم، دون أن تفتح التطبيق.';
+      'ضع مواقيت الصلاة أو المسبحة أو ذكرًا على شاشتك الرئيسية، لتراها دون أن تفتح التطبيق.';
 
   @override
-  String get hintWidgetsBodyIos =>
-      'أداة «بطاقة الصلاة» تعرض الصلاة القادمة والوقت المتبقي لها وصلوات اليوم. لإضافتها: اضغط مطولًا على الشاشة الرئيسية، ثم «+»، وابحث عن «مصحفي».';
-
-  @override
-  String get hintWidgetsAction => 'أضف الأداة';
-
-  @override
-  String get hintWidgetsActionIos => 'حسنًا';
+  String get hintWidgetsAction => 'اختر أداة';
 
   @override
   String get hintWidgetsManual =>
       'اضغط مطولًا على الشاشة الرئيسية، ثم «الأدوات»، وابحث عن «مصحفي».';
+
+  @override
+  String get widgetsTitle => 'أدوات الشاشة الرئيسية';
+
+  @override
+  String get widgetsIntro =>
+      'اعرض مواقيت الصلاة، وعُدّ تسبيحك، واقرأ ذكرًا من الشاشة الرئيسية مباشرة دون أن تفتح التطبيق.';
+
+  @override
+  String get widgetsAdd => 'إضافة';
+
+  @override
+  String get widgetsAddAsked =>
+      'أكّد الإضافة في النافذة التي تظهر لتوضع الأداة على شاشتك.';
+
+  @override
+  String get widgetsStepsIos =>
+      'لإضافة أداة: اضغط مطولًا على مكان فارغ في الشاشة الرئيسية، ثم «+» في الأعلى، وابحث عن «مصحفي»، واختر الأداة ومقاسها، ثم «إضافة أداة».';
+
+  @override
+  String get widgetPrayerCard => 'بطاقة الصلاة';
+
+  @override
+  String get widgetPrayerCardDescription =>
+      'الصلاة القادمة والوقت المتبقي لها، وصلوات اليوم الخمس.';
+
+  @override
+  String get widgetNextPrayer => 'الصلاة القادمة';
+
+  @override
+  String get widgetNextPrayerDescription =>
+      'الصلاة القادمة ووقتها والمدة المتبقية عليها.';
+
+  @override
+  String get widgetPrayerSchedule => 'مواقيت اليوم';
+
+  @override
+  String get widgetPrayerScheduleDescription =>
+      'صلوات اليوم الخمس والشروق مع التاريخ الهجري.';
+
+  @override
+  String get widgetTasbih => 'المسبحة';
+
+  @override
+  String get widgetTasbihDescription => 'سبّح وعُدّ تسبيحك من الشاشة الرئيسية.';
+
+  @override
+  String get widgetDhikr => 'ذكر مقترح';
+
+  @override
+  String get widgetDhikrDescription => 'ذكر مقترح مع تقدمك المحفوظ.';
 
   @override
   String get hintOfflineTitle => 'انتبه: المصحف يحتاج الإنترنت';
@@ -212,6 +270,10 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get creditsIcons =>
       'الأيقونات: Material Icons من Google (رخصة Apache 2.0). أيقونة التطبيق ونجمة شاشة البدء من تصميم التطبيق نفسه.';
+
+  @override
+  String get creditsBrandFont =>
+      'شعار «made by MRECode» على شاشة البدء: مرسوم بخطَّي Marcellus (براين بونيسلافسكي، Astigmatic) وCormorant Garamond المائل (مشروع Cormorant)، كلاهما برخصة SIL المفتوحة للخطوط 1.1، من Google Fonts.';
 
   @override
   String get creditsPrayer =>

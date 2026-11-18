@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../config/app_links.dart';
+import '../config/app_config.dart';
 
 /// Opens an address outside the app, in the browser.
 abstract interface class LinkOpener {
@@ -25,8 +25,8 @@ final linkOpenerProvider = Provider<LinkOpener>(
 );
 
 /// The privacy policy's address, or null while none is set
-/// ([AppLinks.privacyPolicy]). Tests override it.
+/// ([AppConfig.privacyPolicy]). Tests override it.
 final privacyPolicyProvider = Provider<Uri?>((ref) {
-  const address = AppLinks.privacyPolicy;
+  const address = AppConfig.privacyPolicy;
   return address.isEmpty ? null : Uri.parse(address);
 });

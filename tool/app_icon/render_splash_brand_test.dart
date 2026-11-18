@@ -1,12 +1,22 @@
-// Draws the maker's name, MRECode, under the launch screen's star: Android
-// 12 and later show it as the launch screen's branding image (200 by 80
-// dp), in the star's gold on the sepia paper. iOS writes the same name in
-// LaunchScreen.storyboard and StartupSplash.
+// Draws the maker's mark under the launch screen's star: "made by" in a
+// light italic over "MRECode" in inscription capitals, in the star's gold
+// on the sepia paper, 200 by 80 (dp or points).
 //
-// Writes res/drawable-*dpi/splash_brand.png. The letters are Roboto Bold
-// from the Flutter SDK (Apache License 2.0).
+// Writes the same picture for every place a launch screen shows it:
+//   Android  res/drawable-*dpi/splash_brand.png: the branding image of
+//            Android 12 and later (values-v31/styles.xml), and the bottom
+//            layer of the launch window before 12 (drawable/launch_compat.xml);
+//   iOS      Assets.xcassets/LaunchBrand.imageset (LaunchScreen.storyboard);
+//   Flutter  assets/brand/splash_brand.png, 2.0x and 3.0x (StartupSplash,
+//            which takes over from the storyboard on iOS).
+//
+// The letters: Marcellus (Brian J. Bonislawsky, Astigmatic) and Cormorant
+// Garamond Italic (the Cormorant Project), both SIL Open Font License 1.1,
+// kept with their licences in app_assets/brand/fonts. Only these pictures
+// ship, never the fonts.
 //
 // Run: flutter test tool/app_icon/render_splash_brand_test.dart
+import 'dart:convert';
 import 'dart:io';
 import 'dart:ui' as ui;
 
@@ -17,52 +27,103 @@ import 'package:material_ui/material_ui.dart';
 /// The star's gold on the launch screen (splash_star.xml).
 const Color _gold = Color(0xFF8A6416);
 
+const String _fonts = 'app_assets/brand/fonts';
 const String _res = 'android/app/src/main/res';
+const String _ios = 'ios/Runner/Assets.xcassets/LaunchBrand.imageset';
+const String _flutter = 'assets/brand';
+
+/// The picture's size in dp or points, as Android 12 wants its branding
+/// image.
+const Size _size = Size(200, 80);
+
+Future<void> _load(String family, String file) async {
+  final bytes = File('$_fonts/$file').readAsBytesSync();
+  await (FontLoader(
+    family,
+  )..addFont(Future.value(ByteData.sublistView(bytes)))).load();
+}
+
+Future<List<int>> _draw(double scale) async {
+  final width = (_size.width * scale).round();
+  final height = (_size.height * scale).round();
+  final recorder = ui.PictureRecorder();
+  final canvas = Canvas(recorder);
+  TextPainter line(String text, TextStyle style) => TextPainter(
+    text: TextSpan(text: text, style: style),
+    textDirection: TextDirection.ltr,
+  )..layout();
+  final madeBy = line(
+    'made by',
+    TextStyle(
+      fontFamily: 'BrandCormorant',
+      fontVariations: const [FontVariation('wght', 500)],
+      fontSize: 17 * scale,
+      height: 1,
+      letterSpacing: 0.4 * scale,
+      color: _gold.withValues(alpha: 0.85),
+    ),
+  );
+  final name = line(
+    'MRECode',
+    TextStyle(
+      fontFamily: 'BrandMarcellus',
+      fontSize: 34 * scale,
+      height: 1,
+      letterSpacing: 1.2 * scale,
+      color: _gold,
+    ),
+  );
+  final gap = 5 * scale;
+  var y = (height - madeBy.height - gap - name.height) / 2;
+  madeBy.paint(canvas, Offset((width - madeBy.width) / 2, y));
+  y += madeBy.height + gap;
+  name.paint(canvas, Offset((width - name.width) / 2, y));
+  final image = await recorder.endRecording().toImage(width, height);
+  final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+  return bytes!.buffer.asUint8List();
+}
+
+void _write(String path, List<int> bytes) => File(path)
+  ..createSync(recursive: true)
+  ..writeAsBytesSync(bytes);
 
 void main() {
   testWidgets('renders the launch screen brand', (tester) async {
     await tester.runAsync(() async {
-      final font = File(
-        '${Platform.environment['FLUTTER_ROOT']}/bin/cache/artifacts/'
-        'material_fonts/Roboto-Bold.ttf',
-      ).readAsBytesSync();
-      await (FontLoader(
-        'BrandRoboto',
-      )..addFont(Future.value(ByteData.sublistView(font)))).load();
-      const densities = {
+      await _load('BrandMarcellus', 'Marcellus-Regular.ttf');
+      await _load('BrandCormorant', 'CormorantGaramond-Italic[wght].ttf');
+      const android = {
         'mdpi': 1.0,
         'hdpi': 1.5,
         'xhdpi': 2.0,
         'xxhdpi': 3.0,
         'xxxhdpi': 4.0,
       };
-      for (final MapEntry(key: name, value: scale) in densities.entries) {
-        final width = (200 * scale).round();
-        final height = (80 * scale).round();
-        final recorder = ui.PictureRecorder();
-        final canvas = Canvas(recorder);
-        final painter = TextPainter(
-          text: TextSpan(
-            text: 'MRECode',
-            style: TextStyle(
-              fontFamily: 'BrandRoboto',
-              fontSize: 18 * scale,
-              letterSpacing: 2.4 * scale,
-              color: _gold,
-            ),
-          ),
-          textDirection: TextDirection.ltr,
-        )..layout();
-        painter.paint(
-          canvas,
-          Offset((width - painter.width) / 2, (height - painter.height) / 2),
-        );
-        final image = await recorder.endRecording().toImage(width, height);
-        final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-        File('$_res/drawable-$name/splash_brand.png')
-          ..createSync(recursive: true)
-          ..writeAsBytesSync(bytes!.buffer.asUint8List());
+      for (final MapEntry(key: name, value: scale) in android.entries) {
+        _write('$_res/drawable-$name/splash_brand.png', await _draw(scale));
       }
+      final images = <Map<String, String>>[];
+      for (final scale in [1, 2, 3]) {
+        final file = 'splash_brand@${scale}x.png';
+        _write('$_ios/$file', await _draw(scale.toDouble()));
+        images.add({
+          'filename': file,
+          'idiom': 'universal',
+          'scale': '${scale}x',
+        });
+        _write(
+          scale == 1
+              ? '$_flutter/splash_brand.png'
+              : '$_flutter/$scale.0x/splash_brand.png',
+          await _draw(scale.toDouble()),
+        );
+      }
+      File('$_ios/Contents.json').writeAsStringSync(
+        '${const JsonEncoder.withIndent('  ').convert({
+          'images': images,
+          'info': {'author': 'xcode', 'version': 1},
+        })}\n',
+      );
     });
   });
 }

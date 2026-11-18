@@ -28,7 +28,7 @@ import '../domain/prayer_alerts.dart';
 import '../domain/prayer_times.dart';
 import 'prayer_labels.dart';
 import 'prayer_no_place.dart';
-import 'widget_hint.dart';
+import '../../home_widgets/presentation/widget_hint.dart';
 
 /// Whether exact alarms are allowed (always true off Android).
 final exactAlarmsAllowedProvider = FutureProvider.autoDispose<bool>(
@@ -47,6 +47,14 @@ class PrayerTimesPage extends ConsumerStatefulWidget {
 
 class _PrayerTimesPageState extends ConsumerState<PrayerTimesPage> {
   PrayerResult _result = PrayerResult.ok;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => unawaited(_offerWidgetsOnOpen()),
+    );
+  }
 
   /// Runs [action]. When it turns the first alert on ([enabling]), the
   /// permissions it asks for are said first, once ever; once the alerts are
@@ -86,11 +94,28 @@ class _PrayerTimesPageState extends ConsumerState<PrayerTimesPage> {
       body: l10n.hintTryAdhanBody,
       action: l10n.hintTryAdhanAction,
     );
-    if (!tried || !mounted) return;
-    await ref.read(adhanTesterProvider)(l10n);
-    // While it plays: the home-screen widgets are the next thing to try.
-    await Future<void>.delayed(const Duration(seconds: 6));
-    if (mounted) await offerWidgets(context, ref);
+    if (!mounted) return;
+    if (tried) {
+      await ref.read(adhanTesterProvider)(l10n);
+      // While it plays: the home-screen widgets are the next thing to try.
+      await Future<void>.delayed(const Duration(seconds: 6));
+      if (!mounted) return;
+    }
+    // Whether or not the adhan was tried.
+    await offerWidgets(context, ref);
+  }
+
+  /// Once the times are shown, the home-screen widgets are offered (while
+  /// none is on the home screen), whatever was tried before.
+  Future<void> _offerWidgetsOnOpen() async {
+    final PrayerState state;
+    try {
+      state = await ref.read(prayerProvider.future);
+    } on Object {
+      return;
+    }
+    if (state.place == null || !mounted) return;
+    await offerWidgets(context, ref);
   }
 
   @override

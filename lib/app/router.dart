@@ -6,6 +6,7 @@ import 'dart:async';
 import 'package:flutter/widgets.dart';
 
 import '../features/about/presentation/about_page.dart';
+import '../features/home_widgets/presentation/home_widgets_page.dart';
 import '../features/adhkar/presentation/adhkar_group_page.dart';
 import '../features/adhkar/presentation/adhkar_search_page.dart';
 import '../features/adhkar/presentation/adhkar_session_page.dart';
@@ -110,6 +111,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoute.about.path,
         builder: (context, state) => const AboutPage(),
       ),
+      GoRoute(
+        path: AppRoute.widgets.path,
+        builder: (context, state) => const HomeWidgetsPage(),
+      ),
     ],
   );
   // A reminder that launched the app opens what it points at, once the first
@@ -131,6 +136,7 @@ enum AppRoute {
   bookmarks('/bookmarks'),
   settings('/settings'),
   about('/about'),
+  widgets('/widgets'),
   quranIndex('/quran-index'),
   quranSearch('/quran-search'),
   adhkarSession('/adhkar/:id'),

@@ -15,7 +15,9 @@ import 'package:mre_quran/features/adhan/presentation/adhan_page.dart';
 import 'package:mre_quran/features/settings/application/settings_provider.dart';
 import 'package:mre_quran/l10n/generated/app_localizations.dart';
 import 'package:mre_quran/core/hints/hints.dart';
+import 'package:mre_quran/features/home_widgets/application/home_widgets_providers.dart';
 
+import '../../helpers/fake_home_widgets.dart';
 import '../../helpers/no_hints_repository.dart';
 import '../../helpers/adhan_fixtures.dart';
 import '../../helpers/adhkar_fixtures.dart';
@@ -41,6 +43,7 @@ Future<_Harness> _pump(
   Set<String> saved = const {},
   Set<String> recordings = const {},
   bool hints = false,
+  bool placed = false,
 }) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
@@ -57,6 +60,9 @@ Future<_Harness> _pump(
       overrides: [
         hintsRepositoryProvider.overrideWithValue(
           hints ? _AllHints() : NoHintsRepository(),
+        ),
+        homeWidgetsPlatformProvider.overrideWithValue(
+          FakeHomeWidgets(isPlaced: placed),
         ),
         adhanPlatformProvider.overrideWithValue(harness.platform),
         adhanRepositoryProvider.overrideWithValue(harness.adhan),
@@ -285,7 +291,17 @@ void main() {
     await tester.pump(const Duration(seconds: 7));
     await tester.pumpAndSettle();
     expect(find.text('المواقيت على شاشتك الرئيسية'), findsOneWidget);
-    expect(find.text('أضف الأداة'), findsOneWidget);
+    expect(find.text('اختر أداة'), findsOneWidget);
+  });
+
+  testWidgets('no widgets are offered once one is on the home screen', (
+    tester,
+  ) async {
+    await _pump(tester, hints: true, placed: true);
+    await tester.tap(find.text('جرّب التنبيه الآن'));
+    await tester.pump(const Duration(seconds: 7));
+    await tester.pumpAndSettle();
+    expect(find.text('المواقيت على شاشتك الرئيسية'), findsNothing);
   });
 
   testWidgets('without exact alarms it says so and offers to allow them', (
