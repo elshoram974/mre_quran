@@ -2288,6 +2288,107 @@
         }
       ],
       "label": "كنز من كنوز الجنة"
+    },
+    {
+      "id": "janaza-abu-salama",
+      "variant": 160,
+      "order": 1,
+      "count": 1,
+      "text": {
+        "from": {
+          "edition": "ara-muslim",
+          "number": "920.01"
+        },
+        "start": "اللهم اغفر لأبي سلمة",
+        "end": "ونور له فيه"
+      },
+      "evidence": [
+        {
+          "edition": "ara-muslim",
+          "number": "920.01"
+        }
+      ],
+      "label": "دعاء النبي ﷺ لأبي سلمة بعد وفاته"
+    },
+    {
+      "id": "janaza-baqi",
+      "variant": 160,
+      "order": 2,
+      "count": 1,
+      "text": {
+        "from": {
+          "edition": "ara-muslim",
+          "number": "974.01"
+        },
+        "start": "السلام عليكم دار قوم مؤمنين",
+        "end": "اللهم اغفر لأهل بقيع الغرقد"
+      },
+      "evidence": [
+        {
+          "edition": "ara-muslim",
+          "number": "974.01"
+        }
+      ],
+      "label": "دعاء النبي ﷺ عند زيارة البقيع"
+    },
+    {
+      "id": "janaza-parents-believers",
+      "variant": 160,
+      "order": 3,
+      "count": 1,
+      "quran": {
+        "istiadha": false,
+        "ranges": [
+          {
+            "surah": 14,
+            "from": 41,
+            "to": 41
+          }
+        ]
+      },
+      "note": "من القرآن الكريم: سورة إبراهيم، الآية 41. دعاء إبراهيم عليه السلام لوالديه وللمؤمنين.",
+      "verified": "quran reference; the words come from the verified Tanzil text",
+      "label": "دعاء إبراهيم عليه السلام لوالديه وللمؤمنين"
+    },
+    {
+      "id": "janaza-believers",
+      "variant": 160,
+      "order": 4,
+      "count": 1,
+      "quran": {
+        "istiadha": false,
+        "ranges": [
+          {
+            "surah": 59,
+            "from": 10,
+            "to": 10
+          }
+        ]
+      },
+      "note": "من القرآن الكريم: سورة الحشر، الآية 10. دعاء المؤمنين لمن سبقهم بالإيمان.",
+      "verified": "quran reference; the words come from the verified Tanzil text",
+      "label": "دعاء المؤمنين لمن سبقهم بالإيمان"
+    },
+    {
+      "id": "dua-maghfira-khatiati",
+      "variant": 60,
+      "order": 16,
+      "count": 1,
+      "text": {
+        "from": {
+          "edition": "ara-muslim",
+          "number": "2719.01"
+        },
+        "start": "اللهم اغفر لي خطيئتي وجهلي",
+        "end": "وأنت على كل شيء قدير"
+      },
+      "evidence": [
+        {
+          "edition": "ara-muslim",
+          "number": "2719.01"
+        }
+      ],
+      "label": "دعاء المغفرة"
     }
   ]
 }

@@ -44,6 +44,39 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('bundled data', () {
+    test('deceased and forgiveness prayers load with their evidence', () async {
+      final catalog = await AdhkarSource(bundle: _DiskBundle()).load();
+      final collection = catalog.byId('deceased_believers_duas')!;
+      expect(collection.group.id, 'janaza');
+      expect(collection.title('ar'), 'أدعية للمتوفى والوالدين والمؤمنين');
+      expect(
+        collection.title('en'),
+        'Prayers for the deceased, parents and believers',
+      );
+      expect(collection.entries, hasLength(4));
+      expect(collection.entries[0].source, contains('مسلم (920)'));
+      expect(collection.entries[0].text, contains('أَبِي سَلَمَةَ'));
+      expect(collection.entries[1].source, contains('مسلم (974)'));
+      expect(
+        collection.entries[2].quran!.spans.single,
+        const AyahSpan(surah: 14, from: 41, to: 41),
+      );
+      expect(
+        collection.entries[3].quran!.spans.single,
+        const AyahSpan(surah: 59, from: 10, to: 10),
+      );
+      expect(catalog.byId('hisn_55')!.entries, hasLength(3));
+      final prophetic = catalog.byId('prophetic_duas')!;
+      expect(
+        prophetic.entries.any(
+          (entry) =>
+              entry.source.contains('مسلم (2719)') &&
+              entry.text.contains('خَطِيئَتِي'),
+        ),
+        isTrue,
+      );
+    });
+
     test(
       'loads, verifies, and splits the shared file into collections',
       () async {

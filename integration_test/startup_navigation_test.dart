@@ -160,6 +160,22 @@ void main() {
         tester.widget<ExpandingNavBar>(find.byType(ExpandingNavBar)).index,
         1,
       );
+
+      unawaited(
+        openReminder(
+          router,
+          ReminderPayload.forCollection('deceased_believers_duas'),
+        ),
+      );
+      await run(const Duration(seconds: 3));
+      expect(
+        find.textContaining('أدعية للمتوفى والوالدين والمؤمنين'),
+        findsWidgets,
+      );
+      expect(find.textContaining('أَبِي سَلَمَةَ'), findsWidgets);
+      await tester.binding.handlePopRoute();
+      await run();
+
       unawaited(router.push(AppRoute.widgets.path));
       await run();
       final widgets = container.read(homeWidgetsPlatformProvider);

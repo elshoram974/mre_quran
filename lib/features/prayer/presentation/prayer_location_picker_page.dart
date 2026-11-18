@@ -316,9 +316,12 @@ class _PrayerLocationPickerPageState
   Future<void> _animateTo(LatLng target) async {
     final controller = await _mapController.future;
     if (!mounted) return;
-    await controller.animateCamera(
-      CameraUpdate.newLatLngZoom(target, _placeZoom),
-    );
+    final update = CameraUpdate.newLatLngZoom(target, _placeZoom);
+    if (MediaQuery.disableAnimationsOf(context)) {
+      await controller.moveCamera(update);
+    } else {
+      await controller.animateCamera(update);
+    }
   }
 
   void _selectCameraTarget() {

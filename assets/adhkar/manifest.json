@@ -132,7 +132,7 @@
       "group": "daily",
       "icon": "sleep",
       "file": "curated.ar.json",
-      "sha256": "8247083a69d091429b5e9fe9d352ccbed7b135fe0c3a6e80a7e08e26ab38af50",
+      "sha256": "c6979eed50e2bc5642fa86a253894a3be2c81d2db65ff04da35cefb8e9d44916",
       "variants": [
         20
       ],
@@ -147,7 +147,7 @@
       "group": "daily",
       "icon": "wake",
       "file": "curated.ar.json",
-      "sha256": "8247083a69d091429b5e9fe9d352ccbed7b135fe0c3a6e80a7e08e26ab38af50",
+      "sha256": "c6979eed50e2bc5642fa86a253894a3be2c81d2db65ff04da35cefb8e9d44916",
       "variants": [
         30
       ]
@@ -161,7 +161,7 @@
       "group": "prayer",
       "icon": "prayer",
       "file": "curated.ar.json",
-      "sha256": "8247083a69d091429b5e9fe9d352ccbed7b135fe0c3a6e80a7e08e26ab38af50",
+      "sha256": "c6979eed50e2bc5642fa86a253894a3be2c81d2db65ff04da35cefb8e9d44916",
       "variants": [
         10
       ],
@@ -176,7 +176,7 @@
       "group": "quran",
       "icon": "virtue",
       "file": "curated.ar.json",
-      "sha256": "8247083a69d091429b5e9fe9d352ccbed7b135fe0c3a6e80a7e08e26ab38af50",
+      "sha256": "c6979eed50e2bc5642fa86a253894a3be2c81d2db65ff04da35cefb8e9d44916",
       "variants": [
         40
       ]
@@ -190,7 +190,7 @@
       "group": "duas",
       "icon": "generic",
       "file": "curated.ar.json",
-      "sha256": "8247083a69d091429b5e9fe9d352ccbed7b135fe0c3a6e80a7e08e26ab38af50",
+      "sha256": "c6979eed50e2bc5642fa86a253894a3be2c81d2db65ff04da35cefb8e9d44916",
       "variants": [
         60
       ]
@@ -204,7 +204,7 @@
       "group": "worry",
       "icon": "worry",
       "file": "curated.ar.json",
-      "sha256": "8247083a69d091429b5e9fe9d352ccbed7b135fe0c3a6e80a7e08e26ab38af50",
+      "sha256": "c6979eed50e2bc5642fa86a253894a3be2c81d2db65ff04da35cefb8e9d44916",
       "variants": [
         70
       ]
@@ -218,7 +218,7 @@
       "group": "home",
       "icon": "home",
       "file": "curated.ar.json",
-      "sha256": "8247083a69d091429b5e9fe9d352ccbed7b135fe0c3a6e80a7e08e26ab38af50",
+      "sha256": "c6979eed50e2bc5642fa86a253894a3be2c81d2db65ff04da35cefb8e9d44916",
       "variants": [
         80
       ]
@@ -232,7 +232,7 @@
       "group": "weather",
       "icon": "weather",
       "file": "curated.ar.json",
-      "sha256": "8247083a69d091429b5e9fe9d352ccbed7b135fe0c3a6e80a7e08e26ab38af50",
+      "sha256": "c6979eed50e2bc5642fa86a253894a3be2c81d2db65ff04da35cefb8e9d44916",
       "variants": [
         90
       ]
@@ -246,7 +246,7 @@
       "group": "home",
       "icon": "home",
       "file": "curated.ar.json",
-      "sha256": "8247083a69d091429b5e9fe9d352ccbed7b135fe0c3a6e80a7e08e26ab38af50",
+      "sha256": "c6979eed50e2bc5642fa86a253894a3be2c81d2db65ff04da35cefb8e9d44916",
       "variants": [
         100
       ]
@@ -260,7 +260,7 @@
       "group": "travel",
       "icon": "travel",
       "file": "curated.ar.json",
-      "sha256": "8247083a69d091429b5e9fe9d352ccbed7b135fe0c3a6e80a7e08e26ab38af50",
+      "sha256": "c6979eed50e2bc5642fa86a253894a3be2c81d2db65ff04da35cefb8e9d44916",
       "variants": [
         110
       ]
@@ -274,7 +274,7 @@
       "group": "worry",
       "icon": "worry",
       "file": "curated.ar.json",
-      "sha256": "8247083a69d091429b5e9fe9d352ccbed7b135fe0c3a6e80a7e08e26ab38af50",
+      "sha256": "c6979eed50e2bc5642fa86a253894a3be2c81d2db65ff04da35cefb8e9d44916",
       "variants": [
         120
       ]
@@ -288,7 +288,7 @@
       "group": "prayer",
       "icon": "prayer",
       "file": "curated.ar.json",
-      "sha256": "8247083a69d091429b5e9fe9d352ccbed7b135fe0c3a6e80a7e08e26ab38af50",
+      "sha256": "c6979eed50e2bc5642fa86a253894a3be2c81d2db65ff04da35cefb8e9d44916",
       "variants": [
         130
       ]
@@ -302,7 +302,7 @@
       "group": "social",
       "icon": "social",
       "file": "curated.ar.json",
-      "sha256": "8247083a69d091429b5e9fe9d352ccbed7b135fe0c3a6e80a7e08e26ab38af50",
+      "sha256": "c6979eed50e2bc5642fa86a253894a3be2c81d2db65ff04da35cefb8e9d44916",
       "variants": [
         140
       ]
@@ -316,10 +316,24 @@
       "group": "virtue",
       "icon": "virtue",
       "file": "curated.ar.json",
-      "sha256": "8247083a69d091429b5e9fe9d352ccbed7b135fe0c3a6e80a7e08e26ab38af50",
+      "sha256": "c6979eed50e2bc5642fa86a253894a3be2c81d2db65ff04da35cefb8e9d44916",
       "variants": [
         150
       ]
+    },
+    {
+      "id": "deceased_believers_duas",
+      "title": {
+        "ar": "أدعية للمتوفى والوالدين والمؤمنين",
+        "en": "Prayers for the deceased, parents and believers"
+      },
+      "group": "janaza",
+      "icon": "janaza",
+      "file": "curated.ar.json",
+      "variants": [
+        160
+      ],
+      "sha256": "c6979eed50e2bc5642fa86a253894a3be2c81d2db65ff04da35cefb8e9d44916"
     }
   ],
   "includes": [
