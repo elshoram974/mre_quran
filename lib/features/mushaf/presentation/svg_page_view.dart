@@ -11,7 +11,6 @@ import 'package:vector_graphics/vector_graphics_compat.dart'
     show RenderingStrategy;
 
 import '../../../app/router.dart';
-import '../../../core/haptics/haptics.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/theme/quran_colors.dart';
@@ -22,6 +21,7 @@ import '../../quran_text/domain/ayah_range.dart';
 import '../../settings/application/digits_provider.dart';
 import '../../settings/application/settings_provider.dart';
 import '../../settings/domain/app_settings.dart';
+import '../../startup/application/startup_providers.dart';
 import '../../startup/presentation/reader_painted_mark.dart';
 import '../application/svg_page_providers.dart';
 import '../domain/svg_page.dart';
@@ -318,7 +318,11 @@ class _SvgBody extends ConsumerWidget {
       ),
     };
     return AnimatedSwitcher(
-      duration: MediaQuery.disableAnimationsOf(context)
+      // The first page at start-up appears at once, under the splash, so the
+      // splash can go the moment it is drawn; later pages fade in.
+      duration:
+          MediaQuery.disableAnimationsOf(context) ||
+              !ref.watch(readerPaintedProvider)
           ? Duration.zero
           : AppTokens.motionMedium,
       // Anything but the placeholder lets the start-up splash give way.
@@ -574,7 +578,6 @@ class _SvgArtwork extends StatelessWidget {
             : (details) {
                 final ayah = ayahAt(details.localPosition);
                 if (ayah == null) return;
-                Haptics.select();
                 longPress(ayah);
               },
         child: ClipRect(

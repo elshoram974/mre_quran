@@ -37,6 +37,7 @@ Future<Set<int>> _pump(
   ReaderPageLayout layout = ReaderPageLayout.auto,
   MushafEdition edition = MushafEditions.hafs,
   bool textLate = false,
+  bool untilDrawn = true,
 }) async {
   _stretches.clear();
   tester.view.physicalSize = size;
@@ -96,11 +97,20 @@ Future<Set<int>> _pump(
     ),
   );
   await tester.pump();
+  if (!untilDrawn) return asked;
   await tester.pump(const Duration(milliseconds: 400));
+  // The page on screen is drawn; the pages around it are prepared next.
+  await tester.pump();
   return asked;
 }
 
 void main() {
+  testWidgets('at start-up the page on screen is prepared alone, before the '
+      'pages around it', (tester) async {
+    // The first frame: the page is asked for, not yet drawn.
+    expect(await _pump(tester, page: 10, untilDrawn: false), {10});
+  });
+
   testWidgets('the pages ahead of the reader, and one behind, are made '
       'ready, unseen', (tester) async {
     final asked = await _pump(tester, page: 10);

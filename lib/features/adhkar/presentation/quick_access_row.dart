@@ -1,6 +1,5 @@
 import 'package:material_ui/material_ui.dart';
 
-import '../../../core/haptics/haptics.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../domain/adhkar_collection.dart';
 import 'adhkar_icons.dart';
@@ -53,7 +52,6 @@ class QuickAccessRow extends StatelessWidget {
             avatar: Icon(adhkarIconData(collection.icon), size: 18),
             label: Text(collection.title(language)),
             onPressed: () {
-              Haptics.select();
               AdhkarSteps.show(context, collectionId: collection.id);
             },
           );

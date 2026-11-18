@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/router.dart';
-import '../../../core/haptics/haptics.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/layout/adaptive_layout.dart';
 import '../../../core/widgets/app_notice.dart';
@@ -36,7 +35,6 @@ class QiblaPage extends ConsumerStatefulWidget {
 
 class _QiblaPageState extends ConsumerState<QiblaPage> {
   PrayerResult _result = PrayerResult.ok;
-  bool _aligned = false;
 
   Future<void> _locate() async {
     final result = await ref.read(prayerProvider.notifier).locate();
@@ -73,27 +71,17 @@ class _QiblaPageState extends ConsumerState<QiblaPage> {
               ),
             );
           }
-          return ContentContainer(
-            child: _Compass(qibla: qiblaBearing(place), onAligned: _setAligned),
-          );
+          return ContentContainer(child: _Compass(qibla: qiblaBearing(place)));
         },
       ),
     );
   }
-
-  /// Ticks once when the phone comes round to the Qibla, not on every reading.
-  void _setAligned(bool aligned) {
-    if (aligned == _aligned) return;
-    _aligned = aligned;
-    if (aligned) Haptics.step();
-  }
 }
 
 class _Compass extends ConsumerWidget {
-  const _Compass({required this.qibla, required this.onAligned});
+  const _Compass({required this.qibla});
 
   final double qibla;
-  final ValueChanged<bool> onAligned;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -106,7 +94,6 @@ class _Compass extends ConsumerWidget {
     final turn = heading == null ? null : angleBetween(heading, qibla);
     final aligned = turn != null && turn.abs() <= qiblaTolerance;
     // Report after the frame so the page does not rebuild while building.
-    WidgetsBinding.instance.addPostFrameCallback((_) => onAligned(aligned));
 
     final degrees = digits(qibla.round());
     final point = compassPointName(l10n, CompassPoint.of(qibla));

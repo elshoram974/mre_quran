@@ -25,19 +25,19 @@ class QuranTextIntegrityException implements Exception {
       'QuranTextIntegrityException: unexpected checksum $actual for $asset';
 }
 
-/// Parsed text lists plus the folded search keys.
+/// Parsed text lists. The folded search keys are built from them only when
+/// search is first used ([QuranSearchKeys.build]), so start-up does not wait
+/// for them.
 class QuranTextData {
   /// Creates the data.
   const QuranTextData({
     required this.uthmani,
     required this.clean,
-    required this.keys,
-    required this.uthmaniKeys,
     required this.basmala,
     required this.prefixed,
     required this.mushaf,
     required this.marks,
-    required this.plainKeys,
+    required this.plain,
   });
 
   /// The basmala as written in ayah 1:1.
@@ -53,12 +53,6 @@ class QuranTextData {
   /// Text without diacritics, one entry per ayah, no basmala prefix.
   final List<String> clean;
 
-  /// Folded search keys built from [clean].
-  final List<String> keys;
-
-  /// Folded search keys built from [uthmani].
-  final List<String> uthmaniKeys;
-
   /// The ayahs in the King Fahd Complex Mushaf script, for the reader. Drawn
   /// with the Complex's own font; one entry per ayah, no basmala prefix.
   final List<String> mushaf;
@@ -66,9 +60,32 @@ class QuranTextData {
   /// The ayah-number glyph that ends each entry of [mushaf] in print.
   final List<String> marks;
 
-  /// Folded search keys built from the Complex's plain spelling.
-  final List<String> plainKeys;
+  /// The Complex's plain spelling of each ayah, for search.
+  final List<String> plain;
 }
+
+/// The folded search keys of the three spellings: [keys] from the text
+/// without diacritics, [uthmaniKeys] from the Uthmani text, [plainKeys] from
+/// the Complex's plain spelling.
+typedef QuranSearchKeys = ({
+  List<String> keys,
+  List<String> uthmaniKeys,
+  List<String> plainKeys,
+});
+
+/// Builds [QuranSearchKeys] off the main isolate.
+Future<QuranSearchKeys> buildQuranSearchKeys(QuranTextData data) => compute(
+  _searchKeys,
+  (clean: data.clean, uthmani: data.uthmani, plain: data.plain),
+);
+
+QuranSearchKeys _searchKeys(
+  ({List<String> clean, List<String> uthmani, List<String> plain}) text,
+) => (
+  keys: AyahSearchIndex.buildKeys(text.clean),
+  uthmaniKeys: AyahSearchIndex.buildKeys(text.uthmani),
+  plainKeys: AyahSearchIndex.buildKeys(text.plain),
+);
 
 /// Loads the bundled Quran text after verifying every checksum: the Tanzil
 /// text (copying, sharing, adhkar, search) and the King Fahd Complex Mushaf
@@ -107,14 +124,17 @@ class QuranTextSource {
 
   final AssetBundle _bundle;
 
-  /// Reads, verifies, and parses both files off the main isolate.
+  /// Reads the three files at once, then verifies and parses them off the
+  /// main isolate, so start-up never waits on the main thread.
   ///
   /// [surahAyahCounts] holds the expected ayah count of each surah.
   Future<QuranTextData> load(List<int> surahAyahCounts) async {
-    final uthmani = await _verified(uthmaniAsset, uthmaniSha256);
-    final clean = await _verified(cleanAsset, cleanSha256);
-    final mushaf = await _verified(mushafAsset, mushafSha256);
-    return compute(parse, (
+    final (uthmani, clean, mushaf) = await (
+      _bytes(uthmaniAsset),
+      _bytes(cleanAsset),
+      _bytes(mushafAsset),
+    ).wait;
+    return compute(verifyAndParse, (
       uthmani: uthmani,
       clean: clean,
       mushaf: mushaf,
@@ -122,18 +142,29 @@ class QuranTextSource {
     ));
   }
 
-  Future<Uint8List> _verified(String asset, String expected) async {
+  Future<Uint8List> _bytes(String asset) async {
     final data = await _bundle.load(asset);
-    final bytes = data.buffer.asUint8List(
-      data.offsetInBytes,
-      data.lengthInBytes,
-    );
-    final actual = sha256.convert(bytes).toString();
-    if (actual != expected) throw QuranTextIntegrityException(asset, actual);
-    return bytes;
+    return data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
   }
 
-  /// Parses the three verified files into text lists and search keys.
+  /// Checks each file against its SHA-256, then parses them. Throws a
+  /// [QuranTextIntegrityException] for a file that differs.
+  static QuranTextData verifyAndParse(
+    ({Uint8List uthmani, Uint8List clean, Uint8List mushaf, List<int> counts})
+    input,
+  ) {
+    for (final (asset, bytes, expected) in [
+      (uthmaniAsset, input.uthmani, uthmaniSha256),
+      (cleanAsset, input.clean, cleanSha256),
+      (mushafAsset, input.mushaf, mushafSha256),
+    ]) {
+      final actual = sha256.convert(bytes).toString();
+      if (actual != expected) throw QuranTextIntegrityException(asset, actual);
+    }
+    return parse(input);
+  }
+
+  /// Parses the three verified files into text lists.
   /// Public so tests can run it on the real files without an asset bundle.
   static QuranTextData parse(
     ({Uint8List uthmani, Uint8List clean, Uint8List mushaf, List<int> counts})
@@ -156,13 +187,11 @@ class QuranTextSource {
     return QuranTextData(
       uthmani: split.uthmani,
       clean: split.clean,
-      keys: AyahSearchIndex.buildKeys(split.clean),
-      uthmaniKeys: AyahSearchIndex.buildKeys(split.uthmani),
       basmala: split.basmala,
       prefixed: split.prefixed,
       mushaf: mushaf.text,
       marks: mushaf.marks,
-      plainKeys: AyahSearchIndex.buildKeys(mushaf.plain),
+      plain: mushaf.plain,
     );
   }
 }

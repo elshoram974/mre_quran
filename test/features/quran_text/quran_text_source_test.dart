@@ -33,8 +33,15 @@ void main() {
     final data = await QuranTextSource(bundle: _DiskBundle()).load(counts);
     expect(data.uthmani, hasLength(6236));
     expect(data.clean, hasLength(6236));
-    expect(data.keys, hasLength(6236));
-    expect(data.uthmaniKeys, hasLength(6236));
+    expect(data.plain, hasLength(6236));
+  });
+
+  test('builds the search keys of every ayah when asked', () async {
+    final data = await QuranTextSource(bundle: _DiskBundle()).load(counts);
+    final keys = await buildQuranSearchKeys(data);
+    expect(keys.keys, hasLength(6236));
+    expect(keys.uthmaniKeys, hasLength(6236));
+    expect(keys.plainKeys, hasLength(6236));
   });
 
   test('refuses a text file that was changed by even one character', () async {

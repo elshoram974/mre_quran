@@ -320,9 +320,6 @@ class RecordingHaptics implements HapticsBackend {
   Future<bool> isSupported() async => true;
 
   @override
-  Future<void> select() async => calls.add('select');
-
-  @override
   Future<void> tick() async => calls.add('tick');
 
   @override

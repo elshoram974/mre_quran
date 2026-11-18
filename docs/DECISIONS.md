@@ -265,3 +265,17 @@
 - **Decision:** `quick_actions` (Flutter team) offers prayer times and adhan, Qibla, adhkar, and continue
   reading on a long press of the icon, named in the app's language and opened through the typed routes. Their
   icons are the app's own Material icons, drawn by `tool/app_icon/render_shortcut_icons_test.dart`.
+
+## D-032: The launch screen goes the moment the first screen is ready
+
+- **Decision:** `StartupSplash` stays mounted in the app's builder: it is what lets Android's launch screen go
+  (without it the screen waited for its 4-second limit, its star stopped after 1.6 s, and the app looked
+  frozen). On Android there is no least time: the launch screen goes as soon as the Quran text is read and
+  the Mushaf page is drawn. The first page appears without fading (nobody sees a fade under the launch
+  screen), and the pages around it are prepared only after it, so they do not compete with it. The text's
+  three checksums are computed off the main thread, the files read at once, and the search keys built only
+  when search is first used. When a notification, widget or shortcut opens another screen over the Mushaf
+  (`opensOnReaderProvider`), the launch screen waits only for the text.
+- **Measured** (emulator, profile build, cold start): ready at ~0.85 s after the process started, from ~1.5 s,
+  and from 5.2 s with the launch screen held to its limit. Opening from the prayer widget no longer waits
+  for the limit.

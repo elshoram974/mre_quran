@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:quick_actions/quick_actions.dart';
 
 import '../core/l10n/l10n.dart';
+import '../features/startup/application/startup_providers.dart';
 import '../l10n/generated/app_localizations.dart';
 import 'router.dart';
 
@@ -80,6 +81,9 @@ class _AppShortcutsScopeState extends ConsumerState<AppShortcutsScope> {
       ref.read(quickActionsProvider).initialize((type) {
         for (final shortcut in AppShortcut.values) {
           if (shortcut.name == type) {
+            if (shortcut != AppShortcut.reader) {
+              ref.read(opensOnReaderProvider.notifier).openedElsewhere();
+            }
             unawaited(shortcut.open(ref.read(routerProvider)));
           }
         }

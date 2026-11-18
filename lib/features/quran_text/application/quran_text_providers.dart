@@ -23,8 +23,6 @@ final quranTextDataProvider = FutureProvider<QuranTextData>((ref) async {
 final quranTextProvider = FutureProvider<QuranText>((ref) async {
   final metadata = await ref.watch(quranMetadataProvider.future);
   final data = await ref.watch(quranTextDataProvider.future);
-  // ignore: avoid_print
-print('[T] text ${DateTime.now().millisecondsSinceEpoch}');
   return QuranText(
     metadata: metadata,
     uthmani: data.uthmani,
@@ -39,12 +37,15 @@ print('[T] text ${DateTime.now().millisecondsSinceEpoch}');
 /// Ayah search over the verified text, without needing tashkeel.
 final ayahSearchIndexProvider = FutureProvider<AyahSearchIndex>((ref) async {
   final text = await ref.watch(quranTextProvider.future);
-  final data = await ref.watch(quranTextDataProvider.future);
+  // Built the first time search is used, not at start-up.
+  final keys = await buildQuranSearchKeys(
+    await ref.watch(quranTextDataProvider.future),
+  );
   return AyahSearchIndex(
     text: text,
-    keys: data.keys,
-    uthmaniKeys: data.uthmaniKeys,
-    plainKeys: data.plainKeys,
+    keys: keys.keys,
+    uthmaniKeys: keys.uthmaniKeys,
+    plainKeys: keys.plainKeys,
   );
 });
 

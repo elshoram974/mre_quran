@@ -55,6 +55,8 @@ Future<List<ReaderDestination?>> _pumpSearch(
     ],
   );
   addTearDown(container.dispose);
+  // The search keys are built on another isolate, which runs in real time.
+  await tester.runAsync(() => container.read(quranSearchProvider.future));
   await tester.pumpWidget(
     UncontrolledProviderScope(
       container: container,

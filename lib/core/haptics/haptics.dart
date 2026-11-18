@@ -6,9 +6,6 @@ abstract interface class HapticsBackend {
   /// Whether this device can give feedback at all.
   Future<bool> isSupported();
 
-  /// A very light tap for a selection, such as a tab.
-  Future<void> select();
-
   /// A light tick for one count.
   Future<void> tick();
 
@@ -21,8 +18,10 @@ abstract interface class HapticsBackend {
 
 /// The one place the app asks for vibration.
 ///
-/// Call the static functions; never `HapticFeedback` or a vibration plugin
-/// directly. The Settings switch sets [enabled], so every call site obeys it.
+/// Vibration is for counting adhkar, tasbih and duas only; navigation,
+/// pickers and the reader stay still. Call the static functions; never
+/// `HapticFeedback` or a vibration plugin directly. The Settings switch sets
+/// [enabled], so every call site obeys it.
 abstract final class Haptics {
   /// Whether the person wants vibration. Set from the Settings switch.
   static bool enabled = true;
@@ -33,9 +32,6 @@ abstract final class Haptics {
   /// Whether this device can vibrate. False on a tablet or a phone without a
   /// vibration motor, so Settings can say so instead of offering a dead switch.
   static Future<bool> isSupported() => backend.isSupported();
-
-  /// A very light tap for a selection.
-  static Future<void> select() => enabled ? backend.select() : _done;
 
   /// A light tick for one count.
   static Future<void> tick() => enabled ? backend.tick() : _done;

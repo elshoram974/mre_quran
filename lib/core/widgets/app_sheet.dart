@@ -167,7 +167,7 @@ class _PullToCloseState extends State<_PullToClose>
         final height = _surface.currentContext?.size?.height ?? 0;
         final velocity = dragDetails?.primaryVelocity ?? 0;
         if (velocity > _closeFling || _pull > height * _closeShare) {
-          Navigator.of(context).maybePop();
+          _closeSheet(context);
           break;
         }
         _from = _pull;
@@ -279,7 +279,7 @@ class _FillingSheet extends InheritedWidget {
   void settle(BuildContext context, double velocity, {required bool animate}) {
     if (!controller.isAttached) return;
     if (velocity > _closeFling || controller.size < _closeBelow) {
-      Navigator.of(context).maybePop();
+      _closeSheet(context);
       return;
     }
     final target = controller.size > (restSize + AppSheet._maxSize) / 2
@@ -328,7 +328,7 @@ class _FillingSheetHostState extends State<_FillingSheetHost> {
       return false;
     }
     if (_controller.size < _FillingSheet._closeBelow) {
-      Navigator.of(context).maybePop();
+      _closeSheet(context);
     }
     return false;
   }
@@ -441,4 +441,12 @@ class _Handle extends StatelessWidget {
       ),
     ),
   );
+}
+
+/// Closes the sheet [context] is in, only if it is still the top route. A
+/// sheet dragged to its smallest size is closed by Flutter's own bottom
+/// sheet already; popping again would close the sheet under it too.
+void _closeSheet(BuildContext context) {
+  final route = ModalRoute.of(context);
+  if (route != null && route.isCurrent) Navigator.of(context).pop();
 }

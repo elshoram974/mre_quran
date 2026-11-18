@@ -59,10 +59,6 @@ class PlatformHaptics implements HapticsBackend {
   }
 
   @override
-  Future<void> select() =>
-      _pulse(const [0, 8], const [0, 70], HapticFeedback.selectionClick);
-
-  @override
   Future<void> tick() =>
       _pulse(const [0, 14], const [0, 110], HapticFeedback.selectionClick);
 

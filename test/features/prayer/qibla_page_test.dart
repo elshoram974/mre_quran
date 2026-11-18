@@ -117,7 +117,7 @@ void main() {
     expect(find.textContaining('در يسارًا'), findsOneWidget);
   });
 
-  testWidgets('says so and ticks once when the phone faces the Qibla', (
+  testWidgets('says so when the phone faces the Qibla, without vibrating', (
     tester,
   ) async {
     final compass = _FakeCompass();
@@ -125,18 +125,11 @@ void main() {
     compass.controller.add(cairoQibla + 1);
     await tester.pumpAndSettle();
     expect(find.text('أنت تواجه القبلة'), findsOneWidget);
-    expect(haptics.calls, ['step']);
-
-    // Staying on it does not tick again; leaving and returning does.
-    compass.controller.add(cairoQibla - 1);
-    await tester.pumpAndSettle();
-    expect(haptics.calls, ['step']);
+    // Vibration is kept for counting adhkar and for reminders.
+    expect(haptics.calls, isEmpty);
     compass.controller.add(cairoQibla + 60);
     await tester.pumpAndSettle();
     expect(find.text('أنت تواجه القبلة'), findsNothing);
-    compass.controller.add(cairoQibla);
-    await tester.pumpAndSettle();
-    expect(haptics.calls, ['step', 'step']);
   });
 
   testWidgets('a device without a compass gets the fixed dial and a note', (

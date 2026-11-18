@@ -18,9 +18,9 @@ import '../data/launch_screen.dart';
 /// underneath (the Quran text and the Mushaf page, at the same time), and
 /// the splash fades away once it is ready, so no loading is ever seen.
 ///
-/// It stays at least [least], so it never only flickers, and at most
-/// [most], so a slow device or a page that cannot be had never keeps the
-/// app shut.
+/// Where it draws the splash, it stays at least [least], so it never only
+/// flickers. It stays at most [most], so a slow device or a page that cannot
+/// be had never keeps the app shut.
 class StartupSplash extends ConsumerStatefulWidget {
   /// Creates the splash over [child].
   const StartupSplash({
@@ -101,10 +101,12 @@ class _StartupSplashState extends ConsumerState<StartupSplash>
   @override
   Widget build(BuildContext context) {
     final ready = ref.watch(startupReadyProvider);
-    if (!_fading && ((ready && _leastPassed) || _timedOut)) {
+    // The least time keeps a splash drawn here from only flickering. The
+    // platform's launch screen has been up since the process started, so
+    // it goes the moment the app is ready.
+    final waited = _leastPassed || !_overlay;
+    if (!_fading && ((ready && waited) || _timedOut)) {
       _fading = true;
-      // ignore: avoid_print
-print('[T] release ${DateTime.now().millisecondsSinceEpoch}');
       unawaited(ref.read(launchScreenProvider).release());
     }
     if (!_overlay) return widget.child;

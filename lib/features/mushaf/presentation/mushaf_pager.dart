@@ -1,7 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/haptics/haptics.dart';
 import '../../bookmarks/application/bookmarks_provider.dart';
 import '../../quran_index/domain/quran_metadata.dart';
 import '../../quran_text/domain/ayah_range.dart';
@@ -16,6 +15,7 @@ import '../application/ayah_selection_provider.dart';
 import '../application/highlighted_ayah_provider.dart';
 import '../application/page_prefetcher.dart';
 import '../application/svg_page_providers.dart';
+import '../../startup/application/startup_providers.dart';
 import '../../quran_text/application/ayah_texts_provider.dart';
 import 'ayah_actions_sheet.dart';
 import 'ayah_share_format.dart';
@@ -161,7 +161,6 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
     final selection = ref.read(ayahSelectionProvider);
     if (selection == null || selection.edition != edition) return;
     if (!selection.texts.has(ayah)) return;
-    Haptics.select();
     final fits = ref
         .read(ayahSelectionProvider.notifier)
         .extendTo(ayah, limit: ayahShareLimit);
@@ -235,7 +234,10 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
     // Decided on the whole window, as the toolbar's toggle is, so the two
     // never disagree; the rail or bar beside the pages does not change it.
     final spread = resolveMushafSpread(layout, MediaQuery.sizeOf(context));
-    if (mode == ReaderMode.printed) {
+    // At start-up the page on screen comes first; the pages around it are
+    // fetched and prepared once it is drawn, so they never slow it down.
+    final settled = ref.watch(readerPaintedProvider);
+    if (mode == ReaderMode.printed && settled) {
       _prefetch(page);
     }
     final edition = ref.watch(printedEditionProvider);
@@ -334,7 +336,7 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
         },
       ),
     );
-    if (mode != ReaderMode.printed) return book;
+    if (mode != ReaderMode.printed || !settled) return book;
     final last = _lastPage;
     if (last != null && last != page) _backward = page < last;
     _lastPage = page;

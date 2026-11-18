@@ -149,4 +149,53 @@ void main() {
     final first = tester.getRect(find.text('row 0'));
     expect(above.bottom, lessThan(first.top));
   });
+
+  testWidgets('closing a sheet opened over another leaves the one under it '
+      'open', (tester) async {
+    tester.view.physicalSize = const Size(400, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Builder(
+          builder: (context) => Scaffold(
+            body: ElevatedButton(
+              onPressed: () => AppSheet.showFilling<void>(
+                context: context,
+                builder: (context, scroll) => ListView(
+                  controller: scroll,
+                  children: [
+                    const Text('under'),
+                    TextButton(
+                      onPressed: () => AppSheet.show<void>(
+                        context: context,
+                        expandable: true,
+                        builder: (_) => Column(
+                          children: [
+                            for (var i = 0; i < 40; i++)
+                              SizedBox(height: 48, child: Text('over $i')),
+                          ],
+                        ),
+                      ),
+                      child: const Text('pick'),
+                    ),
+                  ],
+                ),
+              ),
+              child: const Text('open'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('pick'));
+    await tester.pumpAndSettle();
+    // Pulled all the way down: the sheet on top closes, and only it.
+    await tester.drag(find.text('over 2'), const Offset(0, 700));
+    await tester.pumpAndSettle();
+    expect(find.text('over 2'), findsNothing);
+    expect(find.text('under'), findsOneWidget);
+  });
 }

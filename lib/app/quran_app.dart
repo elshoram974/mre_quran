@@ -8,6 +8,7 @@ import '../core/haptics/haptics.dart';
 import '../core/l10n/l10n.dart';
 import '../core/theme/app_theme.dart';
 import '../features/adhan/application/adhan_providers.dart';
+import '../features/startup/application/startup_providers.dart';
 import '../features/startup/presentation/startup_splash.dart';
 import '../features/adhkar/presentation/adhkar_widget_sync_scope.dart';
 import '../features/prayer/application/prayer_provider.dart';
@@ -46,12 +47,14 @@ class QuranApp extends ConsumerWidget {
       ..listen(reminderTapsProvider, (_, next) {
         final tap = next.value;
         if (tap != null) {
+          ref.read(opensOnReaderProvider.notifier).openedElsewhere();
           unawaited(openReminder(ref.read(routerProvider), tap.payload));
         }
       })
       ..listen(adhanTapsProvider, (_, next) {
         final tap = next.value;
         if (tap != null) {
+          ref.read(opensOnReaderProvider.notifier).openedElsewhere();
           unawaited(openReminder(ref.read(routerProvider), tap.payload));
         }
       });

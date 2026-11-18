@@ -23,8 +23,6 @@ import 'core/notifications/reminder_scheduler_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // ignore: avoid_print
-print('[T] main ${DateTime.now().millisecondsSinceEpoch}');
   // Android 15+ always draws edge to edge; earlier versions do the same so
   // the app looks and lays out alike everywhere.
   unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge));
@@ -59,8 +57,6 @@ print('[T] main ${DateTime.now().millisecondsSinceEpoch}');
     settings.startupBehavior,
     lastTab,
   );
-  // ignore: avoid_print
-print('[T] runApp ${DateTime.now().millisecondsSinceEpoch}');
   runApp(
     LiquidGlassWidgets.wrap(
       brightnessResolver: Theme.maybeBrightnessOf,

@@ -1,7 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/haptics/haptics.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_palette.dart';
 import '../../../core/theme/app_tokens.dart';
@@ -119,7 +118,6 @@ class _Swatch extends StatelessWidget {
 
   void _choose() {
     if (selected) return;
-    Haptics.select();
     onTap();
   }
 

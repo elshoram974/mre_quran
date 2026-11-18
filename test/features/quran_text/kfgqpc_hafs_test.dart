@@ -16,8 +16,9 @@ void main() {
   late QuranText text;
   late AyahSearchIndex search;
   final file = File(QuranTextSource.mushafAsset);
+  late QuranSearchKeys keys;
 
-  setUpAll(() {
+  setUpAll(() async {
     metadata = QuranMetadataParser.parse(
       File(QuranMetadataSource.assetPath).readAsStringSync(),
     );
@@ -36,11 +37,12 @@ void main() {
       mushaf: data.mushaf,
       marks: data.marks,
     );
+    keys = await buildQuranSearchKeys(data);
     search = AyahSearchIndex(
       text: text,
-      keys: data.keys,
-      uthmaniKeys: data.uthmaniKeys,
-      plainKeys: data.plainKeys,
+      keys: keys.keys,
+      uthmaniKeys: keys.uthmaniKeys,
+      plainKeys: keys.plainKeys,
     );
   });
 
@@ -149,9 +151,9 @@ void main() {
     bool wholeWord(AyahRef ref, String word) {
       final i = text.indexOf(ref);
       return [
-        data.keys[i],
-        data.uthmaniKeys[i],
-        data.plainKeys[i],
+        keys.keys[i],
+        keys.uthmaniKeys[i],
+        keys.plainKeys[i],
       ].any((key) => ' $key '.contains(' $word '));
     }
 
@@ -173,7 +175,7 @@ void main() {
           text.indexOf(match.ref),
       ];
       final whole = refs.takeWhile(
-        (i) => ' ${data.keys[i]} '.contains(' الرحمن '),
+        (i) => ' ${keys.keys[i]} '.contains(' الرحمن '),
       );
       expect(whole, orderedEquals([...whole]..sort()));
     });
@@ -187,7 +189,7 @@ void main() {
 
     test('the Complex’s plain spelling is searchable', () {
       final index = text.indexOf(const AyahRef(2, 255));
-      final phrase = data.plainKeys[index].split(' ').take(4).join(' ');
+      final phrase = keys.plainKeys[index].split(' ').take(4).join(' ');
       final refs = [for (final m in search.search(phrase).matches) m.ref];
       expect(refs, contains(const AyahRef(2, 255)));
     });

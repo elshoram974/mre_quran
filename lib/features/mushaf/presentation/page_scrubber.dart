@@ -3,7 +3,6 @@ import 'dart:ui' show lerpDouble;
 
 import 'package:material_ui/material_ui.dart';
 
-import '../../../core/haptics/haptics.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../domain/page_scrub_scale.dart';
 
@@ -183,7 +182,6 @@ class _PageScrubberState extends State<PageScrubber>
     final dx = at.dx;
     final started = _preview == null;
     final cancelling = at.dy < -_cancelRise;
-    if (cancelling != _cancelling) Haptics.select();
     setState(() {
       _cancelling = cancelling;
       _fraction = _fractionAt(dx, width);
@@ -203,7 +201,6 @@ class _PageScrubberState extends State<PageScrubber>
   void _point() {
     final page = _scale.pageAt(_fraction);
     if (page == _preview) return;
-    if (_scale.fine) Haptics.tick();
     _preview = page;
   }
 
@@ -217,7 +214,6 @@ class _PageScrubberState extends State<PageScrubber>
   void _refine() {
     final page = _preview;
     if (!mounted || page == null) return;
-    Haptics.step();
     setState(
       () => _show(
         PageScrubScale.fineAt(

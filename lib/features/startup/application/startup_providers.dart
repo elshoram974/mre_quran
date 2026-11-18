@@ -37,11 +37,27 @@ class ReaderPainted extends Notifier<bool> {
   /// Called by a page view once it shows something other than a
   /// placeholder.
   void painted() {
-    if (!state) {
-      // ignore: avoid_print
-print('[T] painted ${DateTime.now().millisecondsSinceEpoch}');
-      state = true;
-    }
+    if (!state) state = true;
+  }
+}
+
+/// Whether the screen the app opens on is the Mushaf. It is not when the
+/// app opens on a tab other than the Mushaf, or when what started it (a
+/// notification, a home-screen widget, a shortcut) opens another screen over
+/// it: the Mushaf page is then never painted, and the splash must not wait
+/// for it.
+final opensOnReaderProvider = NotifierProvider<OpensOnReader, bool>(
+  OpensOnReader.new,
+);
+
+/// Owns [opensOnReaderProvider].
+class OpensOnReader extends Notifier<bool> {
+  @override
+  bool build() => ref.watch(initialLocationProvider) == AppRoute.reader.path;
+
+  /// Notes that another screen is opened over the Mushaf.
+  void openedElsewhere() {
+    if (state) state = false;
   }
 }
 
@@ -52,6 +68,6 @@ print('[T] painted ${DateTime.now().millisecondsSinceEpoch}');
 final startupReadyProvider = Provider<bool>((ref) {
   final text = ref.watch(quranTextProvider);
   final read = text.hasValue || text.hasError;
-  if (ref.watch(initialLocationProvider) != AppRoute.reader.path) return read;
+  if (!ref.watch(opensOnReaderProvider)) return read;
   return read && ref.watch(readerPaintedProvider);
 });

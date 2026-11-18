@@ -1,6 +1,5 @@
 import 'package:material_ui/material_ui.dart';
 
-import '../../core/haptics/haptics.dart';
 import '../../core/theme/app_surface_style.dart';
 import '../../core/theme/app_tokens.dart';
 import 'shell_destination.dart';
@@ -68,7 +67,6 @@ class ExpandingNavBar extends StatelessWidget {
                       duration: duration,
                       onTap: () {
                         if (i != index) {
-                          Haptics.select();
                           onSelected(i);
                         }
                       },

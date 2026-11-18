@@ -119,21 +119,52 @@ void main() {
     expect(launch.released, 1, reason: 'once only');
   });
 
-  testWidgets('a page view marks the reader painted once it has faded in', (
+  testWidgets('a page view marks the reader painted on its first frame', (
     tester,
   ) async {
     final container = ProviderContainer();
     addTearDown(container.dispose);
+    expect(container.read(readerPaintedProvider), isFalse);
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
         child: const ReaderPaintedMark(child: SizedBox()),
       ),
     );
-    expect(container.read(readerPaintedProvider), isFalse);
-    // Once the page has faded in over its placeholder.
-    await tester.pump(const Duration(milliseconds: 300));
     expect(container.read(readerPaintedProvider), isTrue);
+  });
+
+  testWidgets('on Android it goes the moment the app is ready, with no '
+      'least wait', (tester) async {
+    final text = Completer<QuranText>();
+    final launch = _HeldLaunchScreen();
+    final container = await pump(
+      tester,
+      text: text,
+      overlay: false,
+      launch: launch,
+    );
+    text.completeError(StateError('no text'));
+    container.read(readerPaintedProvider.notifier).painted();
+    await tester.pump();
+    expect(launch.released, 1);
+  });
+
+  testWidgets('when a notification or widget opens another screen over the '
+      'Mushaf, it waits only for the text', (tester) async {
+    final text = Completer<QuranText>();
+    final launch = _HeldLaunchScreen();
+    final container = await pump(
+      tester,
+      text: text,
+      overlay: false,
+      launch: launch,
+    );
+    container.read(opensOnReaderProvider.notifier).openedElsewhere();
+    text.completeError(StateError('no text'));
+    await tester.pump();
+    expect(launch.released, 1);
+    expect(container.read(readerPaintedProvider), isFalse);
   });
 }
 
