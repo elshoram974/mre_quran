@@ -24,6 +24,7 @@ class ReaderControls extends StatefulWidget {
     required this.onPage,
     required this.onEnterNumber,
     required this.onDisplayOptions,
+    required this.onSurah,
   });
 
   /// Quran structure, for the surah and juz of a page.
@@ -46,6 +47,9 @@ class ReaderControls extends StatefulWidget {
 
   /// Opens the display options.
   final VoidCallback onDisplayOptions;
+
+  /// Opens the index to browse surahs.
+  final VoidCallback onSurah;
 
   @override
   State<ReaderControls> createState() => _ReaderControlsState();
@@ -99,6 +103,27 @@ class _ReaderControlsState extends State<ReaderControls> {
             maxScaleFactor: 1.3,
             child: Row(
               children: [
+                Flexible(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 132),
+                    child: ReaderFloatingSurface(
+                      padding: EdgeInsets.zero,
+                      child: SizedBox(
+                        height: ReaderPlacePill.extent,
+                        child: TextButton.icon(
+                          onPressed: widget.onSurah,
+                          icon: const Icon(Icons.menu_book_outlined),
+                          label: Text(
+                            widget.metadata.surahAtPage(widget.page).arabicName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: AppTokens.spaceSmall),
                 Expanded(
                   child: ReaderPlacePill(
                     title: _title(widget.page),
@@ -109,26 +134,15 @@ class _ReaderControlsState extends State<ReaderControls> {
                   ),
                 ),
                 const SizedBox(width: AppTokens.spaceSmall),
-                // The place pill keeps most of the row; a long label here
-                // gives way.
-                Flexible(
-                  flex: 0,
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 132),
-                    child: ReaderFloatingSurface(
-                      padding: EdgeInsets.zero,
-                      child: SizedBox(
-                        height: ReaderPlacePill.extent,
-                        child: TextButton.icon(
-                          onPressed: widget.onDisplayOptions,
-                          icon: const Icon(Icons.tune_rounded),
-                          label: Text(
-                            l10n.displayOptions,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ),
+                ReaderFloatingSurface(
+                  padding: EdgeInsets.zero,
+                  child: SizedBox(
+                    height: ReaderPlacePill.extent,
+                    width: ReaderPlacePill.extent,
+                    child: IconButton(
+                      onPressed: widget.onDisplayOptions,
+                      tooltip: l10n.displayOptions,
+                      icon: const Icon(Icons.tune_rounded),
                     ),
                   ),
                 ),

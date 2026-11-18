@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mre_quran/app/quran_app.dart';
 import 'package:mre_quran/core/haptics/haptics.dart';
+import 'package:mre_quran/core/widgets/app_shimmer.dart';
 import 'package:mre_quran/features/bookmarks/application/bookmarks_provider.dart';
 import 'package:mre_quran/features/mushaf/application/reading_position_provider.dart';
 import 'package:mre_quran/features/quran_index/application/quran_metadata_provider.dart';
@@ -20,6 +23,13 @@ import '../helpers/memory_bookmarks_repository.dart';
 import '../helpers/memory_last_tab_repository.dart';
 import '../helpers/memory_reading_position_repository.dart';
 import '../helpers/memory_settings_repository.dart';
+
+class _SlowSettingsRepository extends MemorySettingsRepository {
+  final completer = Completer<AppSettings>();
+
+  @override
+  Future<AppSettings> load() => completer.future;
+}
 
 class _NoMotor extends RecordingHaptics {
   @override
@@ -72,6 +82,20 @@ void main() {
     await tester.pumpAndSettle();
     return repository;
   }
+
+  testWidgets('settings shows a skeleton while loading', (tester) async {
+    final repository = _SlowSettingsRepository();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [settingsRepositoryProvider.overrideWithValue(repository)],
+        child: const MaterialApp(home: Scaffold(body: SettingsPage())),
+      ),
+    );
+    expect(find.byType(AppShimmer), findsOneWidget);
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+    repository.completer.complete(const AppSettings());
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
 
   testWidgets(
     'the app follows the vibration setting, and the switch changes it',

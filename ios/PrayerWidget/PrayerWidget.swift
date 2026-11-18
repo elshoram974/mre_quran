@@ -88,37 +88,43 @@ private struct Provider: TimelineProvider {
 }
 private struct Empty: View { var body: some View { Text(Payload.read()?.labels["empty"] ?? NSLocalizedString("Open Mushafi to set your location", comment: "")).font(.caption).frame(maxWidth:.infinity,maxHeight:.infinity,alignment:.leading) } }
 private struct NextView: View {
-  @Environment(\.widgetFamily) private var family
   let entry: Entry
   var body: some View {
     let data = entry.payload ?? (entry.isPreview ? Payload.sample(entry.date) : nil)
     Group {
-      if let data, let next = data.next(entry.date), let day = data.day(entry.date) {
-        VStack(alignment: .leading, spacing: 3) {
-          if family != .systemSmall {
-            Text(data.labels["next"] ?? "").font(.caption).foregroundStyle(.secondary)
-          }
-          Text(next.name).font(.headline)
-          Text(next.time).font(.title3.weight(.semibold))
-          TimeLeft(data: data, at: next.at, now: entry.date).font(.caption).foregroundStyle(.secondary)
-          Text(day.date).font(.caption2).lineLimit(1)
-          Text(day.hijri).font(.caption2).foregroundStyle(.secondary).lineLimit(1)
-          if family != .systemSmall, let sunrise = day.rows.first(where: { $0.id == "sunrise" }) {
-            HStack { Text(sunrise.name); Text(sunrise.time).monospacedDigit() }.font(.caption)
-          }
-        }.frame(maxWidth:.infinity,maxHeight:.infinity,alignment:.leading)
+      if let data, let next = data.next(entry.date) {
+        HStack(alignment: .center, spacing: 8) {
+          VStack(alignment: .leading, spacing: 3) {
+            Text(data.labels["next"] ?? "").font(.caption).foregroundStyle(.secondary).lineLimit(1)
+            Text(next.name).font(.headline).lineLimit(2)
+          }.frame(maxWidth: .infinity, alignment: .leading)
+          VStack(alignment: .trailing, spacing: 3) {
+            Text(next.time).font(.headline.weight(.semibold)).monospacedDigit().lineLimit(1)
+            TimeLeft(data: data, at: next.at, now: entry.date)
+              .font(.caption).foregroundStyle(.secondary).lineLimit(2)
+          }.frame(maxWidth: .infinity, alignment: .trailing)
+        }.frame(maxWidth: .infinity, maxHeight: .infinity)
       } else { Empty() }
     }.environment(\.layoutDirection, (data?.rtl ?? (systemIsArabic)) ? .rightToLeft : .leftToRight)
       .widgetURL(URL(string:"mrequran://mre-quran/prayer-times"))
   }
 }
 /// The time left until [at]: to the second when the person chose it in the
-/// app (the system counts it down on its own), else in hours and minutes,
-/// redrawn at each new timeline entry.
+/// app, or as a relative duration; WidgetKit updates both while visible.
 private struct TimeLeft: View {
   let data: Payload; let at: Date; let now: Date
   var body: some View {
-    if data.seconds { Text(at, style: .timer).monospacedDigit() } else { Text(data.remaining(at, now)) }
+    let parts = (data.labels["remaining"] ?? "%1$s left").components(separatedBy: "%1$s")
+    HStack(spacing: 0) {
+      Text(parts.first ?? "")
+      if data.seconds {
+        Text(at, style: .timer).monospacedDigit()
+      } else {
+        Text(at, style: .relative)
+      }
+      if parts.count > 1 { Text(parts[1]) }
+    }.environment(\.locale, Locale(identifier: data.rtl ? "ar" : "en"))
+
   }
 }
 private let cardNavy = Color(red: 0x16 / 255, green: 0x1B / 255, blue: 0x26 / 255)

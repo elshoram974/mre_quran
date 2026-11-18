@@ -211,6 +211,7 @@ class ReaderToolbar extends StatelessWidget {
   const ReaderToolbar({
     super.key,
     required this.menu,
+    this.beforeSearch = const [],
     required this.searchLabel,
     required this.onSearch,
     required this.actions,
@@ -218,6 +219,9 @@ class ReaderToolbar extends StatelessWidget {
 
   /// The leading button.
   final Widget menu;
+
+  /// Actions between the index and search.
+  final List<Widget> beforeSearch;
 
   /// Placeholder of the search field.
   final String searchLabel;
@@ -237,6 +241,10 @@ class ReaderToolbar extends StatelessWidget {
       child: Row(
         children: [
           ReaderFloatingSurface(child: menu),
+          for (final action in beforeSearch) ...[
+            const SizedBox(width: AppTokens.spaceSmall),
+            ReaderFloatingSurface(child: action),
+          ],
           const SizedBox(width: AppTokens.spaceSmall),
           Expanded(
             child: ReaderFloatingSurface(

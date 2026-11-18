@@ -76,8 +76,13 @@ internal object PrayerWidgetRenderer {
             val (width, height) = WidgetScale.size(context, manager, id)
             val views = nextPrayerViews(context, model, now)
             HomeWidgets.applyBackground(context, views, R.id.prayer_widget_root)
-            if (width in 1..139 && model?.nextAfter(now) != null) {
-                views.setViewVisibility(R.id.prayer_widget_label, View.GONE)
+            // A single launcher row belongs to the prayer and countdown.
+            if (height in 1..85) {
+                views.setViewVisibility(R.id.prayer_widget_date, View.GONE)
+            }
+            if (model?.nextAfter(now) != null) {
+                val roomForLabel = width >= 140 && (height <= 0 || height > 85)
+                views.setViewVisibility(R.id.prayer_widget_label, if (roomForLabel) View.VISIBLE else View.GONE)
             }
             // Base: two cells by one.
             val scale = WidgetScale.of(width, height, 140f, 60f)
@@ -141,13 +146,16 @@ internal object PrayerWidgetRenderer {
         val views = RemoteViews(context.packageName, R.layout.prayer_widget)
         val next = model?.nextAfter(now)
         if (model == null || next == null) {
+            views.setViewVisibility(R.id.prayer_widget_label, View.VISIBLE)
             views.setTextViewText(R.id.prayer_widget_label, context.getString(R.string.prayer_widget_name))
             views.setTextViewText(R.id.prayer_widget_name, model?.labels?.empty ?: context.getString(R.string.prayer_widget_empty))
+            views.setViewVisibility(R.id.prayer_widget_times, View.GONE)
             views.setViewVisibility(R.id.prayer_widget_time, View.GONE)
             views.setViewVisibility(R.id.prayer_widget_remaining, View.GONE)
             views.setViewVisibility(R.id.prayer_widget_seconds, View.GONE)
             views.setViewVisibility(R.id.prayer_widget_date, View.GONE)
         } else {
+            views.setViewVisibility(R.id.prayer_widget_times, View.VISIBLE)
             views.setTextViewText(R.id.prayer_widget_label, model.labels.next)
             views.setTextViewText(R.id.prayer_widget_name, next.name)
             views.setTextViewText(R.id.prayer_widget_time, next.time)

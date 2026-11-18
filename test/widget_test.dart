@@ -13,6 +13,7 @@ import 'package:mre_quran/features/bookmarks/application/bookmarks_provider.dart
 import 'package:mre_quran/features/quran_text/application/quran_text_providers.dart';
 import 'package:mre_quran/features/settings/application/settings_provider.dart';
 import 'package:mre_quran/features/settings/domain/app_settings.dart';
+import 'package:mre_quran/features/settings/presentation/settings_page.dart';
 import 'package:mre_quran/features/startup/application/startup_providers.dart';
 
 import 'helpers/fake_quran_metadata_source.dart';
@@ -78,6 +79,35 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
+
+  testWidgets('reader settings shortcut opens settings', (tester) async {
+    final repository = MemorySettingsRepository()
+      ..settings = const AppSettings(readerMode: ReaderMode.text);
+    final container = ProviderContainer(
+      overrides: [
+        settingsRepositoryProvider.overrideWithValue(repository),
+        lastTabRepositoryProvider.overrideWithValue(MemoryLastTabRepository()),
+        quranMetadataSourceProvider.overrideWithValue(
+          FakeQuranMetadataSource(),
+        ),
+        readingPositionRepositoryProvider.overrideWithValue(
+          MemoryReadingPositionRepository(),
+        ),
+        quranTextSourceProvider.overrideWithValue(FakeQuranTextSource()),
+        bookmarksRepositoryProvider.overrideWithValue(
+          MemoryBookmarksRepository(),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const QuranApp()),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byIcon(Icons.settings_outlined).hitTestable().first);
+    await tester.pumpAndSettle();
+    expect(find.byType(SettingsPage).hitTestable(), findsOneWidget);
+  });
 
   testWidgets('English locale uses left-to-right direction', (tester) async {
     tester.view.physicalSize = const Size(390, 844);

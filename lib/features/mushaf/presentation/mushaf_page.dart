@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../app/router.dart';
 import '../../../core/l10n/l10n.dart';
@@ -121,7 +122,7 @@ class MushafPage extends ConsumerWidget {
       }),
       searchLabel: l10n.searchQuran,
       onSearch: () => open(AppRoute.quranSearch),
-      actions: [
+      beforeSearch: [
         icon(
           marked.isEmpty
               ? Icons.bookmark_add_outlined
@@ -129,6 +130,11 @@ class MushafPage extends ConsumerWidget {
           marked.isEmpty ? l10n.bookmarkPage : l10n.removePageBookmark,
           togglePageBookmark,
         ),
+      ],
+      actions: [
+        icon(Icons.settings_outlined, l10n.settings, () {
+          context.go(AppRoute.settings.path);
+        }),
       ],
     );
     // Where the reader is (a tap opens the page scrubber) and the display
@@ -142,6 +148,7 @@ class MushafPage extends ConsumerWidget {
       onPage: goTo,
       onEnterNumber: goToPage,
       onDisplayOptions: () => showDisplayOptions(context),
+      onSurah: () => open(AppRoute.quranIndex),
     );
 
     // The page keeps one size: it fills the screen inside the system insets.

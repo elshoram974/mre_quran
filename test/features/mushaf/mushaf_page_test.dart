@@ -11,6 +11,7 @@ import 'package:mre_quran/features/mushaf/presentation/mushaf_page.dart';
 import 'package:mre_quran/features/mushaf/presentation/mushaf_pager.dart';
 import 'package:mre_quran/features/mushaf/presentation/page_scrubber.dart';
 import 'package:mre_quran/features/quran_index/application/quran_metadata_provider.dart';
+import 'package:mre_quran/features/quran_index/presentation/quran_index_page.dart';
 import 'package:mre_quran/features/bookmarks/application/bookmarks_provider.dart';
 import 'package:mre_quran/features/quran_text/application/quran_text_providers.dart';
 import 'package:mre_quran/features/settings/application/settings_provider.dart';
@@ -96,12 +97,20 @@ void main() {
     expect(find.byType(PageScrubber), findsNothing);
     expect(find.bySemanticsLabel('ابحث في القرآن'), findsOneWidget);
     expect(find.byTooltip('إضافة علامة للصفحة'), findsOneWidget);
-    // Display options carry a visible label, not a bare icon; there is no
-    // separate hide button, since a tap on the page hides the bars.
-    expect(find.text('العرض').hitTestable(), findsOneWidget);
+    // Display options and the surah index stay available in separate pills.
+    expect(find.byTooltip('العرض').hitTestable(), findsOneWidget);
+    expect(find.byIcon(Icons.menu_book_outlined).hitTestable(), findsWidgets);
     expect(find.byTooltip('إخفاء الأشرطة'), findsNothing);
     // The page's own labels step aside while the bars show.
     expect(find.text('الجزء ١').hitTestable(), findsNothing);
+  });
+
+  testWidgets('the surah pill opens the index', (tester) async {
+    await _pump(tester, savedPage: 5);
+    await tester.tap(find.byIcon(Icons.menu_book_outlined).hitTestable().first);
+    await tester.pumpAndSettle();
+    expect(find.byType(QuranIndexPage), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('the arrows keep their sides: back on the right, onward on the '

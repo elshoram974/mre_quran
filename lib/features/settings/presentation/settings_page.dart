@@ -14,6 +14,7 @@ import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_group_card.dart';
 import '../../../core/widgets/app_section_header.dart';
 import '../../../core/widgets/app_select_field.dart';
+import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/widgets/app_switch_tile.dart';
 import '../../../core/widgets/app_tile_card.dart';
 
@@ -33,12 +34,35 @@ class SettingsPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(settingsProvider);
     return settings.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const _SettingsSkeleton(),
       error: (_, _) =>
           _SettingsError(onRetry: () => ref.invalidate(settingsProvider)),
       data: (value) => _SettingsContent(settings: value),
     );
   }
+}
+
+class _SettingsSkeleton extends StatelessWidget {
+  const _SettingsSkeleton();
+
+  @override
+  Widget build(BuildContext context) => AppShimmer(
+    child: ListView(
+      padding: pagePadding(context),
+      children: const [
+        SkeletonBox(
+          width: AppTokens.frameSampleMinWidth,
+          height: AppTokens.iconSmall,
+        ),
+        SizedBox(height: AppTokens.spaceMedium),
+        SkeletonBox(height: AppTokens.minTarget * 2),
+        SizedBox(height: AppTokens.spaceMedium),
+        SkeletonBox(height: AppTokens.minTarget),
+        SizedBox(height: AppTokens.spaceMedium),
+        SkeletonBox(height: AppTokens.minTarget * 2),
+      ],
+    ),
+  );
 }
 
 class _SettingsError extends StatelessWidget {

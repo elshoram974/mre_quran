@@ -26,7 +26,7 @@ class WidgetPreviewCapture : Activity() {
     private data class Shot(val layout: Int, val name: String, val widthDp: Int, val heightDp: Int)
 
     private val shots = listOf(
-        Shot(R.layout.prayer_widget, "prayer_widget_preview", 172, 72),
+        Shot(R.layout.prayer_widget, "prayer_widget_preview", 140, 60),
         Shot(R.layout.prayer_schedule_widget, "prayer_schedule_widget_preview", 172, 150),
         Shot(R.layout.adhkar_widget, "adhkar_widget_preview", 172, 72),
         Shot(R.layout.tasbih_widget, "tasbih_widget_preview", 172, 72),
