@@ -208,7 +208,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get widgetsPreviewHint =>
-      'Previews show the original colours. Resize a widget on your home screen to show more detail.';
+      'Previews show the default design. Your choices apply to the widgets on your home screen.';
 
   @override
   String get widgetAppearance => 'Widget colours';
@@ -224,7 +224,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get widgetSizeSmall => 'Minimum Android size: two columns by one row.';
 
   @override
-  String get widgetSizeTall => 'Minimum Android size: two columns by two rows.';
+  String get widgetSizeTall =>
+      'Recommended Android size: two columns by two rows; resizable.';
 
   @override
   String get widgetSizeWide =>
@@ -264,7 +265,47 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get widgetPrayerScheduleDescription =>
-      'Today\'s five prayers, sunrise, and time until the next prayer. Enlarge the widget to see Gregorian and Hijri dates. The small size uses 24-hour times.';
+      'Today\'s prayers, sunrise and the time remaining for each upcoming prayer. Smaller sizes automatically show upcoming prayers.';
+
+  @override
+  String get widgetScheduleSettings => 'Prayer times widget settings';
+
+  @override
+  String get widgetScheduleSettingsHint =>
+      'Applies to all copies of the prayer times widget. Content adapts to the available space.';
+
+  @override
+  String get widgetScheduleLayout => 'Times shown';
+
+  @override
+  String get widgetScheduleAll => 'Full schedule';
+
+  @override
+  String get widgetScheduleUpcoming => 'Next three prayers';
+
+  @override
+  String get widgetScheduleSunrise => 'Show sunrise';
+
+  @override
+  String get widgetScheduleSunriseHint =>
+      'Sunrise is shown in the full daily schedule.';
+
+  @override
+  String get widgetScheduleDate => 'Show Gregorian and Hijri dates';
+
+  @override
+  String get widgetScheduleCountdown => 'Time remaining for each prayer';
+
+  @override
+  String get widgetScheduleLargeText => 'Larger text';
+
+  @override
+  String get widgetScheduleLargeTextHint =>
+      'Fewer prayers may be shown when space is limited.';
+
+  @override
+  String get widgetScheduleSaveFailed =>
+      'Could not save widget settings. Try again.';
 
   @override
   String get widgetTasbih => 'Tasbih';
@@ -1320,7 +1361,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get widgetPreviewIosHint =>
-      'Previews show the original Android designs. On iPhone, widgets adapt to your Home Screen appearance.';
+      'Previews show the default Android designs. On iPhone, widgets follow your choices and Home Screen appearance.';
 
   @override
   String get copyText => 'Copy';

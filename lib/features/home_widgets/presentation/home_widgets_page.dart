@@ -12,6 +12,7 @@ import '../../../core/widgets/app_tile_card.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../application/home_widgets_providers.dart';
 import '../domain/home_widget.dart';
+import 'prayer_schedule_options_section.dart';
 
 /// The app's home-screen widgets, each with what it shows. Where the
 /// launcher takes the request (Android 8 and later), each has an "Add"
@@ -109,7 +110,7 @@ class HomeWidgetsPage extends ConsumerWidget {
             final widget = HomeWidget.values[index - 1];
             final size = switch (widget) {
               HomeWidget.prayerCard => l10n.widgetSizeWide,
-              HomeWidget.prayerSchedule => l10n.widgetSizeSmall,
+              HomeWidget.prayerSchedule => l10n.widgetSizeTall,
 
               _ => l10n.widgetSizeSmall,
             };
@@ -150,6 +151,10 @@ class HomeWidgetsPage extends ConsumerWidget {
                         )
                       : null,
                 ),
+                if (widget == HomeWidget.prayerSchedule) ...[
+                  const SizedBox(height: AppTokens.spaceMedium),
+                  const PrayerScheduleOptionsSection(),
+                ],
                 const SizedBox(height: AppTokens.spaceMedium),
               ],
             );

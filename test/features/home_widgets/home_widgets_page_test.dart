@@ -116,7 +116,7 @@ void main() {
     expect(find.textContaining('اضغط مطولًا'), findsOneWidget);
   });
 
-  testWidgets('the prayer schedule is described as a two by one widget', (
+  testWidgets('the prayer schedule recommends a two by two widget', (
     tester,
   ) async {
     await _pump(tester, locale: 'en');
@@ -132,11 +132,65 @@ void main() {
     expect(
       find.descendant(
         of: card,
-        matching: find.textContaining('two columns by one row'),
+        matching: find.textContaining('two columns by two rows'),
       ),
       findsOneWidget,
     );
-    expect(find.textContaining('time until the next prayer'), findsOneWidget);
+    expect(find.textContaining('time remaining for each upcoming prayer'), findsOneWidget);
+  });
+
+  testWidgets('schedule choices save and remain visible in the app', (
+    tester,
+  ) async {
+    final widgets = await _pump(tester, locale: 'en');
+    final sunrise = find.text('Show sunrise');
+    await tester.scrollUntilVisible(
+      sunrise,
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.ensureVisible(sunrise);
+    await tester.pumpAndSettle();
+    await tester.tap(sunrise);
+    await tester.pumpAndSettle();
+    expect(widgets.scheduleOptions.showSunrise, isFalse);
+    final large = find.text('Larger text');
+    await tester.ensureVisible(large);
+    await tester.pumpAndSettle();
+    await tester.tap(large);
+    await tester.pumpAndSettle();
+    expect(widgets.scheduleOptions.largeText, isTrue);
+    final mode = find.text('Times shown');
+    await tester.ensureVisible(mode);
+    await tester.pumpAndSettle();
+    await tester.tap(mode);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Next three prayers').last);
+    await tester.pumpAndSettle();
+    expect(widgets.scheduleOptions.upcomingOnly, isTrue);
+    expect(widgets.scheduleOptions.showSunrise, isFalse);
+  });
+
+  testWidgets('failed schedule save restores the previous choice', (
+    tester,
+  ) async {
+    final widgets = await _pump(tester, locale: 'en');
+    widgets.failScheduleSave = true;
+    final sunrise = find.text('Show sunrise');
+    await tester.scrollUntilVisible(
+      sunrise,
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.ensureVisible(sunrise);
+    await tester.pumpAndSettle();
+    await tester.tap(sunrise);
+    await tester.pumpAndSettle();
+    expect(widgets.scheduleOptions.showSunrise, isTrue);
+    expect(
+      find.text('Could not save widget settings. Try again.'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('on iOS it gives the steps', (tester) async {

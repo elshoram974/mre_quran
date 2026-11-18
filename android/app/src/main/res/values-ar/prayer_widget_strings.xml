@@ -37,11 +37,10 @@
     <string name="prayer_card_widget_name">بطاقة الصلاة</string>
     <string name="prayer_card_widget_description">الصلاة القادمة والوقت المتبقي لها، وصلوات اليوم الخمس.</string>
 
-    <string name="widget_preview_compact_fajr_time">٥:٢٧</string>
-    <string name="widget_preview_compact_sunrise_time">٦:٥٤</string>
-    <string name="widget_preview_compact_dhuhr_time">١٢:٤٤</string>
-    <string name="widget_preview_compact_asr_time">١٦:٠٢</string>
-    <string name="widget_preview_compact_maghrib_time">١٨:٣٢</string>
-    <string name="widget_preview_compact_isha_time">١٩:٤٩</string>
-    <string name="widget_preview_schedule_next">الظهر ·\u00a0</string>
+    <string name="widget_short_hours">بعد %1$sس %2$sد</string>
+    <string name="widget_short_minutes">بعد %1$sد</string>
+    <string name="widget_preview_remaining_2">بعد ١س ٢٤د</string>
+    <string name="widget_preview_remaining_3">بعد ٤س ٤٢د</string>
+    <string name="widget_preview_remaining_4">بعد ٧س ١٢د</string>
+    <string name="widget_preview_remaining_5">بعد ٨س ٢٩د</string>
 </resources>

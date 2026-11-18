@@ -34,6 +34,34 @@ object HomeWidgets {
         return true
     }
 
+    /** Options are shared by all placed schedule widgets. */
+    fun prayerScheduleOptions(context: Context): Map<String, Boolean> {
+        val prefs = context.getSharedPreferences("home_widgets", Context.MODE_PRIVATE)
+        return mapOf(
+            "upcomingOnly" to prefs.getBoolean("schedule_upcoming", false),
+            "showSunrise" to prefs.getBoolean("schedule_sunrise", true),
+            "showDate" to prefs.getBoolean("schedule_date", true),
+            "showCountdown" to prefs.getBoolean("schedule_countdown", true),
+            "largeText" to prefs.getBoolean("schedule_large_text", false),
+        )
+    }
+
+    fun setPrayerScheduleOptions(context: Context, options: Map<*, *>?): Boolean {
+        val keys = mapOf(
+            "upcomingOnly" to "schedule_upcoming",
+            "showSunrise" to "schedule_sunrise",
+            "showDate" to "schedule_date",
+            "showCountdown" to "schedule_countdown",
+            "largeText" to "schedule_large_text",
+        )
+        if (options == null || keys.keys.any { options[it] !is Boolean }) return false
+        val editor = context.getSharedPreferences("home_widgets", Context.MODE_PRIVATE).edit()
+        keys.forEach { (key, preference) -> editor.putBoolean(preference, options[key] as Boolean) }
+        editor.apply()
+        PrayerWidgetRenderer.updateAll(context)
+        return true
+    }
+
     internal fun applyBackground(context: Context, views: RemoteViews, root: Int) {
         val background = when (appearance(context)) {
             "navy" -> R.drawable.widget_card_bg

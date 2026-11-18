@@ -206,7 +206,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get widgetsPreviewHint =>
-      'المعاينات بالألوان الأصلية. كبّر الويدجت على الشاشة الرئيسية لعرض تفاصيل أكثر.';
+      'الصور تعرض التصميم الافتراضي. اختياراتك تُطبّق على الويدجت في الشاشة الرئيسية.';
 
   @override
   String get widgetAppearance => 'ألوان الويدجت';
@@ -221,7 +221,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String get widgetSizeSmall => 'أصغر مقاس على أندرويد: خليتان عرضًا وصف واحد.';
 
   @override
-  String get widgetSizeTall => 'أصغر مقاس على أندرويد: خليتان عرضًا وصفان.';
+  String get widgetSizeTall =>
+      'المقاس المقترح على أندرويد: خليتان عرضًا وصفان؛ ويمكن تغيير حجمه.';
 
   @override
   String get widgetSizeWide => 'أصغر مقاس على أندرويد: ثلاث خلايا عرضًا وصفان.';
@@ -259,7 +260,47 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get widgetPrayerScheduleDescription =>
-      'صلوات اليوم الخمس والشروق والوقت المتبقي للصلاة القادمة. كبّر الويدجت لإظهار التاريخين الميلادي والهجري. في المقاس الصغير تُعرض المواقيت بنظام 24 ساعة.';
+      'صلوات اليوم والشروق والوقت المتبقي لكل صلاة قادمة. في المقاس الصغير تظهر الصلوات القادمة تلقائيًا.';
+
+  @override
+  String get widgetScheduleSettings => 'إعدادات ويدجت المواقيت';
+
+  @override
+  String get widgetScheduleSettingsHint =>
+      'تُطبّق على كل نسخ ويدجت مواقيت اليوم. يتكيّف المحتوى مع المساحة.';
+
+  @override
+  String get widgetScheduleLayout => 'المواقيت المعروضة';
+
+  @override
+  String get widgetScheduleAll => 'الجدول الكامل';
+
+  @override
+  String get widgetScheduleUpcoming => 'الصلوات الثلاث القادمة';
+
+  @override
+  String get widgetScheduleSunrise => 'إظهار الشروق';
+
+  @override
+  String get widgetScheduleSunriseHint =>
+      'يظهر الشروق في جدول مواقيت اليوم الكامل.';
+
+  @override
+  String get widgetScheduleDate => 'إظهار التاريخ الميلادي والهجري';
+
+  @override
+  String get widgetScheduleCountdown => 'الوقت المتبقي لكل صلاة';
+
+  @override
+  String get widgetScheduleLargeText => 'خط أكبر';
+
+  @override
+  String get widgetScheduleLargeTextHint =>
+      'قد تظهر صلوات أقل عندما لا تكفي المساحة.';
+
+  @override
+  String get widgetScheduleSaveFailed =>
+      'تعذر حفظ إعدادات الويدجت. حاول مرة أخرى.';
 
   @override
   String get widgetTasbih => 'المسبحة';
@@ -1315,7 +1356,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get widgetPreviewIosHint =>
-      'تعرض الصور تصميم أندرويد بالألوان الأصلية. على iPhone يتبع المظهر تخصيص الشاشة الرئيسية.';
+      'تعرض الصور تصميم أندرويد الافتراضي. على iPhone يتبع الويدجت إعداداتك ومظهر الشاشة الرئيسية.';
 
   @override
   String get copyText => 'نسخ';

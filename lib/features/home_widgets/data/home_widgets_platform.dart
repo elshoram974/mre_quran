@@ -2,6 +2,7 @@ import 'package:flutter/services.dart';
 
 import '../../../core/diagnostics/app_logger.dart';
 import '../domain/home_widget.dart';
+import '../domain/prayer_schedule_options.dart';
 
 /// What the platform can do with the app's home-screen widgets.
 abstract interface class HomeWidgetsPlatform {
@@ -18,6 +19,12 @@ abstract interface class HomeWidgetsPlatform {
 
   /// Saves a style and refreshes the widgets already placed.
   Future<bool> setAppearance(WidgetAppearance value);
+
+  /// The shared display choices for prayer schedule widgets.
+  Future<PrayerScheduleOptions> prayerScheduleOptions();
+
+  /// Saves the choices and refreshes placed prayer schedule widgets.
+  Future<bool> setPrayerScheduleOptions(PrayerScheduleOptions options);
 
   /// Whether any of the app's widgets is on the home screen now.
   Future<bool> placed();
@@ -60,6 +67,25 @@ class MethodChannelHomeWidgets implements HomeWidgetsPlatform {
   @override
   Future<bool> setAppearance(WidgetAppearance value) =>
       _ask('setAppearance', value.name);
+
+  @override
+  Future<PrayerScheduleOptions> prayerScheduleOptions() async {
+    try {
+      final values = await _channel.invokeMapMethod<Object?, Object?>(
+        'prayerScheduleOptions',
+      );
+      return PrayerScheduleOptions.fromMap(values);
+    } on MissingPluginException {
+      return const PrayerScheduleOptions();
+    } on PlatformException catch (error) {
+      AppLogger.debug('Prayer widget options read failed: ${error.code}');
+      return const PrayerScheduleOptions();
+    }
+  }
+
+  @override
+  Future<bool> setPrayerScheduleOptions(PrayerScheduleOptions options) =>
+      _ask('setPrayerScheduleOptions', options.toMap());
 
   @override
   Future<bool> placed() => _ask('placed');

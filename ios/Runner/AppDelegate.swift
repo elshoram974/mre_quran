@@ -78,6 +78,23 @@ import WidgetKit
         defaults.set(style, forKey: "widgetAppearance")
         WidgetCenter.shared.reloadAllTimelines()
         callback(true)
+      case "prayerScheduleOptions":
+        let defaults = UserDefaults(suiteName: "group.net.mrecode.mreQuran")
+        callback(defaults?.dictionary(forKey: "prayerScheduleOptions") ?? [
+          "upcomingOnly": false, "showSunrise": true, "showDate": true,
+          "showCountdown": true, "largeText": false,
+        ])
+      case "setPrayerScheduleOptions":
+        let keys = ["upcomingOnly", "showSunrise", "showDate", "showCountdown", "largeText"]
+        guard let options = call.arguments as? [String: Any],
+          keys.allSatisfy({ options[$0] is Bool }),
+          let defaults = UserDefaults(suiteName: "group.net.mrecode.mreQuran") else {
+          callback(false)
+          return
+        }
+        defaults.set(options, forKey: "prayerScheduleOptions")
+        WidgetCenter.shared.reloadTimelines(ofKind: "PrayerScheduleWidget")
+        callback(true)
       case "placed":
         WidgetCenter.shared.getCurrentConfigurations { result in
           let placed = (try? result.get())?.isEmpty == false

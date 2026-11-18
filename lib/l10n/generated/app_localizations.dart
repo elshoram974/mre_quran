@@ -473,7 +473,7 @@ abstract class AppLocalizations {
   /// No description provided for @widgetsPreviewHint.
   ///
   /// In en, this message translates to:
-  /// **'Previews show the original colours. Resize a widget on your home screen to show more detail.'**
+  /// **'Previews show the default design. Your choices apply to the widgets on your home screen.'**
   String get widgetsPreviewHint;
 
   /// No description provided for @widgetAppearance.
@@ -503,7 +503,7 @@ abstract class AppLocalizations {
   /// No description provided for @widgetSizeTall.
   ///
   /// In en, this message translates to:
-  /// **'Minimum Android size: two columns by two rows.'**
+  /// **'Recommended Android size: two columns by two rows; resizable.'**
   String get widgetSizeTall;
 
   /// No description provided for @widgetSizeWide.
@@ -569,8 +569,80 @@ abstract class AppLocalizations {
   /// No description provided for @widgetPrayerScheduleDescription.
   ///
   /// In en, this message translates to:
-  /// **'Today\'s five prayers, sunrise, and time until the next prayer. Enlarge the widget to see Gregorian and Hijri dates. The small size uses 24-hour times.'**
+  /// **'Today\'s prayers, sunrise and the time remaining for each upcoming prayer. Smaller sizes automatically show upcoming prayers.'**
   String get widgetPrayerScheduleDescription;
+
+  /// No description provided for @widgetScheduleSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Prayer times widget settings'**
+  String get widgetScheduleSettings;
+
+  /// No description provided for @widgetScheduleSettingsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Applies to all copies of the prayer times widget. Content adapts to the available space.'**
+  String get widgetScheduleSettingsHint;
+
+  /// No description provided for @widgetScheduleLayout.
+  ///
+  /// In en, this message translates to:
+  /// **'Times shown'**
+  String get widgetScheduleLayout;
+
+  /// No description provided for @widgetScheduleAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Full schedule'**
+  String get widgetScheduleAll;
+
+  /// No description provided for @widgetScheduleUpcoming.
+  ///
+  /// In en, this message translates to:
+  /// **'Next three prayers'**
+  String get widgetScheduleUpcoming;
+
+  /// No description provided for @widgetScheduleSunrise.
+  ///
+  /// In en, this message translates to:
+  /// **'Show sunrise'**
+  String get widgetScheduleSunrise;
+
+  /// No description provided for @widgetScheduleSunriseHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Sunrise is shown in the full daily schedule.'**
+  String get widgetScheduleSunriseHint;
+
+  /// No description provided for @widgetScheduleDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Show Gregorian and Hijri dates'**
+  String get widgetScheduleDate;
+
+  /// No description provided for @widgetScheduleCountdown.
+  ///
+  /// In en, this message translates to:
+  /// **'Time remaining for each prayer'**
+  String get widgetScheduleCountdown;
+
+  /// No description provided for @widgetScheduleLargeText.
+  ///
+  /// In en, this message translates to:
+  /// **'Larger text'**
+  String get widgetScheduleLargeText;
+
+  /// No description provided for @widgetScheduleLargeTextHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Fewer prayers may be shown when space is limited.'**
+  String get widgetScheduleLargeTextHint;
+
+  /// No description provided for @widgetScheduleSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save widget settings. Try again.'**
+  String get widgetScheduleSaveFailed;
 
   /// No description provided for @widgetTasbih.
   ///
@@ -2350,7 +2422,7 @@ abstract class AppLocalizations {
   /// No description provided for @widgetPreviewIosHint.
   ///
   /// In en, this message translates to:
-  /// **'Previews show the original Android designs. On iPhone, widgets adapt to your Home Screen appearance.'**
+  /// **'Previews show the default Android designs. On iPhone, widgets follow your choices and Home Screen appearance.'**
   String get widgetPreviewIosHint;
 
   /// No description provided for @copyText.

@@ -214,27 +214,43 @@ private struct ScheduleView: View {
     let data = entry.payload ?? (entry.isPreview ? Payload.sample(entry.date) : nil)
     Group {
       if let data, let day = data.day(entry.date) {
+        let options = UserDefaults(suiteName: appGroup)?.dictionary(forKey: "prayerScheduleOptions") ?? [:]
+        let largeText = options["largeText"] as? Bool ?? false
+        let showSunrise = options["showSunrise"] as? Bool ?? true
+        let showDate = options["showDate"] as? Bool ?? true
+        let showCountdown = options["showCountdown"] as? Bool ?? true
+        let upcoming = (options["upcomingOnly"] as? Bool ?? false) ||
+          (family == .systemSmall && (largeText || showCountdown))
+        let next = data.next(entry.date)
+        let tomorrow = !day.rows.contains { $0.id != "sunrise" && $0.at > entry.date }
+        let rows = upcoming
+          ? Array(data.days.flatMap(\.rows).filter { $0.id != "sunrise" && $0.at > entry.date }.sorted { $0.at < $1.at }.prefix(3))
+          : day.rows.filter { $0.id != "sunrise" || showSunrise }
         VStack(alignment: .leading, spacing: family == .systemLarge ? 6 : 1) {
-          HStack(spacing: 4) {
-            Text(day.date).font(.caption2.weight(.bold)).lineLimit(1)
-            Text(day.hijri).font(.caption2).foregroundStyle(.secondary).lineLimit(1)
-          }
-          if let next = data.next(entry.date) {
-            HStack(spacing: 3) {
-              Text(next.name)
-              TimeLeft(data: data, at: next.at, now: entry.date)
-            }.font(.caption2.weight(.medium)).foregroundStyle(.secondary).lineLimit(1)
-          }
-          let next = data.next(entry.date)
-          let tomorrow = !day.rows.contains { $0.id != "sunrise" && $0.at > entry.date }
-          ForEach(day.rows) { row in
-            let coming = row.id != "sunrise" && row.id == next?.id && (tomorrow || row.at == next?.at)
-            HStack(spacing: 6) {
-              Text(row.name)
-              Text(coming ? (next?.time ?? row.time) : row.time).monospacedDigit()
-              Spacer(minLength: 0)
+          if showDate {
+            HStack(spacing: 4) {
+              Text(day.date).font(.caption2.weight(.bold)).lineLimit(1)
+              Text(day.hijri).font(.caption2).foregroundStyle(.secondary).lineLimit(1)
             }
-            .font(family == .systemLarge ? .body : .system(size: 12))
+          }
+          ForEach(rows) { row in
+            let coming = row.id != "sunrise" && row.id == next?.id && (row.at == next?.at || (!upcoming && tomorrow))
+            let at = coming ? (next?.at ?? row.at) : row.at
+            VStack(alignment: .leading, spacing: 0) {
+              HStack(spacing: 12) {
+                Text(row.name)
+                Text(coming ? (next?.time ?? row.time) : row.time).monospacedDigit()
+                Spacer(minLength: 0)
+                if family != .systemSmall, showCountdown, row.id != "sunrise", at > entry.date {
+                  TimeLeft(data: data, at: at, now: entry.date)
+                    .font(.caption2).foregroundStyle(.secondary)
+                }
+              }.font(family == .systemLarge ? .body : .system(size: largeText ? 15 : 12))
+              if family == .systemSmall, showCountdown, row.id != "sunrise", at > entry.date {
+                TimeLeft(data: data, at: at, now: entry.date)
+                  .font(.caption2).foregroundStyle(.secondary)
+              }
+            }
             .lineLimit(1)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
             .background(RoundedRectangle(cornerRadius: 6).fill(coming ? Color.primary.opacity(0.1) : .clear))

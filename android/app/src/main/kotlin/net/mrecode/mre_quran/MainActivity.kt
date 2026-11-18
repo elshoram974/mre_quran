@@ -42,6 +42,8 @@ class MainActivity : FlutterActivity() {
                     "pin" -> result.success(HomeWidgets.pin(this, call.arguments as? String))
                     "appearance" -> result.success(HomeWidgets.appearance(this))
                     "setAppearance" -> result.success(HomeWidgets.setAppearance(this, call.arguments as? String))
+                    "prayerScheduleOptions" -> result.success(HomeWidgets.prayerScheduleOptions(this))
+                    "setPrayerScheduleOptions" -> result.success(HomeWidgets.setPrayerScheduleOptions(this, call.arguments as? Map<*, *>))
                     "placed" -> result.success(HomeWidgets.placed(this))
                     else -> result.notImplemented()
                 }

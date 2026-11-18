@@ -38,11 +38,10 @@
     <string name="prayer_card_widget_name">Prayer card</string>
     <string name="prayer_card_widget_description">The coming prayer with the time left, and the day\'s five prayers.</string>
 
-    <string name="widget_preview_compact_fajr_time">5:27</string>
-    <string name="widget_preview_compact_sunrise_time">6:54</string>
-    <string name="widget_preview_compact_dhuhr_time">12:44</string>
-    <string name="widget_preview_compact_asr_time">16:02</string>
-    <string name="widget_preview_compact_maghrib_time">18:32</string>
-    <string name="widget_preview_compact_isha_time">19:49</string>
-    <string name="widget_preview_schedule_next">Dhuhr ·\u00a0</string>
+    <string name="widget_short_hours">+%1$sh%2$sm</string>
+    <string name="widget_short_minutes">+%1$sm</string>
+    <string name="widget_preview_remaining_2">+1h24m</string>
+    <string name="widget_preview_remaining_3">+4h42m</string>
+    <string name="widget_preview_remaining_4">+7h12m</string>
+    <string name="widget_preview_remaining_5">+8h29m</string>
 </resources>
