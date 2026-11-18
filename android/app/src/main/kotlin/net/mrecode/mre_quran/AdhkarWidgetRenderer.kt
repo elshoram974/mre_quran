@@ -47,7 +47,7 @@ internal object AdhkarWidgetRenderer {
             views.setTextViewText(R.id.adhkar_widget_title, context.getString(R.string.adhkar_widget_empty))
             views.setViewVisibility(R.id.adhkar_widget_progress, View.GONE)
             views.setViewVisibility(R.id.adhkar_widget_count, View.GONE)
-            views.setOnClickPendingIntent(R.id.adhkar_widget_root, openApp(context, ""))
+            views.setOnClickPendingIntent(R.id.adhkar_widget_root, openApp(context, "adhkar-home"))
             return views
         }
         views.setTextViewText(R.id.adhkar_widget_label, model.label)

@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:mre_quran/app/shell/expanding_nav_bar.dart';
 import 'package:mre_quran/core/widgets/app_select_field.dart';
+import 'package:mre_quran/features/quran_index/presentation/quran_index_page.dart';
 import 'package:mre_quran/main.dart' as app;
 
 /// Frame-timing scenarios, one report per phase. Run with:
@@ -76,7 +77,12 @@ void main() {
         await tester.pumpAndSettle();
       },
       'index_scroll': () async {
-        final list = find.byType(Scrollable).first;
+        final list = find
+            .descendant(
+              of: find.byType(QuranIndexPage),
+              matching: find.byType(Scrollable),
+            )
+            .last;
         await tester.fling(list, const Offset(0, -2500), 4000);
         await tester.pumpAndSettle();
         await tester.fling(list, const Offset(0, 2500), 4000);
@@ -90,7 +96,7 @@ void main() {
         await tapText('الأجزاء');
       },
       'index_close': () async {
-        await tester.tap(find.byType(BackButton));
+        await tester.tap(find.byIcon(Icons.close).last);
         await tester.pumpAndSettle();
       },
     };

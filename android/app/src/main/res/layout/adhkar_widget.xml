@@ -44,14 +44,14 @@
             android:textSize="12sp" />
     </LinearLayout>
 
-    <!-- Two lines, so the "open the app" hint is not cut. -->
+    <!-- One line keeps the progress visible in the smallest widget. -->
     <TextView
         android:id="@+id/adhkar_widget_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="2dp"
         android:ellipsize="end"
-        android:maxLines="2"
+        android:maxLines="1"
         android:text="@string/widget_preview_adhkar_title"
         android:textAlignment="viewStart"
         android:textColor="@color/widget_text"

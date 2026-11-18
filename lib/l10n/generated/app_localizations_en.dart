@@ -204,7 +204,31 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get widgetsIntro =>
-      'See the prayer times, count your tasbih and read a dhikr right from the home screen, without opening the app.';
+      'See prayer times, count tasbih and follow your adhkar from the home screen.';
+
+  @override
+  String get widgetsPreviewHint =>
+      'These are illustrative previews; appearance and size vary by device and home screen.';
+
+  @override
+  String get widgetSizeSmall =>
+      'Suggested Android size: two columns by one row.';
+
+  @override
+  String get widgetSizeFlexible =>
+      'On Android: two columns and one or two rows, depending on the home screen.';
+
+  @override
+  String get widgetSizeTall =>
+      'Suggested Android size: two columns by two rows.';
+
+  @override
+  String get widgetSizeWide =>
+      'Suggested Android size: four columns by two rows.';
+
+  @override
+  String get widgetIosTasbihHint =>
+      'Counting in the widget requires iOS 17 or later.';
 
   @override
   String get widgetsAdd => 'Add';
@@ -250,7 +274,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get widgetDhikrDescription =>
-      'Suggested adhkar with your saved progress.';
+      'A suggested adhkar list and your progress; tap to open it.';
 
   @override
   String get hintOfflineTitle => 'Note: the Mushaf needs the internet';
@@ -1021,6 +1045,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adhkarUndo => 'Undo one';
 
   @override
+  String get adhkarResetEntry => 'Restart this dhikr';
+
+  @override
   String get adhkarEvidence => 'Evidence';
 
   @override
@@ -1260,6 +1287,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shareAsImage => 'Share as image';
+
+  @override
+  String get printAyahs => 'Print verses';
+
+  @override
+  String get printFailed => 'Could not print. Please try again.';
+
+  @override
+  String get widgetPreviewIosHint =>
+      'These Android previews are illustrative; widgets may look different on iPhone.';
 
   @override
   String get copyText => 'Copy';

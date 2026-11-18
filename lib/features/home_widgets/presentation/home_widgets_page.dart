@@ -27,7 +27,8 @@ class HomeWidgetsPage extends ConsumerWidget {
 
     Future<void> add(HomeWidget widget) async {
       final asked = await ref.read(homeWidgetsPlatformProvider).pin(widget);
-      messenger?.showSnackBar(
+      if (messenger?.mounted != true) return;
+      messenger!.showSnackBar(
         SnackBar(
           content: Text(asked ? l10n.widgetsAddAsked : l10n.hintWidgetsManual),
         ),
@@ -37,38 +38,86 @@ class HomeWidgetsPage extends ConsumerWidget {
     return AppPageScaffold(
       title: l10n.widgetsTitle,
       body: Builder(
-        builder: (context) => ListView(
+        builder: (context) => ListView.builder(
           padding: pagePadding(context),
-          children: [
-            Text(
-              l10n.widgetsIntro,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-            const SizedBox(height: AppTokens.spaceMedium),
-            if (!canPin) ...[
-              AppNotice(
-                context.isCupertino
-                    ? l10n.widgetsStepsIos
-                    : l10n.hintWidgetsManual,
-                icon: Icons.touch_app_outlined,
-              ),
-              const SizedBox(height: AppTokens.spaceMedium),
-            ],
-            for (final widget in HomeWidget.values) ...[
-              AppTileCard(
-                icon: _icon(widget),
-                title: _name(l10n, widget),
-                subtitle: _description(l10n, widget),
-                trailing: canPin
-                    ? FilledButton.tonal(
-                        onPressed: () => add(widget),
-                        child: Text(l10n.widgetsAdd),
-                      )
-                    : null,
-              ),
-              const SizedBox(height: AppTokens.spaceSmall),
-            ],
-          ],
+          itemCount: HomeWidget.values.length + 1,
+          itemBuilder: (context, index) {
+            if (index == 0) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.widgetsIntro,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: AppTokens.spaceSmall),
+                  Text(
+                    context.isCupertino
+                        ? l10n.widgetPreviewIosHint
+                        : l10n.widgetsPreviewHint,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                  if (!canPin) ...[
+                    const SizedBox(height: AppTokens.spaceMedium),
+                    AppNotice(
+                      context.isCupertino
+                          ? l10n.widgetsStepsIos
+                          : l10n.hintWidgetsManual,
+                      icon: Icons.touch_app_outlined,
+                    ),
+                  ],
+                  const SizedBox(height: AppTokens.spaceMedium),
+                ],
+              );
+            }
+            final widget = HomeWidget.values[index - 1];
+            final size = switch (widget) {
+              HomeWidget.prayerCard => l10n.widgetSizeWide,
+              HomeWidget.prayerSchedule => l10n.widgetSizeTall,
+              HomeWidget.tasbih || HomeWidget.dhikr => l10n.widgetSizeFlexible,
+              _ => l10n.widgetSizeSmall,
+            };
+            final subtitle = [
+              _description(l10n, widget),
+              if (!context.isCupertino) size,
+              if (context.isCupertino && widget == HomeWidget.tasbih)
+                l10n.widgetIosTasbihHint,
+            ].join('\n');
+            final folder = Localizations.localeOf(context).languageCode == 'ar'
+                ? 'drawable-ar-nodpi'
+                : 'drawable-nodpi';
+            final filename = switch (widget) {
+              HomeWidget.prayerCard => 'prayer_card',
+              HomeWidget.nextPrayer => 'prayer',
+              HomeWidget.prayerSchedule => 'prayer_schedule',
+              HomeWidget.tasbih => 'tasbih',
+              HomeWidget.dhikr => 'adhkar',
+            };
+            return Column(
+              children: [
+                ExcludeSemantics(
+                  child: Image.asset(
+                    'android/app/src/main/res/$folder/${filename}_widget_preview.png',
+                    height: AppTokens.widgetPreviewHeight,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+                const SizedBox(height: AppTokens.spaceSmall),
+                AppTileCard(
+                  icon: _icon(widget),
+                  title: _name(l10n, widget),
+                  subtitle: subtitle,
+                  trailing: canPin
+                      ? FilledButton.tonal(
+                          onPressed: () => add(widget),
+                          child: Text(l10n.widgetsAdd),
+                        )
+                      : null,
+                ),
+                const SizedBox(height: AppTokens.spaceMedium),
+              ],
+            );
+          },
         ),
       ),
     );

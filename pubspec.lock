@@ -37,10 +37,10 @@ packages:
     dependency: "direct main"
     description:
       name: archive
-      sha256: "6c5bcd986e06b94e3c40244af471750840a3d2341d1f9763a1100a14add517b4"
+      sha256: "2fda90592c0afd219c5e285618a98da835cd10df38372666093d25dfe457a2d0"
       url: "https://pub.dev"
     source: hosted
-    version: "4.3.0"
+    version: "4.7.1"
   args:
     dependency: transitive
     description:
@@ -65,6 +65,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "9.6.3"
+  barcode:
+    dependency: transitive
+    description:
+      name: barcode
+      sha256: "7b6729c37e3b7f34233e2318d866e8c48ddb46c1f7ad01ff7bb2a8de1da2b9f4"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.2.9"
+  bidi:
+    dependency: transitive
+    description:
+      name: bidi
+      sha256: "77f475165e94b261745cf1032c751e2032b8ed92ccb2bf5716036db79320637d"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.13"
   boolean_selector:
     dependency: transitive
     description:
@@ -695,6 +711,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.1.2"
+  image:
+    dependency: transitive
+    description:
+      name: image
+      sha256: d701df3ef4761a22854c69b9661c9d8f25b264b3982985f25944247ce644761f
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.11.0"
   integration_test:
     dependency: "direct dev"
     description: flutter
@@ -964,6 +988,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.3.0"
+  pdf:
+    dependency: "direct main"
+    description:
+      name: pdf
+      sha256: "6e40827f370d196e97c6611724d923a3d86c431ce8e2ce1e59edd03a67a1a6e6"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.13.1"
+  pdf_widget_wrapper:
+    dependency: transitive
+    description:
+      name: pdf_widget_wrapper
+      sha256: c930860d987213a3d58c7ec3b7ecf8085c3897f773e8dc23da9cae60a5d6d0f5
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.4"
   petitparser:
     dependency: transitive
     description:
@@ -1012,6 +1052,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.5.2"
+  printing:
+    dependency: "direct main"
+    description:
+      name: printing
+      sha256: "0f72f29f2e08b8453b7a45b6c7781eb792b1da3468bf0910be0eb3b1d6781f49"
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.15.1"
   process:
     dependency: transitive
     description:
@@ -1036,6 +1084,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.6.0"
+  qr:
+    dependency: transitive
+    description:
+      name: qr
+      sha256: "2c0189dca64a3ab08dda7acd7911c89af2374f08eb4eaded3e8ef4609f3b9c8b"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.3"
   quick_actions:
     dependency: "direct main"
     description:
@@ -1285,10 +1341,10 @@ packages:
     dependency: transitive
     description:
       name: test_api
-      sha256: "0a10344e901e5b2e63819567951cb6a06673ed6b84f40462188ff5a0c41f371f"
+      sha256: "2a122cbe059f8b610d3a5415f42e255b6c17b1f21eee1d960f31080237fb4f11"
       url: "https://pub.dev"
     source: hosted
-    version: "0.7.14"
+    version: "0.7.12"
   timezone:
     dependency: "direct main"
     description:

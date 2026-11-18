@@ -10,6 +10,7 @@ import 'package:mre_quran/features/mushaf/application/reader_immersive_provider.
 import 'package:mre_quran/features/mushaf/presentation/mushaf_page_view.dart';
 import 'package:mre_quran/features/quran_index/data/quran_metadata_parser.dart';
 import 'package:mre_quran/features/quran_text/domain/quran_text.dart';
+import 'package:mre_quran/features/quran_text/domain/ayah_range.dart';
 import 'package:mre_quran/l10n/generated/app_localizations.dart';
 
 import '../../helpers/fake_quran_text_source.dart';
@@ -48,6 +49,54 @@ void main() {
       marks: data.marks,
     );
   });
+
+  for (final locale in [const Locale('ar'), const Locale('en')]) {
+    testWidgets(
+      'selected ayah scrolls into view and remains manually scrollable in ${locale.languageCode}',
+      (tester) async {
+        tester.view.physicalSize = const Size(360, 320);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+        final selection = ValueNotifier<AyahRange?>(null);
+        addTearDown(selection.dispose);
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: AppTheme.light,
+            locale: locale,
+            supportedLocales: AppLocalizations.supportedLocales,
+            localizationsDelegates: appLocalizationsDelegates,
+            home: Scaffold(
+              body: ValueListenableBuilder<AyahRange?>(
+                valueListenable: selection,
+                builder: (_, selected, _) => MushafPageView(
+                  text: text,
+                  page: 42,
+                  fontScale: 2,
+                  onTap: () {},
+                  framed: false,
+                  selected: selected,
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        selection.value = AyahRange.single(text.pageAyahs(42).last.ref);
+        await tester.pumpAndSettle();
+        final scroll = tester.widget<SingleChildScrollView>(
+          find.byType(SingleChildScrollView),
+        );
+        expect(scroll.controller!.offset, greaterThan(0));
+        final before = scroll.controller!.offset;
+        await tester.drag(
+          find.byType(SingleChildScrollView),
+          const Offset(0, 200),
+        );
+        await tester.pumpAndSettle();
+        expect(scroll.controller!.offset, lessThan(before));
+      },
+    );
+  }
 
   for (final page in [1, 2, 42, 604]) {
     for (final (name, theme) in [

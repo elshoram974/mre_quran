@@ -93,6 +93,15 @@ were 35.8, 29.1, 63.8 and 110.4 ms respectively. This uses the emulator's
 software renderer; check realistic turning on a real device before attributing
 the cost to a specific effect or changing its appearance.
 
+The draggable index was profiled on the API 28 emulator with software rendering
+after its sheet change. The warm index-open, scroll, search, and close phases
+averaged 10.0, 5.7, 9.6, and 29.6 ms build time and 29.9, 39.2, 47.6, and
+34.2 ms raster time respectively. The close phase had only four frames and a
+108 ms worst build. Tests were running on the host during this run, so these
+figures expose a possible slow path but are not a controlled comparison with
+the earlier results. Repeat on an idle host and a physical device before
+concluding whether the sheet regressed.
+
 ## Rules
 
 - Do not await independent work one after another before `runApp`. Run it in parallel.

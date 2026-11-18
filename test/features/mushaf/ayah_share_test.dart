@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -6,6 +7,7 @@ import 'package:mre_quran/core/l10n/l10n.dart';
 import 'package:mre_quran/core/sharing/sharer.dart';
 import 'package:mre_quran/core/theme/app_theme.dart';
 import 'package:mre_quran/features/mushaf/presentation/ayah_share_card.dart';
+import 'package:mre_quran/features/mushaf/application/ayah_printer.dart';
 import 'package:mre_quran/features/mushaf/presentation/ayah_share_sheet.dart';
 import 'package:mre_quran/features/quran_index/application/quran_metadata_provider.dart';
 import 'package:mre_quran/features/quran_index/domain/quran_metadata.dart';
@@ -14,6 +16,7 @@ import 'package:mre_quran/features/quran_text/domain/ayah_texts.dart';
 import 'package:mre_quran/features/quran_text/domain/ayah_range.dart';
 import 'package:mre_quran/features/quran_text/domain/quran_text.dart';
 import 'package:mre_quran/l10n/generated/app_localizations.dart';
+import 'package:pdf/pdf.dart';
 
 import '../../helpers/fake_quran_metadata_source.dart';
 import '../../helpers/fake_quran_text_source.dart';
@@ -29,6 +32,12 @@ class _RecordingSharer implements Sharer {
   @override
   Future<void> shareImages(List<SharedImage> images, {String? text}) async =>
       shares.add((images: images, text: text));
+}
+
+class _RecordingPrinter implements AyahPrinter {
+  final List<Uint8List> images = [];
+  @override
+  Future<void> printCards(List<Uint8List> cards) async => images.addAll(cards);
 }
 
 void main() {
@@ -100,6 +109,7 @@ void main() {
   group('sharing', () {
     late QuranText text;
     late _RecordingSharer sharer;
+    late _RecordingPrinter printer;
     String? copied;
 
     Future<void> open(
@@ -130,6 +140,7 @@ void main() {
         ),
       );
       sharer = _RecordingSharer();
+      printer = _RecordingPrinter();
       final container = ProviderContainer(
         overrides: [
           quranMetadataSourceProvider.overrideWithValue(
@@ -137,6 +148,7 @@ void main() {
           ),
           quranTextSourceProvider.overrideWithValue(FakeQuranTextSource()),
           sharerProvider.overrideWithValue(sharer),
+          ayahPrinterProvider.overrideWithValue(printer),
         ],
       );
       addTearDown(container.dispose);
@@ -232,6 +244,27 @@ void main() {
       final width = ByteData.sublistView(image.png, 16, 20).getUint32(0);
       expect(width, 360 * 3);
       expect(shared.text, endsWith('[البقرة: ٢٥٥ · صفحة ٤٢]'));
+    });
+
+    testWidgets('prints the rendered verse and produces a multi-page PDF', (
+      tester,
+    ) async {
+      await open(tester);
+      await tester.runAsync(() async {
+        await tester.tap(find.text('طباعة الآيات'));
+        for (var i = 0; i < 100 && printer.images.isEmpty; i++) {
+          await Future<void>.delayed(const Duration(milliseconds: 50));
+          await tester.pump();
+        }
+      });
+      expect(printer.images, hasLength(1));
+      expect(printer.images.single.sublist(1, 4), 'PNG'.codeUnits);
+      final document = await buildAyahPrintPdf([
+        printer.images.single,
+        printer.images.single,
+      ], PdfPageFormat.a4);
+      expect(String.fromCharCodes(document.take(4)), '%PDF');
+      expect(String.fromCharCodes(document), contains('/Count 2'));
     });
 
     testWidgets('the last ayahs of a surah and the first of the next are '

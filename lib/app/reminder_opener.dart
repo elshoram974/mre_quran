@@ -11,6 +11,10 @@ import 'router.dart';
 /// list it names as steps over the Adhkar tab. A payload that is not ours does
 /// nothing.
 Future<void> openReminder(GoRouter router, String payload) async {
+  if (payload == ReminderPayload.adhkarHome) {
+    router.go(AppRoute.duas.path);
+    return;
+  }
   if (payload == ReminderPayload.adhanSettings) {
     await router.push<void>(AppRoute.adhan.path);
     return;

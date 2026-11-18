@@ -19,6 +19,7 @@ class DhikrCounter extends ConsumerWidget {
     required this.dhikr,
     required this.onCount,
     required this.onUndo,
+    required this.onReset,
     this.inline = false,
   });
 
@@ -33,6 +34,9 @@ class DhikrCounter extends ConsumerWidget {
 
   /// Called when the person takes back one repeat.
   final VoidCallback onUndo;
+
+  /// Starts this dhikr again.
+  final VoidCallback onReset;
 
   /// Whether undo sits beside the button, as an icon, instead of under it.
   /// A bar pinned under scrolling words uses this, so its height never
@@ -82,6 +86,14 @@ class DhikrCounter extends ConsumerWidget {
               icon: const Icon(Icons.undo_rounded),
             ),
           ],
+          if (done) ...[
+            const SizedBox(width: AppTokens.spaceSmall),
+            IconButton.filledTonal(
+              onPressed: onReset,
+              tooltip: l10n.adhkarResetEntry,
+              icon: const Icon(Icons.restart_alt_rounded),
+            ),
+          ],
         ],
       );
     }
@@ -96,6 +108,15 @@ class DhikrCounter extends ConsumerWidget {
               onPressed: onUndo,
               icon: const Icon(Icons.undo_rounded),
               label: Text(l10n.adhkarUndo),
+            ),
+          ),
+        if (done)
+          Align(
+            alignment: AlignmentDirectional.centerEnd,
+            child: TextButton.icon(
+              onPressed: onReset,
+              icon: const Icon(Icons.restart_alt_rounded),
+              label: Text(l10n.adhkarResetEntry),
             ),
           ),
       ],

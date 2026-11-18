@@ -58,6 +58,10 @@ class AdhkarProgressNotifier extends AsyncNotifier<AdhkarProgress> {
   Future<void> decrement(AdhkarCollection collection, Dhikr dhikr) =>
       _apply(_current.decrement(collection, dhikr, now: _now));
 
+  /// Clears one dhikr without resetting the rest of the collection.
+  Future<void> resetDhikr(AdhkarCollection collection, Dhikr dhikr) =>
+      _apply(_current.resetDhikr(collection, dhikr));
+
   /// Clears today's counts of [collection].
   Future<void> reset(AdhkarCollection collection) =>
       _apply(_current.reset(collection));

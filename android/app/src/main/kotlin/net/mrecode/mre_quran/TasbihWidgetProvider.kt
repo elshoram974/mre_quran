@@ -66,8 +66,8 @@ class TasbihWidgetProvider : AppWidgetProvider() {
             // sizes itself to fill what is left.
             val scale = WidgetScale.of(manager, id, BASE_WIDTH_DP, BASE_HEIGHT_DP)
             WidgetScale.text(views, R.id.tasbih_widget_name, 11f, scale)
-            WidgetScale.text(views, R.id.tasbih_widget_reset, 14f, scale)
-            WidgetScale.padding(context, views, R.id.tasbih_widget_reset, 8f, 2f, scale)
+            WidgetScale.text(views, R.id.tasbih_widget_reset_icon, 14f, scale)
+            WidgetScale.padding(context, views, R.id.tasbih_widget_reset_icon, 8f, 2f, scale)
             manager.updateAppWidget(id, views)
         }
     }

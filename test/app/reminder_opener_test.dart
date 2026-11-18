@@ -8,6 +8,27 @@ import 'package:mre_quran/app/router.dart';
 import 'package:mre_quran/core/notifications/reminder_payload.dart';
 
 void main() {
+  testWidgets('an empty dhikr-widget tap opens the duas tab', (tester) async {
+    final router = GoRouter(
+      initialLocation: AppRoute.reader.path,
+      routes: [
+        GoRoute(
+          path: AppRoute.reader.path,
+          builder: (_, _) => const Scaffold(body: Text('Reader')),
+        ),
+        GoRoute(
+          path: AppRoute.duas.path,
+          builder: (_, _) => const Scaffold(body: Text('Duas')),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    await openReminder(router, ReminderPayload.adhkarHome);
+    await tester.pumpAndSettle();
+    expect(find.text('Duas'), findsOneWidget);
+  });
+
   testWidgets('a prayer-widget tap opens the Adhan settings', (tester) async {
     final router = GoRouter(
       initialLocation: AppRoute.reader.path,

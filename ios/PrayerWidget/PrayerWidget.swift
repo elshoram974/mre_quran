@@ -70,9 +70,11 @@ private struct Empty: View { var body: some View { Text(Payload.read()?.labels["
 private struct NextView: View {
   let entry: Entry
   var body: some View {
-    if let data = entry.payload, let next = data.next(entry.date) {
-      VStack(alignment:.leading,spacing:5) { Text(data.labels["next"] ?? "Next prayer").font(.caption).foregroundStyle(.secondary); Text(next.name).font(.headline); Text(next.time).font(.title3.weight(.semibold)); TimeLeft(data: data, at: next.at, now: entry.date).font(.caption).foregroundStyle(.secondary) }.frame(maxWidth:.infinity,maxHeight:.infinity,alignment:.leading).background(Color(uiColor:.secondarySystemBackground)).widgetURL(URL(string:"mrequran://prayer-times"))
-    } else { Empty() }
+    Group {
+      if let data = entry.payload, let next = data.next(entry.date) {
+        VStack(alignment:.leading,spacing:5) { Text(data.labels["next"] ?? "Next prayer").font(.caption).foregroundStyle(.secondary); Text(next.name).font(.headline); Text(next.time).font(.title3.weight(.semibold)); TimeLeft(data: data, at: next.at, now: entry.date).font(.caption).foregroundStyle(.secondary) }.frame(maxWidth:.infinity,maxHeight:.infinity,alignment:.leading).background(Color(uiColor:.secondarySystemBackground))
+      } else { Empty() }
+    }.widgetURL(URL(string:"mrequran://mre-quran/prayer-times"))
   }
 }
 /// The time left until [at]: to the second when the person chose it in the
@@ -135,15 +137,17 @@ private struct CardView: View {
     .frame(maxWidth: .infinity, maxHeight: .infinity)
     .background(LinearGradient(colors: [cardNavy, cardNavyEnd], startPoint: .topLeading, endPoint: .bottomTrailing))
     .environment(\.layoutDirection, .rightToLeft)
-    .widgetURL(URL(string: "mrequran://prayer-times"))
+    .widgetURL(URL(string: "mrequran://mre-quran/prayer-times"))
   }
 }
 private struct ScheduleView: View {
   let entry: Entry
   var body: some View {
-    if let data = entry.payload, let day = data.day(entry.date) {
-      VStack(alignment:.leading,spacing:4) { Text(day.date).font(.caption).foregroundStyle(.secondary); Text(day.hijri).font(.caption2).foregroundStyle(.secondary); ForEach(day.rows.filter{$0.id != "sunrise"}) { row in HStack { VStack(alignment:.leading,spacing:1) { Text(row.name); if row.at > entry.date { Text(data.remaining(row.at,entry.date)).font(.caption2).foregroundStyle(.secondary) } }; Spacer(); Text(row.time).monospacedDigit() }.font(.caption) } }.frame(maxWidth:.infinity,maxHeight:.infinity,alignment:.leading).background(Color(uiColor:.secondarySystemBackground)).widgetURL(URL(string:"mrequran://prayer-times"))
-    } else { Empty() }
+    Group {
+      if let data = entry.payload, let day = data.day(entry.date) {
+        VStack(alignment:.leading,spacing:2) { Text(day.date).font(.caption).foregroundStyle(.secondary); Text(day.hijri).font(.caption2).foregroundStyle(.secondary); ForEach(day.rows) { row in HStack { Text(row.name); Spacer(); Text(row.time).monospacedDigit() }.font(.caption) } }.frame(maxWidth:.infinity,maxHeight:.infinity,alignment:.leading).background(Color(uiColor:.secondarySystemBackground))
+      } else { Empty() }
+    }.widgetURL(URL(string:"mrequran://mre-quran/prayer-times"))
   }
 }
 private struct AdhkarEntry: TimelineEntry { let date: Date; let payload: AdhkarPayload? }
@@ -155,16 +159,16 @@ private struct AdhkarProvider: TimelineProvider {
 private struct SuggestedDhikrView: View {
   let entry: AdhkarEntry
   var body: some View {
-    if let data = entry.payload {
+    Group { if let data = entry.payload {
       VStack(alignment:.leading,spacing:6) {
         Text(data.label).font(.caption).foregroundStyle(.secondary)
         Text(data.title).font(.headline).lineLimit(2)
         ProgressView(value: Double(data.done), total: Double(max(data.total, 1)))
         Text("\(data.done) / \(data.total)").font(.caption2).foregroundStyle(.secondary)
-      }.frame(maxWidth:.infinity,maxHeight:.infinity,alignment:.leading).background(Color(uiColor:.secondarySystemBackground)).widgetURL(URL(string:"mrequran://mre-quran/adhkar/\(data.payload.replacingOccurrences(of: "adhkar:", with: ""))"))
+      }.frame(maxWidth:.infinity,maxHeight:.infinity,alignment:.leading).background(Color(uiColor:.secondarySystemBackground))
     } else {
       Text("Open Mushafi to load your adhkar.").font(.caption).frame(maxWidth:.infinity,maxHeight:.infinity,alignment:.leading).background(Color(uiColor:.secondarySystemBackground))
-    }
+    } }.widgetURL(URL(string: entry.payload.map { "mrequran://mre-quran/adhkar/\($0.payload.replacingOccurrences(of: "adhkar:", with: ""))" } ?? "mrequran://mre-quran/duas"))
   }
 }
 private let tasbihKey = "tasbihWidgetCount"

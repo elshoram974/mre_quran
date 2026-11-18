@@ -1709,6 +1709,20 @@
       "label": "دعاء ليلة القدر"
     },
     {
+      "id": "dua-sharr-amel",
+      "variant": 60,
+      "order": 13,
+      "count": 1,
+      "text": {
+        "from": {"edition": "ara-muslim", "number": "2716.01"},
+        "start": "اللهم إني أعوذ بك من شر ما عملت",
+        "end": "ما لم أعمل"
+      },
+      "evidence": [
+        {"edition": "ara-muslim", "number": "2716.01"}
+      ]
+    },
+    {
       "id": "ruqya-asqam",
       "variant": 70,
       "order": 5,

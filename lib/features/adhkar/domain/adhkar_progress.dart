@@ -114,6 +114,19 @@ class AdhkarProgress {
     );
   }
 
+  /// Clears one dhikr while keeping the other counts and their session.
+  AdhkarProgress resetDhikr(AdhkarCollection collection, Dhikr dhikr) {
+    final id = key(collection, dhikr);
+    if (!counts.containsKey(id)) return this;
+    final remaining = {...counts}..remove(id);
+    final hasOtherCounts = remaining.keys.any(
+      (key) => key.startsWith('${collection.id}:'),
+    );
+    final stamps = {...touched};
+    if (!hasOtherCounts) stamps.remove(collection.id);
+    return AdhkarProgress(day: day, counts: remaining, touched: stamps);
+  }
+
   /// Progress with every count of [collection] cleared.
   AdhkarProgress reset(AdhkarCollection collection) => AdhkarProgress(
     day: day,

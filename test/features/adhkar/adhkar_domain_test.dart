@@ -59,6 +59,18 @@ void main() {
       expect(cleared.countOf(evening, evening.entries.first), 1);
     });
 
+    test('resetting one dhikr leaves the other counts intact', () {
+      final progress = const AdhkarProgress(day: '2026-10-08')
+          .increment(morning, morning.entries.first, now: _t)
+          .increment(morning, morning.entries[1], now: _t)
+          .increment(evening, evening.entries.first, now: _t);
+      final cleared = progress.resetDhikr(morning, morning.entries.first);
+      expect(cleared.countOf(morning, morning.entries.first), 0);
+      expect(cleared.countOf(morning, morning.entries[1]), 1);
+      expect(cleared.countOf(evening, evening.entries.first), 1);
+      expect(cleared.touched[morning.id], progress.touched[morning.id]);
+    });
+
     test('the same order in two collections is counted apart', () {
       final progress = const AdhkarProgress(day: '2026-10-08')
           .increment(morning, morning.entries.first, now: _t);

@@ -15,6 +15,7 @@ import 'package:mre_quran/features/mushaf/application/reading_position_provider.
 import 'package:mre_quran/features/mushaf/presentation/mushaf_page_view.dart';
 import 'package:mre_quran/features/mushaf/presentation/tafsir_sheet.dart';
 import 'package:mre_quran/features/prayer/presentation/prayer_times_page.dart';
+import 'package:mre_quran/features/quran_index/presentation/quran_index_page.dart';
 import 'package:mre_quran/features/settings/application/settings_provider.dart';
 import 'package:mre_quran/features/settings/domain/app_settings.dart';
 import 'package:mre_quran/main.dart' as app;
@@ -67,6 +68,23 @@ void main() {
       await container.read(readingPositionProvider.notifier).setPage(1);
       router.go(AppRoute.reader.path);
       await run(const Duration(seconds: 3));
+      if (find.byTooltip('الفهرس').evaluate().isEmpty) {
+        await tester.tapAt(tester.getCenter(find.byType(Scaffold).first));
+        await run();
+      }
+      await tester.tap(find.byTooltip('الفهرس'));
+      await run();
+      expect(find.byType(QuranIndexPage), findsOneWidget);
+      await tester.tap(find.text('الأجزاء'));
+      await run();
+      await tester.tap(find.text('السور'));
+      await run();
+      await tester.enterText(find.byType(TextField).first, 'الفاتحة');
+      await run();
+      await tester.tap(find.text('الفاتحة').last);
+      await run();
+      expect(find.byType(QuranIndexPage), findsNothing);
+      expect(await container.read(readingPositionProvider.future), 1);
       final reader = find.byType(MushafPageView).hitTestable();
       expect(reader, findsOneWidget);
       final paragraph = find.descendant(

@@ -206,6 +206,9 @@ class _SessionState extends ConsumerState<_Session> {
                     onUndo: () => ref
                         .read(adhkarProgressProvider.notifier)
                         .decrement(collection, collection.entries[i]),
+                    onReset: () => ref
+                        .read(adhkarProgressProvider.notifier)
+                        .resetDhikr(collection, collection.entries[i]),
                   ),
                 ),
               if (progress.complete)

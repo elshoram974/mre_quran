@@ -467,8 +467,44 @@ abstract class AppLocalizations {
   /// No description provided for @widgetsIntro.
   ///
   /// In en, this message translates to:
-  /// **'See the prayer times, count your tasbih and read a dhikr right from the home screen, without opening the app.'**
+  /// **'See prayer times, count tasbih and follow your adhkar from the home screen.'**
   String get widgetsIntro;
+
+  /// No description provided for @widgetsPreviewHint.
+  ///
+  /// In en, this message translates to:
+  /// **'These are illustrative previews; appearance and size vary by device and home screen.'**
+  String get widgetsPreviewHint;
+
+  /// No description provided for @widgetSizeSmall.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggested Android size: two columns by one row.'**
+  String get widgetSizeSmall;
+
+  /// No description provided for @widgetSizeFlexible.
+  ///
+  /// In en, this message translates to:
+  /// **'On Android: two columns and one or two rows, depending on the home screen.'**
+  String get widgetSizeFlexible;
+
+  /// No description provided for @widgetSizeTall.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggested Android size: two columns by two rows.'**
+  String get widgetSizeTall;
+
+  /// No description provided for @widgetSizeWide.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggested Android size: four columns by two rows.'**
+  String get widgetSizeWide;
+
+  /// No description provided for @widgetIosTasbihHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Counting in the widget requires iOS 17 or later.'**
+  String get widgetIosTasbihHint;
 
   /// No description provided for @widgetsAdd.
   ///
@@ -545,7 +581,7 @@ abstract class AppLocalizations {
   /// No description provided for @widgetDhikrDescription.
   ///
   /// In en, this message translates to:
-  /// **'Suggested adhkar with your saved progress.'**
+  /// **'A suggested adhkar list and your progress; tap to open it.'**
   String get widgetDhikrDescription;
 
   /// No description provided for @hintOfflineTitle.
@@ -1849,6 +1885,12 @@ abstract class AppLocalizations {
   /// **'Undo one'**
   String get adhkarUndo;
 
+  /// No description provided for @adhkarResetEntry.
+  ///
+  /// In en, this message translates to:
+  /// **'Restart this dhikr'**
+  String get adhkarResetEntry;
+
   /// No description provided for @adhkarEvidence.
   ///
   /// In en, this message translates to:
@@ -2244,6 +2286,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Share as image'**
   String get shareAsImage;
+
+  /// No description provided for @printAyahs.
+  ///
+  /// In en, this message translates to:
+  /// **'Print verses'**
+  String get printAyahs;
+
+  /// No description provided for @printFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not print. Please try again.'**
+  String get printFailed;
+
+  /// No description provided for @widgetPreviewIosHint.
+  ///
+  /// In en, this message translates to:
+  /// **'These Android previews are illustrative; widgets may look different on iPhone.'**
+  String get widgetPreviewIosHint;
 
   /// No description provided for @copyText.
   ///

@@ -22,9 +22,11 @@
         android:paddingBottom="4dp">
 
         <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="start|center_vertical"
+            android:id="@+id/tasbih_widget_reset"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:contentDescription="@string/tasbih_widget_reset"
+            android:gravity="center"
             android:orientation="vertical">
 
             <TextView
@@ -39,12 +41,12 @@
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/tasbih_widget_reset"
+                android:id="@+id/tasbih_widget_reset_icon"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:background="@drawable/widget_pill"
-                android:contentDescription="@string/tasbih_widget_reset"
+                android:importantForAccessibility="no"
                 android:gravity="center"
                 android:paddingStart="8dp"
                 android:paddingTop="2dp"

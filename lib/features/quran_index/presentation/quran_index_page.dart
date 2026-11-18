@@ -7,6 +7,7 @@ import '../../../core/l10n/l10n.dart';
 import '../../../core/layout/adaptive_layout.dart';
 import '../../../core/widgets/app_page_scaffold.dart';
 import '../../../core/widgets/app_segmented_control.dart';
+import '../../../core/widgets/app_sheet.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../settings/application/digits_provider.dart';
 import '../application/quran_metadata_provider.dart';
@@ -24,7 +25,10 @@ enum _IndexTab { surahs, juz }
 /// above. The tabs and the search field stay at the top while a list
 /// scrolls under them.
 class QuranIndexPage extends ConsumerStatefulWidget {
-  const QuranIndexPage({super.key});
+  const QuranIndexPage({super.key, this.sheetScroll});
+
+  /// Controller supplied when the index is displayed in a draggable sheet.
+  final ScrollController? sheetScroll;
 
   @override
   ConsumerState<QuranIndexPage> createState() => _QuranIndexPageState();
@@ -56,48 +60,66 @@ class _QuranIndexPageState extends ConsumerState<QuranIndexPage>
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final searcher = ref.watch(indexSearcherProvider);
-    return AppPageScaffold(
-      title: l10n.quranIndex,
-      body: ContentContainer(
-        child: searcher.when(
-          loading: () => const IndexSkeleton(),
-          error: (_, _) => Center(
-            child: EmptyState(
-              icon: Icons.error_outline,
-              title: l10n.indexLoadError,
-              message: '',
-              actionLabel: l10n.retry,
-              onAction: () => ref.invalidate(quranMetadataProvider),
-            ),
+    final body = ContentContainer(
+      child: searcher.when(
+        loading: () => const IndexSkeleton(),
+        error: (_, _) => Center(
+          child: EmptyState(
+            icon: Icons.error_outline,
+            title: l10n.indexLoadError,
+            message: '',
+            actionLabel: l10n.retry,
+            onAction: () => ref.invalidate(quranMetadataProvider),
           ),
-          data: (data) => Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _IndexHeader(
+        ),
+        data: (data) => Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (widget.sheetScroll != null)
+              AppSheetDragArea(
+                child: ListTile(
+                  title: Text(l10n.quranIndex),
+                  trailing: IconButton(
+                    tooltip: MaterialLocalizations.of(context)
+                        .closeButtonTooltip,
+                    icon: const Icon(Icons.close),
+                    onPressed: () =>
+                        Navigator.of(context, rootNavigator: true).pop(),
+                  ),
+                ),
+              ),
+            AppSheetDragArea(
+              child: _IndexHeader(
                 tab: _IndexTab.values[_tabs.index],
                 controller: _search,
                 onTab: (tab) => _tabs.animateTo(tab.index),
                 onQuery: () => setState(() {}),
               ),
-              Expanded(
-                child: TabBarView(
-                  controller: _tabs,
-                  children: [
-                    for (final tab in _IndexTab.values)
-                      _IndexList(
-                        key: PageStorageKey<_IndexTab>(tab),
-                        searcher: data,
-                        tab: tab,
-                        query: _search.text,
-                      ),
-                  ],
-                ),
+            ),
+            Expanded(
+              child: TabBarView(
+                controller: _tabs,
+                children: [
+                  for (final tab in _IndexTab.values)
+                    _IndexList(
+                      key: PageStorageKey<_IndexTab>(tab),
+                      searcher: data,
+                      tab: tab,
+                      query: _search.text,
+                      scroll: tab.index == _tabs.index
+                          ? widget.sheetScroll
+                          : null,
+                      inSheet: widget.sheetScroll != null,
+                    ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
+    if (widget.sheetScroll != null) return body;
+    return AppPageScaffold(title: l10n.quranIndex, body: body);
   }
 }
 
@@ -163,11 +185,15 @@ class _IndexList extends ConsumerWidget {
     required this.searcher,
     required this.tab,
     required this.query,
+    required this.scroll,
+    required this.inSheet,
   });
 
   final IndexSearcher searcher;
   final _IndexTab tab;
   final String query;
+  final ScrollController? scroll;
+  final bool inSheet;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -181,10 +207,19 @@ class _IndexList extends ConsumerWidget {
     final juzs = tab == _IndexTab.juz ? searcher.juzs(query) : const <Juz>[];
     final count = tab == _IndexTab.surahs ? surahs.length : juzs.length;
 
-    void open(int page) => context.pop(ReaderDestination(page: page));
+    void open(int page) {
+      final destination = ReaderDestination(page: page);
+      if (inSheet) {
+        Navigator.of(context, rootNavigator: true).pop(destination);
+      } else {
+        context.pop(destination);
+      }
+    }
 
     if (count == 0) return Center(child: Text(l10n.noResults));
     return ListView.builder(
+      controller: scroll,
+      primary: false,
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       padding: EdgeInsetsDirectional.fromSTEB(
         padding.start,

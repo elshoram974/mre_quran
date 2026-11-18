@@ -1,4 +1,5 @@
 import 'package:flutter/gestures.dart';
+import 'package:flutter/rendering.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/l10n/l10n.dart';
@@ -93,13 +94,59 @@ const double _basmalaScale = 0.82;
 
 class _MushafPageViewState extends State<MushafPageView> {
   final Map<AyahRef, LongPressGestureRecognizer> _recognizers = {};
+  final ScrollController _scroll = ScrollController();
+  final GlobalKey _selectedParagraph = GlobalKey();
+  TextSelection? _selectedText;
 
   QuranText get text => widget.text;
 
   String _n(int value) => widget.digits(value);
 
   @override
+  void initState() {
+    super.initState();
+    if (widget.selected?.isSingle ?? false) _scheduleSelectedScroll();
+  }
+
+  @override
+  void didUpdateWidget(MushafPageView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.selected != oldWidget.selected &&
+        (widget.selected?.isSingle ?? false)) {
+      _scheduleSelectedScroll();
+    }
+  }
+
+  void _scheduleSelectedScroll() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_scroll.hasClients) return;
+      final paragraph = _selectedParagraph.currentContext?.findRenderObject();
+      final selected = _selectedText;
+      if (paragraph is! RenderParagraph || selected == null) return;
+      final boxes = paragraph.getBoxesForSelection(selected);
+      if (boxes.isEmpty) return;
+      final viewport = RenderAbstractViewport.of(paragraph);
+      final position = _scroll.position;
+      final target =
+          (viewport.getOffsetToReveal(paragraph, 0).offset +
+                  boxes.first.top -
+                  position.viewportDimension * 0.2)
+              .clamp(position.minScrollExtent, position.maxScrollExtent);
+      if (MediaQuery.disableAnimationsOf(context)) {
+        _scroll.jumpTo(target);
+      } else {
+        _scroll.animateTo(
+          target,
+          duration: AppTokens.motionMedium,
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
+  @override
   void dispose() {
+    _scroll.dispose();
     for (final recognizer in _recognizers.values) {
       recognizer.dispose();
     }
@@ -128,10 +175,12 @@ class _MushafPageViewState extends State<MushafPageView> {
     final metadata = text.metadata;
     final segments = <_Segment>[];
     var spans = <InlineSpan>[];
+    TextSelection? selected;
     void flush() {
       if (spans.isEmpty) return;
-      segments.add(_Paragraph(spans));
+      segments.add(_Paragraph(spans, selected));
       spans = <InlineSpan>[];
+      selected = null;
     }
 
     for (final ayah in text.pageAyahs(widget.page)) {
@@ -164,6 +213,18 @@ class _MushafPageViewState extends State<MushafPageView> {
           ),
         );
       }
+      if ((widget.selected?.isSingle ?? false) &&
+          widget.selected!.start == ayah.ref) {
+        final start = spans.fold<int>(
+          0,
+          (length, span) =>
+              length + span.toPlainText(includeSemanticsLabels: false).length,
+        );
+        selected = TextSelection(
+          baseOffset: start,
+          extentOffset: start + ayah.text.length,
+        );
+      }
       spans
         ..add(
           TextSpan(
@@ -188,6 +249,11 @@ class _MushafPageViewState extends State<MushafPageView> {
         );
     }
     flush();
+    _selectedText = segments
+        .whereType<_Paragraph>()
+        .map((paragraph) => paragraph.selected)
+        .whereType<TextSelection>()
+        .firstOrNull;
     return segments;
   }
 
@@ -274,6 +340,7 @@ class _MushafPageViewState extends State<MushafPageView> {
         // Quran text size follows the reader's own setting, so it is not
         // scaled again by the system. Larger text scrolls in the frame.
         return SingleChildScrollView(
+          controller: _scroll,
           child: ConstrainedBox(
             constraints: BoxConstraints(minHeight: constraints.maxHeight),
             child: Column(
@@ -308,8 +375,9 @@ class _MushafPageViewState extends State<MushafPageView> {
                         ),
                       ),
                     ),
-                    _Paragraph(:final spans) => Text.rich(
+                    _Paragraph(:final spans, :final selected) => Text.rich(
                       TextSpan(children: spans),
+                      key: selected == null ? null : _selectedParagraph,
                       textAlign: TextAlign.justify,
                       textScaler: TextScaler.noScaling,
                       style: quran,
@@ -362,6 +430,7 @@ class _Basmala extends _Segment {
 }
 
 class _Paragraph extends _Segment {
-  const _Paragraph(this.spans);
+  const _Paragraph(this.spans, this.selected);
   final List<InlineSpan> spans;
+  final TextSelection? selected;
 }

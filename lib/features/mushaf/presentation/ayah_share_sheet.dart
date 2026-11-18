@@ -16,6 +16,7 @@ import '../../quran_text/domain/ayah_range.dart';
 import '../../quran_text/domain/ayah_share_text.dart';
 import '../../quran_text/domain/ayah_texts.dart';
 import '../../settings/application/digits_provider.dart';
+import '../application/ayah_printer.dart';
 import 'ayah_share_card.dart';
 import 'ayah_share_format.dart';
 import '../../settings/domain/app_settings.dart';
@@ -93,7 +94,10 @@ class _AyahShareSheetState extends ConsumerState<AyahShareSheet> {
     messenger?.showSnackBar(SnackBar(content: Text(l10n.ayahsCopied)));
   }
 
-  Future<void> _run(Future<void> Function() share) async {
+  Future<void> _run(
+    Future<void> Function() share, {
+    bool printing = false,
+  }) async {
     if (_busy) return;
     final l10n = context.l10n;
     final messenger = ScaffoldMessenger.maybeOf(context);
@@ -102,7 +106,9 @@ class _AyahShareSheetState extends ConsumerState<AyahShareSheet> {
       await share();
     } on Object catch (error) {
       AppLogger.debug('Ayah share failed: ${error.runtimeType}');
-      messenger?.showSnackBar(SnackBar(content: Text(l10n.shareFailed)));
+      messenger?.showSnackBar(
+        SnackBar(content: Text(printing ? l10n.printFailed : l10n.shareFailed)),
+      );
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -111,8 +117,7 @@ class _AyahShareSheetState extends ConsumerState<AyahShareSheet> {
   Future<void> _shareText() =>
       _run(() => ref.read(sharerProvider).shareText(_text()));
 
-  Future<void> _shareImages() => _run(() async {
-    final text = _text();
+  Future<List<SharedImage>> _captureImages() async {
     final start = _range.start;
     final end = _range.end;
     final base = 'quran-${start.surah}-${start.ayah}-${end.surah}-${end.ayah}';
@@ -130,8 +135,20 @@ class _AyahShareSheetState extends ConsumerState<AyahShareSheet> {
         name: _cards.length == 1 ? '$base.png' : '$base-${index + 1}.png',
       ));
     }
-    await ref.read(sharerProvider).shareImages(images, text: text);
+    return images;
+  }
+
+  Future<void> _shareImages() => _run(() async {
+    final images = await _captureImages();
+    await ref.read(sharerProvider).shareImages(images, text: _text());
   });
+
+  Future<void> _printImages() => _run(() async {
+    final images = await _captureImages();
+    await ref.read(ayahPrinterProvider).printCards([
+      for (final image in images) image.png,
+    ]);
+  }, printing: true);
 
   @override
   Widget build(BuildContext context) {
@@ -272,6 +289,12 @@ class _AyahShareSheetState extends ConsumerState<AyahShareSheet> {
                   onPressed: _busy ? null : _shareImages,
                   icon: const Icon(Icons.image_outlined),
                   label: Text(l10n.shareAsImage),
+                ),
+                const SizedBox(height: AppTokens.spaceSmall),
+                OutlinedButton.icon(
+                  onPressed: _busy ? null : _printImages,
+                  icon: const Icon(Icons.print_outlined),
+                  label: Text(l10n.printAyahs),
                 ),
               ],
             ),

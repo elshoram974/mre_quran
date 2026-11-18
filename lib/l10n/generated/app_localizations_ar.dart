@@ -202,7 +202,30 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get widgetsIntro =>
-      'اعرض مواقيت الصلاة، وعُدّ تسبيحك، واقرأ ذكرًا من الشاشة الرئيسية مباشرة دون أن تفتح التطبيق.';
+      'اعرض مواقيت الصلاة، وعُدّ تسبيحك، وتابع الأذكار من الشاشة الرئيسية.';
+
+  @override
+  String get widgetsPreviewHint =>
+      'هذه معاينات توضيحية؛ قد يختلف الشكل والمقاس حسب الجهاز والشاشة الرئيسية.';
+
+  @override
+  String get widgetSizeSmall =>
+      'المقاس المقترح على أندرويد: خليتان عرضًا وصف واحد.';
+
+  @override
+  String get widgetSizeFlexible =>
+      'على أندرويد: خليتان عرضًا، وصف أو صفان حسب الشاشة الرئيسية.';
+
+  @override
+  String get widgetSizeTall =>
+      'المقاس المقترح على أندرويد: خليتان عرضًا وصفان.';
+
+  @override
+  String get widgetSizeWide =>
+      'المقاس المقترح على أندرويد: أربع خلايا عرضًا وصفان.';
+
+  @override
+  String get widgetIosTasbihHint => 'العد من الويدجت يتطلب iOS 17 أو أحدث.';
 
   @override
   String get widgetsAdd => 'إضافة';
@@ -246,7 +269,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String get widgetDhikr => 'ذكر مقترح';
 
   @override
-  String get widgetDhikrDescription => 'ذكر مقترح مع تقدمك المحفوظ.';
+  String get widgetDhikrDescription =>
+      'قائمة أذكار مقترحة وتقدمك فيها؛ اضغط لفتحها.';
 
   @override
   String get hintOfflineTitle => 'انتبه: المصحف يحتاج الإنترنت';
@@ -1014,6 +1038,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get adhkarUndo => 'تراجع عن مرة';
 
   @override
+  String get adhkarResetEntry => 'إعادة هذا الذكر';
+
+  @override
   String get adhkarEvidence => 'الدليل';
 
   @override
@@ -1257,6 +1284,16 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get shareAsImage => 'مشاركة كصورة';
+
+  @override
+  String get printAyahs => 'طباعة الآيات';
+
+  @override
+  String get printFailed => 'تعذرت الطباعة. حاول مرة أخرى.';
+
+  @override
+  String get widgetPreviewIosHint =>
+      'هذه معاينات أندرويد للتوضيح؛ قد يختلف شكل الويدجت على iPhone.';
 
   @override
   String get copyText => 'نسخ';

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mre_quran/core/l10n/l10n.dart';
 import 'package:mre_quran/core/theme/app_theme.dart';
+import 'package:mre_quran/core/widgets/app_tile_card.dart';
 import 'package:mre_quran/features/home_widgets/application/home_widgets_providers.dart';
 import 'package:mre_quran/features/home_widgets/domain/home_widget.dart';
 import 'package:mre_quran/features/home_widgets/presentation/home_widgets_page.dart';
@@ -48,11 +49,43 @@ Future<FakeHomeWidgets> _pump(
 void main() {
   testWidgets('each widget can be added from the app', (tester) async {
     final widgets = await _pump(tester);
-    expect(find.text('إضافة'), findsWidgets);
-    await tester.tap(find.text('إضافة').first);
-    await tester.pumpAndSettle();
-    expect(widgets.pinned, [HomeWidget.prayerCard]);
+    for (final title in [
+      'بطاقة الصلاة',
+      'الصلاة القادمة',
+      'مواقيت اليوم',
+      'المسبحة',
+      'ذكر مقترح',
+    ]) {
+      await tester.scrollUntilVisible(
+        find.text(title),
+        180,
+        scrollable: find.byType(Scrollable).first,
+      );
+      final card = find.ancestor(
+        of: find.text(title),
+        matching: find.byType(AppTileCard),
+      );
+      await tester.tap(find.descendant(of: card, matching: find.text('إضافة')));
+      await tester.pumpAndSettle();
+      if (title != 'ذكر مقترح') {
+        await tester.pump(const Duration(seconds: 5));
+        await tester.pumpAndSettle();
+      }
+    }
+    expect(widgets.pinned, HomeWidget.values);
     expect(find.textContaining('أكّد الإضافة'), findsOneWidget);
+  });
+
+  testWidgets('shows localized preview assets', (tester) async {
+    await _pump(tester);
+    expect(
+      find.image(
+        const AssetImage(
+          'android/app/src/main/res/drawable-ar-nodpi/prayer_card_widget_preview.png',
+        ),
+      ),
+      findsOneWidget,
+    );
   });
 
   testWidgets('where the launcher takes no requests, it says how', (

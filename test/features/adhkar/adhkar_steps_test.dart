@@ -307,6 +307,25 @@ void main() {
       expect(_counter('٠ من ٣'), findsOneWidget);
     });
 
+    testWidgets('a finished dhikr can be restarted after returning to it', (
+      tester,
+    ) async {
+      await pumpAdhkarApp(tester, catalog: _steps());
+      await _open(tester);
+      await tester.tap(_counter('٠ من ١'));
+      await tester.pumpAndSettle();
+      await tester.tap(_counter('٠ من ٣'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('السابق'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('إعادة هذا الذكر'));
+      await tester.pumpAndSettle();
+      expect(_counter('٠ من ١'), findsOneWidget);
+      await tester.tap(find.byTooltip('التالي'));
+      await tester.pumpAndSettle();
+      expect(_counter('١ من ٣'), findsOneWidget);
+    });
+
     for (final (name, size, scale) in [
       ('compact, large text', const Size(320, 640), 2.0),
       ('medium', const Size(700, 900), 1.0),

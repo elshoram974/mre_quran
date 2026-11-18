@@ -134,6 +134,16 @@ class _StepsBodyState extends ConsumerState<_StepsBody> {
       .read(adhkarProgressProvider.notifier)
       .decrement(collection, collection.entries[index]);
 
+  void _reset(AdhkarCollection collection, int index) {
+    _pending?.cancel();
+    _pending = null;
+    unawaited(
+      ref
+          .read(adhkarProgressProvider.notifier)
+          .resetDhikr(collection, collection.entries[index]),
+    );
+  }
+
   /// Turns to page [to]. The page view reports the change back through
   /// [_onPage], so a swipe and an arrow end up in the same place.
   void _go(AdhkarCollection collection, int to) {
@@ -338,6 +348,7 @@ class _StepsBodyState extends ConsumerState<_StepsBody> {
                     showCounter: false,
                     onCount: () => _count(collection, page),
                     onUndo: () => _undo(collection, page),
+                    onReset: () => _reset(collection, page),
                   ),
                 ),
               ),
@@ -350,6 +361,7 @@ class _StepsBodyState extends ConsumerState<_StepsBody> {
               inline: true,
               onCount: () => _count(collection, index),
               onUndo: () => _undo(collection, index),
+              onReset: () => _reset(collection, index),
             ),
           ],
         ],

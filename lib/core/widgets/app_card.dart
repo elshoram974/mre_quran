@@ -34,7 +34,7 @@ class AppCard extends StatelessWidget {
       return AppSurfaceCard(padding: padding, onTap: onTap, child: child);
     }
     final content = Padding(padding: padding, child: child);
-    return GlassCard(
+    return GlassContainer.card(
       useOwnLayer: true,
       quality: GlassQuality.standard,
       padding: EdgeInsets.zero,

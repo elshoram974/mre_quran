@@ -30,6 +30,7 @@ class DhikrCard extends ConsumerWidget {
     required this.number,
     required this.onCount,
     required this.onUndo,
+    required this.onReset,
     this.showCounter = true,
   });
 
@@ -51,6 +52,9 @@ class DhikrCard extends ConsumerWidget {
 
   /// Called when the person takes back one repeat.
   final VoidCallback onUndo;
+
+  /// Called to reset this dhikr's count.
+  final VoidCallback onReset;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -130,6 +134,7 @@ class DhikrCard extends ConsumerWidget {
                 dhikr: dhikr,
                 onCount: onCount,
                 onUndo: onUndo,
+                onReset: onReset,
               ),
             ],
           ],
