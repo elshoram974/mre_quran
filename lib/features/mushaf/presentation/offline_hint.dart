@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/router.dart';
-
 import '../../../core/hints/hints.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/widgets/app_hint_sheet.dart';
@@ -32,7 +31,7 @@ class _OfflineMushafHintState extends ConsumerState<OfflineMushafHint> {
   bool _checking = false;
 
   bool get _readerVisible {
-    if (!mounted || !TickerMode.of(context)) return false;
+    if (!mounted || !TickerMode.valuesOf(context).enabled) return false;
     final router = GoRouter.maybeOf(context);
     return router == null ||
         router.state.matchedLocation == AppRoute.reader.path;
@@ -86,7 +85,7 @@ class _OfflineMushafHintState extends ConsumerState<OfflineMushafHint> {
   @override
   Widget build(BuildContext context) {
     final page = ref.watch(readingPositionProvider).value;
-    if (page != null && TickerMode.of(context)) {
+    if (page != null && TickerMode.valuesOf(context).enabled) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) _check(page);
       });
