@@ -19,12 +19,6 @@
     <string name="widget_preview_asr_time">4:02 PM</string>
     <string name="widget_preview_maghrib_time">6:32 PM</string>
     <string name="widget_preview_isha_time">7:49 PM</string>
-    <string name="widget_preview_compact_fajr_time">05:27</string>
-    <string name="widget_preview_compact_sunrise_time">06:54</string>
-    <string name="widget_preview_compact_dhuhr_time">12:44</string>
-    <string name="widget_preview_compact_asr_time">16:02</string>
-    <string name="widget_preview_compact_maghrib_time">18:32</string>
-    <string name="widget_preview_compact_isha_time">19:49</string>
     <string name="widget_preview_remaining">in 1 h 24 min</string>
     <string name="widget_preview_date">Thursday, 8 October</string>
     <string name="widget_preview_hijri">27 Rabi\' al-Thani 1448</string>

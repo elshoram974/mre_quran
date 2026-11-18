@@ -65,7 +65,7 @@
   "widgetsPreviewHint": "These are illustrative previews; appearance and size vary by device and home screen.",
   "widgetSizeSmall": "Suggested Android size: two columns by one row.",
   "widgetSizeFlexible": "On Android: two columns and one or two rows, depending on the home screen.",
-  "widgetSizeTall": "Suggested Android size: one column by two rows.",
+  "widgetSizeTall": "Suggested Android size: two columns by two rows.",
   "widgetSizeWide": "Suggested Android size: three columns by two rows.",
   "widgetIosTasbihHint": "Counting in the widget requires iOS 17 or later.",
   "widgetsAdd": "Add",

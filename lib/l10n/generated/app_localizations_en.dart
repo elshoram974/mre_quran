@@ -220,7 +220,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get widgetSizeTall =>
-      'Suggested Android size: one column by two rows.';
+      'Suggested Android size: two columns by two rows.';
 
   @override
   String get widgetSizeWide =>

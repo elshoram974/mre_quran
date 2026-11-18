@@ -109,6 +109,38 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  for (final (locale, title, add) in [
+    ('ar', 'مواقيت اليوم', 'إضافة'),
+    ('en', "Today's prayer times", 'Add'),
+  ]) {
+    testWidgets('adds the prayer widget at large text size in $locale', (
+      tester,
+    ) async {
+      final widgets = await _pump(
+        tester,
+        locale: locale,
+        size: const Size(320, 640),
+        textScale: 2,
+      );
+      await tester.scrollUntilVisible(
+        find.text(title),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      final card = find.ancestor(
+        of: find.text(title),
+        matching: find.byType(AppTileCard),
+      );
+      final button = find.descendant(of: card, matching: find.text(add));
+      await tester.ensureVisible(button);
+      await tester.pumpAndSettle();
+      await tester.tap(button);
+      await tester.pumpAndSettle();
+      expect(widgets.pinned, [HomeWidget.prayerSchedule]);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   for (final (name, size, scale) in [
     ('compact, large text', const Size(320, 640), 2.0),
     ('medium', const Size(700, 900), 1.0),

@@ -217,7 +217,8 @@ class AppLocalizationsAr extends AppLocalizations {
       'على أندرويد: خليتان عرضًا، وصف أو صفان حسب الشاشة الرئيسية.';
 
   @override
-  String get widgetSizeTall => 'المقاس المقترح على أندرويد: خلية عرضًا وصفان.';
+  String get widgetSizeTall =>
+      'المقاس المقترح على أندرويد: خليتان عرضًا وصفان.';
 
   @override
   String get widgetSizeWide =>

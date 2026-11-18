@@ -48,7 +48,7 @@ class AppTileCard extends StatelessWidget {
     // With large text every pixel of width saves a line, so the leading mark
     // moves above the title and the text takes the whole row.
     final stacked =
-        start != null &&
+        (start != null || end != null) &&
         MediaQuery.textScalerOf(context).scale(1) >= AppTokens.stackTextScale;
     final text = _TileText(title: title, subtitle: subtitle);
     return AppCard(
@@ -59,30 +59,38 @@ class AppTileCard extends StatelessWidget {
       onTap: onTap,
       child: ConstrainedBox(
         constraints: const BoxConstraints(minHeight: AppTokens.minTarget),
-        child: Row(
-          children: [
-            if (start != null && !stacked) ...[
-              start,
-              const SizedBox(width: AppTokens.spaceMedium),
-            ],
-            Expanded(
-              child: stacked
-                  ? Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        start,
-                        const SizedBox(height: AppTokens.spaceSmall),
-                        text,
-                      ],
-                    )
-                  : text,
-            ),
-            if (end != null) ...[
-              const SizedBox(width: AppTokens.spaceSmall),
-              end,
-            ],
-          ],
-        ),
+        child: stacked
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (start != null) ...[
+                    start,
+                    const SizedBox(height: AppTokens.spaceSmall),
+                  ],
+                  text,
+                  if (end != null) ...[
+                    const SizedBox(height: AppTokens.spaceSmall),
+                    Align(
+                      alignment: AlignmentDirectional.centerEnd,
+                      child: end,
+                    ),
+                  ],
+                ],
+              )
+            : Row(
+                children: [
+                  if (start != null) ...[
+                    start,
+                    const SizedBox(width: AppTokens.spaceMedium),
+                  ],
+                  Expanded(child: text),
+                  if (end != null) ...[
+                    const SizedBox(width: AppTokens.spaceSmall),
+                    end,
+                  ],
+                ],
+              ),
       ),
     );
   }

@@ -181,5 +181,26 @@ void main() {
       final title = tester.getRect(find.text('Prayer times'));
       expect(badge.bottom, lessThanOrEqualTo(title.top));
     });
+
+    testWidgets('moves a trailing action below large text without a badge', (
+      tester,
+    ) async {
+      await _pump(
+        tester,
+        AppTileCard(
+          title: 'Prayer times',
+          subtitle: 'The next prayer and its time',
+          trailing: FilledButton(onPressed: () {}, child: const Text('Add')),
+        ),
+        direction: TextDirection.ltr,
+        textScale: 2,
+      );
+      final subtitle = tester.getRect(
+        find.text('The next prayer and its time'),
+      );
+      final action = tester.getRect(find.text('Add'));
+      expect(action.top, greaterThanOrEqualTo(subtitle.bottom));
+      expect(tester.takeException(), isNull);
+    });
   });
 }

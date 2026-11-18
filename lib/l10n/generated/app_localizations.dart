@@ -491,7 +491,7 @@ abstract class AppLocalizations {
   /// No description provided for @widgetSizeTall.
   ///
   /// In en, this message translates to:
-  /// **'Suggested Android size: one column by two rows.'**
+  /// **'Suggested Android size: two columns by two rows.'**
   String get widgetSizeTall;
 
   /// No description provided for @widgetSizeWide.

@@ -18,12 +18,6 @@
     <string name="widget_preview_asr_time">٤:٠٢ م</string>
     <string name="widget_preview_maghrib_time">٦:٣٢ م</string>
     <string name="widget_preview_isha_time">٧:٤٩ م</string>
-    <string name="widget_preview_compact_fajr_time">٠٥:٢٧</string>
-    <string name="widget_preview_compact_sunrise_time">٠٦:٥٤</string>
-    <string name="widget_preview_compact_dhuhr_time">١٢:٤٤</string>
-    <string name="widget_preview_compact_asr_time">١٦:٠٢</string>
-    <string name="widget_preview_compact_maghrib_time">١٨:٣٢</string>
-    <string name="widget_preview_compact_isha_time">١٩:٤٩</string>
     <string name="widget_preview_remaining">بعد ١ س ٢٤ د</string>
     <string name="widget_preview_date">الخميس ٨ أكتوبر</string>
     <string name="widget_preview_hijri">٢٧ ربيع الآخر ١٤٤٨ هـ</string>
