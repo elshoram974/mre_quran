@@ -12,6 +12,10 @@ Then it is cut, cleaned, and evened out the same way:
   5. a 30 ms fade in and a 400 ms fade out, so nothing clicks,
   6. mono AAC in an .m4a, without the source's tags or cover art.
 
+A recording with an "iosClip" also gives iOS its notification sound: its
+first 29.5 seconds (iOS plays at most 30), faded out, as IMA ADPCM in a .caf,
+in assets/adhan/ios (bundled for iOS only).
+
 Bundled recordings go to android/app/src/main/res/raw at 64 kb/s; the others
 go to --media (the files of the media repository) at 96 kb/s. The catalogue
 assets/adhan/voices.json is written from the results, with each file's size
@@ -40,6 +44,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 SOURCES = ROOT / "tool/audio/adhan_sources.json"
 RAW = ROOT / "android/app/src/main/res/raw"
 CATALOG = ROOT / "assets/adhan/voices.json"
+IOS = ROOT / "assets/adhan/ios"
 USER_AGENT = "MushafiBuild/1.0 (adhan audio build tool)"
 
 
@@ -142,6 +147,16 @@ def main() -> None:
         else:
             target = options.media / "adhan" / f"{recording['id']}.m4a"
             build(source, recording, spec["loudness"], target, "96k", work)
+        clip = recording.get("iosClip")
+        if clip:
+            IOS.mkdir(parents=True, exist_ok=True)
+            sound = IOS / f"{clip}.caf"
+            run("ffmpeg", "-y", "-v", "error", "-i", str(target), "-t", "29.5",
+                "-af", "afade=t=out:st=27.5:d=2", "-ac", "1", "-ar", "22050",
+                "-c:a", "adpcm_ima_qt", "-map_metadata", "-1",
+                "-fflags", "+bitexact", str(sound))
+            print(f"{sound.relative_to(ROOT)}  {sound.stat().st_size:>9,} bytes"
+                  f"  {duration(sound):6.1f} s  {sha256(sound)}")
         print(f"{target.relative_to(ROOT) if target.is_relative_to(ROOT) else target}"
               f"  {target.stat().st_size:>9,} bytes  {duration(target):6.1f} s"
               f"  {sha256(target)}")

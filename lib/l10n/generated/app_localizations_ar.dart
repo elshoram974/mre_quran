@@ -141,12 +141,70 @@ class AppLocalizationsAr extends AppLocalizations {
   String get creditsTitle => 'النسب والمصادر';
 
   @override
-  String get creditsTanzil =>
-      'نص القرآن وبيانات الفهرس (السور والأجزاء وبدايات الصفحات): مشروع تنزيل، رخصة CC BY 3.0، https://tanzil.net. الملفات مضمَّنة دون تعديل ومعها إشعار حقوقها، ويُتحقق منها بالبصمة.';
+  String get creditsPermissionPending => 'الإذن قيد الطلب';
 
   @override
-  String get creditsFonts =>
-      'خطوط المصحف وتخطيط الصفحات: في انتظار مصدر KFGQPC موثّق وشروط إعادة التوزيع.';
+  String get creditsLibraries => 'تراخيص المكتبات البرمجية';
+
+  @override
+  String get creditsIcons =>
+      'الأيقونات: Material Icons من Google (رخصة Apache 2.0). أيقونة التطبيق ونجمة شاشة البدء من تصميم التطبيق نفسه.';
+
+  @override
+  String get creditsPrayer =>
+      'تُحسب المواقيت على جهازك بمكتبة adhan (رخصة MIT)، والتاريخ الهجري بمكتبة hijri (رخصة BSD). البحث عن المدن بخدمة نظام جهازك، والخريطة من Google Maps. لا يُرسل موقعك إلى أي خادم لنا.';
+
+  @override
+  String creditsAudioVoice(
+    String title,
+    String credit,
+    String source,
+    String license,
+  ) {
+    return '$title: $credit. المصدر: $source. الترخيص: $license.';
+  }
+
+  @override
+  String get creditsAudioDuaMishary =>
+      'الدعاء بعد الأذان بصوت الشيخ مشاري العفاسي: من تسجيل الأذان نفسه على archive.org. الإذن قيد الطلب.';
+
+  @override
+  String get creditsAudioDuaShaarawy =>
+      'الدعاء بعد الأذان بصوت الشيخ محمد متولي الشعراوي: archive.org (أدعية الشيخ الشعراوي، الملف الأول). الإذن قيد الطلب.';
+
+  @override
+  String get creditsAudioIntro =>
+      'أُخذت التسجيلات من أرشيف الإنترنت (archive.org) ومن مستودع abodehq/Athan-MP3 على GitHub، ونُظّفت (حذف السكوت وضبط الصوت) دون تغيير القراءة. الإذن بها من أصحابها قيد الطلب.';
+
+  @override
+  String get creditsRiwayat =>
+      'نصوص روايات ورش وقالون والدوري وشعبة وخطوطها: مجمع الملك فهد لطباعة المصحف الشريف (صفحة المطوّرين https://qurancomplex.gov.sa/techquran/dev/)، عبر نسخة github.com/thetruetruth/quran-data-kfgqpc ‏(commit 281dbbe). بشروط المجمع نفسها: للاستخدام الرقمي مع ذكر المصدر والإصدار.';
+
+  @override
+  String get sourcesDesign => 'الخطوط والأيقونات';
+
+  @override
+  String get sourcesPrayer => 'مواقيت الصلاة والقبلة';
+
+  @override
+  String get sourcesAudio => 'أصوات الأذان والدعاء';
+
+  @override
+  String get sourcesAdhkar => 'الأذكار والأدعية';
+
+  @override
+  String get sourcesMushaf => 'المصحف المطبوع والروايات';
+
+  @override
+  String get sourcesQuran => 'القرآن الكريم';
+
+  @override
+  String get sourcesIntro =>
+      'كل ما في التطبيق من نصوص وخطوط وصفحات وأصوات، ومن أين جاء، وبأي شروط. يُتحقق من كل ملف ببصمته قبل استخدامه.';
+
+  @override
+  String get creditsTanzil =>
+      'نص القرآن وبيانات الفهرس (السور والأجزاء وبدايات الصفحات): مشروع تنزيل، رخصة CC BY 3.0، https://tanzil.net. الملفات مضمَّنة دون تعديل ومعها إشعار حقوقها، ويُتحقق منها بالبصمة.';
 
   @override
   String get creditsImages =>
@@ -741,7 +799,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get adhanUnsupported =>
-      'تشغيل الأذان تلقائيًا متاح على أندرويد. على هذا الهاتف يكون التنبيه إشعارًا عاديًا.';
+      'على iPhone لا يسمح النظام لأي تطبيق بتشغيل صوت طويل من تلقاء نفسه. لذلك يرنّ مع إشعار وقت الصلاة أول ٣٠ ثانية من الأذان (وأذان الفجر في الفجر)، ويصل الإشعار حتى في وضع التركيز.';
 
   @override
   String get adhanLicenseNote =>
@@ -888,7 +946,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get creditsAdhkar =>
-      'نص الأذكار وعدد تكرارها وأدلتها: قاعدة بيانات أذكار الصباح والمساء من Seen Arabic (ترخيص MIT)، https://github.com/Seen-Arabic/Morning-And-Evening-Adhkar-DB، المأخوذة من كتاب «حصن المسلم» للشيخ سعيد بن علي بن وهف القحطاني. مضمّنة دون تعديل ومتحقَّق منها بالبصمة.';
+      'الأذكار والأدعية: أذكار الصباح والمساء من قاعدة Seen Arabic (رخصة MIT)، https://github.com/Seen-Arabic/Morning-And-Evening-Adhkar-DB. باقي الأذكار مقتطعة من نصوص الأحاديث نفسها في نسخ hadith-api (المصدر مفتوح، The Unlicense)، https://github.com/fawazahmed0/hadith-api، مع تخريجها وحكم الألباني. ترتيب أبواب «حصن المسلم» للشيخ سعيد بن علي بن وهف القحطاني مأخوذ من فهرس rn0x/Adhkar-json، ولم يُنسخ نصه. الملفات مضمّنة ويُتحقق منها بالبصمة.';
 
   @override
   String get startup => 'عند فتح التطبيق';
@@ -1026,7 +1084,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get creditsMushafScript =>
-      'نص المصحف وخطه: مجمع الملك فهد لطباعة المصحف الشريف بالمدينة المنورة (خط النص العثماني لرواية حفص، الإصدار 2.0، وبيانات التفسير الميسر، الإصدار 3)، https://qurancomplex.gov.sa. الملفات مضمّنة كما هي دون تعديل، ويُتحقق منها بالمجموع الاختباري. جميع الحقوق محفوظة للمجمع.';
+      'نص المصحف وخطه والتفسير الميسر: مجمع الملك فهد لطباعة المصحف الشريف بالمدينة المنورة (خط النص العثماني لرواية حفص، الإصدار 2.0، وبيانات التفسير الميسر، الإصدار 3)، https://qurancomplex.gov.sa. الملفات مضمّنة كما هي دون تعديل، ويُتحقق منها بالبصمة. يتيحها المجمع للاستخدام الرقمي مع ذكر المصدر، وجميع الحقوق محفوظة له.';
 
   @override
   String hizbTitle(String number) {
@@ -1035,6 +1093,25 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get copyAyah => 'نسخ الآية';
+
+  @override
+  String get tafsirAction => 'التفسير';
+
+  @override
+  String get tafsirTitle => 'التفسير الميسر';
+
+  @override
+  String get tafsirCredit =>
+      'التفسير الميسر لنخبة من أساتذة التفسير، من بيانات مجمع الملك فهد لطباعة المصحف الشريف (الإصدار 3). النص كما هو دون تعديل.';
+
+  @override
+  String get tafsirCopy => 'نسخ التفسير';
+
+  @override
+  String get tafsirCopied => 'تم نسخ التفسير';
+
+  @override
+  String get tafsirLoadError => 'تعذّر تحميل التفسير.';
 
   @override
   String get ayahCopied => 'تم نسخ الآية';

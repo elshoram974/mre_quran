@@ -310,3 +310,28 @@
   always shows seconds. The tasbih widget is two cells by one at the least.
 - **Splash:** `windowSplashScreenAnimationDuration` is 4000 ms, the longest the launch screen stays, as
   Android 12 and 13 stop the turning star after it.
+
+## D-037: Al-Tafsir Al-Muyassar from an ayah's actions
+
+- **Decision:** An ayah's actions offer its tafsir (Hafs only: the Muyassar explains the Hafs text). It is the
+  `aya_tafseer` column of the Complex's file already bundled for the Mushaf script, read the first time it is
+  asked for (checked against the file's SHA-256 on another isolate), never at start-up. The words are the
+  source's; only the `<span class='aya'>` markup is taken out, and the Quran it quotes is set in the Mushaf
+  script. The sheet shows the whole ayah above it, steps to the ayah before or after, and copies it with its
+  reference (the source's ornate bracket glyphs become ﴿ ﴾ in the copy only).
+
+## D-038: The sources and licences page
+
+- **Decision:** The About page lists every source by kind (the Quran, the printed Mushaf and the readings,
+  adhkar, recordings, prayer times, fonts and icons), each with where it comes from and its licence, and
+  links to the libraries' licences. The adhan recordings are listed from the catalogue, so none is left out.
+
+## D-039: On iOS the prayer alert rings with the adhan's opening
+
+- **Decision:** iOS lets no app start a long sound by itself, and a background task cannot run at a set time
+  or start audio (keeping the app alive with silent audio is rejected by App Review, guideline 2.5.4). So the
+  alert at prayer time plays the first 29.5 seconds of the bundled adhan (the Fajr adhan at Fajr), copied at
+  run time into `Library/Sounds` (no Xcode change), and is "Time Sensitive" so it comes through Focus
+  (entitlement `com.apple.developer.usernotifications.time-sensitive`). The clips are iOS-only assets.
+- **Not done:** Critical alerts (they would ring on silent) need Apple's approval, which is rarely given for
+  this use. A chosen downloaded voice is not used on iOS: its sound would have to be converted on the phone.

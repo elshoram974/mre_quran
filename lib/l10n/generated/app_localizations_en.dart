@@ -143,12 +143,70 @@ class AppLocalizationsEn extends AppLocalizations {
   String get creditsTitle => 'Credits';
 
   @override
-  String get creditsTanzil =>
-      'Quran text and index data (surahs, juz, page starts): Tanzil Project, CC BY 3.0, https://tanzil.net. The files are bundled unmodified, with their copyright notice, and verified by checksum.';
+  String get creditsPermissionPending => 'Permission being asked for';
 
   @override
-  String get creditsFonts =>
-      'Mushaf fonts and page layout: pending verified KFGQPC source and redistribution terms.';
+  String get creditsLibraries => 'Licences of the software libraries';
+
+  @override
+  String get creditsIcons =>
+      'Icons: Material Icons by Google (Apache License 2.0). The app icon and the launch star are the app\'s own design.';
+
+  @override
+  String get creditsPrayer =>
+      'Times are worked out on your device with the adhan library (MIT licence), and the Hijri date with the hijri library (BSD licence). Cities are found by your device\'s own service, and the map is Google Maps. Your location is never sent to any server of ours.';
+
+  @override
+  String creditsAudioVoice(
+    String title,
+    String credit,
+    String source,
+    String license,
+  ) {
+    return '$title: $credit. Source: $source. Licence: $license.';
+  }
+
+  @override
+  String get creditsAudioDuaMishary =>
+      'The dua after the adhan by Sheikh Mishary Alafasy: from his adhan recording on archive.org. Permission is being asked for.';
+
+  @override
+  String get creditsAudioDuaShaarawy =>
+      'The dua after the adhan by Sheikh Muhammad Metwalli Al-Shaarawy: archive.org (Sheikh Al-Shaarawy\'s duas, first file). Permission is being asked for.';
+
+  @override
+  String get creditsAudioIntro =>
+      'The recordings come from the Internet Archive (archive.org) and the abodehq/Athan-MP3 repository on GitHub, cleaned (silence removed, loudness evened) without changing the recitation. Permission from their owners is being asked for.';
+
+  @override
+  String get creditsRiwayat =>
+      'Texts and fonts of the readings of Warsh, Qalun, Al-Duri and Shu\'bah: King Fahd Glorious Quran Printing Complex (developer page https://qurancomplex.gov.sa/techquran/dev/), through the copy at github.com/thetruetruth/quran-data-kfgqpc (commit 281dbbe). On the Complex\'s own terms: digital use, with credit and version.';
+
+  @override
+  String get sourcesDesign => 'Fonts and icons';
+
+  @override
+  String get sourcesPrayer => 'Prayer times and the Qibla';
+
+  @override
+  String get sourcesAudio => 'Adhan and dua recordings';
+
+  @override
+  String get sourcesAdhkar => 'Adhkar and duas';
+
+  @override
+  String get sourcesMushaf => 'Printed Mushaf and the readings';
+
+  @override
+  String get sourcesQuran => 'The Quran';
+
+  @override
+  String get sourcesIntro =>
+      'Every text, font, page and sound in the app: where it comes from, and on what terms. Every file is checked against its checksum before it is used.';
+
+  @override
+  String get creditsTanzil =>
+      'Quran text and index data (surahs, juz, page starts): Tanzil Project, CC BY 3.0, https://tanzil.net. The files are bundled unmodified, with their copyright notice, and verified by checksum.';
 
   @override
   String get creditsImages =>
@@ -746,7 +804,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get adhanUnsupported =>
-      'Playing the adhan by itself is available on Android. On this phone the alert is a normal notification.';
+      'On iPhone, the system lets no app start a long sound by itself. So the prayer-time alert rings with the first 30 seconds of the adhan (the Fajr adhan at Fajr), and it comes through Focus.';
 
   @override
   String get adhanLicenseNote =>
@@ -893,7 +951,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get creditsAdhkar =>
-      'Adhkar text, repeat counts, and evidence: the Morning and Evening Adhkar database by Seen Arabic (MIT), https://github.com/Seen-Arabic/Morning-And-Evening-Adhkar-DB, taken from the book Hisn al-Muslim by Sa\'id bin Ali bin Wahf al-Qahtani. Bundled unmodified and verified by checksum.';
+      'Adhkar and duas: morning and evening adhkar from the Seen Arabic database (MIT licence), https://github.com/Seen-Arabic/Morning-And-Evening-Adhkar-DB. The others are cut from the hadiths\' own text in the hadith-api editions (The Unlicense), https://github.com/fawazahmed0/hadith-api, with their references and Al-Albani\'s grading. The order of Hisn al-Muslim\'s chapters (Sa\'id al-Qahtani) comes from the rn0x/Adhkar-json index; its text is not copied. All bundled and checked by checksum.';
 
   @override
   String get startup => 'On launch';
@@ -1027,7 +1085,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get creditsMushafScript =>
-      'Mushaf script and font: King Fahd Glorious Quran Printing Complex, Madinah (KFGQPC Uthmanic Script Hafs font, version 2.0, and the Tafseer Mouaser data, version 3), https://qurancomplex.gov.sa. The files are bundled unmodified and verified by checksum. All rights remain with the Complex.';
+      'Mushaf text, script and Al-Tafsir Al-Muyassar: King Fahd Glorious Quran Printing Complex, Madinah (Uthmanic Hafs script, version 2.0, and the Tafseer Mouaser data, version 3), https://qurancomplex.gov.sa. Bundled unchanged and checked by checksum. The Complex offers them for digital use with credit; all rights remain with it.';
 
   @override
   String hizbTitle(String number) {
@@ -1036,6 +1094,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get copyAyah => 'Copy ayah';
+
+  @override
+  String get tafsirAction => 'Tafsir';
+
+  @override
+  String get tafsirTitle => 'Al-Tafsir Al-Muyassar';
+
+  @override
+  String get tafsirCredit =>
+      'Al-Tafsir Al-Muyassar, by a group of scholars of tafsir, from the King Fahd Glorious Quran Printing Complex\'s data (version 3), unchanged. It is in Arabic.';
+
+  @override
+  String get tafsirCopy => 'Copy the tafsir';
+
+  @override
+  String get tafsirCopied => 'Tafsir copied';
+
+  @override
+  String get tafsirLoadError => 'The tafsir could not be loaded.';
 
   @override
   String get ayahCopied => 'Ayah copied';

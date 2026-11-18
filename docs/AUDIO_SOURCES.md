@@ -10,8 +10,10 @@ What plays at prayer time, in order (Android, `AdhanAudio.steps`):
    (`res/raw/dua_after_adhan_shaarawy.m4a`, the default) or Sheikh Mishary Alafasy's
    (`res/raw/dua_after_adhan_mishary.m4a`). Each can be heard on the Adhan page.
 
-Each part can be turned off on the Adhan page. iOS cannot play an adhan by itself; there the alert is a
-notification (an iOS notification sound is 30 seconds at most).
+Each part can be turned off on the Adhan page. iOS cannot play an adhan by itself: there the alert at prayer
+time rings with the first 29.5 seconds of the bundled adhan (`assets/adhan/ios/adhan_regular.caf`), or of the
+Fajr adhan at Fajr (`adhan_fajr.caf`), cut by the same build tool and bundled for iOS only (`docs/DECISIONS.md`
+D-039).
 
 ## How the files are made
 

@@ -191,6 +191,9 @@ class FakeReminderScheduler implements ReminderScheduler {
   >
   once = {};
 
+  /// The iOS sound each notification was scheduled with.
+  final Map<int, String?> sounds = {};
+
   @override
   Future<bool> canScheduleExact() async => exactAllowed;
 
@@ -210,7 +213,9 @@ class FakeReminderScheduler implements ReminderScheduler {
     required String channelName,
     required String payload,
     bool exact = false,
+    String? iosSound,
   }) async {
+    sounds[id] = iosSound;
     once[id] = (
       at: at,
       title: title,

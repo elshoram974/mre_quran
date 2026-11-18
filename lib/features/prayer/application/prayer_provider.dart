@@ -13,6 +13,7 @@ import '../../../core/time/ticking_clock.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../adhan/application/adhan_providers.dart';
 import '../../adhan/data/adhan_platform.dart';
+import '../../adhan/data/ios_adhan_sounds.dart';
 import '../../settings/application/digits_provider.dart';
 import '../../settings/application/settings_provider.dart';
 import '../data/location_source.dart';
@@ -318,6 +319,13 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
         for (final alert in alerts)
           if (!byAdhan || alert.kind != PrayerAlertKind.atTime) alert,
       ].take(notificationLimit);
+      // iOS plays no long sound by itself: its alert at prayer time rings
+      // with the adhan's opening (the Fajr adhan's at Fajr) when the adhan
+      // is on.
+      final iosAdhan =
+          defaultTargetPlatform == TargetPlatform.iOS &&
+          (ref.read(adhanSettingsProvider).value?.playAdhan ?? true) &&
+          await ref.read(iosAdhanSoundsProvider).install();
       final minutes = settings.beforeMinutes;
       final number = ref.read(digitsFormatterProvider);
       for (final alert in notices) {
@@ -344,6 +352,11 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
               channelName: l10n.prayerChannelName,
               payload: ReminderPayload.prayerTimes,
               exact: true,
+              iosSound: iosAdhan
+                  ? LibraryIosAdhanSounds.of(
+                      fajr: alert.prayer == DailyPrayer.fajr,
+                    )
+                  : null,
             );
           case PrayerAlertKind.afterPrayer:
             await _scheduler.scheduleOnce(

@@ -283,7 +283,7 @@ void main() {
     'a phone that cannot play the adhan says so and shows no voices',
     (tester) async {
       await _pump(tester, supported: false);
-      expect(find.textContaining('متاح على أندرويد'), findsOneWidget);
+      expect(find.textContaining('أول ٣٠ ثانية من الأذان'), findsOneWidget);
       expect(find.text('الأذان الافتراضي'), findsNothing);
     },
   );

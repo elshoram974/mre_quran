@@ -52,6 +52,7 @@ class _NoopReminderScheduler implements ReminderScheduler {
     required String channelName,
     required String payload,
     bool exact = false,
+    String? iosSound,
   }) async {}
 
   @override

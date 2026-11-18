@@ -11,6 +11,7 @@ import '../../../l10n/generated/app_localizations.dart';
 import '../data/adhan_catalog.dart';
 import '../data/adhan_platform.dart';
 import '../data/adhan_repository.dart';
+import '../data/ios_adhan_sounds.dart';
 import '../data/voice_store.dart';
 import '../domain/adhan_settings.dart';
 import '../domain/adhan_voice.dart';
@@ -23,6 +24,12 @@ final adhanRepositoryProvider = Provider<AdhanRepository>(
 /// Provides the list of voices. Tests override it.
 final adhanCatalogSourceProvider = Provider<AdhanCatalogSource>(
   (ref) => const AssetAdhanCatalog(),
+);
+
+/// Puts the adhan's opening where iOS plays notification sounds from.
+/// Tests override it.
+final iosAdhanSoundsProvider = Provider<IosAdhanSounds>(
+  (ref) => const LibraryIosAdhanSounds(),
 );
 
 /// Provides the saved recordings. Tests override it.

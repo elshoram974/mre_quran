@@ -58,7 +58,9 @@ abstract interface class ReminderScheduler {
 
   /// Shows a notification once, at the local time [at]. Replaces any reminder
   /// with the same [id]. With [exact] it fires on the minute when exact alarms
-  /// are allowed, and a little late otherwise.
+  /// are allowed, and a little late otherwise. On iOS, [iosSound] names a
+  /// sound in the app's `Library/Sounds` to play with it (30 seconds at
+  /// most), and a prayer's alerts come through Focus ("Time Sensitive").
   Future<void> scheduleOnce({
     required int id,
     required DateTime at,
@@ -68,6 +70,7 @@ abstract interface class ReminderScheduler {
     required String channelName,
     required String payload,
     bool exact = false,
+    String? iosSound,
   });
 
   /// Removes the reminder [id], if any.
@@ -228,9 +231,11 @@ class LocalReminderScheduler implements ReminderScheduler {
     required String channelName,
     required String payload,
     bool exact = false,
+    String? iosSound,
   }) async {
     await _ensureZone();
     final urgent = channel == ReminderChannel.prayer;
+    final prayer = urgent || channel == ReminderChannel.prayerSoon;
     await _plugin.zonedSchedule(
       id: id,
       title: title,
@@ -243,7 +248,10 @@ class LocalReminderScheduler implements ReminderScheduler {
           importance: urgent ? Importance.high : Importance.defaultImportance,
           priority: urgent ? Priority.high : Priority.defaultPriority,
         ),
-        iOS: const DarwinNotificationDetails(),
+        iOS: DarwinNotificationDetails(
+          sound: iosSound,
+          interruptionLevel: prayer ? InterruptionLevel.timeSensitive : null,
+        ),
       ),
       androidScheduleMode: exact && await canScheduleExact()
           ? AndroidScheduleMode.exactAllowWhileIdle

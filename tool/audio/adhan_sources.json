@@ -24,7 +24,8 @@
       "url": "https://archive.org/download/VeryBeautifulAdhaanByMisharyAlAfasy/Very%20Beautiful%20Adhaan%20by%20Mishary%20Al-Afasy.mp3",
       "sha256": "abba1e6a792551f73f0e02748caf03ca1a7d1811bb595820eb724878b086a627",
       "end": 231.4,
-      "checked": "Whisper transcript: twelve phrases, no «الصلاة خير من النوم»; the dua after it is cut off (see dua_after_adhan)."
+      "checked": "Whisper transcript: twelve phrases, no «الصلاة خير من النوم»; the dua after it is cut off (see dua_after_adhan).",
+      "iosClip": "adhan_regular"
     },
     {
       "id": "dua_after_adhan_mishary",
@@ -63,7 +64,8 @@
       "source": "https://archive.org/details/adhan-call-to-prayer-mishary-rashid-alafasy-fajr-maqam-hijaz-hd-320-kbps-1",
       "url": "https://archive.org/download/adhan-call-to-prayer-mishary-rashid-alafasy-fajr-maqam-hijaz-hd-320-kbps-1/Adhan%20%28Call%20to%20prayer%29%20_%20Mishary%20Rashid%20Alafasy%20_%20Fajr%20_%20Maqam%20Hijaz%20%E1%B4%B4%E1%B4%B0%20%28320%20kbps%29%20%281%29.mp3",
       "sha256": "bbe39c7f6905d35108f76c28019aa73a44e9564a731c0b3bb1390bd413ae2cab",
-      "checked": "Whisper transcript: «الصلاة خير من النوم» twice."
+      "checked": "Whisper transcript: «الصلاة خير من النوم» twice.",
+      "iosClip": "adhan_fajr"
     },
     {
       "id": "egypt_harak",

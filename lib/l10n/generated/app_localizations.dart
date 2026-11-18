@@ -356,17 +356,112 @@ abstract class AppLocalizations {
   /// **'Credits'**
   String get creditsTitle;
 
+  /// No description provided for @creditsPermissionPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Permission being asked for'**
+  String get creditsPermissionPending;
+
+  /// No description provided for @creditsLibraries.
+  ///
+  /// In en, this message translates to:
+  /// **'Licences of the software libraries'**
+  String get creditsLibraries;
+
+  /// No description provided for @creditsIcons.
+  ///
+  /// In en, this message translates to:
+  /// **'Icons: Material Icons by Google (Apache License 2.0). The app icon and the launch star are the app\'s own design.'**
+  String get creditsIcons;
+
+  /// No description provided for @creditsPrayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Times are worked out on your device with the adhan library (MIT licence), and the Hijri date with the hijri library (BSD licence). Cities are found by your device\'s own service, and the map is Google Maps. Your location is never sent to any server of ours.'**
+  String get creditsPrayer;
+
+  /// No description provided for @creditsAudioVoice.
+  ///
+  /// In en, this message translates to:
+  /// **'{title}: {credit}. Source: {source}. Licence: {license}.'**
+  String creditsAudioVoice(
+    String title,
+    String credit,
+    String source,
+    String license,
+  );
+
+  /// No description provided for @creditsAudioDuaMishary.
+  ///
+  /// In en, this message translates to:
+  /// **'The dua after the adhan by Sheikh Mishary Alafasy: from his adhan recording on archive.org. Permission is being asked for.'**
+  String get creditsAudioDuaMishary;
+
+  /// No description provided for @creditsAudioDuaShaarawy.
+  ///
+  /// In en, this message translates to:
+  /// **'The dua after the adhan by Sheikh Muhammad Metwalli Al-Shaarawy: archive.org (Sheikh Al-Shaarawy\'s duas, first file). Permission is being asked for.'**
+  String get creditsAudioDuaShaarawy;
+
+  /// No description provided for @creditsAudioIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'The recordings come from the Internet Archive (archive.org) and the abodehq/Athan-MP3 repository on GitHub, cleaned (silence removed, loudness evened) without changing the recitation. Permission from their owners is being asked for.'**
+  String get creditsAudioIntro;
+
+  /// No description provided for @creditsRiwayat.
+  ///
+  /// In en, this message translates to:
+  /// **'Texts and fonts of the readings of Warsh, Qalun, Al-Duri and Shu\'bah: King Fahd Glorious Quran Printing Complex (developer page https://qurancomplex.gov.sa/techquran/dev/), through the copy at github.com/thetruetruth/quran-data-kfgqpc (commit 281dbbe). On the Complex\'s own terms: digital use, with credit and version.'**
+  String get creditsRiwayat;
+
+  /// No description provided for @sourcesDesign.
+  ///
+  /// In en, this message translates to:
+  /// **'Fonts and icons'**
+  String get sourcesDesign;
+
+  /// No description provided for @sourcesPrayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Prayer times and the Qibla'**
+  String get sourcesPrayer;
+
+  /// No description provided for @sourcesAudio.
+  ///
+  /// In en, this message translates to:
+  /// **'Adhan and dua recordings'**
+  String get sourcesAudio;
+
+  /// No description provided for @sourcesAdhkar.
+  ///
+  /// In en, this message translates to:
+  /// **'Adhkar and duas'**
+  String get sourcesAdhkar;
+
+  /// No description provided for @sourcesMushaf.
+  ///
+  /// In en, this message translates to:
+  /// **'Printed Mushaf and the readings'**
+  String get sourcesMushaf;
+
+  /// No description provided for @sourcesQuran.
+  ///
+  /// In en, this message translates to:
+  /// **'The Quran'**
+  String get sourcesQuran;
+
+  /// No description provided for @sourcesIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Every text, font, page and sound in the app: where it comes from, and on what terms. Every file is checked against its checksum before it is used.'**
+  String get sourcesIntro;
+
   /// No description provided for @creditsTanzil.
   ///
   /// In en, this message translates to:
   /// **'Quran text and index data (surahs, juz, page starts): Tanzil Project, CC BY 3.0, https://tanzil.net. The files are bundled unmodified, with their copyright notice, and verified by checksum.'**
   String get creditsTanzil;
-
-  /// No description provided for @creditsFonts.
-  ///
-  /// In en, this message translates to:
-  /// **'Mushaf fonts and page layout: pending verified KFGQPC source and redistribution terms.'**
-  String get creditsFonts;
 
   /// No description provided for @creditsImages.
   ///
@@ -1391,7 +1486,7 @@ abstract class AppLocalizations {
   /// No description provided for @adhanUnsupported.
   ///
   /// In en, this message translates to:
-  /// **'Playing the adhan by itself is available on Android. On this phone the alert is a normal notification.'**
+  /// **'On iPhone, the system lets no app start a long sound by itself. So the prayer-time alert rings with the first 30 seconds of the adhan (the Fajr adhan at Fajr), and it comes through Focus.'**
   String get adhanUnsupported;
 
   /// No description provided for @adhanLicenseNote.
@@ -1643,7 +1738,7 @@ abstract class AppLocalizations {
   /// No description provided for @creditsAdhkar.
   ///
   /// In en, this message translates to:
-  /// **'Adhkar text, repeat counts, and evidence: the Morning and Evening Adhkar database by Seen Arabic (MIT), https://github.com/Seen-Arabic/Morning-And-Evening-Adhkar-DB, taken from the book Hisn al-Muslim by Sa\'id bin Ali bin Wahf al-Qahtani. Bundled unmodified and verified by checksum.'**
+  /// **'Adhkar and duas: morning and evening adhkar from the Seen Arabic database (MIT licence), https://github.com/Seen-Arabic/Morning-And-Evening-Adhkar-DB. The others are cut from the hadiths\' own text in the hadith-api editions (The Unlicense), https://github.com/fawazahmed0/hadith-api, with their references and Al-Albani\'s grading. The order of Hisn al-Muslim\'s chapters (Sa\'id al-Qahtani) comes from the rn0x/Adhkar-json index; its text is not copied. All bundled and checked by checksum.'**
   String get creditsAdhkar;
 
   /// No description provided for @startup.
@@ -1847,7 +1942,7 @@ abstract class AppLocalizations {
   /// No description provided for @creditsMushafScript.
   ///
   /// In en, this message translates to:
-  /// **'Mushaf script and font: King Fahd Glorious Quran Printing Complex, Madinah (KFGQPC Uthmanic Script Hafs font, version 2.0, and the Tafseer Mouaser data, version 3), https://qurancomplex.gov.sa. The files are bundled unmodified and verified by checksum. All rights remain with the Complex.'**
+  /// **'Mushaf text, script and Al-Tafsir Al-Muyassar: King Fahd Glorious Quran Printing Complex, Madinah (Uthmanic Hafs script, version 2.0, and the Tafseer Mouaser data, version 3), https://qurancomplex.gov.sa. Bundled unchanged and checked by checksum. The Complex offers them for digital use with credit; all rights remain with it.'**
   String get creditsMushafScript;
 
   /// No description provided for @hizbTitle.
@@ -1861,6 +1956,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Copy ayah'**
   String get copyAyah;
+
+  /// No description provided for @tafsirAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Tafsir'**
+  String get tafsirAction;
+
+  /// No description provided for @tafsirTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Al-Tafsir Al-Muyassar'**
+  String get tafsirTitle;
+
+  /// No description provided for @tafsirCredit.
+  ///
+  /// In en, this message translates to:
+  /// **'Al-Tafsir Al-Muyassar, by a group of scholars of tafsir, from the King Fahd Glorious Quran Printing Complex\'s data (version 3), unchanged. It is in Arabic.'**
+  String get tafsirCredit;
+
+  /// No description provided for @tafsirCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy the tafsir'**
+  String get tafsirCopy;
+
+  /// No description provided for @tafsirCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Tafsir copied'**
+  String get tafsirCopied;
+
+  /// No description provided for @tafsirLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'The tafsir could not be loaded.'**
+  String get tafsirLoadError;
 
   /// No description provided for @ayahCopied.
   ///

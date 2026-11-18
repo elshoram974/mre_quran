@@ -1,9 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mre_quran/core/notifications/reminder_scheduler.dart';
 import 'package:mre_quran/core/notifications/reminder_scheduler_provider.dart';
 import 'package:mre_quran/core/time/ticking_clock.dart';
 import 'package:mre_quran/features/adhan/application/adhan_providers.dart';
+import 'package:mre_quran/features/adhan/data/ios_adhan_sounds.dart';
 import 'package:mre_quran/features/adhan/domain/adhan_settings.dart';
 import 'package:mre_quran/features/prayer/application/prayer_provider.dart';
 import 'package:mre_quran/features/prayer/domain/prayer_alerts.dart';
@@ -43,6 +45,7 @@ _Harness _harness({
   bool exact = true,
   AdhanSettings settings = const AdhanSettings(),
   Set<String> saved = const {},
+  bool iosSounds = true,
 }) {
   final scheduler = FakeReminderScheduler()..exactAllowed = exact;
   final platform = FakeAdhanPlatform(supported: supported);
@@ -61,6 +64,7 @@ _Harness _harness({
       adhanRepositoryProvider.overrideWithValue(adhan),
       adhanCatalogSourceProvider.overrideWithValue(FakeAdhanCatalog()),
       voiceStoreProvider.overrideWithValue(store),
+      iosAdhanSoundsProvider.overrideWithValue(_Sounds(iosSounds)),
     ],
   );
   addTearDown(container.dispose);
@@ -71,6 +75,16 @@ _Harness _harness({
     adhan: adhan,
     store: store,
   );
+}
+
+/// Says whether the iOS sounds could be put in place.
+class _Sounds implements IosAdhanSounds {
+  _Sounds(this.ok);
+
+  final bool ok;
+
+  @override
+  Future<bool> install() async => ok;
 }
 
 Iterable<int> _atTimeNotifications(_Harness h) => [
@@ -272,5 +286,46 @@ void main() {
     await h.turnAllOn();
     await h.container.read(prayerProvider.notifier).setAllAlerts(false);
     expect(h.scheduler.once.keys, [42]);
+  });
+
+  group('on iOS', () {
+    setUp(() => debugDefaultTargetPlatformOverride = TargetPlatform.iOS);
+    tearDown(() => debugDefaultTargetPlatformOverride = null);
+
+    test('the alert rings with the adhan\'s opening, the Fajr one at Fajr, '
+        'and stays within iOS\'s pending notifications', () async {
+      final h = _harness(supported: false, iosSounds: true);
+      await h.turnAllOn();
+      expect(h.platform.alarms, isEmpty);
+      final atTime = _atTimeNotifications(h).toList()..sort();
+      expect(atTime, isNotEmpty);
+      for (final id in atTime) {
+        final fajr = (id - PrayerAlertPlan.firstAtTimeId) % 5 == 0;
+        expect(
+          h.scheduler.sounds[id],
+          fajr ? 'adhan_fajr.caf' : 'adhan_regular.caf',
+          reason: '$id',
+        );
+      }
+      expect(
+        h.scheduler.once.length,
+        lessThanOrEqualTo(PrayerNotifier.notificationLimit),
+      );
+      expect(PrayerNotifier.notificationLimit, lessThan(64));
+    });
+
+    test('with the adhan off, or its sounds not in place, the alert keeps '
+        'the usual sound', () async {
+      final off = _harness(
+        supported: false,
+        iosSounds: true,
+        settings: const AdhanSettings(playAdhan: false),
+      );
+      await off.turnAllOn();
+      expect(off.scheduler.sounds.values.whereType<String>(), isEmpty);
+      final missing = _harness(supported: false, iosSounds: false);
+      await missing.turnAllOn();
+      expect(missing.scheduler.sounds.values.whereType<String>(), isEmpty);
+    });
   });
 }

@@ -249,7 +249,8 @@ the project owner from <https://qurancomplex.gov.sa>.
 - **What is read.** Columns `sura_no`, `aya_no`, `aya_text`, `aya_text_emlaey`. The ayah text is
   only separated from its trailing ayah-number glyph at the no-break space the source puts
   there (`KfgqpcHafsParser`); a test compares the two halves against the raw rows. The
-  `aya_tafseer` column is bundled with the file but not shown anywhere yet.
+  `aya_tafseer` column is Al-Tafsir Al-Muyassar, shown from an ayah's actions (`docs/DECISIONS.md` D-037),
+  unchanged except for the markup that marks its quotes from the Quran.
 - **Licence and the owner's decision.** The font's embedded notice says it "may not be
   reproduced, modified without the express written approval" of the Complex (see section 3).
   The Complex also publishes its digital Mushaf, font included, as free to use in "websites,
