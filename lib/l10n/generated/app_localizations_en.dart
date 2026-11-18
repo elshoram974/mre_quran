@@ -265,7 +265,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get widgetPrayerScheduleDescription =>
-      'Today\'s prayers, sunrise and the time until the next prayer. Smaller sizes automatically show upcoming prayers.';
+      'Today\'s prayers, sunrise and the time until the next prayer. Smaller sizes show upcoming prayers. When the time needs refreshing, tap to update, then tap to open prayer times.';
 
   @override
   String get widgetScheduleSettings => 'Prayer times widget settings';
@@ -318,7 +318,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get widgetTasbihDescription =>
-      'Count your tasbih right from the home screen.';
+      'Tap the number to add one, or reset to start again.';
 
   @override
   String get widgetDhikr => 'Suggested dhikr';

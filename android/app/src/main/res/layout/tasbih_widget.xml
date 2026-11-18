@@ -1,74 +1,71 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Tasbih counter, two cells by one at the least: tap anywhere to count.
-     The name and the round reset button stand at the start, the count fills
-     the rest and sizes itself to it. TasbihWidgetProvider scales the name
-     and the button with the widget. -->
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/tasbih_widget_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/widget_bg">
+    android:background="@drawable/widget_bg"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingStart="4dp"
+    android:paddingEnd="4dp">
 
     <LinearLayout
         android:id="@+id/tasbih_widget_count_area"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="match_parent"
+        android:layout_weight="1"
         android:contentDescription="@string/tasbih_widget_count_description"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:paddingStart="12dp"
-        android:paddingTop="4dp"
-        android:paddingEnd="12dp"
-        android:paddingBottom="4dp">
+        android:gravity="center"
+        android:orientation="vertical"
+        android:paddingVertical="4dp">
 
-        <LinearLayout
-            android:id="@+id/tasbih_widget_reset"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:contentDescription="@string/tasbih_widget_reset"
-            android:gravity="center"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/tasbih_widget_name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:singleLine="true"
-                android:text="@string/tasbih_widget_name"
-                android:textAlignment="viewStart"
-                android:textColor="@color/widget_accent"
-                android:textSize="11sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/tasbih_widget_reset_icon"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:background="@drawable/widget_pill"
-                android:importantForAccessibility="no"
-                android:gravity="center"
-                android:paddingStart="8dp"
-                android:paddingTop="2dp"
-                android:paddingEnd="8dp"
-                android:paddingBottom="2dp"
-                android:text="↺"
-                android:textColor="@color/widget_text"
-                android:textSize="14sp" />
-        </LinearLayout>
+        <TextView
+            android:id="@+id/tasbih_widget_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:importantForAccessibility="no"
+            android:includeFontPadding="false"
+            android:singleLine="true"
+            android:text="@string/tasbih_widget_name"
+            android:textColor="@color/widget_accent"
+            android:textSize="11sp"
+            android:textStyle="bold" />
 
         <TextView
             android:id="@+id/tasbih_widget_count"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
             android:layout_weight="1"
             android:autoSizeMaxTextSize="120sp"
             android:autoSizeMinTextSize="14sp"
             android:autoSizeTextType="uniform"
             android:gravity="center"
+            android:importantForAccessibility="no"
+            android:includeFontPadding="false"
             android:maxLines="1"
             android:text="@string/tasbih_widget_preview_count"
             android:textColor="@color/widget_text"
             android:textStyle="bold" />
     </LinearLayout>
-</FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/tasbih_widget_reset"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:contentDescription="@string/tasbih_widget_reset">
+
+        <TextView
+            android:id="@+id/tasbih_widget_reset_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:background="@drawable/widget_pill"
+            android:gravity="center"
+            android:importantForAccessibility="no"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:text="↺"
+            android:textColor="@color/widget_text"
+            android:textSize="14sp" />
+    </FrameLayout>
+</LinearLayout>

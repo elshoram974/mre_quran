@@ -260,7 +260,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get widgetPrayerScheduleDescription =>
-      'صلوات اليوم والشروق والوقت المتبقي للصلاة القادمة. في المقاس الصغير تظهر الصلوات القادمة تلقائيًا.';
+      'صلوات اليوم والشروق والوقت المتبقي للصلاة القادمة. عند تصغير الويدجت تظهر الصلوات القادمة. لو احتاج الوقت تحديثًا، اضغط للتحديث ثم اضغط لفتح المواقيت.';
 
   @override
   String get widgetScheduleSettings => 'إعدادات ويدجت المواقيت';
@@ -312,7 +312,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String get widgetTasbihCount => 'أضف واحدة إلى عدّاد المسبحة';
 
   @override
-  String get widgetTasbihDescription => 'سبّح وعُدّ تسبيحك من الشاشة الرئيسية.';
+  String get widgetTasbihDescription =>
+      'اضغط على الرقم لإضافة تسبيحة، وعلى زر التصفير للبدء من جديد.';
 
   @override
   String get widgetDhikr => 'ذكر مقترح';

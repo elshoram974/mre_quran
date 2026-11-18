@@ -569,7 +569,7 @@ abstract class AppLocalizations {
   /// No description provided for @widgetPrayerScheduleDescription.
   ///
   /// In en, this message translates to:
-  /// **'Today\'s prayers, sunrise and the time until the next prayer. Smaller sizes automatically show upcoming prayers.'**
+  /// **'Today\'s prayers, sunrise and the time until the next prayer. Smaller sizes show upcoming prayers. When the time needs refreshing, tap to update, then tap to open prayer times.'**
   String get widgetPrayerScheduleDescription;
 
   /// No description provided for @widgetScheduleSettings.
@@ -665,7 +665,7 @@ abstract class AppLocalizations {
   /// No description provided for @widgetTasbihDescription.
   ///
   /// In en, this message translates to:
-  /// **'Count your tasbih right from the home screen.'**
+  /// **'Tap the number to add one, or reset to start again.'**
   String get widgetTasbihDescription;
 
   /// No description provided for @widgetDhikr.

@@ -161,7 +161,7 @@ internal object PrayerWidgetRenderer {
             countdown(views, R.id.prayer_widget_remaining, R.id.prayer_widget_seconds, model, next, now)
         }
         direction(views, R.id.prayer_widget_root, model)
-        views.setOnClickPendingIntent(R.id.prayer_widget_root, tapIntent(context))
+        views.setOnClickPendingIntent(R.id.prayer_widget_root, tapIntent(context, model, now, R.id.prayer_widget_root, true))
         return views
     }
 
@@ -199,7 +199,7 @@ internal object PrayerWidgetRenderer {
             }
         }
         direction(views, R.id.card_root, model)
-        views.setOnClickPendingIntent(R.id.card_root, tapIntent(context))
+        views.setOnClickPendingIntent(R.id.card_root, tapIntent(context, model, now, R.id.card_root, true))
         return views
     }
 
@@ -329,7 +329,7 @@ internal object PrayerWidgetRenderer {
             }
         }
         direction(views, R.id.schedule_root, model)
-        views.setOnClickPendingIntent(R.id.schedule_root, tapIntent(context))
+        views.setOnClickPendingIntent(R.id.schedule_root, tapIntent(context, model, now, R.id.schedule_root, options["showCountdown"] != false))
         return views
     }
 
@@ -367,13 +367,21 @@ internal object PrayerWidgetRenderer {
         context.getSystemService(AlarmManager::class.java).cancel(refreshIntent(context))
     }
 
-    /** A tap always opens prayer times, including when the widget is stale. */
-    private fun tapIntent(context: Context): PendingIntent = PendingIntent.getActivity(
-        context,
-        REQUEST_CODE,
-        appIntent(context),
-        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-    )
+    /** Associate the tap with the snapshot the launcher actually received. */
+    private fun tapIntent(context: Context, model: WidgetModel?, now: Long, root: Int, countdown: Boolean): PendingIntent {
+        val next = model?.nextAfter(now)
+        val day = model?.dayAt(now)
+        if (day == null || next == null) {
+            return PendingIntent.getActivity(context, root, appIntent(context),
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+        }
+        val minuteEnd = if (countdown && !model.seconds) now - now % MINUTE + MINUTE else Long.MAX_VALUE
+        val intent = Intent(context, WidgetTapActivity::class.java)
+            .putExtra(WidgetTapActivity.DRAWN_AT, now)
+            .putExtra(WidgetTapActivity.EXPIRES_AT, minOf(next.at, day.end, minuteEnd))
+        return PendingIntent.getActivity(context, root, intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+    }
 
     private fun refreshIntent(context: Context): PendingIntent = PendingIntent.getBroadcast(
         context,

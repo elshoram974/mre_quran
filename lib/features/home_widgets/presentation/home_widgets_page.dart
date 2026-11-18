@@ -38,9 +38,8 @@ class HomeWidgetsPage extends ConsumerWidget {
       );
     }
 
-    return AppPageScaffold(
-      title: l10n.widgetsTitle,
-      body: Builder(
+    final gallery = ContentContainer(
+      child: Builder(
         builder: (context) => ListView.builder(
           padding: pagePadding(context),
           itemCount: HomeWidget.values.length + 1,
@@ -162,6 +161,7 @@ class HomeWidgetsPage extends ConsumerWidget {
         ),
       ),
     );
+    return AppPageScaffold(title: l10n.widgetsTitle, body: gallery);
   }
 
   static IconData _icon(HomeWidget widget) => switch (widget) {

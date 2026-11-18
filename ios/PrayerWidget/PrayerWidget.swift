@@ -67,7 +67,12 @@ private struct Payload {
   }
   private func replace(_ text: String, _ values: [String:String]) -> String { values.reduce(text) { $0.replacingOccurrences(of: $1.key, with: $1.value) } }
 }
-private struct Entry: TimelineEntry { let date: Date; let payload: Payload?; var isPreview: Bool = false }
+private struct Entry: TimelineEntry {
+  let date: Date
+  let payload: Payload?
+  var isPreview = false
+  var awaitingReload = false
+}
 private struct AdhkarPayload {
   let label: String; let title: String; let done: Int; let total: Int; let payload: String; let rtl: Bool; let progressLabel: String?; let arabicDigits: Bool
   static func read() -> AdhkarPayload? {
@@ -82,10 +87,43 @@ private struct Provider: TimelineProvider {
   func placeholder(in context: Context) -> Entry { Entry(date: .now, payload: nil, isPreview: true) }
   func getSnapshot(in context: Context, completion: @escaping (Entry) -> Void) { completion(Entry(date: .now, payload: .read(), isPreview: context.isPreview)) }
   func getTimeline(in context: Context, completion: @escaping (Timeline<Entry>) -> Void) {
-    let entry = Entry(date: .now, payload: .read()); let refresh = entry.payload?.next(.now)?.at.addingTimeInterval(1) ?? .now.addingTimeInterval(3600)
-    completion(Timeline(entries: [entry], policy: .after(refresh)))
+    let now = Date()
+    let payload = Payload.read()
+    let current = Entry(date: now, payload: payload)
+    // If WidgetKit defers our reload, a pre-rendered entry still advances
+    // the prayer and date. Its first tap requests a fresh timeline.
+    let boundaries = Set((payload?.days ?? []).flatMap { day in
+      day.rows.filter { $0.id != "sunrise" }.map(\.at) + [day.end]
+    }).filter { $0 > now }.sorted()
+    let entries = [current] + boundaries.map { Entry(date: $0, payload: payload, awaitingReload: true) }
+    completion(Timeline(entries: entries, policy: .after(boundaries.first ?? now.addingTimeInterval(3600))))
   }
 }
+
+@available(iOS 17.0, *)
+struct RefreshPrayerWidgetIntent: AppIntent {
+  static var title: LocalizedStringResource = "Refresh prayer times"
+  func perform() async throws -> some IntentResult {
+    for kind in ["NextPrayerWidget", "PrayerScheduleWidget", "PrayerCardWidget"] {
+      WidgetCenter.shared.reloadTimelines(ofKind: kind)
+    }
+    return .result()
+  }
+}
+
+private struct PrayerWidgetTap: ViewModifier {
+  let entry: Entry
+  @ViewBuilder func body(content: Content) -> some View {
+    if #available(iOS 17.0, *), entry.awaitingReload {
+      Button(intent: RefreshPrayerWidgetIntent()) {
+        content.contentShape(Rectangle())
+      }.buttonStyle(.plain).accessibilityHint(Text("Refresh prayer times"))
+    } else {
+      content.widgetURL(URL(string: "mrequran://mre-quran/prayer-times"))
+    }
+  }
+}
+
 private struct Empty: View { var body: some View { Text(Payload.read()?.labels["empty"] ?? NSLocalizedString("Open Mushafi to set your location", comment: "")).font(.caption).frame(maxWidth:.infinity,maxHeight:.infinity,alignment:.leading) } }
 private struct NextView: View {
   let entry: Entry
@@ -106,7 +144,7 @@ private struct NextView: View {
         }.frame(maxWidth: .infinity, maxHeight: .infinity)
       } else { Empty() }
     }.environment(\.layoutDirection, (data?.rtl ?? (systemIsArabic)) ? .rightToLeft : .leftToRight)
-      .widgetURL(URL(string:"mrequran://mre-quran/prayer-times"))
+      .modifier(PrayerWidgetTap(entry: entry))
   }
 }
 /// The time left until [at]: to the second when the person chose it in the
@@ -204,7 +242,7 @@ private struct CardView: View {
     .padding(10)
     .frame(maxWidth: .infinity, maxHeight: .infinity)
     .environment(\.layoutDirection, (data?.rtl ?? (systemIsArabic)) ? .rightToLeft : .leftToRight)
-    .widgetURL(URL(string: "mrequran://mre-quran/prayer-times"))
+    .modifier(PrayerWidgetTap(entry: entry))
   }
 }
 private struct ScheduleView: View {
@@ -246,7 +284,7 @@ private struct ScheduleView: View {
         }.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
       } else { Empty() }
     }.environment(\.layoutDirection, (data?.rtl ?? (systemIsArabic)) ? .rightToLeft : .leftToRight)
-      .widgetURL(URL(string:"mrequran://mre-quran/prayer-times"))
+      .modifier(PrayerWidgetTap(entry: entry))
   }
 
   private func scheduleRows(_ rows: [Row], data: Payload, next: Row?, afterLastPrayer: Bool,
@@ -254,7 +292,7 @@ private struct ScheduleView: View {
     VStack(spacing: family == .systemLarge ? 6 : 1) {
       ForEach(rows) { row in
         let coming = row.id == next?.id && (row.at == next?.at || afterLastPrayer)
-        VStack(spacing: 0) {
+        VStack(spacing: -2) {
           if coming, showCountdown, let next {
             TimeLeft(data: data, at: next.at, now: entry.date)
               .font(.caption2).foregroundStyle(.secondary)
@@ -302,26 +340,27 @@ private let tasbihKey = "tasbihWidgetCount"
 @available(iOS 17.0, *)
 struct TasbihCountIntent: AppIntent {
   static var title: LocalizedStringResource = "Count"
-  func perform() async throws -> some IntentResult {
+  @MainActor func perform() async throws -> some IntentResult {
     let defaults = UserDefaults(suiteName: appGroup)
     defaults?.set((defaults?.integer(forKey: tasbihKey) ?? 0) + 1, forKey: tasbihKey)
-    if defaults?.object(forKey: "tasbihHaptics") as? Bool ?? true {
-      await MainActor.run { UIImpactFeedbackGenerator(style: .light).impactOccurred() }
-    }
     return .result()
   }
 }
 @available(iOS 17.0, *)
 struct TasbihResetIntent: AppIntent {
   static var title: LocalizedStringResource = "Reset"
-  func perform() async throws -> some IntentResult {
+  @MainActor func perform() async throws -> some IntentResult {
     UserDefaults(suiteName: appGroup)?.set(0, forKey: tasbihKey)
     return .result()
   }
 }
-private struct TasbihEntry: TimelineEntry { let date: Date; let count: Int }
+private struct TasbihEntry: TimelineEntry { let date: Date; let count: Int; var haptics = true }
 private struct TasbihProvider: TimelineProvider {
-  private func entry() -> TasbihEntry { TasbihEntry(date: .now, count: UserDefaults(suiteName: appGroup)?.integer(forKey: tasbihKey) ?? 0) }
+  private func entry() -> TasbihEntry {
+    let defaults = UserDefaults(suiteName: appGroup)
+    return TasbihEntry(date: .now, count: defaults?.integer(forKey: tasbihKey) ?? 0,
+                       haptics: defaults?.object(forKey: "tasbihHaptics") as? Bool ?? true)
+  }
   func placeholder(in context: Context) -> TasbihEntry { TasbihEntry(date: .now, count: 0) }
   func getSnapshot(in context: Context, completion: @escaping (TasbihEntry) -> Void) { completion(entry()) }
   func getTimeline(in context: Context, completion: @escaping (Timeline<TasbihEntry>) -> Void) { completion(Timeline(entries: [entry()], policy: .never)) }
@@ -348,8 +387,16 @@ private struct InteractiveTasbihView: View {
     let count = displayDigits(entry.count, arabic: AdhkarPayload.read()?.arabicDigits ?? systemIsArabic)
     VStack(spacing: 6) {
       Text("Tasbih").font(.caption).foregroundStyle(.secondary)
-      Button(intent: TasbihCountIntent()) { Text(verbatim: count).widgetAccentable().font(.system(size: 44, weight: .bold)).minimumScaleFactor(0.5).frame(maxWidth: .infinity, maxHeight: .infinity) }.buttonStyle(.plain)
-      Button(intent: TasbihResetIntent()) { Text("Reset").font(.caption2) }.buttonStyle(.bordered)
+      Button(intent: TasbihCountIntent()) {
+        Text(verbatim: count).widgetAccentable().font(.system(size: 44, weight: .bold))
+          .monospacedDigit().lineLimit(1).minimumScaleFactor(0.5)
+          .frame(maxWidth: .infinity, maxHeight: .infinity).contentShape(Rectangle())
+      }.buttonStyle(.plain)
+        .accessibilityLabel(Text("Count")).accessibilityValue(Text(verbatim: count))
+        .sensoryFeedback(.impact(weight: .medium), trigger: entry.count) { old, new in
+          new > old && entry.haptics
+        }
+      Button(intent: TasbihResetIntent()) { Text("Reset").font(.caption) }.buttonStyle(.bordered).disabled(entry.count == 0)
     }.frame(maxWidth: .infinity, maxHeight: .infinity)
   }
 }

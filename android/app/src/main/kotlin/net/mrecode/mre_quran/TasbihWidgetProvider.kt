@@ -10,6 +10,10 @@ import android.os.Bundle
 import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
+import android.os.VibratorManager
+import android.os.VibrationAttributes
+import android.media.AudioAttributes
+import android.provider.Settings
 import android.widget.RemoteViews
 
 /**
@@ -27,25 +31,34 @@ class TasbihWidgetProvider : AppWidgetProvider() {
 
     override fun onReceive(context: Context, intent: Intent) {
         when (intent.action) {
-            ACTION_COUNT -> {
-                change(context) { it + 1 }
-                tick(context)
-            }
+            ACTION_COUNT -> count(context)
             ACTION_RESET -> change(context) { 0 }
             else -> super.onReceive(context, intent)
         }
     }
 
+    internal fun count(context: Context) {
+        tick(context)
+        change(context) { it + 1 }
+    }
+
     @Suppress("DEPRECATION")
     private fun tick(context: Context) {
         if (!context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE).getBoolean(HAPTICS, true)) return
-        val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator ?: return
-        if (!vibrator.hasVibrator()) return
+        if (Settings.System.getInt(context.contentResolver, Settings.System.HAPTIC_FEEDBACK_ENABLED, 1) == 0) return
+        val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            context.getSystemService(VibratorManager::class.java)?.defaultVibrator
+        } else context.getSystemService(Vibrator::class.java)
+        if (vibrator == null || !vibrator.hasVibrator()) return
+        val touch = AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ASSISTANCE_SONIFICATION).build()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            vibrator.vibrate(VibrationEffect.createOneShot(14, 110))
-        } else {
-            vibrator.vibrate(14)
-        }
+            val effect = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK)
+            } else VibrationEffect.createOneShot(25, VibrationEffect.DEFAULT_AMPLITUDE)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                vibrator.vibrate(effect, VibrationAttributes.createForUsage(VibrationAttributes.USAGE_TOUCH))
+            } else vibrator.vibrate(effect, touch)
+        } else vibrator.vibrate(25, touch)
     }
 
     private fun change(context: Context, next: (Int) -> Int) {
@@ -68,9 +81,14 @@ class TasbihWidgetProvider : AppWidgetProvider() {
                 views.setInt(R.id.tasbih_widget_root, "setLayoutDirection", if (settings.rtl) android.view.View.LAYOUT_DIRECTION_RTL else android.view.View.LAYOUT_DIRECTION_LTR)
                 settings.tasbihLabel?.let { views.setTextViewText(R.id.tasbih_widget_name, it) }
                 settings.tasbihResetLabel?.let { views.setContentDescription(R.id.tasbih_widget_reset, it) }
-                settings.tasbihCountLabel?.let { views.setContentDescription(R.id.tasbih_widget_count_area, it) }
             }
-            views.setOnClickPendingIntent(R.id.tasbih_widget_count_area, broadcast(context, ACTION_COUNT, 1))
+            val countTap = if (context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE).getBoolean(HAPTICS, true)) {
+                PendingIntent.getActivity(context, 1, Intent(context, WidgetTapActivity::class.java).setAction(ACTION_COUNT),
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+            } else broadcast(context, ACTION_COUNT, 1)
+            val countLabel = settings?.tasbihCountLabel ?: context.getString(R.string.tasbih_widget_count_description)
+            views.setContentDescription(R.id.tasbih_widget_count_area, "$countLabel · $text")
+            views.setOnClickPendingIntent(R.id.tasbih_widget_count_area, countTap)
             views.setOnClickPendingIntent(R.id.tasbih_widget_reset, broadcast(context, ACTION_RESET, 2))
             // A bigger widget gets a bigger name and reset button; the count
             // sizes itself to fill what is left.
@@ -98,8 +116,10 @@ class TasbihWidgetProvider : AppWidgetProvider() {
             TasbihWidgetProvider().redraw(context, manager, manager.getAppWidgetIds(ComponentName(context, TasbihWidgetProvider::class.java)))
         }
         fun setHapticsEnabled(context: Context, enabled: Boolean) {
-            context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE)
-                .edit().putBoolean(HAPTICS, enabled).apply()
+            val preferences = context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE)
+            if (preferences.getBoolean(HAPTICS, true) == enabled) return
+            preferences.edit().putBoolean(HAPTICS, enabled).apply()
+            refresh(context)
         }
 
         private const val HAPTICS = "haptics"

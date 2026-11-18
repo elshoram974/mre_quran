@@ -71,7 +71,7 @@ class PrayerScheduleOptionsSection extends ConsumerWidget {
               onChanged: (value) =>
                   save(options.copyWith(showCountdown: value)),
             ),
-            if (settings != null)
+            if (options.showCountdown && settings != null)
               AppSwitchTile(
                 title: l10n.settingsWidgetSeconds,
                 subtitle: l10n.settingsWidgetSecondsHint,

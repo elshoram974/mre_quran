@@ -7,9 +7,11 @@ import 'package:mre_quran/core/widgets/app_tile_card.dart';
 import 'package:mre_quran/features/home_widgets/application/home_widgets_providers.dart';
 import 'package:mre_quran/features/home_widgets/domain/home_widget.dart';
 import 'package:mre_quran/features/home_widgets/presentation/home_widgets_page.dart';
+import 'package:mre_quran/features/settings/application/settings_provider.dart';
 import 'package:mre_quran/l10n/generated/app_localizations.dart';
 
 import '../../helpers/fake_home_widgets.dart';
+import '../../helpers/memory_settings_repository.dart';
 
 Future<FakeHomeWidgets> _pump(
   WidgetTester tester, {
@@ -27,7 +29,12 @@ Future<FakeHomeWidgets> _pump(
   final widgets = FakeHomeWidgets(pinnable: pinnable);
   await tester.pumpWidget(
     ProviderScope(
-      overrides: [homeWidgetsPlatformProvider.overrideWithValue(widgets)],
+      overrides: [
+        homeWidgetsPlatformProvider.overrideWithValue(widgets),
+        settingsRepositoryProvider.overrideWithValue(
+          MemorySettingsRepository(),
+        ),
+      ],
       child: MaterialApp(
         locale: Locale(locale),
         localizationsDelegates: appLocalizationsDelegates,
@@ -169,6 +176,29 @@ void main() {
     await tester.pumpAndSettle();
     expect(widgets.scheduleOptions.upcomingOnly, isTrue);
     expect(widgets.scheduleOptions.showSunrise, isFalse);
+  });
+
+  testWidgets('seconds follow the visibility of the schedule countdown', (
+    tester,
+  ) async {
+    final widgets = await _pump(tester, locale: 'en');
+    final countdown = find.text('Time until the next prayer');
+    final seconds = find.text('Seconds on the prayer widgets');
+    await tester.scrollUntilVisible(
+      countdown,
+      180,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.ensureVisible(countdown);
+    await tester.pumpAndSettle();
+    expect(seconds, findsOneWidget);
+    await tester.tap(countdown);
+    await tester.pumpAndSettle();
+    expect(widgets.scheduleOptions.showCountdown, isFalse);
+    expect(seconds, findsNothing);
+    await tester.tap(countdown);
+    await tester.pumpAndSettle();
+    expect(seconds, findsOneWidget);
   });
 
   testWidgets('failed schedule save restores the previous choice', (

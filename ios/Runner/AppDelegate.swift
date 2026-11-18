@@ -56,7 +56,11 @@ import WidgetKit
         callback(FlutterMethodNotImplemented)
         return
       }
-      UserDefaults(suiteName: "group.net.mrecode.mreQuran")?.set(enabled, forKey: "tasbihHaptics")
+      let defaults = UserDefaults(suiteName: "group.net.mrecode.mreQuran")
+      if (defaults?.object(forKey: "tasbihHaptics") as? Bool ?? true) != enabled {
+        defaults?.set(enabled, forKey: "tasbihHaptics")
+        WidgetCenter.shared.reloadTimelines(ofKind: "TasbihWidget")
+      }
       callback(nil)
     }
     let homeWidgetsChannel = FlutterMethodChannel(
