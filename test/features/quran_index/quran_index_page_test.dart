@@ -17,6 +17,7 @@ Future<void> _pumpIndex(
   String locale = 'ar',
   double width = 390,
   double textScale = 1,
+  bool reduceMotion = false,
 }) async {
   tester.view.physicalSize = Size(width, 844);
   tester.view.devicePixelRatio = 1;
@@ -52,7 +53,10 @@ Future<void> _pumpIndex(
     UncontrolledProviderScope(
       container: container,
       child: MediaQuery(
-        data: MediaQueryData(textScaler: TextScaler.linear(textScale)),
+        data: MediaQueryData(
+          textScaler: TextScaler.linear(textScale),
+          disableAnimations: reduceMotion,
+        ),
         child: MaterialApp.router(
           locale: Locale(locale),
           supportedLocales: AppLocalizations.supportedLocales,
@@ -68,6 +72,18 @@ Future<void> _pumpIndex(
 }
 
 void main() {
+  testWidgets('changing index tabs respects reduced motion', (tester) async {
+    await _pumpIndex(tester, reduceMotion: true);
+    await tester.tap(find.text('الأجزاء'));
+    await tester.pump();
+    final tabs = tester.widget<TabBarView>(find.byType(TabBarView)).controller!;
+    expect(tabs.index, 1);
+    expect(tabs.animation!.value, 1);
+    await tester.pumpAndSettle();
+    expect(find.text('الجزء ٢'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('lists surahs in Arabic and filters by search', (tester) async {
     await _pumpIndex(tester);
     expect(find.text('الفاتحة'), findsOneWidget);

@@ -92,7 +92,12 @@ class _QuranIndexPageState extends ConsumerState<QuranIndexPage>
               child: _IndexHeader(
                 tab: _IndexTab.values[_tabs.index],
                 controller: _search,
-                onTab: (tab) => _tabs.animateTo(tab.index),
+                onTab: (tab) => _tabs.animateTo(
+                  tab.index,
+                  duration: MediaQuery.disableAnimationsOf(context)
+                      ? Duration.zero
+                      : null,
+                ),
                 onQuery: () => setState(() {}),
               ),
             ),

@@ -6,6 +6,7 @@ import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:mre_quran/app/shell/expanding_nav_bar.dart';
 import 'package:mre_quran/app/quran_app.dart';
 import 'package:mre_quran/features/bookmarks/application/bookmarks_provider.dart';
+import 'package:mre_quran/features/bookmarks/presentation/bookmarks_page.dart';
 import 'package:mre_quran/features/mushaf/application/reading_position_provider.dart';
 import 'package:mre_quran/features/quran_index/application/quran_metadata_provider.dart';
 import 'package:mre_quran/features/quran_text/application/quran_text_providers.dart';
@@ -19,16 +20,24 @@ import '../helpers/memory_last_tab_repository.dart';
 import '../helpers/memory_reading_position_repository.dart';
 import '../helpers/memory_settings_repository.dart';
 
-Future<void> _pump(WidgetTester tester, Size size) async {
+Future<void> _pump(
+  WidgetTester tester,
+  Size size, {
+  bool reduceMotion = false,
+}) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
+  final repository = MemorySettingsRepository();
+  repository.settings = repository.settings.copyWith(
+    reduceMotion: reduceMotion,
+  );
   final container = ProviderContainer(
     overrides: [
-      settingsRepositoryProvider.overrideWithValue(MemorySettingsRepository()),
+      settingsRepositoryProvider.overrideWithValue(repository),
       lastTabRepositoryProvider.overrideWithValue(MemoryLastTabRepository()),
-      initialLocationProvider.overrideWithValue('/bookmarks'),
+      initialLocationProvider.overrideWithValue('/reader'),
       quranMetadataSourceProvider.overrideWithValue(FakeQuranMetadataSource()),
       readingPositionRepositoryProvider.overrideWithValue(
         MemoryReadingPositionRepository(),
@@ -47,6 +56,48 @@ Future<void> _pump(WidgetTester tester, Size size) async {
 }
 
 void main() {
+  testWidgets('tab changes fade in and ignore taps on the outgoing tab', (
+    tester,
+  ) async {
+    await _pump(tester, const Size(390, 844));
+    await tester.tap(find.byIcon(Icons.bookmarks_outlined).first);
+    await tester.pump();
+    final page = find.byType(BookmarksPage);
+    final opacity = find
+        .ancestor(of: page, matching: find.byType(AnimatedOpacity))
+        .first;
+    final fade = find
+        .descendant(of: opacity, matching: find.byType(FadeTransition))
+        .first;
+    expect(tester.widget<FadeTransition>(fade).opacity.value, 0);
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(
+      tester.widget<FadeTransition>(fade).opacity.value,
+      inExclusiveRange(0.0, 1.0),
+    );
+    await tester.pumpAndSettle();
+    expect(tester.widget<FadeTransition>(fade).opacity.value, 1);
+    expect(find.text('لا توجد علامات بعد').hitTestable(), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('tab changes are immediate when motion is reduced', (
+    tester,
+  ) async {
+    await _pump(tester, const Size(390, 844), reduceMotion: true);
+    await tester.pump(const Duration(seconds: 5));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byIcon(Icons.bookmarks_outlined).first);
+    await tester.pumpAndSettle();
+    final page = find.byType(BookmarksPage);
+    final opacity = find
+        .ancestor(of: page, matching: find.byType(AnimatedOpacity))
+        .first;
+    expect(tester.widget<AnimatedOpacity>(opacity).duration, Duration.zero);
+    expect(find.text('لا توجد علامات بعد').hitTestable(), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('a phone gets the floating bar', (tester) async {
     await _pump(tester, const Size(390, 844));
     expect(find.byType(ExpandingNavBar), findsOneWidget);

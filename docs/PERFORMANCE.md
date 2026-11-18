@@ -115,6 +115,18 @@ rasterized frame in 1,179, 1,066 and 973 ms after engine start. The host was
 still shared with other processes, so this spread is a measurement of this
 run, not proof of a change in startup speed.
 
+After changing tab transitions and reduced-motion handling, three profile-mode
+cold starts on a separate API 28 software-rendered emulator reached the first
+rasterized frame in 3,806, 1,735 and 1,553 ms after engine start. Time after
+framework initialization was 550, 635 and 640 ms. Builds and tests were running
+on the host, especially during the first run, so these measurements describe the
+observed range and are not a controlled comparison with the previous run.
+In the accompanying warm profile scenario, mean build / raster times were
+4.6 / 50.0 ms for tabs, 5.6 / 64.0 ms for the sheet, 5.0 / 48.1 ms to open
+the index, 7.1 / 71.0 ms to scroll it, 9.2 / 92.0 ms to search, and
+17.2 / 57.0 ms to close it. Each phase sampled 4–28 frames on the emulator's
+software renderer, with concurrent work on the host.
+
 ## Rules
 
 - Do not await independent work one after another before `runApp`. Run it in parallel.

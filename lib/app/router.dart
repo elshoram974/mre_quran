@@ -32,24 +32,8 @@ final routerProvider = Provider<GoRouter>((ref) {
     initialLocation: ref.read(initialLocationProvider),
     routes: [
       StatefulShellRoute(
-        navigatorContainerBuilder: (context, shell, children) => Stack(
-          children: [
-            for (var i = 0; i < children.length; i++)
-              Offstage(
-                offstage: i != shell.currentIndex,
-                child: AnimatedOpacity(
-                  opacity: i == shell.currentIndex ? 1 : 0,
-                  duration: MediaQuery.disableAnimationsOf(context)
-                      ? Duration.zero
-                      : AppTokens.motionMedium,
-                  child: TickerMode(
-                    enabled: i == shell.currentIndex,
-                    child: children[i],
-                  ),
-                ),
-              ),
-          ],
-        ),
+        navigatorContainerBuilder: (context, shell, children) =>
+            _ShellBranches(index: shell.currentIndex, children: children),
         builder: (context, state, shell) => AppShell(navigationShell: shell),
         branches: [
           StatefulShellBranch(
@@ -179,6 +163,81 @@ final routerProvider = Provider<GoRouter>((ref) {
   });
   return router;
 });
+
+/// Keeps branch state mounted while the previous and current tabs cross-fade.
+class _ShellBranches extends StatefulWidget {
+  const _ShellBranches({required this.index, required this.children});
+
+  final int index;
+  final List<Widget> children;
+
+  @override
+  State<_ShellBranches> createState() => _ShellBranchesState();
+}
+
+class _ShellBranchesState extends State<_ShellBranches> {
+  late final Set<int> _visible = {widget.index};
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _visible
+        ..clear()
+        ..add(widget.index);
+    }
+  }
+
+  @override
+  void didUpdateWidget(_ShellBranches oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _visible
+        ..clear()
+        ..add(widget.index);
+    } else {
+      _visible.add(widget.index);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final duration = MediaQuery.disableAnimationsOf(context)
+        ? Duration.zero
+        : AppTokens.motionMedium;
+    return Stack(
+      children: [
+        for (var i = 0; i < widget.children.length; i++)
+          Offstage(
+            offstage: !_visible.contains(i),
+            child: IgnorePointer(
+              ignoring: i != widget.index,
+              child: ExcludeSemantics(
+                excluding: i != widget.index,
+                child: AnimatedOpacity(
+                  opacity: i == widget.index ? 1 : 0,
+                  duration: duration,
+                  onEnd: duration == Duration.zero
+                      ? null
+                      : () {
+                          if (mounted &&
+                              i != widget.index &&
+                              _visible.contains(i)) {
+                            setState(() => _visible.remove(i));
+                          }
+                        },
+                  child: TickerMode(
+                    enabled: i == widget.index,
+                    child: widget.children[i],
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
 
 Page<void> _page(BuildContext context, GoRouterState state, Widget child) {
   final duration = MediaQuery.disableAnimationsOf(context)
