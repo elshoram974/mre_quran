@@ -208,18 +208,30 @@ private struct ScheduleView: View {
     let data = entry.payload ?? (entry.isPreview ? Payload.sample(entry.date) : nil)
     Group {
       if let data, let day = data.day(entry.date) {
-        VStack(alignment: .leading, spacing: family == .systemLarge ? 8 : 1) {
-          Text(day.date).font(.caption).lineLimit(1).minimumScaleFactor(0.7)
-          Text(day.hijri).font(.caption2).foregroundStyle(.secondary).lineLimit(1).minimumScaleFactor(0.7)
-          ForEach(day.rows) { row in
-            HStack {
-              Text(row.name)
-              Spacer(minLength: 2)
-              Text(row.time).monospacedDigit()
-            }.font(family == .systemLarge ? .body : .caption2).lineLimit(1).minimumScaleFactor(0.7)
+        VStack(alignment: .leading, spacing: family == .systemLarge ? 6 : 1) {
+          HStack(spacing: 4) {
+            Text(day.date).font(.caption2.weight(.bold)).lineLimit(1)
+            Text(day.hijri).font(.caption2).foregroundStyle(.secondary).lineLimit(1)
           }
-          if family != .systemSmall, let next = data.next(entry.date) {
-            TimeLeft(data: data, at: next.at, now: entry.date).font(.caption).foregroundStyle(.secondary)
+          if let next = data.next(entry.date) {
+            HStack(spacing: 3) {
+              Text(next.name)
+              TimeLeft(data: data, at: next.at, now: entry.date)
+            }.font(.caption2.weight(.medium)).foregroundStyle(.secondary).lineLimit(1)
+          }
+          let next = data.next(entry.date)
+          let tomorrow = !day.rows.contains { $0.id != "sunrise" && $0.at > entry.date }
+          ForEach(day.rows) { row in
+            let coming = row.id != "sunrise" && row.id == next?.id && (tomorrow || row.at == next?.at)
+            HStack(spacing: 6) {
+              Text(row.name)
+              Text(coming ? (next?.time ?? row.time) : row.time).monospacedDigit()
+              Spacer(minLength: 0)
+            }
+            .font(family == .systemLarge ? .body : .system(size: 12))
+            .lineLimit(1)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+            .background(RoundedRectangle(cornerRadius: 6).fill(coming ? Color.primary.opacity(0.1) : .clear))
           }
         }.frame(maxWidth:.infinity,maxHeight:.infinity,alignment:.leading)
       } else { Empty() }

@@ -65,6 +65,45 @@ void main() {
     expect(changes.single, 1.6);
   });
 
+  testWidgets('a reader pinch does not also resize the surrounding app', (
+    tester,
+  ) async {
+    final appChanges = <double>[];
+    final readerChanges = <double>[];
+    await tester.pumpWidget(
+      Directionality(
+        textDirection: TextDirection.rtl,
+        child: PinchZoom(
+          value: 1,
+          min: 0.8,
+          max: 1.6,
+          onChanged: appChanges.add,
+          child: PinchZoom(
+            value: 1,
+            min: 0.8,
+            max: 1.6,
+            onChanged: readerChanges.add,
+            child: const ColoredBox(
+              color: Color(0xFFFFFFFF),
+              child: SizedBox.expand(),
+            ),
+          ),
+        ),
+      ),
+    );
+    final centre = tester.getCenter(find.byType(PinchZoom).last);
+    final first = await tester.startGesture(centre - const Offset(50, 0));
+    final second = await tester.startGesture(centre + const Offset(50, 0));
+    await first.moveTo(centre - const Offset(70, 0));
+    await second.moveTo(centre + const Offset(70, 0));
+    await tester.pump();
+    await first.up();
+    await second.up();
+    await tester.pump();
+    expect(readerChanges.single, closeTo(1.4, 0.05));
+    expect(appChanges, isEmpty);
+  });
+
   testWidgets('one finger still swipes the page and changes nothing', (
     tester,
   ) async {

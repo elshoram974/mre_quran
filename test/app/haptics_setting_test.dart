@@ -126,6 +126,24 @@ void main() {
     },
   );
 
+  testWidgets('two fingers resize text on an app screen', (tester) async {
+    await pumpSettings(tester, backend: RecordingHaptics());
+    final page = find.byType(SettingsPage);
+    final before = MediaQuery.textScalerOf(tester.element(page)).scale(20);
+    final center = tester.getCenter(page);
+    final first = await tester.startGesture(center - const Offset(50, 0));
+    final second = await tester.startGesture(center + const Offset(50, 0));
+    await first.moveTo(center - const Offset(65, 0));
+    await second.moveTo(center + const Offset(65, 0));
+    await tester.pump();
+    await first.up();
+    await second.up();
+    await tester.pumpAndSettle();
+    final after = MediaQuery.textScalerOf(tester.element(page)).scale(20);
+    expect(after, closeTo(before * 1.3, 0.2));
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('a device that cannot vibrate gets a switch that says so', (
     tester,
   ) async {

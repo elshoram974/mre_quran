@@ -127,6 +127,13 @@ the index, 7.1 / 71.0 ms to scroll it, 9.2 / 92.0 ms to search, and
 17.2 / 57.0 ms to close it. Each phase sampled 4–28 frames on the emulator's
 software renderer, with concurrent work on the host.
 
+After adding the app-wide pinch gesture, the profile scenario completed on an
+Android 16 emulator with Flutter 3.47.5. Average build / raster times were
+2.0 / 4.9 ms for tabs, 1.6 / 3.5 ms for the sheet, 1.9 / 2.5 ms opening the
+index, 2.2 / 2.5 ms scrolling it, and 5.1 / 7.4 ms searching it. This is a
+single emulator run, not a controlled before-and-after comparison or a
+substitute for measurements on a physical device.
+
 ## Rules
 
 - Do not await independent work one after another before `runApp`. Run it in parallel.

@@ -10,6 +10,7 @@ import 'package:mre_quran/core/theme/app_theme.dart';
 import 'package:mre_quran/core/theme/app_tokens.dart';
 import 'package:mre_quran/core/theme/quran_colors.dart';
 import 'package:mre_quran/core/widgets/empty_state.dart';
+import 'package:mre_quran/core/widgets/pinch_zoom.dart';
 import 'package:mre_quran/features/mushaf/application/svg_page_providers.dart';
 import 'package:mre_quran/features/mushaf/data/svg_page_compiler.dart';
 import 'package:mre_quran/features/mushaf/data/svg_page_parser.dart';
@@ -44,6 +45,8 @@ void main() {
     Duration fallbackAfter = const Duration(seconds: 30),
     Size size = const Size(390, 844),
     bool fillWidth = false,
+    double zoom = 1,
+    ValueChanged<double>? onZoomChanged,
   }) async {
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
@@ -70,6 +73,8 @@ void main() {
               fallbackBuilder: fallbackBuilder,
               fallbackAfter: fallbackAfter,
               fillWidth: fillWidth,
+              zoom: zoom,
+              onZoomChanged: onZoomChanged,
             ),
           ),
         ),
@@ -93,6 +98,54 @@ void main() {
       rect.top + (y - box.top) / pageBoxHeight(box) * rect.height,
     );
   }
+
+  testWidgets('pinching a printed page changes its zoom without turning it', (
+    tester,
+  ) async {
+    final changes = <double>[];
+    var taps = 0;
+    await pump(
+      tester,
+      load: (request) async => fixturePicture(request),
+      onZoomChanged: changes.add,
+      onTap: () => taps++,
+    );
+    final center = tester.getCenter(find.byType(PinchZoom));
+    final first = await tester.startGesture(center - const Offset(50, 0));
+    final second = await tester.startGesture(center + const Offset(50, 0));
+    await first.moveTo(center - const Offset(70, 0));
+    await second.moveTo(center + const Offset(70, 0));
+    await tester.pump();
+    await first.up();
+    await second.up();
+    await tester.pump();
+    expect(changes.single, closeTo(1.4, 0.05));
+    expect(taps, 0);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('a zoomed printed page can be scrolled in both directions', (
+    tester,
+  ) async {
+    await pump(
+      tester,
+      load: (request) async => fixturePicture(request),
+      zoom: 1.5,
+      onZoomChanged: (_) {},
+    );
+    final scrolls = tester.widgetList<SingleChildScrollView>(
+      find.byType(SingleChildScrollView),
+    );
+    expect(
+      scrolls.any((scroll) => scroll.scrollDirection == Axis.horizontal),
+      isTrue,
+    );
+    expect(
+      scrolls.any((scroll) => scroll.scrollDirection == Axis.vertical),
+      isTrue,
+    );
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets('draws the script in the ink colour and the ayah numbers in '
       'the accent', (tester) async {

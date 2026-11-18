@@ -234,55 +234,51 @@ class ReaderToolbar extends StatelessWidget {
     final scheme = theme.colorScheme;
     return MediaQuery.withClampedTextScaling(
       maxScaleFactor: 1.3,
-      child: ReaderFloatingSurface(
-        child: SizedBox(
-          height: AppTokens.minTarget + 8,
-          child: Row(
-            children: [
-              menu,
-              Expanded(
-                child: Semantics(
-                  button: true,
-                  label: searchLabel,
-                  excludeSemantics: true,
-                  child: Material(
-                    color: scheme.surfaceContainerHigh,
-                    shape: const StadiumBorder(),
-                    clipBehavior: Clip.antiAlias,
-                    child: InkWell(
-                      onTap: onSearch,
-                      child: SizedBox(
-                        height: 40,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.search_rounded,
-                              size: 20,
+      child: Row(
+        children: [
+          ReaderFloatingSurface(child: menu),
+          const SizedBox(width: AppTokens.spaceSmall),
+          Expanded(
+            child: ReaderFloatingSurface(
+              padding: EdgeInsets.zero,
+              child: Semantics(
+                button: true,
+                label: searchLabel,
+                excludeSemantics: true,
+                child: InkWell(
+                  onTap: onSearch,
+                  child: SizedBox(
+                    height: AppTokens.minTarget,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.search_rounded,
+                          color: scheme.onSurfaceVariant,
+                        ),
+                        const SizedBox(width: AppTokens.spaceSmall),
+                        Flexible(
+                          child: Text(
+                            searchLabel,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.bodyMedium?.copyWith(
                               color: scheme.onSurfaceVariant,
                             ),
-                            const SizedBox(width: 6),
-                            Flexible(
-                              child: Text(
-                                searchLabel,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: scheme.onSurfaceVariant,
-                                ),
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
-                      ),
+                      ],
                     ),
                   ),
                 ),
               ),
-              ...actions,
-            ],
+            ),
           ),
-        ),
+          for (final action in actions) ...[
+            const SizedBox(width: AppTokens.spaceSmall),
+            ReaderFloatingSurface(child: action),
+          ],
+        ],
       ),
     );
   }

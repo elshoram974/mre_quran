@@ -16,6 +16,7 @@ import '../../../core/theme/app_tokens.dart';
 import '../../../core/theme/quran_colors.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/widgets/empty_state.dart';
+import '../../../core/widgets/pinch_zoom.dart';
 import '../../quran_index/domain/quran_metadata.dart';
 import '../../quran_text/domain/ayah_range.dart';
 import '../../settings/application/digits_provider.dart';
@@ -51,8 +52,16 @@ class SvgPageView extends StatelessWidget {
     this.spread = false,
     this.digits,
     this.fallbackBuilder,
+    this.zoom = 1,
+    this.onZoomChanged,
     this.fallbackAfter = const Duration(seconds: 30),
   });
+
+  /// Magnification of the printed page.
+  final double zoom;
+
+  /// Saves the magnification chosen with two fingers.
+  final ValueChanged<double>? onZoomChanged;
 
   /// Builds the page as typeset text, shown in place of the artwork when it
   /// cannot be had: offline, a failed download, or one that takes longer
@@ -95,42 +104,73 @@ class SvgPageView extends StatelessWidget {
   final String Function(int)? digits;
 
   @override
-  Widget build(BuildContext context) => MushafPageFrame(
-    metadata: metadata,
-    page: page,
-    onTap: onTap,
-    spread: spread,
-    gutter: AppTokens.readerGutterPrinted,
-    labels: false,
-    child: _SlowGate(
-      key: ValueKey<int>(page),
-      after: fallbackAfter,
-      // The room decides how far the lines are spread, and so which
-      // picture of the page to ask for.
-      builder: (context, slow, restart) => LayoutBuilder(
-        builder: (context, constraints) => _SvgBody(
-          metadata: metadata,
-          number: digits ?? (value) => formatDigits(value, arabic: true),
-          request: (
-            page: page,
-            stretch: _stretchFor(constraints.biggest, fillWidth: fillWidth),
+  Widget build(BuildContext context) {
+    final frame = MushafPageFrame(
+      metadata: metadata,
+      page: page,
+      onTap: onTap,
+      spread: spread,
+      gutter: AppTokens.readerGutterPrinted,
+      labels: false,
+      child: _SlowGate(
+        key: ValueKey<int>(page),
+        after: fallbackAfter,
+        // The room decides how far the lines are spread, and so which
+        // picture of the page to ask for.
+        builder: (context, slow, restart) => LayoutBuilder(
+          builder: (context, constraints) => _SvgBody(
+            metadata: metadata,
+            number: digits ?? (value) => formatDigits(value, arabic: true),
+            request: (
+              page: page,
+              stretch: _stretchFor(constraints.biggest, fillWidth: fillWidth),
+            ),
+            label: context.l10n.printedPageLabel(
+              (digits ?? (value) => formatDigits(value, arabic: true))(page),
+            ),
+            onTap: onTap,
+            onAyahLongPress: onAyahLongPress,
+            onAyahTap: onAyahTap,
+            bookmarked: bookmarked,
+            selected: selected,
+            fillWidth: fillWidth,
+            fallbackBuilder: fallbackBuilder,
+            slow: slow,
+            onRetry: restart,
           ),
-          label: context.l10n.printedPageLabel(
-            (digits ?? (value) => formatDigits(value, arabic: true))(page),
-          ),
-          onTap: onTap,
-          onAyahLongPress: onAyahLongPress,
-          onAyahTap: onAyahTap,
-          bookmarked: bookmarked,
-          selected: selected,
-          fillWidth: fillWidth,
-          fallbackBuilder: fallbackBuilder,
-          slow: slow,
-          onRetry: restart,
         ),
       ),
-    ),
-  );
+    );
+    final onChanged = onZoomChanged;
+    if (onChanged == null) return frame;
+    return PinchZoom(
+      value: zoom,
+      min: AppSettings.minReaderFontScale,
+      max: AppSettings.maxReaderFontScale,
+      onChanged: onChanged,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          if (zoom == 1) return frame;
+          final width = constraints.maxWidth * zoom;
+          final height = constraints.maxHeight * zoom;
+          return SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: SizedBox(
+              width: math.max(constraints.maxWidth, width),
+              child: SingleChildScrollView(
+                child: SizedBox(
+                  height: math.max(constraints.maxHeight, height),
+                  child: Center(
+                    child: SizedBox(width: width, height: height, child: frame),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
 
   /// What a page view of [page] in a slot of [slot] asks for: the same
   /// request as the view itself makes, so a page made ready ahead of time is
