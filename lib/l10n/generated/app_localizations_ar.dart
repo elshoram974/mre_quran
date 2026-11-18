@@ -13,6 +13,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get appTitle => 'مصحفي';
 
   @override
+  String get brandName => 'MRECode';
+
+  @override
   String get reader => 'المصحف';
 
   @override

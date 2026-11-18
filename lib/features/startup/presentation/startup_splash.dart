@@ -191,6 +191,23 @@ class _Emblem extends StatelessWidget {
             ),
           ),
         ),
+        // The maker's name, where the platform's launch screen writes it.
+        PositionedDirectional(
+          start: 0,
+          end: 0,
+          bottom: MediaQuery.paddingOf(context).bottom + 32,
+          child: Text(
+            context.l10n.brandName,
+            textAlign: TextAlign.center,
+            // As LaunchScreen.storyboard writes it, so the hand-over from
+            // it does not move.
+            style: theme.textTheme.titleMedium?.copyWith(
+              color: color,
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
       ],
     );
   }

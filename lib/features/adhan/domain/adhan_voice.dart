@@ -13,6 +13,30 @@ class AdhanLicense {
   final String url;
 }
 
+/// A file a voice may be downloaded from, with what it must be.
+@immutable
+class AdhanFile {
+  /// Creates the file.
+  const AdhanFile({
+    required this.url,
+    required this.bytes,
+    required this.sha256,
+    required this.extension,
+  });
+
+  /// Where it is.
+  final String url;
+
+  /// Its size, in bytes.
+  final int bytes;
+
+  /// Its SHA-256, as 64 lowercase hex characters.
+  final String sha256;
+
+  /// Its extension, without a dot.
+  final String extension;
+}
+
 /// Which prayers a recording is for.
 enum AdhanKind {
   /// The adhan of Dhuhr, Asr, Maghrib and Isha.
@@ -42,6 +66,7 @@ class AdhanVoice {
     this.extension = 'audio',
     this.builtIn = false,
     this.kind = AdhanKind.regular,
+    this.fallback,
   });
 
   /// The id of the voice that ships with the app.
@@ -88,6 +113,17 @@ class AdhanVoice {
 
   /// Which prayers it is for.
   final AdhanKind kind;
+
+  /// Where else it can be had when [url] cannot: the recording's own file
+  /// where it was found, uncleaned.
+  final AdhanFile? fallback;
+
+  /// The files it may be downloaded from, in order of preference.
+  List<AdhanFile> get files => [
+    if (url case final url?)
+      AdhanFile(url: url, bytes: bytes, sha256: sha256, extension: extension),
+    ?fallback,
+  ];
 
   /// Whether it is a Fajr adhan.
   bool get isFajr => kind == AdhanKind.fajr;

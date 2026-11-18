@@ -89,4 +89,46 @@ void main() {
     await store(fetcher).download(kDefaultVoice);
     expect(fetcher.opened, isEmpty);
   });
+
+  test('downloads from the app\'s own copy first', () async {
+    final fetcher = FakeVoiceFetcher();
+    final target = store(fetcher);
+    await target.download(kFallbackVoice);
+    expect(fetcher.opened.map((uri) => uri.path), [
+      '/global/with_fallback.m4a',
+    ]);
+    expect((await target.fileOf(kFallbackVoice))!.path, endsWith('.m4a'));
+  });
+
+  test('falls back to the original when the copy cannot be had', () async {
+    final fetcher = FakeVoiceFetcher(
+      missing: {'https://example.test/global/with_fallback.m4a'},
+    );
+    final target = store(fetcher);
+    await target.download(kFallbackVoice);
+    expect(fetcher.opened.map((uri) => uri.path), [
+      '/global/with_fallback.m4a',
+      '/original/with_fallback.mp3',
+    ]);
+    final file = await target.fileOf(kFallbackVoice);
+    expect(file!.path, endsWith('with_fallback.mp3'));
+    expect(await target.downloaded([kFallbackVoice]), {'with_fallback'});
+    await target.delete(kFallbackVoice);
+    expect(await target.fileOf(kFallbackVoice), isNull);
+  });
+
+  test('when every file fails, says why the last one did', () async {
+    final target = store(FakeVoiceFetcher(fail: true));
+    await expectLater(
+      target.download(kFallbackVoice),
+      throwsA(
+        isA<VoiceDownloadException>().having(
+          (error) => error.failure,
+          'failure',
+          VoiceDownloadFailure.network,
+        ),
+      ),
+    );
+    expect(folder.listSync(), isEmpty);
+  });
 }

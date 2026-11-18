@@ -13,6 +13,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appTitle => 'Mushafi';
 
   @override
+  String get brandName => 'MRECode';
+
+  @override
   String get reader => 'Mushaf';
 
   @override

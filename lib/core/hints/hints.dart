@@ -81,10 +81,16 @@ final hintsProvider = AsyncNotifierProvider<HintsNotifier, HintsState>(
 /// Owns [hintsProvider].
 class HintsNotifier extends AsyncNotifier<HintsState> {
   @override
-  Future<HintsState> build() async => HintsState(
-    dismissed: await ref.read(hintsRepositoryProvider).dismissed(),
-    shown: const {},
-  );
+  Future<HintsState> build() async {
+    Set<AppHint> dismissed;
+    try {
+      dismissed = await ref.read(hintsRepositoryProvider).dismissed();
+    } on Object {
+      // Unreadable: every hint may come, once a run as always.
+      dismissed = const {};
+    }
+    return HintsState(dismissed: dismissed, shown: const {});
+  }
 
   /// Takes [hint] for showing now: true when it may be shown, and from then
   /// on it is not shown again this run.

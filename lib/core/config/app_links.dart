@@ -1,7 +1,8 @@
-/// Addresses outside the app that it links to. Set them before a release.
+/// Addresses outside the app that it links to.
 abstract final class AppLinks {
-  /// The privacy policy: `docs/privacy/index.html`, published on its own
-  /// (GitHub Pages, say). Paste its address here; while it is empty the
-  /// settings show no link to it. Both stores ask for this address too.
-  static const String privacyPolicy = '';
+  /// The privacy policy: `privacy/index.html` of the `global` branch
+  /// (the folder `mre_quran_global`), published with GitHub Pages. Both
+  /// stores ask for this address too.
+  static const String privacyPolicy =
+      'https://elshoram974.github.io/mre_quran/privacy/';
 }

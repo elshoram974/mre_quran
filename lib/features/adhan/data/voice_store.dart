@@ -48,6 +48,9 @@ class VoiceDownloadToken {
 abstract interface class VoiceFetcher {
   /// Streams the body of [url].
   Stream<List<int>> open(Uri url);
+
+  /// Whether [url] answers with a file, asked briefly.
+  Future<bool> reachable(Uri url);
 }
 
 /// Fetches with `dart:io`, naming the app so the host can tell who asks.
@@ -59,6 +62,25 @@ class HttpVoiceFetcher implements VoiceFetcher {
   /// asks. Keep it in step with the native preview.
   static const String userAgent =
       'MREQuran/1.0 (adhan voices; Flutter app; only after a tap)';
+
+  @override
+  Future<bool> reachable(Uri url) async {
+    final client = HttpClient()
+      ..userAgent = userAgent
+      ..connectionTimeout = const Duration(seconds: 4);
+    try {
+      final request = await client.headUrl(url);
+      final response = await request.close().timeout(
+        const Duration(seconds: 4),
+      );
+      await response.drain<void>();
+      return response.statusCode == HttpStatus.ok;
+    } on Object {
+      return false;
+    } finally {
+      client.close(force: true);
+    }
+  }
 
   @override
   Stream<List<int>> open(Uri url) async* {
@@ -127,14 +149,18 @@ class FileVoiceStore implements VoiceStore {
     return Directory('${support.path}/adhan');
   }
 
-  Future<File> _file(AdhanVoice voice) async =>
-      File('${(await _directory()).path}/${voice.id}.${voice.extension}');
+  Future<File> _file(AdhanVoice voice, AdhanFile from) async =>
+      File('${(await _directory()).path}/${voice.id}.${from.extension}');
 
+  /// The saved copy of [voice], from whichever of its files it came.
   @override
   Future<File?> fileOf(AdhanVoice voice) async {
     if (voice.builtIn) return null;
-    final file = await _file(voice);
-    return await file.exists() ? file : null;
+    for (final from in voice.files) {
+      final file = await _file(voice, from);
+      if (await file.exists()) return file;
+    }
+    return null;
   }
 
   @override
@@ -143,15 +169,35 @@ class FileVoiceStore implements VoiceStore {
       if (voice.builtIn || await fileOf(voice) != null) voice.id,
   };
 
+  /// Downloads [voice] from its first file, and from the next when that
+  /// cannot be had or is not the file it should be (the cleaned copy not
+  /// published yet, say). Throws the last failure when none works.
   @override
   Future<void> download(
     AdhanVoice voice, {
     void Function(double progress)? onProgress,
     VoiceDownloadToken? token,
   }) async {
-    final url = voice.url;
-    if (url == null) return;
-    final target = await _file(voice);
+    final files = voice.files;
+    if (files.isEmpty) return;
+    for (final (index, from) in files.indexed) {
+      try {
+        await _download(voice, from, onProgress: onProgress, token: token);
+        return;
+      } on VoiceDownloadException catch (error) {
+        final last = index == files.length - 1;
+        if (last || error.failure == VoiceDownloadFailure.cancelled) rethrow;
+      }
+    }
+  }
+
+  Future<void> _download(
+    AdhanVoice voice,
+    AdhanFile from, {
+    void Function(double progress)? onProgress,
+    VoiceDownloadToken? token,
+  }) async {
+    final target = await _file(voice, from);
     await target.parent.create(recursive: true);
     final partial = File('${target.path}.part');
     final sink = partial.openWrite();
@@ -159,18 +205,18 @@ class FileVoiceStore implements VoiceStore {
     final hash = sha256.startChunkedConversion(digest);
     var received = 0;
     try {
-      await for (final chunk in fetcher.open(Uri.parse(url))) {
+      await for (final chunk in fetcher.open(Uri.parse(from.url))) {
         if (token?.isCancelled ?? false) {
           throw const VoiceDownloadException(VoiceDownloadFailure.cancelled);
         }
         sink.add(chunk);
         hash.add(chunk);
         received += chunk.length;
-        onProgress?.call((received / voice.bytes).clamp(0, 1));
+        onProgress?.call((received / from.bytes).clamp(0, 1));
       }
       hash.close();
       await sink.close();
-      if (digest.value.toString() != voice.sha256) {
+      if (digest.value.toString() != from.sha256) {
         throw const VoiceDownloadException(VoiceDownloadFailure.integrity);
       }
       await partial.rename(target.path);
@@ -183,8 +229,10 @@ class FileVoiceStore implements VoiceStore {
 
   @override
   Future<void> delete(AdhanVoice voice) async {
-    final file = await fileOf(voice);
-    if (file != null) await file.delete();
+    for (final from in voice.files) {
+      final file = await _file(voice, from);
+      if (await file.exists()) await file.delete();
+    }
   }
 }
 

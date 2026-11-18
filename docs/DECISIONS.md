@@ -335,3 +335,27 @@
   (entitlement `com.apple.developer.usernotifications.time-sensitive`). The clips are iOS-only assets.
 - **Not done:** Critical alerts (they would ring on silent) need Apple's approval, which is rarely given for
   this use. A chosen downloaded voice is not used on iOS: its sound would have to be converted on the phone.
+
+## D-040: The tafsir for every reading
+
+- **Decision:** Every reading offers Al-Tafsir Al-Muyassar. Shu'bah counts as Hafs. For Warsh, Qalun and Al-Duri,
+  `tool/build_riwaya_tafsir_map.py` aligns each surah's ayahs with Hafs's by their words (letter skeletons,
+  Gale-Church moves) and writes the ayahs whose Hafs ayah(s) differ in number (`<edition>_hafs.txt`,
+  checked by SHA-256). An ayah that is only part of a Hafs ayah takes the Hafs ayah the one before it ended in.
+  The sheet says "the tafsir of ayah N as Hafs numbers it" when it is another number.
+
+## D-041: Hints at the right moment
+
+- **Decision:** Four hints, each in a sheet, each at most once a run, with "don't remind me again" left
+  clear: what permissions are asked for and why (before the first, once ever); try the adhan (once alerts are
+  on); add the prayer card to the home screen (after the adhan was tried; Android asks the launcher, iOS says
+  how); and, firmly, that the printed Mushaf needs the internet except for pages already opened (when a page
+  is not on the device and the whole Mushaf is not downloaded), with a button to download the reading.
+
+## D-042: The `global` branch
+
+- **Decision:** The files the app downloads (cleaned adhan recordings) and the privacy policy live in the
+  folder `mre_quran_global` beside the repository, pushed as the branch `global` of `elshoram974/mre_quran`.
+  Voices come from it through jsDelivr, and from each recording's original when that fails. The policy is
+  published from it with GitHub Pages. Its `LINKS.md` lists every address the app downloads from.
+- **Splash:** "MRECode" under the star (Android 12+ branding image, iOS storyboard and StartupSplash).

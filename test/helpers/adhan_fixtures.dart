@@ -78,6 +78,27 @@ const AdhanVoice kFajrVoice = AdhanVoice(
   kind: AdhanKind.fajr,
 );
 
+/// A voice served first from the app's own copy, with its original as the
+/// fallback; both are [kVoiceBytes].
+const AdhanVoice kFallbackVoice = AdhanVoice(
+  id: 'with_fallback',
+  titles: {'ar': 'صوت له بديل', 'en': 'A voice with a fallback'},
+  places: {'ar': 'مصر', 'en': 'Egypt'},
+  bytes: 8,
+  sha256: kVoiceSha256,
+  url: 'https://example.test/global/with_fallback.m4a',
+  extension: 'm4a',
+  sourceUrl: 'https://example.test/with_fallback',
+  license: AdhanLicense(name: 'CC0 1.0', url: 'https://example.test/cc0'),
+  credit: 'Someone',
+  fallback: AdhanFile(
+    url: 'https://example.test/original/with_fallback.mp3',
+    bytes: 8,
+    sha256: kVoiceSha256,
+    extension: 'mp3',
+  ),
+);
+
 /// The bytes a fake download delivers, and their SHA-256.
 const List<int> kVoiceBytes = [1, 2, 3, 4, 5, 6, 7, 8];
 const String kVoiceSha256 =
@@ -227,16 +248,27 @@ class FakeVoiceStore implements VoiceStore {
 
 /// Serves [bytes] for any address, or fails.
 class FakeVoiceFetcher implements VoiceFetcher {
-  FakeVoiceFetcher({this.bytes = kVoiceBytes, this.fail = false});
+  FakeVoiceFetcher({
+    this.bytes = kVoiceBytes,
+    this.fail = false,
+    this.missing = const {},
+  });
 
   final List<int> bytes;
   final bool fail;
+
+  /// Addresses that answer with nothing (not published yet, say).
+  final Set<String> missing;
   final List<Uri> opened = [];
+
+  @override
+  Future<bool> reachable(Uri url) async =>
+      !fail && !missing.contains(url.toString());
 
   @override
   Stream<List<int>> open(Uri url) async* {
     opened.add(url);
-    if (fail) {
+    if (fail || missing.contains(url.toString())) {
       throw const VoiceDownloadException(VoiceDownloadFailure.network);
     }
     // Two chunks, so progress moves.

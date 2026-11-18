@@ -74,5 +74,3 @@ ios/**/Flutter/ephemeral/
 # Golden test failure artifacts
 **/failures/
 
-# The media repository's files (built by tool/audio/build_adhan_audio.py).
-/app_assets/media/

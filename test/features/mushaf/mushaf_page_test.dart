@@ -16,7 +16,9 @@ import 'package:mre_quran/features/quran_text/application/quran_text_providers.d
 import 'package:mre_quran/features/settings/application/settings_provider.dart';
 import 'package:mre_quran/features/settings/domain/app_settings.dart';
 import 'package:mre_quran/l10n/generated/app_localizations.dart';
+import 'package:mre_quran/core/hints/hints.dart';
 
+import '../../helpers/no_hints_repository.dart';
 import '../../helpers/fake_quran_metadata_source.dart';
 import '../../helpers/fake_quran_text_source.dart';
 import '../../helpers/memory_bookmarks_repository.dart';
@@ -46,6 +48,7 @@ Future<(ProviderContainer, MemoryReadingPositionRepository)> _pump(
   final positions = MemoryReadingPositionRepository()..page = savedPage;
   final container = ProviderContainer(
     overrides: [
+      hintsRepositoryProvider.overrideWithValue(NoHintsRepository()),
       quranMetadataSourceProvider.overrideWithValue(FakeQuranMetadataSource()),
       quranTextSourceProvider.overrideWithValue(FakeQuranTextSource()),
       bookmarksRepositoryProvider.overrideWithValue(

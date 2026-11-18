@@ -14,7 +14,9 @@ import 'package:mre_quran/features/adhan/domain/adhan_settings.dart';
 import 'package:mre_quran/features/adhan/presentation/adhan_page.dart';
 import 'package:mre_quran/features/settings/application/settings_provider.dart';
 import 'package:mre_quran/l10n/generated/app_localizations.dart';
+import 'package:mre_quran/core/hints/hints.dart';
 
+import '../../helpers/no_hints_repository.dart';
 import '../../helpers/adhan_fixtures.dart';
 import '../../helpers/adhkar_fixtures.dart';
 import '../../helpers/memory_settings_repository.dart';
@@ -38,6 +40,7 @@ Future<_Harness> _pump(
   ThemeData? theme,
   Set<String> saved = const {},
   Set<String> recordings = const {},
+  bool hints = false,
 }) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
@@ -52,6 +55,9 @@ Future<_Harness> _pump(
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
+        hintsRepositoryProvider.overrideWithValue(
+          hints ? _AllHints() : NoHintsRepository(),
+        ),
         adhanPlatformProvider.overrideWithValue(harness.platform),
         adhanRepositoryProvider.overrideWithValue(harness.adhan),
         adhanCatalogSourceProvider.overrideWithValue(FakeAdhanCatalog()),
@@ -266,6 +272,20 @@ void main() {
     expect(h.platform.tests, hasLength(1));
     expect(h.platform.tests.single.title, 'تجربة: حان وقت الصلاة');
     expect(h.platform.config!.stopLabel, 'إيقاف الأذان');
+    // The widgets are offered while it plays (hints are off here).
+    await tester.pump(const Duration(seconds: 7));
+    expect(find.text('المواقيت على شاشتك الرئيسية'), findsNothing);
+  });
+
+  testWidgets('once the alert is tried, the home-screen widgets are offered', (
+    tester,
+  ) async {
+    await _pump(tester, hints: true);
+    await tester.tap(find.text('جرّب التنبيه الآن'));
+    await tester.pump(const Duration(seconds: 7));
+    await tester.pumpAndSettle();
+    expect(find.text('المواقيت على شاشتك الرئيسية'), findsOneWidget);
+    expect(find.text('أضف الأداة'), findsOneWidget);
   });
 
   testWidgets('without exact alarms it says so and offers to allow them', (
@@ -339,4 +359,13 @@ void main() {
     await tester.pumpAndSettle();
     expect(h.adhan.settings.dua, AdhanDua.mishary);
   });
+}
+
+/// No hint turned off.
+class _AllHints implements HintsRepository {
+  @override
+  Future<Set<AppHint>> dismissed() async => const {};
+
+  @override
+  Future<void> dismiss(AppHint hint) async {}
 }

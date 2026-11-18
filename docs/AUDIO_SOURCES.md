@@ -32,13 +32,12 @@ clip is the dua. (This caught one: Mansoor Az-Zahrani's file is named as a plain
 
 ## Where the downloads are served from
 
-Today the voices that are not bundled are downloaded (and previewed) from **where each recording was found**,
-unchanged, and checked against that file's SHA-256 (`--serve source`, the default): an archive.org item or a
-GitHub file pinned to its commit. These files are not cleaned: some start after a second or two of silence.
-
-Once the media repository is published (`app_assets/README.md`), rebuild with `--serve media --base
-https://cdn.jsdelivr.net/gh/elshoram974/mushafi-media@v1` and the app downloads the cleaned files instead. In the
-table below, the downloads' checksums are of the files served today.
+The voices that are not bundled are downloaded, and previewed, from the app's `global` branch
+(`https://cdn.jsdelivr.net/gh/elshoram974/mre_quran@global/adhan/<id>.m4a`, the cleaned files), and from
+**where each recording was found** (archive.org, or GitHub at a pinned commit) when that cannot be had. Each
+file is checked against its own SHA-256. The `global` branch is the folder `mre_quran_global` beside this
+repository; see its `README.md` and `LINKS.md`. Rebuild with `python3 tool/audio/build_adhan_audio.py
+--cache <folder> --media ../mre_quran_global` (`--serve global` is the default).
 
 ## Voices
 
@@ -48,11 +47,11 @@ table below, the downloads' checksums are of the files served today.
 | `default_fajr` (bundled, `adhan_fajr.m4a`) | Fajr | Mishary Rashid Alafasy, Maqam Hijaz, [archive.org](https://archive.org/details/adhan-call-to-prayer-mishary-rashid-alafasy-fajr-maqam-hijaz-hd-320-kbps-1) | `12dc0334…50ffea2` | 1,818,143 |
 | dua (bundled, `dua_after_adhan_mishary.m4a`) | Dua | The same Mishary recording as `default`, from 3:55 | `9fada8bd…f89647f4` | 143,511 |
 | dua (bundled, `dua_after_adhan_shaarawy.m4a`) | Dua | Sheikh Al-Shaarawy, the whole first file of [his duas on archive.org](https://archive.org/details/AD3YA---SHEKH---METOLLYAL---SHA3RAWY---MP3---Qass--nabwy--MP3) (68 s) | `d03e57bf…e268bc2` | 562,360 |
-| `egypt_harak` | Adhan | Abdulnasser Harak, Egypt, [archive.org](https://archive.org/details/adhan-from-egypt-abdulnasser-harak) | `38a60f60…0d4c648` | 4,323,885 |
-| `nasser_alqatami` | Adhan | Nasser Al-Qatami, [abodehq/Athan-MP3](https://github.com/abodehq/Athan-MP3/tree/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds) | `b30f4e2c…6b92fbe` | 1,119,975 |
-| `makkah_ali_mullah_fajr` | Fajr | Ali Mullah, the Grand Mosque, 6 Sep 2013, [archive.org](https://archive.org/details/MakkahFajrAdhan6913SheikhAliMullah) | `da68a481…b67a9ec` | 2,911,537 |
-| `mansoor_zahrani_fajr` | Fajr | Mansoor Az-Zahrani, [abodehq/Athan-MP3](https://github.com/abodehq/Athan-MP3/tree/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds) | `b4d596a8…f2a14f2` | 1,532,448 |
-| `malek_chebae_fajr` | Fajr | Malek Chebae, [abodehq/Athan-MP3](https://github.com/abodehq/Athan-MP3/tree/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds) | `89580ee0…da318c6` | 2,008,922 |
+| `egypt_harak` | Adhan | Abdulnasser Harak, Egypt, [archive.org](https://archive.org/details/adhan-from-egypt-abdulnasser-harak) | `8183c49c…c14590b` (2,616,292 B, cleaned); original `38a60f60…0d4c648` | 4,323,885 |
+| `nasser_alqatami` | Adhan | Nasser Al-Qatami, [abodehq/Athan-MP3](https://github.com/abodehq/Athan-MP3/tree/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds) | `600b972b…580df97` (1,697,947 B, cleaned); original `b30f4e2c…6b92fbe` | 1,119,975 |
+| `makkah_ali_mullah_fajr` | Fajr | Ali Mullah, the Grand Mosque, 6 Sep 2013, [archive.org](https://archive.org/details/MakkahFajrAdhan6913SheikhAliMullah) | `644c3b8a…817c25d` (2,936,610 B, cleaned); original `da68a481…b67a9ec` | 2,911,537 |
+| `mansoor_zahrani_fajr` | Fajr | Mansoor Az-Zahrani, [abodehq/Athan-MP3](https://github.com/abodehq/Athan-MP3/tree/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds) | `8c231212…ade6506` (2,334,044 B, cleaned); original `b4d596a8…f2a14f2` | 1,532,448 |
+| `malek_chebae_fajr` | Fajr | Malek Chebae, [abodehq/Athan-MP3](https://github.com/abodehq/Athan-MP3/tree/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds) | `8df72cb6…d7ca603` (3,047,630 B, cleaned); original `89580ee0…da318c6` | 2,008,922 |
 
 The source files' own SHA-256 are in `tool/audio/adhan_sources.json`.
 

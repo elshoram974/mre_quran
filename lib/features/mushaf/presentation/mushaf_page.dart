@@ -20,6 +20,7 @@ import 'ayah_selection_bar.dart';
 import 'display_options_sheet.dart';
 import 'go_to_page_sheet.dart';
 import 'mushaf_pager.dart';
+import 'offline_hint.dart';
 import 'reader_bar.dart';
 import 'reader_controls.dart';
 import 'reader_navigation.dart';
@@ -221,6 +222,14 @@ class MushafPage extends ConsumerWidget {
                 // being tapped.
                 Positioned.fill(
                   child: AyahSelectionLayer(top: 4, bottom: barRoom + 10),
+                ),
+                // Says the Mushaf needs the internet when a page is not on
+                // the device; draws nothing. Positioned, so it never sizes
+                // the stack.
+                const PositionedDirectional(
+                  start: 0,
+                  top: 0,
+                  child: OfflineMushafHint(),
                 ),
               ],
             ),

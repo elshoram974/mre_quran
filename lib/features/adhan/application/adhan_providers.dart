@@ -34,8 +34,15 @@ final iosAdhanSoundsProvider = Provider<IosAdhanSounds>(
   (ref) => const LibraryIosAdhanSounds(),
 );
 
+/// Fetches recordings from the network. Tests override it.
+final voiceFetcherProvider = Provider<VoiceFetcher>(
+  (ref) => const HttpVoiceFetcher(),
+);
+
 /// Provides the saved recordings. Tests override it.
-final voiceStoreProvider = Provider<VoiceStore>((ref) => FileVoiceStore());
+final voiceStoreProvider = Provider<VoiceStore>(
+  (ref) => FileVoiceStore(fetcher: ref.watch(voiceFetcherProvider)),
+);
 
 /// Provides what only the platform can do. Tests override it.
 final adhanPlatformProvider = Provider<AdhanPlatform>(
@@ -372,10 +379,25 @@ class AdhanVoicesNotifier extends AsyncNotifier<VoicesState> {
       final file = await _store.fileOf(voice);
       source = file != null
           ? FilePreview(file.path)
-          : StreamPreview(voice.url!, HttpVoiceFetcher.userAgent);
+          : StreamPreview(
+              await _reachableUrl(voice),
+              HttpVoiceFetcher.userAgent,
+            );
     }
     _update((state) => state.copyWith(listening: voice.id));
     await _platform.preview(source);
+  }
+
+  /// The first of [voice]'s files that answers, to listen to; the last one
+  /// when none is known to.
+  Future<String> _reachableUrl(AdhanVoice voice) async {
+    final files = voice.files;
+    for (final from in files.take(files.length - 1)) {
+      if (await ref.read(voiceFetcherProvider).reachable(Uri.parse(from.url))) {
+        return from.url;
+      }
+    }
+    return files.last.url;
   }
 
   /// Lets the person pick a recording from their phone, and uses it. Returns

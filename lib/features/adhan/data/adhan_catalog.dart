@@ -86,11 +86,30 @@ AdhanVoice _voice(Map<String, Object?> map) {
     ),
     credit: _text(map, 'credit'),
     builtIn: builtIn,
+    fallback: switch (map['fallback']) {
+      null => null,
+      final Map<String, Object?> file => _file(id, file),
+      _ => throw FormatException('Voice $id has a bad fallback'),
+    },
     kind: switch (map['kind']) {
       null || 'regular' => AdhanKind.regular,
       'fajr' => AdhanKind.fajr,
       final other => throw FormatException('Voice $id has kind $other'),
     },
+  );
+}
+
+AdhanFile _file(String id, Map<String, Object?> map) {
+  final url = _text(map, 'url');
+  final sha = _text(map, 'sha256');
+  if (!url.startsWith('https://') || !RegExp(r'^[0-9a-f]{64}$').hasMatch(sha)) {
+    throw FormatException('Voice $id has a bad fallback file');
+  }
+  return AdhanFile(
+    url: url,
+    bytes: map['bytes']! as int,
+    sha256: sha,
+    extension: _text(map, 'extension'),
   );
 }
 

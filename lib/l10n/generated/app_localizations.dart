@@ -104,6 +104,12 @@ abstract class AppLocalizations {
   /// **'Mushafi'**
   String get appTitle;
 
+  /// No description provided for @brandName.
+  ///
+  /// In en, this message translates to:
+  /// **'MRECode'**
+  String get brandName;
+
   /// No description provided for @reader.
   ///
   /// In en, this message translates to:

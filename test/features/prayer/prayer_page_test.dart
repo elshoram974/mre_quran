@@ -14,7 +14,9 @@ import 'package:mre_quran/features/prayer/presentation/prayer_times_card.dart';
 import 'package:mre_quran/features/prayer/presentation/prayer_times_page.dart';
 import 'package:mre_quran/features/settings/application/settings_provider.dart';
 import 'package:mre_quran/l10n/generated/app_localizations.dart';
+import 'package:mre_quran/core/hints/hints.dart';
 
+import '../../helpers/no_hints_repository.dart';
 import '../../helpers/adhkar_fixtures.dart';
 import '../../helpers/memory_settings_repository.dart';
 
@@ -52,6 +54,7 @@ Future<_Harness> _pump(
   double textScale = 1,
   ThemeData? theme,
   Widget? home,
+  HintsRepository? hints,
 }) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
@@ -75,6 +78,7 @@ Future<_Harness> _pump(
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
+        hintsRepositoryProvider.overrideWithValue(hints ?? NoHintsRepository()),
         reminderSchedulerProvider.overrideWithValue(harness.scheduler),
         locationSourceProvider.overrideWithValue(harness.location),
         prayerRepositoryProvider.overrideWithValue(harness.repository),
@@ -189,6 +193,25 @@ void main() {
       await tester.tap(find.byTooltip('التنبيه مفعّل'));
       await tester.pumpAndSettle();
       expect(harness.scheduler.once, isEmpty);
+    });
+
+    testWidgets('the first alert says what it asks for first, then offers '
+        'to try the adhan', (tester) async {
+      final harness = await _pump(tester, place: _cairo, hints: _AllHints());
+      await _reveal(tester, find.text('تنبيه للصلوات الخمس'));
+      await tester.tap(find.text('تنبيه للصلوات الخمس'));
+      await tester.pumpAndSettle();
+      // Before anything is asked for.
+      expect(find.text('سنطلب إذنين'), findsOneWidget);
+      expect(harness.scheduler.permissionRequests, 0);
+      await tester.tap(find.text('متابعة'));
+      await tester.pumpAndSettle();
+      expect(harness.scheduler.permissionRequests, 1);
+      expect(harness.scheduler.once, isNotEmpty);
+      expect(find.text('جرّب الأذان الآن'), findsOneWidget);
+      await tester.tap(find.text('لاحقًا'));
+      await tester.pumpAndSettle();
+      expect(find.text('جرّب الأذان الآن'), findsNothing);
     });
 
     testWidgets('all five at once, with a way to allow exact timing', (
@@ -306,4 +329,13 @@ void main() {
       expect(find.byType(PrayerTimesPage), findsOneWidget);
     });
   });
+}
+
+/// No hint turned off.
+class _AllHints implements HintsRepository {
+  @override
+  Future<Set<AppHint>> dismissed() async => const {};
+
+  @override
+  Future<void> dismiss(AppHint hint) async {}
 }
