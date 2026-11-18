@@ -78,7 +78,7 @@
   "widgetNextPrayer": "Next prayer",
   "widgetNextPrayerDescription": "The next prayer, its time and how long until it.",
   "widgetPrayerSchedule": "Today's prayer times",
-  "widgetPrayerScheduleDescription": "Today's five prayers and sunrise, with the day and Gregorian and Hijri dates. The narrow size uses 24-hour times.",
+  "widgetPrayerScheduleDescription": "Today's five prayers, sunrise, and time until the next prayer. Enlarge the widget to see Gregorian and Hijri dates. The small size uses 24-hour times.",
   "widgetTasbih": "Tasbih",
   "widgetTasbihReset": "Reset",
   "widgetTasbihCount": "Add one to the tasbih count",

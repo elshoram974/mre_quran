@@ -20,7 +20,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:padding="4dp">
+        android:padding="4dp"
+        android:paddingBottom="6dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -32,12 +33,11 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:orientation="vertical">
                 <TextView
                     android:id="@+id/schedule_date"
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:ellipsize="end"
                     android:singleLine="true"
                     android:includeFontPadding="false"
@@ -47,27 +47,52 @@
                     android:textStyle="bold" />
                 <TextView
                     android:id="@+id/schedule_hijri"
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:ellipsize="end"
                     android:singleLine="true"
                     android:includeFontPadding="false"
                     android:text="@string/widget_preview_hijri"
-                    android:textAlignment="viewEnd"
+                    android:textAlignment="viewStart"
                     android:textColor="@color/widget_accent"
                     android:textSize="10sp" />
             </LinearLayout>
-            <TextView
-                android:id="@+id/schedule_remaining"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:singleLine="true"
-                android:ellipsize="end"
-                android:includeFontPadding="false"
-                android:text="@string/widget_preview_remaining"
-                android:textColor="@color/widget_accent"
-                android:textSize="11sp" />
+                android:orientation="horizontal">
+                <TextView
+                    android:id="@+id/schedule_next_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:includeFontPadding="false"
+                    android:singleLine="true"
+                    android:text="@string/widget_preview_schedule_next"
+                    android:textColor="@color/widget_accent"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/schedule_remaining"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:singleLine="true"
+                    android:ellipsize="end"
+                    android:includeFontPadding="false"
+                    android:text="@string/widget_preview_remaining"
+                    android:textColor="@color/widget_accent"
+                    android:textSize="11sp" />
+                <Chronometer
+                    android:id="@+id/schedule_seconds"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:includeFontPadding="false"
+                    android:singleLine="true"
+                    android:textColor="@color/widget_accent"
+                    android:textSize="11sp"
+                    android:visibility="gone" />
+            </LinearLayout>
         </LinearLayout>
 
         <LinearLayout
@@ -95,7 +120,7 @@
                     android:text="@string/widget_preview_fajr"
                     android:textAlignment="viewStart"
                     android:textColor="@color/widget_text"
-                    android:textSize="12sp" />
+                    android:textSize="11sp" />
 
                 <TextView
                     android:id="@+id/schedule_time_0"
@@ -107,7 +132,7 @@
                     android:text="@string/widget_preview_fajr_time"
                     android:textAlignment="viewEnd"
                     android:textColor="@color/widget_text"
-                    android:textSize="12sp"
+                    android:textSize="11sp"
                     android:textStyle="bold" />
             </LinearLayout>
         </LinearLayout>
@@ -137,7 +162,7 @@
                     android:text="@string/widget_preview_sunrise"
                     android:textAlignment="viewStart"
                     android:textColor="@color/widget_text_muted"
-                    android:textSize="12sp" />
+                    android:textSize="11sp" />
 
                 <TextView
                     android:id="@+id/schedule_time_1"
@@ -149,7 +174,7 @@
                     android:text="@string/widget_preview_sunrise_time"
                     android:textAlignment="viewEnd"
                     android:textColor="@color/widget_text_muted"
-                    android:textSize="12sp"
+                    android:textSize="11sp"
                     android:textStyle="bold" />
             </LinearLayout>
         </LinearLayout>
@@ -180,7 +205,7 @@
                     android:text="@string/widget_preview_dhuhr"
                     android:textAlignment="viewStart"
                     android:textColor="@color/widget_text"
-                    android:textSize="12sp" />
+                    android:textSize="11sp" />
 
                 <TextView
                     android:id="@+id/schedule_time_2"
@@ -192,7 +217,7 @@
                     android:text="@string/widget_preview_dhuhr_time"
                     android:textAlignment="viewEnd"
                     android:textColor="@color/widget_text"
-                    android:textSize="12sp"
+                    android:textSize="11sp"
                     android:textStyle="bold" />
             </LinearLayout>
         </LinearLayout>
@@ -222,7 +247,7 @@
                     android:text="@string/widget_preview_asr"
                     android:textAlignment="viewStart"
                     android:textColor="@color/widget_text"
-                    android:textSize="12sp" />
+                    android:textSize="11sp" />
 
                 <TextView
                     android:id="@+id/schedule_time_3"
@@ -234,7 +259,7 @@
                     android:text="@string/widget_preview_asr_time"
                     android:textAlignment="viewEnd"
                     android:textColor="@color/widget_text"
-                    android:textSize="12sp"
+                    android:textSize="11sp"
                     android:textStyle="bold" />
             </LinearLayout>
         </LinearLayout>
@@ -264,7 +289,7 @@
                     android:text="@string/widget_preview_maghrib"
                     android:textAlignment="viewStart"
                     android:textColor="@color/widget_text"
-                    android:textSize="12sp" />
+                    android:textSize="11sp" />
 
                 <TextView
                     android:id="@+id/schedule_time_4"
@@ -276,7 +301,7 @@
                     android:text="@string/widget_preview_maghrib_time"
                     android:textAlignment="viewEnd"
                     android:textColor="@color/widget_text"
-                    android:textSize="12sp"
+                    android:textSize="11sp"
                     android:textStyle="bold" />
             </LinearLayout>
         </LinearLayout>
@@ -306,7 +331,7 @@
                     android:text="@string/widget_preview_isha"
                     android:textAlignment="viewStart"
                     android:textColor="@color/widget_text"
-                    android:textSize="12sp" />
+                    android:textSize="11sp" />
 
                 <TextView
                     android:id="@+id/schedule_time_5"
@@ -318,7 +343,7 @@
                     android:text="@string/widget_preview_isha_time"
                     android:textAlignment="viewEnd"
                     android:textColor="@color/widget_text"
-                    android:textSize="12sp"
+                    android:textSize="11sp"
                     android:textStyle="bold" />
             </LinearLayout>
         </LinearLayout>

@@ -4,7 +4,7 @@
     <string name="prayer_widget_empty">Open Mushafi to set your location</string>
     <string name="prayer_widget_name">Prayer times</string>
     <string name="prayer_widget_next_description">The next prayer, its time and how long until it.</string>
-    <string name="prayer_schedule_widget_description">Today\'s five prayers and sunrise, with the Hijri date.</string>
+    <string name="prayer_schedule_widget_description">Today\'s five prayers, sunrise and time until the next prayer.</string>
 
     <!-- The sample shown in the widget picker, before real times exist. -->
     <string name="widget_preview_fajr">Fajr</string>
@@ -37,4 +37,12 @@
     <string name="tasbih_widget_preview_count">33</string>
     <string name="prayer_card_widget_name">Prayer card</string>
     <string name="prayer_card_widget_description">The coming prayer with the time left, and the day\'s five prayers.</string>
+
+    <string name="widget_preview_compact_fajr_time">5:27</string>
+    <string name="widget_preview_compact_sunrise_time">6:54</string>
+    <string name="widget_preview_compact_dhuhr_time">12:44</string>
+    <string name="widget_preview_compact_asr_time">16:02</string>
+    <string name="widget_preview_compact_maghrib_time">18:32</string>
+    <string name="widget_preview_compact_isha_time">19:49</string>
+    <string name="widget_preview_schedule_next">Dhuhr ·\u00a0</string>
 </resources>

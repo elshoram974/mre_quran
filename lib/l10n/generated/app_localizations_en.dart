@@ -264,7 +264,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get widgetPrayerScheduleDescription =>
-      'Today\'s five prayers and sunrise, with the day and Gregorian and Hijri dates. The narrow size uses 24-hour times.';
+      'Today\'s five prayers, sunrise, and time until the next prayer. Enlarge the widget to see Gregorian and Hijri dates. The small size uses 24-hour times.';
 
   @override
   String get widgetTasbih => 'Tasbih';

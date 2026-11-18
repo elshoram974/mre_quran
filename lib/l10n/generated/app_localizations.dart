@@ -569,7 +569,7 @@ abstract class AppLocalizations {
   /// No description provided for @widgetPrayerScheduleDescription.
   ///
   /// In en, this message translates to:
-  /// **'Today\'s five prayers and sunrise, with the day and Gregorian and Hijri dates. The narrow size uses 24-hour times.'**
+  /// **'Today\'s five prayers, sunrise, and time until the next prayer. Enlarge the widget to see Gregorian and Hijri dates. The small size uses 24-hour times.'**
   String get widgetPrayerScheduleDescription;
 
   /// No description provided for @widgetTasbih.

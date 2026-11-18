@@ -65,7 +65,10 @@ void main() {
         of: find.text(title),
         matching: find.byType(AppTileCard),
       );
-      await tester.tap(find.descendant(of: card, matching: find.text('إضافة')));
+      final add = find.descendant(of: card, matching: find.text('إضافة'));
+      await tester.ensureVisible(add);
+      await tester.pumpAndSettle();
+      await tester.tap(add);
       await tester.pumpAndSettle();
       if (title != 'ذكر مقترح') {
         await tester.pump(const Duration(seconds: 5));
@@ -111,6 +114,29 @@ void main() {
     await _pump(tester, pinnable: false);
     expect(find.text('إضافة'), findsNothing);
     expect(find.textContaining('اضغط مطولًا'), findsOneWidget);
+  });
+
+  testWidgets('the prayer schedule is described as a two by one widget', (
+    tester,
+  ) async {
+    await _pump(tester, locale: 'en');
+    await tester.scrollUntilVisible(
+      find.text("Today's prayer times"),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    final card = find.ancestor(
+      of: find.text("Today's prayer times"),
+      matching: find.byType(AppTileCard),
+    );
+    expect(
+      find.descendant(
+        of: card,
+        matching: find.textContaining('two columns by one row'),
+      ),
+      findsOneWidget,
+    );
+    expect(find.textContaining('time until the next prayer'), findsOneWidget);
   });
 
   testWidgets('on iOS it gives the steps', (tester) async {

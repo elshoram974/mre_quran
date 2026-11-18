@@ -259,7 +259,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get widgetPrayerScheduleDescription =>
-      'صلوات اليوم الخمس والشروق مع اليوم والتاريخين الميلادي والهجري. في المقاس الضيق تُعرض المواقيت بنظام 24 ساعة.';
+      'صلوات اليوم الخمس والشروق والوقت المتبقي للصلاة القادمة. كبّر الويدجت لإظهار التاريخين الميلادي والهجري. في المقاس الصغير تُعرض المواقيت بنظام 24 ساعة.';
 
   @override
   String get widgetTasbih => 'المسبحة';

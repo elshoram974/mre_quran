@@ -109,7 +109,7 @@ class HomeWidgetsPage extends ConsumerWidget {
             final widget = HomeWidget.values[index - 1];
             final size = switch (widget) {
               HomeWidget.prayerCard => l10n.widgetSizeWide,
-              HomeWidget.prayerSchedule => l10n.widgetSizeTall,
+              HomeWidget.prayerSchedule => l10n.widgetSizeSmall,
 
               _ => l10n.widgetSizeSmall,
             };
