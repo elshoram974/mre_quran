@@ -53,6 +53,7 @@ class AdhanAlertConfig {
     this.fajrVoicePath,
     this.announce = true,
     this.duaAfter = true,
+    this.duaRecording = 'dua_after_adhan_shaarawy',
     required this.stopWhenFlipped,
     required this.stopLabel,
     required this.channelName,
@@ -71,6 +72,9 @@ class AdhanAlertConfig {
   /// Whether the dua after the adhan follows it.
   final bool duaAfter;
 
+  /// The bundled recording of that dua.
+  final String duaRecording;
+
   /// Whether turning the phone face down stops the adhan.
   final bool stopWhenFlipped;
 
@@ -88,6 +92,7 @@ class AdhanAlertConfig {
     'fajrVoicePath': fajrVoicePath,
     'announce': announce,
     'duaAfter': duaAfter,
+    'duaRecording': duaRecording,
     'stopWhenFlipped': stopWhenFlipped,
     'stopLabel': stopLabel,
     'channelName': channelName,
@@ -133,6 +138,18 @@ class BundledPreview extends AdhanPreviewSource {
   Map<String, Object?> toMap() => {'kind': 'bundled', 'fajr': fajr};
 }
 
+/// A recording the app carries, by its name, such as a dua after the adhan.
+class RawPreview extends AdhanPreviewSource {
+  /// Creates the source.
+  const RawPreview(this.name);
+
+  /// The recording's name.
+  final String name;
+
+  @override
+  Map<String, Object?> toMap() => {'kind': 'raw', 'name': name};
+}
+
 /// A saved file.
 class FilePreview extends AdhanPreviewSource {
   /// Creates the source.
@@ -171,6 +188,9 @@ class StreamPreview extends AdhanPreviewSource {
 abstract interface class AdhanPlatform {
   /// Whether this platform can play the adhan by itself.
   Future<bool> isSupported();
+
+  /// Which of the recordings named [names] the app carries.
+  Future<Set<String>> bundled(Iterable<String> names);
 
   /// Replaces every scheduled adhan with [alarms].
   Future<void> schedule(List<AdhanAlarm> alarms, AdhanAlertConfig config);
@@ -245,6 +265,14 @@ class ChannelAdhanPlatform implements AdhanPlatform {
 
   @override
   Future<bool> isSupported() async => await _call<bool>('isSupported') ?? false;
+
+  @override
+  Future<Set<String>> bundled(Iterable<String> names) async {
+    final found = await _call<List<Object?>>('bundled', {
+      'names': names.toList(),
+    });
+    return {...?found?.whereType<String>()};
+  }
 
   @override
   Future<void> schedule(List<AdhanAlarm> alarms, AdhanAlertConfig config) =>

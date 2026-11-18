@@ -626,6 +626,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get adhanDuaHint => '«اللهم رب هذه الدعوة التامة…» بعد انتهاء الأذان.';
 
   @override
+  String get adhanDuaShaarawy => 'بصوت الشيخ محمد متولي الشعراوي';
+
+  @override
+  String get adhanDuaMishary => 'بصوت الشيخ مشاري العفاسي';
+
+  @override
   String get adhanFajrVoices => 'أذان الفجر';
 
   @override
@@ -753,6 +759,13 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get settingsHapticsHint =>
       'نبضة خفيفة مع كل عدّة، وأقوى عند اكتمال الذكر.';
+
+  @override
+  String get settingsWidgetSeconds => 'الثواني في أداة المواقيت';
+
+  @override
+  String get settingsWidgetSecondsHint =>
+      'تعدّ الأداة على الشاشة الرئيسية الوقت المتبقي بالثواني. تستهلك قليلًا من البطارية وهي ظاهرة.';
 
   @override
   String adhkarOnlyAfter(String prayers) {
@@ -1364,9 +1377,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get surahOrderCaption => 'الترتيب';
-
-  @override
-  String get surahAyahsCaption => 'آيات';
 
   @override
   String get packStorageInfo =>

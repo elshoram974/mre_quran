@@ -38,6 +38,8 @@ internal class WidgetModel(
     val labels: WidgetLabels,
     val arabicDigits: Boolean,
     val rtl: Boolean,
+    /** Whether the time left counts down to the second (a setting). */
+    val seconds: Boolean,
 ) {
     /** The day [now] falls in, or null once the sent days have run out. */
     fun dayAt(now: Long): WidgetDay? = days.firstOrNull { now >= it.start && now < it.end }
@@ -84,6 +86,7 @@ internal class WidgetModel(
                     ),
                     arabicDigits = root.optBoolean("useArabicDigits", true),
                     rtl = root.optBoolean("rtl", true),
+                    seconds = root.optBoolean("seconds", false),
                 )
             } catch (_: Exception) {
                 null

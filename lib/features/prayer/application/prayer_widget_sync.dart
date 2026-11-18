@@ -130,6 +130,7 @@ class PrayerWidgetData {
     this.days = const [],
     this.labels,
     this.rtl = true,
+    this.seconds = false,
   });
 
   final DailyPrayer prayer;
@@ -149,6 +150,9 @@ class PrayerWidgetData {
   /// Whether the app's language reads right to left.
   final bool rtl;
 
+  /// Whether the widgets count the time left down to the second.
+  final bool seconds;
+
   Map<String, Object> toMap() => {
     'prayer': prayer.name,
     'label': label,
@@ -158,6 +162,7 @@ class PrayerWidgetData {
     'useArabicDigits': useArabicDigits,
     'times': [for (final item in times) item.toMap()],
     'rtl': rtl,
+    'seconds': seconds,
     if (labels != null) 'labels': labels!.toMap(),
     if (days.isNotEmpty) 'days': [for (final day in days) day.toMap()],
   };

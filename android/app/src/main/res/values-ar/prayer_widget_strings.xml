@@ -34,4 +34,6 @@
     <string name="tasbih_widget_reset">تصفير</string>
     <string name="tasbih_widget_count_description">أضف واحدة إلى عدّاد المسبحة</string>
     <string name="tasbih_widget_preview_count">٣٣</string>
+    <string name="prayer_card_widget_name">بطاقة الصلاة</string>
+    <string name="prayer_card_widget_description">الصلاة القادمة والوقت المتبقي لها، وصلوات اليوم الخمس.</string>
 </resources>

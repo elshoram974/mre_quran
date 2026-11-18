@@ -108,7 +108,17 @@ class QuranText {
 
   /// The Mushaf font's ayah-number glyph for [ref], or null without the
   /// Mushaf script.
-  String? mark(AyahRef ref) => _marks?[indexOf(ref)];
+  ///
+  /// The source writes one number, 2:286, as two glyphs ("2" and "86"),
+  /// which the font draws as two medallions. Such a mark is given as the
+  /// number in Arabic-Indic digits instead, which the font draws as one.
+  String? mark(AyahRef ref) {
+    final glyph = _marks?[indexOf(ref)];
+    if (glyph == null || glyph.runes.length == 1) return glyph;
+    return String.fromCharCodes([
+      for (final digit in '${ref.ayah}'.codeUnits) digit - 0x30 + 0x0660,
+    ]);
+  }
 
   /// The basmala as the reader shows it: ayah 1:1 of the Mushaf script when
   /// held, else [basmala].

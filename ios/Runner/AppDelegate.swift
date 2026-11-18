@@ -42,6 +42,7 @@ import WidgetKit
       }
       WidgetCenter.shared.reloadTimelines(ofKind: "NextPrayerWidget")
       WidgetCenter.shared.reloadTimelines(ofKind: "PrayerScheduleWidget")
+      WidgetCenter.shared.reloadTimelines(ofKind: "PrayerCardWidget")
       callback(nil)
     }
     let adhkarWidgetChannel = FlutterMethodChannel(

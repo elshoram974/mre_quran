@@ -139,7 +139,13 @@ class _MushafPageViewState extends State<MushafPageView> {
         flush();
         segments.add(_Banner(metadata.surah(ayah.ref.surah)));
         if (text.hasBasmala(ayah.ref.surah)) {
-          segments.add(_Basmala(text.mushafBasmala));
+          // Chosen with the ayah it opens.
+          segments.add(
+            _Basmala(
+              text.mushafBasmala,
+              highlighted: widget.selected?.contains(ayah.ref) ?? false,
+            ),
+          );
         }
       }
       final highlight = widget.selected?.contains(ayah.ref) ?? false
@@ -287,7 +293,7 @@ class _MushafPageViewState extends State<MushafPageView> {
                         ),
                       ),
                     ),
-                    _Basmala(:final text) => Padding(
+                    _Basmala(:final text, :final highlighted) => Padding(
                       padding: const EdgeInsets.only(bottom: 4),
                       child: Text(
                         text,
@@ -296,6 +302,9 @@ class _MushafPageViewState extends State<MushafPageView> {
                         // Smaller than the ayahs, as printed.
                         style: quran.copyWith(
                           fontSize: quran.fontSize! * _basmalaScale,
+                          backgroundColor: highlighted
+                              ? colors.highlight
+                              : null,
                         ),
                       ),
                     ),
@@ -345,8 +354,11 @@ class _Banner extends _Segment {
 }
 
 class _Basmala extends _Segment {
-  const _Basmala(this.text);
+  const _Basmala(this.text, {this.highlighted = false});
   final String text;
+
+  /// Whether its surah's first ayah is chosen.
+  final bool highlighted;
 }
 
 class _Paragraph extends _Segment {

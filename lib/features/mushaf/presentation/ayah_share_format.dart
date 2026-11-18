@@ -11,7 +11,8 @@ import '../../quran_text/domain/ayah_texts.dart';
 const int ayahShareLimit = 50;
 
 /// The ayahs of [range] with their references, ready to paste. Each surah's
-/// ayahs come in their own brackets with the reference under them:
+/// ayahs come in their own brackets with the reference under them, after
+/// the surah's basmala when its first ayah is shared:
 /// `﴿… (٢٨٦)﴾` and `[البقرة: ٢٨٦ · صفحة ٤٩]`, then the next surah. Every
 /// line is set to read right to left in any app and any language.
 String ayahShareText(
@@ -24,8 +25,17 @@ String ayahShareText(
   final order = AyahOrder.of(text);
   final parts = [
     for (final run in order.runs(range))
-      '${AyahShareText.body(text, run, digits)}\n'
-          '${l10n.ayahShareReference(text.metadata.surah(run.surah).arabicName, runAyahs(context, run, digits), runPages(context, text, run, digits))}',
+      // A surah shared from its first ayah opens with its basmala, on its
+      // own line, as the Mushaf prints it.
+      [
+        if (run.first == 1) ?text.basmalaCopy(run.surah),
+        AyahShareText.body(text, run, digits),
+        l10n.ayahShareReference(
+          text.metadata.surah(run.surah).arabicName,
+          runAyahs(context, run, digits),
+          runPages(context, text, run, digits),
+        ),
+      ].join('\n'),
   ];
   return AyahShareText.rightToLeft(parts.join('\n'));
 }

@@ -6,11 +6,13 @@ import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.os.Build
+import android.os.SystemClock
 import android.view.View
 import android.widget.RemoteViews
 import org.json.JSONObject
 
-/** Draws both prayer widgets from the data the app last sent. */
+/** Draws the three prayer widgets from the data the app last sent. */
 internal object PrayerWidgetRenderer {
     const val REFRESH_ACTION = "net.mrecode.mre_quran.PRAYER_WIDGET_REFRESH"
 
@@ -34,6 +36,18 @@ internal object PrayerWidgetRenderer {
         R.id.schedule_time_3, R.id.schedule_time_4, R.id.schedule_time_5,
     )
 
+    private val cellIds = intArrayOf(
+        R.id.card_cell_0, R.id.card_cell_1, R.id.card_cell_2, R.id.card_cell_3, R.id.card_cell_4,
+    )
+    private val cellNameIds = intArrayOf(
+        R.id.card_cell_name_0, R.id.card_cell_name_1, R.id.card_cell_name_2,
+        R.id.card_cell_name_3, R.id.card_cell_name_4,
+    )
+    private val cellTimeIds = intArrayOf(
+        R.id.card_cell_time_0, R.id.card_cell_time_1, R.id.card_cell_time_2,
+        R.id.card_cell_time_3, R.id.card_cell_time_4,
+    )
+
     private val leftIds = intArrayOf(
         R.id.schedule_left_0, R.id.schedule_left_1, R.id.schedule_left_2,
         R.id.schedule_left_3, R.id.schedule_left_4, R.id.schedule_left_5,
@@ -52,7 +66,8 @@ internal object PrayerWidgetRenderer {
         val manager = AppWidgetManager.getInstance(context)
         val next = manager.getAppWidgetIds(ComponentName(context, PrayerWidgetProvider::class.java))
         val schedule = manager.getAppWidgetIds(ComponentName(context, PrayerScheduleWidgetProvider::class.java))
-        if (next.isEmpty() && schedule.isEmpty()) {
+        val cards = manager.getAppWidgetIds(ComponentName(context, PrayerCardWidgetProvider::class.java))
+        if (next.isEmpty() && schedule.isEmpty() && cards.isEmpty()) {
             cancelRefresh(context)
             return
         }
@@ -68,6 +83,7 @@ internal object PrayerWidgetRenderer {
             WidgetScale.text(views, R.id.prayer_widget_name, 16f, scale)
             WidgetScale.text(views, R.id.prayer_widget_time, 15f, scale)
             WidgetScale.text(views, R.id.prayer_widget_remaining, 11f, scale)
+            WidgetScale.text(views, R.id.prayer_widget_seconds, 11f, scale)
             manager.updateAppWidget(id, views)
         }
         for (id in schedule) {
@@ -80,6 +96,22 @@ internal object PrayerWidgetRenderer {
                 WidgetScale.text(views, nameIds[index], 12f, scale)
                 WidgetScale.text(views, timeIds[index], 12f, scale)
                 WidgetScale.text(views, leftIds[index], 10f, scale)
+            }
+            manager.updateAppWidget(id, views)
+        }
+        for (id in cards) {
+            val views = cardViews(context, model, now)
+            // Base: four cells by two.
+            val scale = WidgetScale.of(manager, id, 280f, 150f)
+            WidgetScale.text(views, R.id.card_label, 11f, scale)
+            WidgetScale.text(views, R.id.card_name, 26f, scale)
+            WidgetScale.text(views, R.id.card_time, 18f, scale)
+            WidgetScale.text(views, R.id.card_remaining, 13f, scale)
+            WidgetScale.text(views, R.id.card_seconds, 13f, scale)
+            WidgetScale.text(views, R.id.card_hijri, 10f, scale)
+            for (index in cellIds.indices) {
+                WidgetScale.text(views, cellNameIds[index], 11f, scale)
+                WidgetScale.text(views, cellTimeIds[index], 12f, scale)
             }
             manager.updateAppWidget(id, views)
         }
@@ -116,17 +148,84 @@ internal object PrayerWidgetRenderer {
             views.setTextViewText(R.id.prayer_widget_name, model?.labels?.empty ?: context.getString(R.string.prayer_widget_empty))
             views.setViewVisibility(R.id.prayer_widget_time, View.GONE)
             views.setViewVisibility(R.id.prayer_widget_remaining, View.GONE)
+            views.setViewVisibility(R.id.prayer_widget_seconds, View.GONE)
         } else {
             views.setTextViewText(R.id.prayer_widget_label, model.labels.next)
             views.setTextViewText(R.id.prayer_widget_name, next.name)
             views.setTextViewText(R.id.prayer_widget_time, next.time)
-            views.setTextViewText(R.id.prayer_widget_remaining, remaining(model, next.at - now))
             views.setViewVisibility(R.id.prayer_widget_time, View.VISIBLE)
-            views.setViewVisibility(R.id.prayer_widget_remaining, View.VISIBLE)
+            countdown(views, R.id.prayer_widget_remaining, R.id.prayer_widget_seconds, model, next, now)
         }
         direction(views, R.id.prayer_widget_root, model)
         views.setOnClickPendingIntent(R.id.prayer_widget_root, tapIntent(context))
         return views
+    }
+
+    private fun cardViews(context: Context, model: WidgetModel?, now: Long): RemoteViews {
+        val views = RemoteViews(context.packageName, R.layout.prayer_card_widget)
+        val next = model?.nextAfter(now)
+        val day = model?.dayAt(now)
+        if (model == null || next == null || day == null) {
+            views.setTextViewText(R.id.card_label, context.getString(R.string.prayer_widget_name))
+            views.setTextViewText(R.id.card_name, model?.labels?.empty ?: context.getString(R.string.prayer_widget_empty))
+            listOf(R.id.card_time, R.id.card_remaining, R.id.card_seconds, R.id.card_hijri)
+                .forEach { views.setViewVisibility(it, View.GONE) }
+            cellIds.forEach { views.setViewVisibility(it, View.GONE) }
+        } else {
+            views.setTextViewText(R.id.card_label, model.labels.next)
+            views.setTextViewText(R.id.card_name, next.name)
+            views.setTextViewText(R.id.card_time, next.time)
+            views.setTextViewText(R.id.card_hijri, day.hijriLabel)
+            views.setViewVisibility(R.id.card_time, View.VISIBLE)
+            views.setViewVisibility(R.id.card_hijri, View.VISIBLE)
+            countdown(views, R.id.card_remaining, R.id.card_seconds, model, next, now)
+            // After the day's last prayer the coming one is tomorrow's Fajr,
+            // shown in Fajr's place with tomorrow's time.
+            val prayers = day.rows.filter { it.isPrayer }
+            val tomorrow = prayers.none { it.at > now }
+            cellIds.forEachIndexed { index, cellId ->
+                val row = prayers.getOrNull(index)
+                views.setViewVisibility(cellId, if (row == null) View.GONE else View.VISIBLE)
+                if (row == null) return@forEachIndexed
+                val coming = row.id == next.id && (tomorrow || row.at == next.at)
+                views.setTextViewText(cellNameIds[index], row.name)
+                views.setTextViewText(cellTimeIds[index], if (coming) next.time else row.time)
+                views.setInt(cellId, "setBackgroundResource", if (coming) R.drawable.widget_card_cell_next else 0)
+            }
+        }
+        direction(views, R.id.card_root, model)
+        views.setOnClickPendingIntent(R.id.card_root, tapIntent(context))
+        return views
+    }
+
+    /**
+     * The time left until [next]: in hours and minutes, redrawn each minute;
+     * or, when the person chose it, to the second by a chronometer that
+     * counts down on its own while the widget is on screen, without waking
+     * the app.
+     */
+    private fun countdown(
+        views: RemoteViews,
+        minutesId: Int,
+        secondsId: Int,
+        model: WidgetModel,
+        next: WidgetRow,
+        now: Long,
+    ) {
+        val seconds = model.seconds && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
+        views.setViewVisibility(minutesId, if (seconds) View.GONE else View.VISIBLE)
+        views.setViewVisibility(secondsId, if (seconds) View.VISIBLE else View.GONE)
+        if (seconds) {
+            views.setChronometer(
+                secondsId,
+                SystemClock.elapsedRealtime() + (next.at - now),
+                model.labels.remaining,
+                true,
+            )
+            views.setChronometerCountDown(secondsId, true)
+        } else {
+            views.setTextViewText(minutesId, remaining(model, next.at - now))
+        }
     }
 
     private fun scheduleViews(context: Context, model: WidgetModel?, now: Long): RemoteViews {

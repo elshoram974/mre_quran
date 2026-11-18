@@ -137,6 +137,15 @@
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/prayer_schedule_widget_info" />
         </receiver>
         <receiver
+            android:name=".PrayerCardWidgetProvider"
+            android:exported="false"
+            android:label="@string/prayer_card_widget_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/prayer_card_widget_info" />
+        </receiver>
+        <receiver
             android:name=".AdhkarWidgetProvider"
             android:exported="false"
             android:label="@string/adhkar_widget_name">

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mre_quran/core/l10n/l10n.dart';
 import 'package:mre_quran/core/theme/app_theme.dart';
+import 'package:mre_quran/core/widgets/app_surface_card.dart';
 import 'package:mre_quran/features/mushaf/presentation/ayah_actions_sheet.dart';
 import 'package:mre_quran/features/quran_index/application/quran_metadata_provider.dart';
 import 'package:mre_quran/features/quran_index/domain/quran_metadata.dart';
@@ -80,6 +81,15 @@ void main() {
     );
     expect(verse.maxLines, 1);
     expect(verse.overflow, TextOverflow.fade);
+    // It shows its beginning: the first word sits at the right edge.
+    expect(verse.textAlign, TextAlign.start);
+    final card = tester.getRect(
+      find.descendant(of: preview, matching: find.byType(AppSurfaceCard)),
+    );
+    final line = tester.getRect(
+      find.descendant(of: preview, matching: find.byType(RichText)).first,
+    );
+    expect(card.right - line.right, lessThan(20));
     final direction = tester.widget<Directionality>(
       find.descendant(of: preview, matching: find.byType(Directionality)).first,
     );

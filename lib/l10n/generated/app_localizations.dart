@@ -1196,6 +1196,18 @@ abstract class AppLocalizations {
   /// **'\"O Allah, Lord of this perfect call…\" once the adhan ends.'**
   String get adhanDuaHint;
 
+  /// No description provided for @adhanDuaShaarawy.
+  ///
+  /// In en, this message translates to:
+  /// **'Sheikh Muhammad Metwalli Al-Shaarawy'**
+  String get adhanDuaShaarawy;
+
+  /// No description provided for @adhanDuaMishary.
+  ///
+  /// In en, this message translates to:
+  /// **'Sheikh Mishary Rashid Alafasy'**
+  String get adhanDuaMishary;
+
   /// No description provided for @adhanFajrVoices.
   ///
   /// In en, this message translates to:
@@ -1411,6 +1423,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'A light tick for each count, a firmer one when a dhikr is done.'**
   String get settingsHapticsHint;
+
+  /// No description provided for @settingsWidgetSeconds.
+  ///
+  /// In en, this message translates to:
+  /// **'Seconds on the prayer widgets'**
+  String get settingsWidgetSeconds;
+
+  /// No description provided for @settingsWidgetSecondsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'The home-screen widgets count the time left to the second. This uses a little battery while they are on screen.'**
+  String get settingsWidgetSecondsHint;
 
   /// No description provided for @adhkarOnlyAfter.
   ///
@@ -2401,12 +2425,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Order'**
   String get surahOrderCaption;
-
-  /// No description provided for @surahAyahsCaption.
-  ///
-  /// In en, this message translates to:
-  /// **'Ayahs'**
-  String get surahAyahsCaption;
 
   /// No description provided for @packStorageInfo.
   ///

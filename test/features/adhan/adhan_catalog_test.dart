@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:crypto/crypto.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mre_quran/features/adhan/data/adhan_catalog.dart';
+import 'package:mre_quran/features/adhan/domain/adhan_settings.dart';
 import 'package:mre_quran/features/adhan/domain/adhan_voice.dart';
 
 Map<String, Object?> _voice(
@@ -65,14 +66,10 @@ void main() {
         expect(voice.titles['ar'], isNotEmpty, reason: voice.id);
         expect(voice.titles['en'], isNotEmpty, reason: voice.id);
         if (!voice.builtIn) {
-          // Served from a tag of the media repository, which never changes.
-          expect(
-            voice.url,
-            matches(
-              RegExp(r'^https://cdn\.jsdelivr\.net/gh/[^/]+/[^@]+@v\d+/'),
-            ),
-          );
-          expect(voice.extension, 'm4a');
+          // Each download is a file at a fixed address: a media repository
+          // tag, a GitHub commit, or an archive.org item.
+          expect(voice.url, startsWith('https://'), reason: voice.id);
+          expect(['m4a', 'mp3', 'ogg'], contains(voice.extension));
         }
       }
     });
@@ -90,11 +87,15 @@ void main() {
       }
     });
 
-    test('the dua after the adhan ships beside them', () {
-      expect(
-        File('android/app/src/main/res/raw/dua_after_adhan.m4a').existsSync(),
-        isTrue,
-      );
+    test('every dua after the adhan the settings offer ships beside them', () {
+      for (final dua in AdhanDua.values) {
+        expect(
+          File('android/app/src/main/res/raw/${dua.recording}.m4a')
+              .existsSync(),
+          isTrue,
+          reason: dua.name,
+        );
+      }
     });
 
     test('every voice is written up in docs/AUDIO_SOURCES.md', () {

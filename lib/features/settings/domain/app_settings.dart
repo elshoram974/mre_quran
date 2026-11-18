@@ -23,7 +23,14 @@ class AppSettings {
     this.readerPageLayout = ReaderPageLayout.auto,
     this.mushafEdition = MushafEditions.hafs,
     this.surahFrame = SurahFrameStyle.cartouche,
+    this.widgetSeconds = false,
   });
+
+  /// Whether the home-screen prayer widgets count the time left down to the
+  /// second. Off by default: a widget that redraws every second uses some
+  /// battery while it is on screen. The app's own countdown always shows
+  /// seconds.
+  final bool widgetSeconds;
 
   /// The frame drawn around each surah's name in the Mushaf.
   final SurahFrameStyle surahFrame;
@@ -90,6 +97,7 @@ class AppSettings {
     ReaderPageLayout? readerPageLayout,
     MushafEdition? mushafEdition,
     SurahFrameStyle? surahFrame,
+    bool? widgetSeconds,
   }) => AppSettings(
     theme: theme ?? this.theme,
     accent: accent ?? this.accent,
@@ -105,6 +113,7 @@ class AppSettings {
     readerPageLayout: readerPageLayout ?? this.readerPageLayout,
     mushafEdition: mushafEdition ?? this.mushafEdition,
     surahFrame: surahFrame ?? this.surahFrame,
+    widgetSeconds: widgetSeconds ?? this.widgetSeconds,
   );
 }
 

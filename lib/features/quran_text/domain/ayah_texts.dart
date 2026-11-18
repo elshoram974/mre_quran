@@ -29,6 +29,15 @@ abstract interface class AyahTexts {
 
   /// The font that draws [display] and [mark].
   String get fontFamily;
+
+  /// The basmala that opens [surah], to copy or send with its first ayah;
+  /// null where it is not a separate line (Al-Fatiha, whose basmala is its
+  /// first ayah; At-Tawbah, which has none) or this reading's text does not
+  /// give it.
+  String? basmalaCopy(int surah);
+
+  /// [basmalaCopy] as [fontFamily] draws it.
+  String? basmalaDisplay(int surah);
 }
 
 /// Hafs, from the app's verified text.
@@ -66,6 +75,14 @@ class HafsAyahTexts implements AyahTexts {
 
   @override
   int pageOf(AyahRef ref) => text.metadata.pageOf(ref.surah, ref.ayah);
+
+  @override
+  String? basmalaCopy(int surah) =>
+      text.hasBasmala(surah) ? text.basmala : null;
+
+  @override
+  String? basmalaDisplay(int surah) =>
+      text.hasBasmala(surah) ? text.mushafBasmala : null;
 }
 
 /// One ayah of a reading's text: its words, its number as written, and the
@@ -123,4 +140,12 @@ class RiwayaAyahTexts implements AyahTexts {
 
   @override
   int pageOf(AyahRef ref) => _of(ref).page;
+
+  /// The Complex's text of the other readings has no separate basmala line,
+  /// so none is added; Hafs's is not borrowed for another reading.
+  @override
+  String? basmalaCopy(int surah) => null;
+
+  @override
+  String? basmalaDisplay(int surah) => null;
 }

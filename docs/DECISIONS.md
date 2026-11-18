@@ -279,3 +279,34 @@
 - **Measured** (emulator, profile build, cold start): ready at ~0.85 s after the process started, from ~1.5 s,
   and from 5.2 s with the launch screen held to its limit. Opening from the prayer widget no longer waits
   for the limit.
+
+## D-033: Vibration is for counting only
+
+- **Decision:** The app vibrates when an adhkar, tasbih or dua count ticks, a dhikr is done, or a list is
+  done; and once, as a sample, when vibration is switched on. Navigation, pickers, the reader, the page
+  scrubber and the Qibla stay still. `Haptics.select` is gone. Reminders vibrate through their notification.
+
+## D-034: A basmala goes with its surah's first ayah
+
+- **Decision:** Choosing a surah's first ayah highlights its basmala too (on the printed page, a box over
+  the basmala's line above the ayah, also tappable; on the typeset page, the basmala line), and copying or
+  sharing from a first ayah puts the basmala on its own line before it. Not for Al-Fatiha (its basmala is
+  its first ayah), At-Tawbah, or a reading whose text has no separate basmala (the Complex's other readings).
+
+## D-035: Adhan downloads come from where each recording was found, until the media repository exists
+
+- **Decision:** `tool/audio/build_adhan_audio.py --serve source` points each downloadable voice at its own
+  file (archive.org, or GitHub at a pinned commit) with that file's SHA-256, so download and preview work
+  now. `--serve media` switches to the cleaned files once the media repository is published. The dua after
+  the adhan is in Sheikh Al-Shaarawy's voice by default, or Sheikh Mishary Alafasy's, both bundled and each
+  heard on the Adhan page. The announcement choice appears only once its six recordings are bundled.
+
+## D-036: The prayer card widget, and seconds by choice
+
+- **Decision:** A 4×2 prayer card (Android) and medium card (iOS) in the app icon's navy and gold: the
+  coming prayer, its time, the time left, the Hijri date, and the day's five prayers. The time left counts to
+  the second only when the person turns it on in the settings (Android `Chronometer`, iOS
+  `Text(_:style: .timer)`, both counted by the system without waking the app); the app's own countdown
+  always shows seconds. The tasbih widget is two cells by one at the least.
+- **Splash:** `windowSplashScreenAnimationDuration` is 4000 ms, the longest the launch screen stays, as
+  Android 12 and 13 stop the turning star after it.

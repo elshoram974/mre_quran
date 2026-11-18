@@ -142,6 +142,8 @@ class _AlertSection extends ConsumerWidget {
     final l10n = context.l10n;
     final notifier = ref.read(adhanSettingsProvider.notifier);
     final exact = ref.watch(adhanExactAllowedProvider).value ?? true;
+    final announcements = ref.watch(adhanAnnouncementsProvider).value ?? false;
+    final listening = ref.watch(adhanVoicesProvider).value?.listening;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -166,16 +168,19 @@ class _AlertSection extends ConsumerWidget {
               subtitle: l10n.adhanFlipHint,
               icon: Icons.screen_rotation_alt_outlined,
             ),
-            AppSwitchTile(
-              value: settings.announce,
-              onChanged: settings.playAdhan
-                  ? (on) =>
-                        notifier.change((value) => value.copyWith(announce: on))
-                  : null,
-              title: l10n.adhanAnnounceSwitch,
-              subtitle: l10n.adhanAnnounceHint,
-              icon: Icons.campaign_outlined,
-            ),
+            // Offered once the app carries the announcement recordings.
+            if (announcements)
+              AppSwitchTile(
+                value: settings.announce,
+                onChanged: settings.playAdhan
+                    ? (on) => notifier.change(
+                        (value) => value.copyWith(announce: on),
+                      )
+                    : null,
+                title: l10n.adhanAnnounceSwitch,
+                subtitle: l10n.adhanAnnounceHint,
+                icon: Icons.campaign_outlined,
+              ),
             AppSwitchTile(
               value: settings.duaAfter,
               onChanged: settings.playAdhan
@@ -186,6 +191,13 @@ class _AlertSection extends ConsumerWidget {
               subtitle: l10n.adhanDuaHint,
               icon: Icons.volunteer_activism_outlined,
             ),
+            if (settings.playAdhan && settings.duaAfter)
+              for (final dua in AdhanDua.values)
+                _DuaChoice(
+                  dua: dua,
+                  chosen: settings.dua == dua,
+                  listening: listening == 'dua:${dua.name}',
+                ),
           ],
         ),
         if (settings.playAdhan && !exact) ...[
@@ -236,5 +248,48 @@ class _AlertSection extends ConsumerWidget {
           ),
           config,
         );
+  }
+}
+
+/// One voice for the dua after the adhan: chosen with a tap, heard with its
+/// play button.
+class _DuaChoice extends ConsumerWidget {
+  const _DuaChoice({
+    required this.dua,
+    required this.chosen,
+    required this.listening,
+  });
+
+  final AdhanDua dua;
+  final bool chosen;
+  final bool listening;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final scheme = Theme.of(context).colorScheme;
+    return ListTile(
+      contentPadding: const EdgeInsetsDirectional.only(start: 56, end: 8),
+      selected: chosen,
+      leading: Icon(
+        chosen ? Icons.check_circle_rounded : Icons.circle_outlined,
+        color: chosen ? scheme.primary : scheme.outline,
+      ),
+      title: Text(switch (dua) {
+        AdhanDua.shaarawy => l10n.adhanDuaShaarawy,
+        AdhanDua.mishary => l10n.adhanDuaMishary,
+      }),
+      onTap: () => ref
+          .read(adhanSettingsProvider.notifier)
+          .change((value) => value.copyWith(dua: dua)),
+      trailing: IconButton(
+        tooltip: listening ? l10n.adhanStopListening : l10n.adhanListen,
+        icon: Icon(
+          listening ? Icons.stop_circle_outlined : Icons.play_circle_outline,
+        ),
+        onPressed: () =>
+            ref.read(adhanVoicesProvider.notifier).toggleListeningDua(dua),
+      ),
+    );
   }
 }

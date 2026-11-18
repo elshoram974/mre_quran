@@ -1,6 +1,10 @@
 import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:mre_quran/core/l10n/l10n.dart';
+import 'package:mre_quran/features/mushaf/presentation/ayah_selection_bar.dart';
+import 'package:mre_quran/l10n/generated/app_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mre_quran/features/mushaf/application/ayah_selection_provider.dart';
 import 'package:mre_quran/features/mushaf/domain/mushaf_edition.dart';
@@ -36,6 +40,12 @@ class _Counts implements AyahTexts {
 
   @override
   String get fontFamily => 'KfgqpcHafs';
+
+  @override
+  String? basmalaCopy(int surah) => null;
+
+  @override
+  String? basmalaDisplay(int surah) => null;
 }
 
 void main() {
@@ -82,5 +92,59 @@ void main() {
     notifier().start(MushafEditions.hafs, texts, const AyahRef(1, 1));
     notifier().clear();
     expect(container.read(ayahSelectionProvider), isNull);
+  });
+
+  testWidgets('the bar moves away from where the person taps, and the taps '
+      'still reach the page', (tester) async {
+    tester.view.physicalSize = const Size(400, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final pageTaps = <Offset>[];
+    final scope = ProviderContainer();
+    addTearDown(scope.dispose);
+    scope
+        .read(ayahSelectionProvider.notifier)
+        .start(MushafEditions.hafs, texts, const AyahRef(2, 255));
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: scope,
+        child: MaterialApp(
+          locale: const Locale('ar'),
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: appLocalizationsDelegates,
+          home: Scaffold(
+            body: Stack(
+              children: [
+                Positioned.fill(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTapUp: (details) => pageTaps.add(details.localPosition),
+                  ),
+                ),
+                const Positioned.fill(
+                  child: AyahSelectionLayer(top: 4, bottom: 10),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final bar = find.byType(AyahSelectionBar);
+    expect(tester.getRect(bar).center.dy, greaterThan(400));
+
+    // A tap low on the page: it reaches the page, and the bar goes up.
+    await tester.tapAt(const Offset(200, 600));
+    await tester.pumpAndSettle();
+    expect(pageTaps, hasLength(1));
+    expect(tester.getRect(bar).center.dy, lessThan(400));
+
+    // A tap high on the page brings it back down.
+    await tester.tapAt(const Offset(200, 300));
+    await tester.pumpAndSettle();
+    expect(pageTaps, hasLength(2));
+    expect(tester.getRect(bar).center.dy, greaterThan(400));
+    expect(tester.takeException(), isNull);
   });
 }

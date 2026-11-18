@@ -46,10 +46,10 @@ class TasbihWidgetProvider : AppWidgetProvider() {
             views.setOnClickPendingIntent(R.id.tasbih_widget_reset, broadcast(context, ACTION_RESET, 2))
             // A bigger widget gets a bigger name and reset button; the count
             // sizes itself to fill what is left.
-            val scale = WidgetScale.of(manager, id, BASE_DP, BASE_DP)
-            WidgetScale.text(views, R.id.tasbih_widget_name, 10f, scale)
-            WidgetScale.text(views, R.id.tasbih_widget_reset, 13f, scale)
-            WidgetScale.padding(context, views, R.id.tasbih_widget_reset, 6f, 1f, scale)
+            val scale = WidgetScale.of(manager, id, BASE_WIDTH_DP, BASE_HEIGHT_DP)
+            WidgetScale.text(views, R.id.tasbih_widget_name, 11f, scale)
+            WidgetScale.text(views, R.id.tasbih_widget_reset, 14f, scale)
+            WidgetScale.padding(context, views, R.id.tasbih_widget_reset, 8f, 2f, scale)
             manager.updateAppWidget(id, views)
         }
     }
@@ -63,8 +63,9 @@ class TasbihWidgetProvider : AppWidgetProvider() {
         )
 
     private companion object {
-        /** One cell, the size the layout is drawn for. */
-        const val BASE_DP = 64f
+        /** The size the widget is drawn at before scaling: two cells by one. */
+        const val BASE_WIDTH_DP = 140f
+        const val BASE_HEIGHT_DP = 60f
         const val PREFERENCES = "tasbih_widget"
         const val COUNT = "count"
         const val ACTION_COUNT = "net.mrecode.mre_quran.TASBIH_COUNT"

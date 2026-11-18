@@ -217,16 +217,10 @@ class MushafPage extends ConsumerWidget {
                   ),
                 ),
                 // While ayahs are being chosen, their count and actions take
-                // the controls' place.
-                PositionedDirectional(
-                  bottom: barRoom + 10,
-                  start: 12,
-                  end: 12,
-                  child: appear(
-                    const AyahSelectionBar(),
-                    shown: choosing,
-                    from: const Offset(0, 0.4),
-                  ),
+                // the controls' place, and move out of the way of the ayahs
+                // being tapped.
+                Positioned.fill(
+                  child: AyahSelectionLayer(top: 4, bottom: barRoom + 10),
                 ),
               ],
             ),

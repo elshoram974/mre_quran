@@ -39,7 +39,8 @@ internal object AdhanAudio {
             .takeIf { it.isNotEmpty() && it != "null" }
         steps += { savedFile(context, path, attributes) ?: bundled(context, attributes, fajr) }
         if (config.optBoolean("duaAfter", true)) {
-            steps += { raw(context, "dua_after_adhan", attributes) }
+            val dua = config.optString("duaRecording", "dua_after_adhan_shaarawy")
+            steps += { raw(context, dua, attributes) }
         }
         return steps
     }

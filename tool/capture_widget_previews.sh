@@ -25,7 +25,7 @@ for language in en ar; do
   folder=$res/drawable-nodpi
   [[ $language == ar ]] && folder=$res/drawable-ar-nodpi
   mkdir -p "$folder"
-  for name in prayer_widget prayer_schedule_widget adhkar_widget tasbih_widget; do
+  for name in prayer_widget prayer_schedule_widget prayer_card_widget adhkar_widget tasbih_widget; do
     "${adb[@]}" exec-out run-as "$app" cat "files/widget_previews/$language/${name}_preview.png" \
       > "$folder/${name}_preview.png"
   done

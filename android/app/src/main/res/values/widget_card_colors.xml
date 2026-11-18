@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The prayer card widget: the app icon's navy and gold, the same in light
+     and dark, so it reads on any wallpaper. -->
+<resources>
+    <color name="widget_card_bg_start">#161B26</color>
+    <color name="widget_card_bg_end">#232B3D</color>
+    <color name="widget_card_text">#F4EBD8</color>
+    <color name="widget_card_muted">#A9A08E</color>
+    <color name="widget_card_gold">#E3C27A</color>
+    <color name="widget_card_line">#40E3C27A</color>
+    <color name="widget_card_cell_next">#2EE3C27A</color>
+    <color name="widget_card_star">#1FE3C27A</color>
+</resources>

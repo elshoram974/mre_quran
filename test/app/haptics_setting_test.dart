@@ -7,6 +7,7 @@ import 'package:mre_quran/features/bookmarks/application/bookmarks_provider.dart
 import 'package:mre_quran/features/mushaf/application/reading_position_provider.dart';
 import 'package:mre_quran/features/quran_index/application/quran_metadata_provider.dart';
 import 'package:mre_quran/features/quran_text/application/quran_text_providers.dart';
+import 'package:mre_quran/features/settings/presentation/settings_page.dart';
 import 'package:mre_quran/features/settings/application/settings_provider.dart';
 import 'package:mre_quran/features/settings/domain/app_settings.dart';
 import 'package:mre_quran/features/startup/application/startup_providers.dart';
@@ -80,13 +81,25 @@ void main() {
       );
       expect(Haptics.enabled, isFalse);
 
+      final list = find
+          .descendant(
+            of: find.byType(SettingsPage),
+            matching: find.byType(Scrollable),
+          )
+          .first;
       await tester.scrollUntilVisible(
         find.text('الاهتزاز'),
         200,
-        scrollable: find.byType(Scrollable).first,
+        scrollable: list,
       );
-      // Past the floating tab bar.
-      await tester.drag(find.byType(Scrollable).first, const Offset(0, -250));
+      await tester.ensureVisible(find.text('الاهتزاز'));
+      await tester.pumpAndSettle();
+      // Down from under the app bar, slowly, so it stops there.
+      await tester.timedDrag(
+        list,
+        const Offset(0, 300),
+        const Duration(seconds: 1),
+      );
       await tester.pumpAndSettle();
       await tester.tap(find.text('الاهتزاز'));
       await tester.pumpAndSettle();

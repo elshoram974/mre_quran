@@ -17,6 +17,11 @@ go to --media (the files of the media repository) at 96 kb/s. The catalogue
 assets/adhan/voices.json is written from the results, with each file's size
 and SHA-256, so the app checks every download.
 
+--serve says where the app downloads the voices that are not bundled:
+"media" (the cleaned files, once the media repository is published at
+--base) or "source" (each recording's own file where it was found, as it is,
+with that file's SHA-256), which works before the media repository exists.
+
 Needs ffmpeg and ffprobe. Run from the repository root:
 
   python3 tool/audio/build_adhan_audio.py --cache <folder> \
@@ -112,11 +117,13 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     parser.add_argument("--cache", required=True, type=pathlib.Path)
     parser.add_argument("--media", required=True, type=pathlib.Path)
-    parser.add_argument("--base", required=True,
+    parser.add_argument("--base", default="",
                         help="https address the media folder is served from")
+    parser.add_argument("--serve", choices=["media", "source"],
+                        default="source")
     options = parser.parse_args()
-    if not options.base.startswith("https://"):
-        sys.exit("--base must be an https address")
+    if options.serve == "media" and not options.base.startswith("https://"):
+        sys.exit("--serve media needs an https --base")
     base = options.base.rstrip("/") + "/"
     spec = json.loads(SOURCES.read_text())
     options.cache.mkdir(parents=True, exist_ok=True)
@@ -157,9 +164,15 @@ def main() -> None:
         }
         if bundled:
             voice["builtIn"] = True
-        else:
+        elif options.serve == "media":
             voice["url"] = f"{base}adhan/{recording['id']}.m4a"
             voice["extension"] = "m4a"
+        else:
+            # The recording's own file, unchanged, checked by its SHA-256.
+            voice["url"] = recording["url"]
+            voice["extension"] = recording["url"].rsplit(".", 1)[-1].lower()
+            voice["bytes"] = source.stat().st_size
+            voice["sha256"] = recording["sha256"]
         voices.append(voice)
 
     CATALOG.write_text(

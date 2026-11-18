@@ -7,7 +7,10 @@
              screen is ready, so no loading is ever seen. -->
         <item name="windowSplashScreenBackground">@color/launch_paper</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/splash_star</item>
-        <item name="windowSplashScreenAnimationDuration">1600</item>
+        <!-- As long as the launch screen can stay (MainActivity.LONGEST_SPLASH_MS):
+             Android 12 and 13 stop the turning star after this time, so it turns
+             until the app opens. -->
+        <item name="windowSplashScreenAnimationDuration">4000</item>
         <item name="postSplashScreenTheme">@style/NormalTheme</item>
     </style>
     <!-- Theme applied to the Android Window as soon as the process has started.

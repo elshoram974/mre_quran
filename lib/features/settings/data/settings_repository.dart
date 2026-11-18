@@ -28,6 +28,7 @@ class LocalSettingsRepository implements SettingsRepository {
   static const _readerModeKey = 'settings.reader_mode';
   static const _readerPageLayoutKey = 'settings.reader_page_layout';
   static const _surahFrameKey = 'settings.surah_frame';
+  static const _widgetSecondsKey = 'settings.widget_seconds';
 
   @override
   Future<AppSettings> load() async {
@@ -57,6 +58,7 @@ class LocalSettingsRepository implements SettingsRepository {
     final accent = await _preferences.getString(_accentKey);
     final edition = await _preferences.getString(_mushafEditionKey);
     final surahFrame = await _preferences.getString(_surahFrameKey);
+    final widgetSeconds = await _preferences.getBool(_widgetSecondsKey);
     return AppSettings(
       theme: AppThemePreference.values.firstWhere(
         (item) => item.name == theme,
@@ -92,6 +94,7 @@ class LocalSettingsRepository implements SettingsRepository {
         (item) => item.name == surahFrame,
         orElse: () => SurahFrameStyle.cartouche,
       ),
+      widgetSeconds: widgetSeconds ?? false,
     );
   }
 
@@ -104,6 +107,7 @@ class LocalSettingsRepository implements SettingsRepository {
       _preferences.setString(_localeKey, settings.localeCode),
       _preferences.setBool(_reduceMotionKey, settings.reduceMotion),
       _preferences.setBool(_hapticsKey, settings.hapticsEnabled),
+      _preferences.setBool(_widgetSecondsKey, settings.widgetSeconds),
       _preferences.setBool(_arabicDigitsKey, settings.useArabicDigits),
       _preferences.setBool(_crashReportsKey, settings.crashReportsEnabled),
       _preferences.setString(_startupKey, settings.startupBehavior.name),

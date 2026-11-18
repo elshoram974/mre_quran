@@ -35,4 +35,6 @@
     <string name="tasbih_widget_reset">Reset</string>
     <string name="tasbih_widget_count_description">Add one to the tasbih count</string>
     <string name="tasbih_widget_preview_count">33</string>
+    <string name="prayer_card_widget_name">Prayer card</string>
+    <string name="prayer_card_widget_description">The coming prayer with the time left, and the day\'s five prayers.</string>
 </resources>

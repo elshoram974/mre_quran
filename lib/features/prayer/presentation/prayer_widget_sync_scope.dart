@@ -44,6 +44,10 @@ class _PrayerWidgetSyncScopeState extends ConsumerState<PrayerWidgetSyncScope> {
         settingsProvider.select((value) => value.value?.localeCode),
         (_, _) => unawaited(_sync(ref.read(nextPrayerProvider))),
       ),
+      ref.listenManual(
+        settingsProvider.select((value) => value.value?.widgetSeconds),
+        (_, _) => unawaited(_sync(ref.read(nextPrayerProvider))),
+      ),
     ]);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       unawaited(_sync(ref.read(nextPrayerProvider)));
@@ -86,6 +90,7 @@ class _PrayerWidgetSyncScopeState extends ConsumerState<PrayerWidgetSyncScope> {
         at: next.at,
         useArabicDigits: settings.useArabicDigits,
         rtl: Directionality.of(context) == TextDirection.rtl,
+        seconds: settings.widgetSeconds,
         labels: PrayerWidgetLabels(
           next: l10n.prayerNext,
           remaining: l10n.prayerIn(r'%1$s'),

@@ -218,6 +218,14 @@ class _SettingsContent extends ConsumerWidget {
                   ? l10n.settingsHapticsHint
                   : l10n.settingsHapticsUnsupported,
             ),
+            AppSwitchTile(
+              value: settings.widgetSeconds,
+              onChanged: (value) =>
+                  notifier.save(settings.copyWith(widgetSeconds: value)),
+              icon: Icons.timer_outlined,
+              title: l10n.settingsWidgetSeconds,
+              subtitle: l10n.settingsWidgetSecondsHint,
+            ),
           ],
         ),
         const SizedBox(height: _sectionGap),

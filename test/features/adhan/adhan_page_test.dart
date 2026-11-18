@@ -10,6 +10,7 @@ import 'package:mre_quran/core/widgets/app_card.dart';
 import 'package:mre_quran/features/adhan/application/adhan_providers.dart';
 import 'package:mre_quran/features/adhan/data/adhan_platform.dart';
 import 'package:mre_quran/features/adhan/data/voice_store.dart';
+import 'package:mre_quran/features/adhan/domain/adhan_settings.dart';
 import 'package:mre_quran/features/adhan/presentation/adhan_page.dart';
 import 'package:mre_quran/features/settings/application/settings_provider.dart';
 import 'package:mre_quran/l10n/generated/app_localizations.dart';
@@ -36,13 +37,14 @@ Future<_Harness> _pump(
   double textScale = 1,
   ThemeData? theme,
   Set<String> saved = const {},
+  Set<String> recordings = const {},
 }) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
   final harness = _Harness(
-    FakeAdhanPlatform(supported: supported),
+    FakeAdhanPlatform(supported: supported)..recordings = recordings,
     MemoryAdhanRepository(),
     FakeVoiceStore(saved: saved),
     FakeReminderScheduler()..exactAllowed = exact,
@@ -101,8 +103,10 @@ void main() {
       await _pump(tester);
       expect(find.text('تشغيل الأذان وقت الصلاة'), findsOneWidget);
       expect(find.text('إيقاف الأذان عند قلب الهاتف'), findsOneWidget);
-      expect(find.text('إعلان الصلاة قبل الأذان'), findsOneWidget);
+      // No announcement recordings in the app: the choice is not offered.
+      expect(find.text('إعلان الصلاة قبل الأذان'), findsNothing);
       expect(find.text('الدعاء بعد الأذان'), findsOneWidget);
+      expect(find.text('بصوت الشيخ محمد متولي الشعراوي'), findsOneWidget);
       await _reveal(tester, find.text('الأذان الافتراضي'));
       expect(_inCard('الأذان الافتراضي', find.text('قيد الاستخدام')), findsOne);
       await _reveal(tester, find.text('أذان المسجد الحرام'));
@@ -304,5 +308,35 @@ void main() {
     await _reveal(tester, find.text('Grand Mosque'));
     expect(find.textContaining('Download'), findsWidgets);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('the announcement is offered once the app carries all six', (
+    tester,
+  ) async {
+    await _pump(tester, recordings: adhanAnnouncements.toSet());
+    expect(find.text('إعلان الصلاة قبل الأذان'), findsOneWidget);
+  });
+
+  testWidgets('the dua after the adhan: chosen by voice, heard before', (
+    tester,
+  ) async {
+    final h = await _pump(tester);
+    expect(h.adhan.settings.dua, AdhanDua.shaarawy);
+    await _reveal(tester, find.text('بصوت الشيخ مشاري العفاسي'));
+    await tester.tap(
+      find.descendant(
+        of: find.ancestor(
+          of: find.text('بصوت الشيخ مشاري العفاسي'),
+          matching: find.byType(ListTile),
+        ),
+        matching: find.byTooltip('استماع'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final heard = h.platform.previews.single as RawPreview;
+    expect(heard.name, 'dua_after_adhan_mishary');
+    await tester.tap(find.text('بصوت الشيخ مشاري العفاسي'));
+    await tester.pumpAndSettle();
+    expect(h.adhan.settings.dua, AdhanDua.mishary);
   });
 }

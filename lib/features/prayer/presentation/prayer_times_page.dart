@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,7 +9,6 @@ import '../../../core/l10n/l10n.dart';
 import '../../../core/layout/adaptive_layout.dart';
 import '../../../core/notifications/reminder_scheduler_provider.dart';
 import '../../../core/theme/app_tokens.dart';
-import '../../../core/time/ticking_clock.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_hero_card.dart';
 import '../../../core/widgets/app_icon_badge.dart';
@@ -350,8 +351,6 @@ class _NextCard extends ConsumerWidget {
     final text = Theme.of(context).textTheme;
     final digits = ref.watch(digitsFormatterProvider);
     final formatDisplayDigits = ref.watch(displayDigitsFormatterProvider);
-    final now = ref.watch(tickingNowProvider);
-    final until = next.at.difference(now);
     return AppHeroCard(
       watermark: Icons.mosque_outlined,
       child: Column(
@@ -371,16 +370,63 @@ class _NextCard extends ConsumerWidget {
           const SizedBox(height: AppTokens.spaceMedium),
           Text(prayerName(l10n, next.prayer), style: text.headlineMedium),
           const SizedBox(height: 4),
-          Text(
-            l10n.prayerIn(formatUntil(l10n, until, digits)),
-            style: text.titleMedium,
-          ),
+          _Countdown(to: next.at, digits: digits, style: text.titleMedium),
           const SizedBox(height: 2),
           Text(
             formatPrayerTime(context, next.at, formatDisplayDigits),
             style: text.bodyMedium,
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// The time left until [to], to the second: `بعد ٢:٠٥:٠٩`. It ticks only
+/// while it is on screen.
+class _Countdown extends StatefulWidget {
+  const _Countdown({required this.to, required this.digits, this.style});
+
+  final DateTime to;
+  final String Function(int) digits;
+  final TextStyle? style;
+
+  @override
+  State<_Countdown> createState() => _CountdownState();
+}
+
+class _CountdownState extends State<_Countdown> {
+  late final Timer _tick;
+
+  @override
+  void initState() {
+    super.initState();
+    _tick = Timer.periodic(const Duration(seconds: 1), (_) => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    _tick.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final left = widget.to.difference(DateTime.now());
+    final seconds = left.isNegative ? 0 : left.inSeconds;
+    String two(int value) =>
+        '${widget.digits(value ~/ 10)}${widget.digits(value % 10)}';
+    final hours = seconds ~/ 3600;
+    final clock = [
+      if (hours > 0) widget.digits(hours),
+      two(seconds % 3600 ~/ 60),
+      two(seconds % 60),
+    ].join(':');
+    return Text(
+      context.l10n.prayerIn(clock),
+      // Digits keep their width, so the line does not shake each second.
+      style: widget.style?.copyWith(
+        fontFeatures: const [FontFeature.tabularFigures()],
       ),
     );
   }

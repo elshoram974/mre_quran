@@ -101,6 +101,9 @@ class AyahShareCard extends StatelessWidget {
                   height: 56,
                   child: SurahBanner(
                     surah: text.metadata.surah(run.surah),
+                    // The reading's own count and script.
+                    ayahCount: text.ayahCount(run.surah),
+                    fontFamily: text.fontFamily,
                     number: digits,
                     style: frame,
                     ink: colors.ink,
@@ -116,6 +119,20 @@ class AyahShareCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      // From its first ayah, a surah opens with its basmala.
+                      if (run.first == 1)
+                        if (text.basmalaDisplay(run.surah) case final basmala?)
+                          Padding(
+                            padding: const EdgeInsetsDirectional.only(
+                              bottom: 6,
+                            ),
+                            child: Text(
+                              basmala,
+                              textAlign: TextAlign.center,
+                              textScaler: TextScaler.noScaling,
+                              style: verse.copyWith(fontSize: 19),
+                            ),
+                          ),
                       for (var ayah = run.first; ayah <= run.last; ayah++)
                         _Verse(
                           text: text,

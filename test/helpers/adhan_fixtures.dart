@@ -131,6 +131,13 @@ class FakeAdhanPlatform implements AdhanPlatform {
   @override
   Future<bool> isSupported() async => supported;
 
+  /// The recordings the fake app carries.
+  Set<String> recordings = {};
+
+  @override
+  Future<Set<String>> bundled(Iterable<String> names) async =>
+      names.where(recordings.contains).toSet();
+
   @override
   Future<void> schedule(
     List<AdhanAlarm> alarms,

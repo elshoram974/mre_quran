@@ -10,9 +10,78 @@ import '../application/ayah_selection_provider.dart';
 import 'ayah_share_format.dart';
 import 'ayah_share_sheet.dart';
 
-/// The bar that floats over the reader while ayahs are being chosen: how
-/// many and from where to where, a hint to tap the last one, and copy,
-/// share, and cancel. Nothing shows while no ayahs are chosen.
+/// Lays the [AyahSelectionBar] over the reader where it hides nothing the
+/// person is choosing: at the bottom, and at the top once they tap in the
+/// lower half of the screen, so an ayah near the bottom can be reached. It
+/// watches taps without taking them.
+class AyahSelectionLayer extends ConsumerStatefulWidget {
+  /// Creates the layer; the bar keeps [top] and [bottom] clear of the
+  /// screen's edges.
+  const AyahSelectionLayer({
+    super.key,
+    required this.top,
+    required this.bottom,
+  });
+
+  /// Room left above the bar when it sits at the top.
+  final double top;
+
+  /// Room left under the bar when it sits at the bottom.
+  final double bottom;
+
+  @override
+  ConsumerState<AyahSelectionLayer> createState() => _AyahSelectionLayerState();
+}
+
+class _AyahSelectionLayerState extends ConsumerState<AyahSelectionLayer> {
+  bool _atTop = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final choosing = ref.watch(ayahSelectionProvider) != null;
+    final duration = MediaQuery.disableAnimationsOf(context)
+        ? Duration.zero
+        : AppTokens.motionMedium;
+    return LayoutBuilder(
+      builder: (context, constraints) => Listener(
+        // Sees every tap on the page, and lets it through.
+        behavior: HitTestBehavior.translucent,
+        onPointerDown: (event) {
+          if (!choosing) return;
+          final atTop = event.localPosition.dy > constraints.maxHeight / 2;
+          if (atTop != _atTop) setState(() => _atTop = atTop);
+        },
+        child: IgnorePointer(
+          ignoring: !choosing,
+          child: AnimatedOpacity(
+            opacity: choosing ? 1 : 0,
+            duration: duration,
+            child: AnimatedAlign(
+              duration: duration,
+              curve: Curves.easeOutCubic,
+              alignment: _atTop
+                  ? AlignmentDirectional.topCenter
+                  : AlignmentDirectional.bottomCenter,
+              child: Padding(
+                padding: EdgeInsetsDirectional.only(
+                  top: widget.top,
+                  bottom: widget.bottom,
+                  start: 12,
+                  end: 12,
+                ),
+                child: const AyahSelectionBar(),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The bar of the ayahs being chosen, on one row: how many and from where to
+/// where, a hint to tap the last one, and copy, share and cancel. Nothing
+/// shows while no ayahs are chosen.
 class AyahSelectionBar extends ConsumerWidget {
   /// Creates the bar.
   const AyahSelectionBar({super.key});
@@ -43,81 +112,66 @@ class AyahSelectionBar extends ConsumerWidget {
       await showAyahShare(root, texts, range);
     }
 
-    return Semantics(
-      container: true,
-      liveRegion: true,
-      child: Material(
-        color: theme.colorScheme.surfaceContainerLowest,
-        elevation: 3,
-        shadowColor: theme.colorScheme.shadow.withValues(alpha: 0.35),
-        surfaceTintColor: Colors.transparent,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppTokens.radiusCard),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Padding(
-          padding: const EdgeInsetsDirectional.fromSTEB(16, 10, 8, 10),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          l10n.selectionCount(count, digits(count)),
-                          style: theme.textTheme.titleMedium,
-                        ),
-                        Text(
-                          rangePlace(context, texts, range, digits),
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    tooltip: l10n.cancelSelection,
-                    onPressed: () =>
-                        ref.read(ayahSelectionProvider.notifier).clear(),
-                    icon: const Icon(Icons.close_rounded),
-                  ),
-                ],
-              ),
-              Text(
-                l10n.selectionHint,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-              const SizedBox(height: AppTokens.spaceSmall),
-              Padding(
-                padding: const EdgeInsetsDirectional.only(end: 8),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: copy,
-                        icon: const Icon(Icons.copy_outlined),
-                        label: Text(l10n.copyText),
+    final muted = theme.textTheme.bodySmall?.copyWith(
+      color: theme.colorScheme.onSurfaceVariant,
+    );
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 560),
+      child: Semantics(
+        container: true,
+        liveRegion: true,
+        child: Material(
+          color: theme.colorScheme.surfaceContainerLowest,
+          elevation: 3,
+          shadowColor: theme.colorScheme.shadow.withValues(alpha: 0.35),
+          surfaceTintColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppTokens.radiusCard),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Padding(
+            padding: const EdgeInsetsDirectional.fromSTEB(16, 8, 4, 8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${l10n.selectionCount(count, digits(count))} · '
+                        '${rangePlace(context, texts, range, digits)}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.titleSmall,
                       ),
-                    ),
-                    const SizedBox(width: AppTokens.spaceSmall),
-                    Expanded(
-                      child: FilledButton.icon(
-                        onPressed: share,
-                        icon: const Icon(Icons.share_outlined),
-                        label: Text(l10n.shareAyah),
+                      Text(
+                        l10n.selectionHint,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: muted,
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
+                IconButton(
+                  tooltip: l10n.copyText,
+                  onPressed: copy,
+                  icon: const Icon(Icons.copy_outlined),
+                ),
+                IconButton.filled(
+                  tooltip: l10n.shareAyah,
+                  onPressed: share,
+                  icon: const Icon(Icons.share_outlined),
+                ),
+                IconButton(
+                  tooltip: l10n.cancelSelection,
+                  onPressed: () =>
+                      ref.read(ayahSelectionProvider.notifier).clear(),
+                  icon: const Icon(Icons.close_rounded),
+                ),
+              ],
+            ),
           ),
         ),
       ),

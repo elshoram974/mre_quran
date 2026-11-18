@@ -1,14 +1,24 @@
 {
   "schema": 1,
   "note": "Where every adhan recording comes from and how it is cut. Run tool/audio/build_adhan_audio.py; never edit the outputs by hand. Licence status: docs/AUDIO_SOURCES.md.",
-  "loudness": {"integrated": -16, "truePeak": -1.5, "range": 11},
+  "loudness": {
+    "integrated": -16,
+    "truePeak": -1.5,
+    "range": 11
+  },
   "recordings": [
     {
       "id": "default",
       "kind": "regular",
       "bundled": "adhan_default",
-      "title": {"ar": "مشاري راشد العفاسي", "en": "Mishary Rashid Alafasy"},
-      "place": {"ar": "تسجيل استوديو", "en": "Studio recording"},
+      "title": {
+        "ar": "مشاري راشد العفاسي",
+        "en": "Mishary Rashid Alafasy"
+      },
+      "place": {
+        "ar": "تسجيل استوديو",
+        "en": "Studio recording"
+      },
       "credit": "Mishary Rashid Alafasy (recitation)",
       "source": "https://archive.org/details/VeryBeautifulAdhaanByMisharyAlAfasy",
       "url": "https://archive.org/download/VeryBeautifulAdhaanByMisharyAlAfasy/Very%20Beautiful%20Adhaan%20by%20Mishary%20Al-Afasy.mp3",
@@ -17,9 +27,9 @@
       "checked": "Whisper transcript: twelve phrases, no «الصلاة خير من النوم»; the dua after it is cut off (see dua_after_adhan)."
     },
     {
-      "id": "dua_after_adhan",
+      "id": "dua_after_adhan_mishary",
       "kind": "dua",
-      "bundled": "dua_after_adhan",
+      "bundled": "dua_after_adhan_mishary",
       "credit": "Mishary Rashid Alafasy (recitation)",
       "source": "https://archive.org/details/VeryBeautifulAdhaanByMisharyAlAfasy",
       "url": "https://archive.org/download/VeryBeautifulAdhaanByMisharyAlAfasy/Very%20Beautiful%20Adhaan%20by%20Mishary%20Al-Afasy.mp3",
@@ -28,11 +38,27 @@
       "checked": "Whisper transcript: «اللهم رب هذه الدعوة التامة والصلاة القائمة آت محمدًا الوسيلة والفضيلة وابعثه مقامًا محمودًا الذي وعدته» (Bukhari 614)."
     },
     {
+      "id": "dua_after_adhan_shaarawy",
+      "kind": "dua",
+      "bundled": "dua_after_adhan_shaarawy",
+      "credit": "Sheikh Muhammad Metwalli Al-Shaarawy (supplication)",
+      "source": "https://archive.org/details/AD3YA---SHEKH---METOLLYAL---SHA3RAWY---MP3---Qass--nabwy--MP3",
+      "url": "https://archive.org/download/AD3YA---SHEKH---METOLLYAL---SHA3RAWY---MP3---Qass--nabwy--MP3/1.MP3",
+      "sha256": "e23caaf95d88e0db22541bb1e8c2e05c0943377c6597ee4f7f31ef62bbaefb49",
+      "checked": "Whisper transcript: «اللهم رب هذه الدعوة التامة والصلاة القائمة آت سيدنا محمدًا الوسيلة والفضيلة والدرجة الرفيعة وابعثه اللهم المقام المحمود الذي وعدته», then his own praise and salat on the Prophet. «والدرجة الرفيعة» is not in the narration of Bukhari 614."
+    },
+    {
       "id": "default_fajr",
       "kind": "fajr",
       "bundled": "adhan_fajr",
-      "title": {"ar": "مشاري راشد العفاسي (الفجر)", "en": "Mishary Rashid Alafasy (Fajr)"},
-      "place": {"ar": "مقام الحجاز", "en": "Maqam Hijaz"},
+      "title": {
+        "ar": "مشاري راشد العفاسي (الفجر)",
+        "en": "Mishary Rashid Alafasy (Fajr)"
+      },
+      "place": {
+        "ar": "مقام الحجاز",
+        "en": "Maqam Hijaz"
+      },
       "credit": "Mishary Rashid Alafasy (recitation)",
       "source": "https://archive.org/details/adhan-call-to-prayer-mishary-rashid-alafasy-fajr-maqam-hijaz-hd-320-kbps-1",
       "url": "https://archive.org/download/adhan-call-to-prayer-mishary-rashid-alafasy-fajr-maqam-hijaz-hd-320-kbps-1/Adhan%20%28Call%20to%20prayer%29%20_%20Mishary%20Rashid%20Alafasy%20_%20Fajr%20_%20Maqam%20Hijaz%20%E1%B4%B4%E1%B4%B0%20%28320%20kbps%29%20%281%29.mp3",
@@ -42,8 +68,14 @@
     {
       "id": "egypt_harak",
       "kind": "regular",
-      "title": {"ar": "عبد الناصر حرك", "en": "Abdulnasser Harak"},
-      "place": {"ar": "مصر", "en": "Egypt"},
+      "title": {
+        "ar": "عبد الناصر حرك",
+        "en": "Abdulnasser Harak"
+      },
+      "place": {
+        "ar": "مصر",
+        "en": "Egypt"
+      },
       "credit": "Abdulnasser Harak (recitation); uploaded by Summernight",
       "source": "https://archive.org/details/adhan-from-egypt-abdulnasser-harak",
       "url": "https://archive.org/download/adhan-from-egypt-abdulnasser-harak/Adhan%20from%20Egypt%20Abdulnasser%20Harak.mp3",
@@ -53,8 +85,14 @@
     {
       "id": "nasser_alqatami",
       "kind": "regular",
-      "title": {"ar": "ناصر القطامي", "en": "Nasser Al-Qatami"},
-      "place": {"ar": "تسجيل استوديو", "en": "Studio recording"},
+      "title": {
+        "ar": "ناصر القطامي",
+        "en": "Nasser Al-Qatami"
+      },
+      "place": {
+        "ar": "تسجيل استوديو",
+        "en": "Studio recording"
+      },
       "credit": "Nasser Al-Qatami (recitation)",
       "source": "https://github.com/abodehq/Athan-MP3/tree/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds",
       "url": "https://raw.githubusercontent.com/abodehq/Athan-MP3/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds/Athan%20Nasser%20Alqatami.mp3",
@@ -64,8 +102,14 @@
     {
       "id": "makkah_ali_mullah_fajr",
       "kind": "fajr",
-      "title": {"ar": "علي ملا (فجر الحرم المكي)", "en": "Ali Mullah (Fajr, Makkah)"},
-      "place": {"ar": "المسجد الحرام، ٦ سبتمبر ٢٠١٣", "en": "The Grand Mosque, 6 September 2013"},
+      "title": {
+        "ar": "علي ملا (فجر الحرم المكي)",
+        "en": "Ali Mullah (Fajr, Makkah)"
+      },
+      "place": {
+        "ar": "المسجد الحرام، ٦ سبتمبر ٢٠١٣",
+        "en": "The Grand Mosque, 6 September 2013"
+      },
       "credit": "Sheikh Ali Mullah (recitation)",
       "source": "https://archive.org/details/MakkahFajrAdhan6913SheikhAliMullah",
       "url": "https://archive.org/download/MakkahFajrAdhan6913SheikhAliMullah/Makkah%20Fajr%20Adhan%206-9-13%20Sheikh%20Ali%20Mullah.mp3",
@@ -75,8 +119,14 @@
     {
       "id": "mansoor_zahrani_fajr",
       "kind": "fajr",
-      "title": {"ar": "منصور الزهراني (الفجر)", "en": "Mansoor Az-Zahrani (Fajr)"},
-      "place": {"ar": "تسجيل استوديو", "en": "Studio recording"},
+      "title": {
+        "ar": "منصور الزهراني (الفجر)",
+        "en": "Mansoor Az-Zahrani (Fajr)"
+      },
+      "place": {
+        "ar": "تسجيل استوديو",
+        "en": "Studio recording"
+      },
       "credit": "Mansoor Az-Zahrani (recitation)",
       "source": "https://github.com/abodehq/Athan-MP3/tree/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds",
       "url": "https://raw.githubusercontent.com/abodehq/Athan-MP3/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds/Athan%20Mansoor%20Az-Zahrani.mp3",
@@ -86,8 +136,14 @@
     {
       "id": "malek_chebae_fajr",
       "kind": "fajr",
-      "title": {"ar": "مالك شيباني (الفجر)", "en": "Malek Chebae (Fajr)"},
-      "place": {"ar": "تسجيل استوديو", "en": "Studio recording"},
+      "title": {
+        "ar": "مالك شيباني (الفجر)",
+        "en": "Malek Chebae (Fajr)"
+      },
+      "place": {
+        "ar": "تسجيل استوديو",
+        "en": "Studio recording"
+      },
       "credit": "Malek Chebae (recitation)",
       "source": "https://github.com/abodehq/Athan-MP3/tree/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds",
       "url": "https://raw.githubusercontent.com/abodehq/Athan-MP3/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds/Athan%20Al-fajer%20-%20Malek%20chebae.mp3",

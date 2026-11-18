@@ -628,6 +628,12 @@ class AppLocalizationsEn extends AppLocalizations {
       '\"O Allah, Lord of this perfect call…\" once the adhan ends.';
 
   @override
+  String get adhanDuaShaarawy => 'Sheikh Muhammad Metwalli Al-Shaarawy';
+
+  @override
+  String get adhanDuaMishary => 'Sheikh Mishary Rashid Alafasy';
+
+  @override
   String get adhanFajrVoices => 'Fajr adhan';
 
   @override
@@ -758,6 +764,13 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get settingsHapticsHint =>
       'A light tick for each count, a firmer one when a dhikr is done.';
+
+  @override
+  String get settingsWidgetSeconds => 'Seconds on the prayer widgets';
+
+  @override
+  String get settingsWidgetSecondsHint =>
+      'The home-screen widgets count the time left to the second. This uses a little battery while they are on screen.';
 
   @override
   String adhkarOnlyAfter(String prayers) {
@@ -1365,9 +1378,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get surahOrderCaption => 'Order';
-
-  @override
-  String get surahAyahsCaption => 'Ayahs';
 
   @override
   String get packStorageInfo =>

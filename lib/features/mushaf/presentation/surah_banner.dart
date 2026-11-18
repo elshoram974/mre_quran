@@ -27,6 +27,8 @@ class SurahBanner extends StatelessWidget {
     this.band,
     this.stroke,
     this.ink,
+    this.ayahCount,
+    this.fontFamily,
   });
 
   /// The surah.
@@ -52,6 +54,15 @@ class SurahBanner extends StatelessWidget {
   final Color? stroke;
   final Color? ink;
 
+  /// How many ayahs the reading shown counts in the surah; the app's own
+  /// (Hafs) count when null. Readings count some surahs differently.
+  final int? ayahCount;
+
+  /// The font the name is written in: the reading's own script, so a
+  /// picture of its ayahs is all in one hand. The app's Quran font when
+  /// null.
+  final String? fontFamily;
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
@@ -60,13 +71,18 @@ class SurahBanner extends StatelessWidget {
     final lines = stroke ?? scheme.primary.withValues(alpha: 0.8);
     // Line heights leave room for the Quran font's deep descenders, so the
     // caption never runs into the name above it.
-    TextStyle quran(double size, {required double height, double? opacity}) =>
-        TextStyle(
-          fontFamily: AppTokens.quranFontFamily,
-          fontSize: size,
-          height: height,
-          color: opacity == null ? writing : writing.withValues(alpha: opacity),
-        );
+    TextStyle quran(
+      double size, {
+      required double height,
+      double? opacity,
+      String family = AppTokens.quranFontFamily,
+    }) => TextStyle(
+      fontFamily: family,
+      fontSize: size,
+      height: height,
+      color: opacity == null ? writing : writing.withValues(alpha: opacity),
+    );
+    final count = ayahCount ?? surah.ayahCount;
     final revelation = surah.revelation == Revelation.meccan
         ? l10n.revelationMeccan
         : l10n.revelationMedinan;
@@ -97,12 +113,17 @@ class SurahBanner extends StatelessWidget {
                           Text(
                             l10n.surahTitle(surah.arabicName),
                             textScaler: TextScaler.noScaling,
-                            style: quran(22, height: 1.6),
+                            // The caption stays in the app's font: the
+                            // Mushaf fonts draw digits as ayah medallions.
+                            style: quran(
+                              22,
+                              height: 1.6,
+                              family: fontFamily ?? AppTokens.quranFontFamily,
+                            ),
                           ),
                           Text(
                             '$revelation · '
-                            '${number(surah.ayahCount)} '
-                            '${l10n.surahAyahsCaption}',
+                            '${l10n.selectionCount(count, number(count))}',
                             textScaler: TextScaler.noScaling,
                             style: quran(11, height: 1.3, opacity: 0.75),
                           ),

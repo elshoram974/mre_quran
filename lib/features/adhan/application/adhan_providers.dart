@@ -47,6 +47,26 @@ final adhanSupportedProvider = FutureProvider<bool>(
   (ref) => ref.watch(adhanPlatformProvider).isSupported(),
 );
 
+/// The announcement recordings, one for each prayer and the Friday prayer,
+/// as `res/raw/announce_<name>`.
+const List<String> adhanAnnouncements = [
+  'announce_fajr',
+  'announce_dhuhr',
+  'announce_asr',
+  'announce_maghrib',
+  'announce_isha',
+  'announce_jumuah',
+];
+
+/// Whether the app carries the announcement of every prayer. Until it does,
+/// the choice to announce the prayer is not offered: it would do nothing.
+final adhanAnnouncementsProvider = FutureProvider<bool>((ref) async {
+  final found = await ref
+      .watch(adhanPlatformProvider)
+      .bundled(adhanAnnouncements);
+  return found.length == adhanAnnouncements.length;
+});
+
 /// The voices the app knows about, the bundled one first.
 final adhanCatalogProvider = FutureProvider<List<AdhanVoice>>(
   (ref) => ref.watch(adhanCatalogSourceProvider).load(),
@@ -99,6 +119,7 @@ Future<AdhanAlertConfig> buildAdhanConfig({
     fajrVoicePath: await pathOf(settings.fajrVoiceId),
     announce: settings.announce,
     duaAfter: settings.duaAfter,
+    duaRecording: settings.dua.recording,
     stopWhenFlipped: settings.stopWhenFlipped,
     stopLabel: l10n.adhanStopAction,
     channelName: l10n.adhanChannelName,
@@ -335,6 +356,17 @@ class AdhanVoicesNotifier extends AsyncNotifier<VoicesState> {
                 : value.voiceId,
           ),
         );
+  }
+
+  /// Plays the dua after the adhan in [dua]'s voice, or stops it when it is
+  /// already playing.
+  Future<void> toggleListeningDua(AdhanDua dua) async {
+    final current = state.value;
+    if (current == null) return;
+    final id = 'dua:${dua.name}';
+    if (current.listening == id) return stopListening();
+    _update((state) => state.copyWith(listening: id));
+    await _platform.preview(RawPreview(dua.recording));
   }
 
   /// Plays the picked file, or stops it when it is already playing.

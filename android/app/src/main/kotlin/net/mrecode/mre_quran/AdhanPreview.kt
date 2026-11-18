@@ -12,7 +12,7 @@ internal class AdhanPreview(
 ) {
     private var player: MediaPlayer? = null
 
-    /** Starts [source] (kind: bundled, file or stream), replacing any preview. */
+    /** Starts [source] (kind: bundled, raw, file or stream), replacing any preview. */
     fun start(source: JSONObject) {
         stop()
         val attributes = AdhanAudio.attributesForPreview()
@@ -20,6 +20,7 @@ internal class AdhanPreview(
             when (source.getString("kind")) {
                 "bundled" -> begin(AdhanAudio.bundled(context, attributes, source.optBoolean("fajr", false)))
                 "file" -> begin(AdhanAudio.savedFile(context, source.getString("path"), attributes))
+                "raw" -> begin(AdhanAudio.raw(context, source.getString("name"), attributes))
                 else -> stream(source, attributes)
             }
         } catch (_: Exception) {

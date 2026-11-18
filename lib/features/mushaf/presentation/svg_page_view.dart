@@ -462,6 +462,40 @@ class _SvgArtwork extends StatelessWidget {
     },
   );
 
+  /// The line of the basmala that opens the surah of [region], when it is
+  /// the surah's first ayah: a surah's basmala belongs to no ayah region,
+  /// yet it is chosen, highlighted and tapped with its first ayah. Al-Fatiha
+  /// (whose basmala is its first ayah) and At-Tawbah (which has none) have
+  /// none, nor a reading that counts the basmala into the first ayah's
+  /// region already (its name then lies inside that region).
+  AyahRegion? _basmalaOf(AyahRegion region) {
+    final ref = region.ref;
+    if (ref.ayah != 1 || ref.surah == 1 || ref.surah == 9) return null;
+    final layout = page.layout;
+    final top = region.bounds.top;
+    for (final title in page.titles) {
+      if (title.surah == ref.surah && title.box.top >= top) return null;
+    }
+    final width = pageBoxWidth(layout.viewBox);
+    final pitch = pageBoxHeight(layout.viewBox) / SvgPageLayout.printedLines;
+    final middle = layout.viewBox.left + width / 2;
+    final half = width * _basmalaHalfWidth;
+    return AyahRegion(
+      ref: ref,
+      rings: [
+        [
+          (x: middle - half, y: top - pitch),
+          (x: middle + half, y: top - pitch),
+          (x: middle + half, y: top),
+          (x: middle - half, y: top),
+        ],
+      ],
+    );
+  }
+
+  /// Half the width a basmala's line takes, as a share of the page's width.
+  static const double _basmalaHalfWidth = 0.37;
+
   /// The frame of [title], around the name the page prints: as tall as the
   /// name with a margin, across the page, and moved with the name's line
   /// as far as spreading moves it.
@@ -539,11 +573,18 @@ class _SvgArtwork extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final layout = page.layout;
     final content = layout.content;
-    AyahRef? ayahAt(Offset position) => layout.ayahAt(
-      content.left + position.dx / scale,
+    AyahRef? ayahAt(Offset position) {
+      final x = content.left + position.dx / scale;
       // Spreading moves a line as far as stretching the page would.
-      content.top + position.dy / scale / stretch,
-    );
+      final y = content.top + position.dy / scale / stretch;
+      if (layout.ayahAt(x, y) case final ayah?) return ayah;
+      // A basmala belongs to the ayah it opens.
+      for (final region in layout.regions) {
+        if (_basmalaOf(region)?.contains(x, y) ?? false) return region.ref;
+      }
+      return null;
+    }
+
     // Each layer's view box is the visible part of the page, so it simply
     // fills the sheet.
     Widget layer(Uint8List compiled, Color color) => Positioned.fill(
@@ -598,8 +639,11 @@ class _SvgArtwork extends StatelessWidget {
                           ),
                       if (selected case final range?)
                         for (final region in layout.regions)
-                          if (range.contains(region.ref))
+                          if (range.contains(region.ref)) ...[
                             (region: region, color: colors.highlight),
+                            if (_basmalaOf(region) case final basmala?)
+                              (region: basmala, color: colors.highlight),
+                          ],
                     ],
                   ),
                 ),

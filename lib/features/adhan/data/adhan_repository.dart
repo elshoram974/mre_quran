@@ -22,6 +22,7 @@ class LocalAdhanRepository implements AdhanRepository {
   static const _fajrVoiceKey = 'adhan.fajrVoice';
   static const _announceKey = 'adhan.announce';
   static const _duaKey = 'adhan.duaAfter';
+  static const _duaVoiceKey = 'adhan.duaVoice';
   static const _playKey = 'adhan.play';
   static const _flipKey = 'adhan.flip';
   static const _customPathKey = 'adhan.customPath';
@@ -37,6 +38,7 @@ class LocalAdhanRepository implements AdhanRepository {
           AdhanVoice.defaultFajrId,
       announce: await _preferences.getBool(_announceKey) ?? defaults.announce,
       duaAfter: await _preferences.getBool(_duaKey) ?? defaults.duaAfter,
+      dua: AdhanDua.parse(await _preferences.getString(_duaVoiceKey)),
       playAdhan: await _preferences.getBool(_playKey) ?? defaults.playAdhan,
       stopWhenFlipped:
           await _preferences.getBool(_flipKey) ?? defaults.stopWhenFlipped,
@@ -51,6 +53,7 @@ class LocalAdhanRepository implements AdhanRepository {
     await _preferences.setString(_fajrVoiceKey, settings.fajrVoiceId);
     await _preferences.setBool(_announceKey, settings.announce);
     await _preferences.setBool(_duaKey, settings.duaAfter);
+    await _preferences.setString(_duaVoiceKey, settings.dua.name);
     await _preferences.setBool(_playKey, settings.playAdhan);
     await _preferences.setBool(_flipKey, settings.stopWhenFlipped);
     final path = settings.customPath;

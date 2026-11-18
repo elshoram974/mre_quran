@@ -248,6 +248,8 @@ void main() {
         '\u200F﴿${text.uthmani(const AyahRef(2, 285))} (٢٨٥) '
         '${text.uthmani(const AyahRef(2, 286))} (٢٨٦)﴾\n'
         '\u200F[البقرة: ٢٨٥–٢٨٦ · صفحة ٤٩]\n'
+        // Al Imran is shared from its first ayah: its basmala comes first.
+        '\u200F${text.basmala}\n'
         '\u200F﴿${text.uthmani(const AyahRef(3, 1))} (١) '
         '${text.uthmani(const AyahRef(3, 2))} (٢)﴾\n'
         '\u200F[آل عمران: ١–٢ · صفحة ٥٠]',

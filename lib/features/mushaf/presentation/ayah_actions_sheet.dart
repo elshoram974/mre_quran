@@ -84,7 +84,10 @@ class AyahPreview extends ConsumerWidget {
                   maxLines: 1,
                   softWrap: false,
                   overflow: TextOverflow.fade,
-                  textAlign: TextAlign.center,
+                  // From its first word: a short ayah is centred by the
+                  // column, a long one shows its beginning and fades at its
+                  // end.
+                  textAlign: TextAlign.start,
                   style: TextStyle(
                     fontFamily: text.fontFamily,
                     fontSize: 22,

@@ -27,6 +27,7 @@ void main() {
         {'name': 'الظهر', 'time': '١٢:٠٠'},
       ],
       'rtl': true,
+      'seconds': false,
     });
   });
 

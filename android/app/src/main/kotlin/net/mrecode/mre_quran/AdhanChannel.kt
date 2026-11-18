@@ -30,6 +30,12 @@ internal class AdhanChannel(private val activity: Activity, messenger: BinaryMes
             val arguments = call.arguments as? Map<String, Any?>
             when (call.method) {
                 "isSupported" -> result.success(true)
+                // Which of the named recordings the app carries.
+                "bundled" -> result.success(
+                    (arguments!!["names"] as List<*>).map { it as String }.filter {
+                        context.resources.getIdentifier(it, "raw", context.packageName) != 0
+                    },
+                )
                 "takeLaunchPayload" -> {
                     dartListening = true
                     result.success(pendingPayload)

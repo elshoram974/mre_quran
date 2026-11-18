@@ -54,16 +54,16 @@
         "ar": "مصر",
         "en": "Egypt"
       },
-      "bytes": 2616292,
-      "sha256": "8183c49cfaed2d34364a28e55d743385469d6c402a0607dbc2e32b5fec14590b",
+      "bytes": 4323885,
+      "sha256": "38a60f60e31b87fd6ea52886faeb4d3e97ad151a85dd4ff8a0fd335c00d4c648",
       "source": "https://archive.org/details/adhan-from-egypt-abdulnasser-harak",
       "license": {
         "name": "Permission pending",
         "url": "https://archive.org/details/adhan-from-egypt-abdulnasser-harak"
       },
       "credit": "Abdulnasser Harak (recitation); uploaded by Summernight",
-      "url": "https://cdn.jsdelivr.net/gh/elshoram974/mushafi-media@v1/adhan/egypt_harak.m4a",
-      "extension": "m4a"
+      "url": "https://archive.org/download/adhan-from-egypt-abdulnasser-harak/Adhan%20from%20Egypt%20Abdulnasser%20Harak.mp3",
+      "extension": "mp3"
     },
     {
       "id": "nasser_alqatami",
@@ -76,16 +76,16 @@
         "ar": "تسجيل استوديو",
         "en": "Studio recording"
       },
-      "bytes": 1697947,
-      "sha256": "600b972bb3c5f53b568b2dfd66d8d4a4c789fb4c8a31f47d9ddc47e68580df97",
+      "bytes": 1119975,
+      "sha256": "b30f4e2c44d6fcb975d2c2f797590dfb11061b11ab7e8fc5d2cdb3ea86b92fbe",
       "source": "https://github.com/abodehq/Athan-MP3/tree/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds",
       "license": {
         "name": "Permission pending",
         "url": "https://github.com/abodehq/Athan-MP3/tree/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds"
       },
       "credit": "Nasser Al-Qatami (recitation)",
-      "url": "https://cdn.jsdelivr.net/gh/elshoram974/mushafi-media@v1/adhan/nasser_alqatami.m4a",
-      "extension": "m4a"
+      "url": "https://raw.githubusercontent.com/abodehq/Athan-MP3/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds/Athan%20Nasser%20Alqatami.mp3",
+      "extension": "mp3"
     },
     {
       "id": "makkah_ali_mullah_fajr",
@@ -98,16 +98,16 @@
         "ar": "المسجد الحرام، ٦ سبتمبر ٢٠١٣",
         "en": "The Grand Mosque, 6 September 2013"
       },
-      "bytes": 2936610,
-      "sha256": "644c3b8a1c60c789d5b3eabf21b0200c3eb0ecaddae7930eebd028664817c25d",
+      "bytes": 2911537,
+      "sha256": "da68a48100834caa577eee544fd367380d1a74494c3f2fc23e2c3e3b2b67a9ec",
       "source": "https://archive.org/details/MakkahFajrAdhan6913SheikhAliMullah",
       "license": {
         "name": "Permission pending",
         "url": "https://archive.org/details/MakkahFajrAdhan6913SheikhAliMullah"
       },
       "credit": "Sheikh Ali Mullah (recitation)",
-      "url": "https://cdn.jsdelivr.net/gh/elshoram974/mushafi-media@v1/adhan/makkah_ali_mullah_fajr.m4a",
-      "extension": "m4a"
+      "url": "https://archive.org/download/MakkahFajrAdhan6913SheikhAliMullah/Makkah%20Fajr%20Adhan%206-9-13%20Sheikh%20Ali%20Mullah.mp3",
+      "extension": "mp3"
     },
     {
       "id": "mansoor_zahrani_fajr",
@@ -120,16 +120,16 @@
         "ar": "تسجيل استوديو",
         "en": "Studio recording"
       },
-      "bytes": 2334044,
-      "sha256": "8c231212c2496d66624c0fcdda9eda66e6c3c103b80e886e371e7db3bade6506",
+      "bytes": 1532448,
+      "sha256": "b4d596a8d60f3120ed6a3d0709dd63cd589b35d4bcc9a792bfc74da80f2a14f2",
       "source": "https://github.com/abodehq/Athan-MP3/tree/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds",
       "license": {
         "name": "Permission pending",
         "url": "https://github.com/abodehq/Athan-MP3/tree/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds"
       },
       "credit": "Mansoor Az-Zahrani (recitation)",
-      "url": "https://cdn.jsdelivr.net/gh/elshoram974/mushafi-media@v1/adhan/mansoor_zahrani_fajr.m4a",
-      "extension": "m4a"
+      "url": "https://raw.githubusercontent.com/abodehq/Athan-MP3/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds/Athan%20Mansoor%20Az-Zahrani.mp3",
+      "extension": "mp3"
     },
     {
       "id": "malek_chebae_fajr",
@@ -142,16 +142,16 @@
         "ar": "تسجيل استوديو",
         "en": "Studio recording"
       },
-      "bytes": 3047630,
-      "sha256": "8df72cb6916f56f78a89a6a6f5129f977017185fffdaa283590422066d7ca603",
+      "bytes": 2008922,
+      "sha256": "89580ee0304ba7812822ba3b2de0cf4a0534bb4a1ee9220c5c98f9075da318c6",
       "source": "https://github.com/abodehq/Athan-MP3/tree/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds",
       "license": {
         "name": "Permission pending",
         "url": "https://github.com/abodehq/Athan-MP3/tree/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds"
       },
       "credit": "Malek Chebae (recitation)",
-      "url": "https://cdn.jsdelivr.net/gh/elshoram974/mushafi-media@v1/adhan/malek_chebae_fajr.m4a",
-      "extension": "m4a"
+      "url": "https://raw.githubusercontent.com/abodehq/Athan-MP3/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds/Athan%20Al-fajer%20-%20Malek%20chebae.mp3",
+      "extension": "mp3"
     }
   ]
 }

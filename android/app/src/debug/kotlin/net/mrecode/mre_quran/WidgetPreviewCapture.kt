@@ -29,7 +29,8 @@ class WidgetPreviewCapture : Activity() {
         Shot(R.layout.prayer_widget, "prayer_widget_preview", 172, 72),
         Shot(R.layout.prayer_schedule_widget, "prayer_schedule_widget_preview", 172, 200),
         Shot(R.layout.adhkar_widget, "adhkar_widget_preview", 172, 72),
-        Shot(R.layout.tasbih_widget, "tasbih_widget_preview", 76, 76),
+        Shot(R.layout.tasbih_widget, "tasbih_widget_preview", 172, 72),
+        Shot(R.layout.prayer_card_widget, "prayer_card_widget_preview", 330, 160),
     )
 
     private val stage by lazy { FrameLayout(this) }

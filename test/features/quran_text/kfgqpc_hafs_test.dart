@@ -46,6 +46,18 @@ void main() {
     );
   });
 
+  test('every ayah number is one medallion: 2:286, which the source writes '
+      'as two glyphs, is its Arabic-Indic digits', () {
+    expect(text.mark(const AyahRef(2, 286)), '٢٨٦');
+    for (final surah in metadata.surahs) {
+      for (var ayah = 1; ayah <= surah.ayahCount; ayah++) {
+        final ref = AyahRef(surah.number, ayah);
+        if (ref == const AyahRef(2, 286)) continue;
+        expect(text.mark(ref)!.runes, hasLength(1), reason: '$ref');
+      }
+    }
+  });
+
   group('King Fahd Complex data', () {
     test('the bundled file and font match their recorded SHA-256', () {
       expect(
