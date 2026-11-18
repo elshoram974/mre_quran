@@ -265,7 +265,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get widgetPrayerScheduleDescription =>
-      'Today\'s prayers, sunrise and the time remaining for each upcoming prayer. Smaller sizes automatically show upcoming prayers.';
+      'Today\'s prayers, sunrise and the time until the next prayer. Smaller sizes automatically show upcoming prayers.';
 
   @override
   String get widgetScheduleSettings => 'Prayer times widget settings';
@@ -294,7 +294,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get widgetScheduleDate => 'Show Gregorian and Hijri dates';
 
   @override
-  String get widgetScheduleCountdown => 'Time remaining for each prayer';
+  String get widgetScheduleCountdown => 'Time until the next prayer';
 
   @override
   String get widgetScheduleLargeText => 'Larger text';

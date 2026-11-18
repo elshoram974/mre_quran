@@ -5,16 +5,12 @@ import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.content.Context
-import android.content.res.Configuration
 import android.content.Intent
 import android.os.Build
 import android.os.SystemClock
 import android.view.View
 import android.widget.RemoteViews
 import org.json.JSONObject
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 /** Draws the three prayer widgets from the data the app last sent. */
 internal object PrayerWidgetRenderer {
@@ -246,32 +242,37 @@ internal object PrayerWidgetRenderer {
         height: Int,
         options: Map<String, Boolean>,
     ): RemoteViews {
-        val short = height in 1..89
         val largerText = options["largeText"] == true
         val showCountdown = options["showCountdown"] != false
-        // Inline durations keep the complete day readable in the usual 2x2
-        // space. For narrow, short or large-text layouts, give each row a
-        // second line and show fewer upcoming prayers when necessary.
-        val inline = showCountdown && width >= 130 && height >= 130 && !largerText &&
-            !(model?.seconds == true && width < 170)
-        val upcoming = short || options["upcomingOnly"] == true ||
-            (showCountdown && !inline && height in 1..199) ||
-            (largerText && height in 1..209)
-        val showDate = options["showDate"] != false &&
-            height >= if (showCountdown && !inline && !upcoming) 200 else 150
-        val upcomingCount = if (height in 1..79 && (showCountdown || largerText)) 2 else 3
-        val views = scheduleViews(context, model, now, width, inline, upcoming, upcomingCount, showDate, options)
+        val fontScale = context.resources.configuration.fontScale.coerceAtLeast(1f)
+        val availableHeight = height / fontScale
+        val minimumDayHeight = (if (largerText) 120 else 96) + (if (showCountdown) 14 else 0)
+        val upcoming = options["upcomingOnly"] == true || (height > 0 && availableHeight < minimumDayHeight)
+        val showDate = options["showDate"] != false && availableHeight >= maxOf(150, minimumDayHeight + 38)
+        val upcomingCount = if (availableHeight in 1f..69f && (showCountdown || largerText)) 2 else 3
+        val views = scheduleViews(context, model, now, upcoming, upcomingCount, showDate, options)
         HomeWidgets.applyBackground(context, views, R.id.schedule_root)
         if (!showDate) WidgetScale.padding(context, views, R.id.schedule_body, 4f, 2f, 1f)
-        val scale = WidgetScale.of(width, height, 140f, 150f)
+        // Leave room for both calendar lines and the next prayer's extra line
+        // before enlarging the whole timetable on a wide launcher grid.
+        val baseHeight = when {
+            largerText && showDate -> 185f
+            showDate -> 165f
+            else -> 150f
+        }
+        val scale = WidgetScale.of(width, height, 140f, baseHeight)
         WidgetScale.text(views, R.id.schedule_date, 11f, scale)
         WidgetScale.text(views, R.id.schedule_hijri, 10f, scale)
-        val rowSize = if (largerText) 14f else if (short) 11f else if (showDate && height <= 160) 11f else 12f
+        val rowSize = when {
+            largerText -> 14f
+            !upcoming && (availableHeight <= 120 || (showDate && availableHeight <= 160)) -> 11f
+            else -> 12f
+        }
         for (index in rowIds.indices) {
             WidgetScale.text(views, nameIds[index], rowSize, scale)
             WidgetScale.text(views, timeIds[index], rowSize, scale)
-            WidgetScale.text(views, remainingIds[index], if (upcoming) 11f else 10f, scale)
-            WidgetScale.text(views, secondsIds[index], if (upcoming) 11f else 10f, scale)
+            WidgetScale.text(views, remainingIds[index], if (largerText) 13f else 11f, scale)
+            WidgetScale.text(views, secondsIds[index], if (largerText) 13f else 11f, scale)
         }
         return views
     }
@@ -280,14 +281,12 @@ internal object PrayerWidgetRenderer {
         context: Context,
         model: WidgetModel?,
         now: Long,
-        width: Int,
-        inline: Boolean,
         upcoming: Boolean,
         upcomingCount: Int,
         showDate: Boolean,
         options: Map<String, Boolean>,
     ): RemoteViews {
-        val views = RemoteViews(context.packageName, if (inline) R.layout.prayer_schedule_inline_widget else R.layout.prayer_schedule_widget)
+        val views = RemoteViews(context.packageName, R.layout.prayer_schedule_widget)
         val day = model?.dayAt(now)
         if (model == null || day == null) {
             views.setTextViewText(R.id.schedule_date, context.getString(R.string.prayer_widget_name))
@@ -309,36 +308,19 @@ internal object PrayerWidgetRenderer {
             } else {
                 day.rows.filter { it.isPrayer || options["showSunrise"] != false }
             }
-            val compactTime = if (width in 1..139 || (inline && width < 200)) SimpleDateFormat("H:mm", Locale.ROOT) else null
-            val locale = if (model.rtl) Locale.forLanguageTag("ar") else Locale.ENGLISH
-            val configuration = Configuration(context.resources.configuration).apply { setLocale(locale) }
-            val localized = context.createConfigurationContext(configuration)
             rowIds.forEachIndexed { index, rowId ->
                 val row = rows.getOrNull(index)
                 views.setViewVisibility(rowId, if (row == null) View.GONE else View.VISIBLE)
                 if (row == null) return@forEachIndexed
                 val coming = next != null && row.isPrayer && row.id == next.id &&
                     (row.at == next.at || (!upcoming && tomorrow))
-                val at = if (coming) next!!.at else row.at
-                val time = if (compactTime != null) {
-                    digits(compactTime.format(Date(at)), model.arabicDigits)
-                } else if (coming) next!!.time else row.time
                 views.setTextViewText(nameIds[index], row.name)
-                views.setTextViewText(timeIds[index], time)
+                views.setTextViewText(timeIds[index], if (coming) next!!.time else row.time)
                 val textColor = context.getColor(if (row.isPrayer) R.color.widget_text else R.color.widget_text_muted)
                 views.setTextColor(nameIds[index], textColor)
                 views.setTextColor(timeIds[index], textColor)
-                val remainingVisible = options["showCountdown"] != false && row.isPrayer && at > now
-                if (remainingVisible) {
-                    val target = if (coming) next!! else row
-                    if (inline && !model.seconds) {
-                        views.setViewVisibility(remainingIds[index], View.VISIBLE)
-                        views.setViewVisibility(secondsIds[index], View.GONE)
-                        views.setTextViewText(remainingIds[index], shortRemaining(localized, model, target.at - now))
-                        views.setContentDescription(remainingIds[index], remaining(model, target.at - now))
-                    } else {
-                        countdown(views, remainingIds[index], secondsIds[index], model, target, now)
-                    }
+                if (coming && options["showCountdown"] != false) {
+                    countdown(views, remainingIds[index], secondsIds[index], model, next!!, now)
                 } else {
                     views.setViewVisibility(remainingIds[index], View.GONE)
                     views.setViewVisibility(secondsIds[index], View.GONE)
@@ -359,18 +341,6 @@ internal object PrayerWidgetRenderer {
 
     private fun remaining(model: WidgetModel, millis: Long): String =
         String.format(model.labels.remaining, span(model, millis))
-
-    /** A compact duration for a row; its accessibility label stays explicit. */
-    private fun shortRemaining(context: Context, model: WidgetModel, millis: Long): String {
-        val minutes = (millis / MINUTE).coerceAtLeast(1)
-        val hours = minutes / 60
-        val minuteText = digits((minutes % 60).toString(), model.arabicDigits)
-        return if (hours > 0) {
-            context.getString(R.string.widget_short_hours, digits(hours.toString(), model.arabicDigits), minuteText)
-        } else {
-            context.getString(R.string.widget_short_minutes, minuteText)
-        }
-    }
 
     /** A length of time in hours and minutes, in the app's words and digits. */
     private fun span(model: WidgetModel, millis: Long): String {

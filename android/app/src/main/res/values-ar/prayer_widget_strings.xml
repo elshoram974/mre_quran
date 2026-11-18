@@ -36,11 +36,4 @@
     <string name="tasbih_widget_preview_count">٣٣</string>
     <string name="prayer_card_widget_name">بطاقة الصلاة</string>
     <string name="prayer_card_widget_description">الصلاة القادمة والوقت المتبقي لها، وصلوات اليوم الخمس.</string>
-
-    <string name="widget_short_hours">بعد %1$sس %2$sد</string>
-    <string name="widget_short_minutes">بعد %1$sد</string>
-    <string name="widget_preview_remaining_2">بعد ١س ٢٤د</string>
-    <string name="widget_preview_remaining_3">بعد ٤س ٤٢د</string>
-    <string name="widget_preview_remaining_4">بعد ٧س ١٢د</string>
-    <string name="widget_preview_remaining_5">بعد ٨س ٢٩د</string>
 </resources>

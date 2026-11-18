@@ -260,7 +260,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get widgetPrayerScheduleDescription =>
-      'صلوات اليوم والشروق والوقت المتبقي لكل صلاة قادمة. في المقاس الصغير تظهر الصلوات القادمة تلقائيًا.';
+      'صلوات اليوم والشروق والوقت المتبقي للصلاة القادمة. في المقاس الصغير تظهر الصلوات القادمة تلقائيًا.';
 
   @override
   String get widgetScheduleSettings => 'إعدادات ويدجت المواقيت';
@@ -289,7 +289,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get widgetScheduleDate => 'إظهار التاريخ الميلادي والهجري';
 
   @override
-  String get widgetScheduleCountdown => 'الوقت المتبقي لكل صلاة';
+  String get widgetScheduleCountdown => 'الوقت المتبقي للصلاة القادمة';
 
   @override
   String get widgetScheduleLargeText => 'خط أكبر';

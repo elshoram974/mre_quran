@@ -569,7 +569,7 @@ abstract class AppLocalizations {
   /// No description provided for @widgetPrayerScheduleDescription.
   ///
   /// In en, this message translates to:
-  /// **'Today\'s prayers, sunrise and the time remaining for each upcoming prayer. Smaller sizes automatically show upcoming prayers.'**
+  /// **'Today\'s prayers, sunrise and the time until the next prayer. Smaller sizes automatically show upcoming prayers.'**
   String get widgetPrayerScheduleDescription;
 
   /// No description provided for @widgetScheduleSettings.
@@ -623,7 +623,7 @@ abstract class AppLocalizations {
   /// No description provided for @widgetScheduleCountdown.
   ///
   /// In en, this message translates to:
-  /// **'Time remaining for each prayer'**
+  /// **'Time until the next prayer'**
   String get widgetScheduleCountdown;
 
   /// No description provided for @widgetScheduleLargeText.

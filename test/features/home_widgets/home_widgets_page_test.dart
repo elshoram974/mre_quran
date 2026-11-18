@@ -136,7 +136,7 @@ void main() {
       ),
       findsOneWidget,
     );
-    expect(find.textContaining('time remaining for each upcoming prayer'), findsOneWidget);
+    expect(find.textContaining('time until the next prayer'), findsOneWidget);
   });
 
   testWidgets('schedule choices save and remain visible in the app', (

@@ -37,11 +37,4 @@
     <string name="tasbih_widget_preview_count">33</string>
     <string name="prayer_card_widget_name">Prayer card</string>
     <string name="prayer_card_widget_description">The coming prayer with the time left, and the day\'s five prayers.</string>
-
-    <string name="widget_short_hours">+%1$sh%2$sm</string>
-    <string name="widget_short_minutes">+%1$sm</string>
-    <string name="widget_preview_remaining_2">+1h24m</string>
-    <string name="widget_preview_remaining_3">+4h42m</string>
-    <string name="widget_preview_remaining_4">+7h12m</string>
-    <string name="widget_preview_remaining_5">+8h29m</string>
 </resources>

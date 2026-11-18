@@ -208,6 +208,7 @@ private struct CardView: View {
   }
 }
 private struct ScheduleView: View {
+  @ScaledMetric(relativeTo: .caption2) private var countdownHeight: CGFloat = 14
   @Environment(\.widgetFamily) private var family
   let entry: Entry
   var body: some View {
@@ -219,46 +220,59 @@ private struct ScheduleView: View {
         let showSunrise = options["showSunrise"] as? Bool ?? true
         let showDate = options["showDate"] as? Bool ?? true
         let showCountdown = options["showCountdown"] as? Bool ?? true
-        let upcoming = (options["upcomingOnly"] as? Bool ?? false) ||
-          (family == .systemSmall && (largeText || showCountdown))
         let next = data.next(entry.date)
-        let tomorrow = !day.rows.contains { $0.id != "sunrise" && $0.at > entry.date }
-        let rows = upcoming
-          ? Array(data.days.flatMap(\.rows).filter { $0.id != "sunrise" && $0.at > entry.date }.sorted { $0.at < $1.at }.prefix(3))
-          : day.rows.filter { $0.id != "sunrise" || showSunrise }
+        let today = day.rows.filter { $0.id != "sunrise" || showSunrise }
+        let upcoming = Array(data.days.flatMap(\.rows)
+          .filter { $0.id != "sunrise" && $0.at > entry.date }
+          .sorted { $0.at < $1.at }.prefix(3))
+        let afterLastPrayer = !day.rows.contains { $0.id != "sunrise" && $0.at > entry.date }
         VStack(alignment: .leading, spacing: family == .systemLarge ? 6 : 1) {
           if showDate {
             HStack(spacing: 4) {
-              Text(day.date).font(.caption2.weight(.bold)).lineLimit(1)
-              Text(day.hijri).font(.caption2).foregroundStyle(.secondary).lineLimit(1)
-            }
+              Text(day.date).bold().layoutPriority(1)
+              Text(day.hijri).foregroundStyle(.secondary)
+            }.font(.caption2).lineLimit(1)
           }
-          ForEach(rows) { row in
-            let coming = row.id != "sunrise" && row.id == next?.id && (row.at == next?.at || (!upcoming && tomorrow))
-            let at = coming ? (next?.at ?? row.at) : row.at
-            VStack(alignment: .leading, spacing: 0) {
-              HStack(spacing: 12) {
-                Text(row.name)
-                Text(coming ? (next?.time ?? row.time) : row.time).monospacedDigit()
-                Spacer(minLength: 0)
-                if family != .systemSmall, showCountdown, row.id != "sunrise", at > entry.date {
-                  TimeLeft(data: data, at: at, now: entry.date)
-                    .font(.caption2).foregroundStyle(.secondary)
-                }
-              }.font(family == .systemLarge ? .body : .system(size: largeText ? 15 : 12))
-              if family == .systemSmall, showCountdown, row.id != "sunrise", at > entry.date {
-                TimeLeft(data: data, at: at, now: entry.date)
-                  .font(.caption2).foregroundStyle(.secondary)
-              }
-            }
-            .lineLimit(1)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-            .background(RoundedRectangle(cornerRadius: 6).fill(coming ? Color.primary.opacity(0.1) : .clear))
+          GeometryReader { space in
+            let spacing: CGFloat = family == .systemLarge ? 6 : 1
+            let rowHeight: CGFloat = family == .systemLarge ? 22 : (largeText ? 19 : 15)
+            let dayHeight = CGFloat(today.count) * rowHeight + CGFloat(max(0, today.count - 1)) * spacing
+              + (showCountdown && next != nil ? countdownHeight : 0)
+            let useUpcoming = options["upcomingOnly"] as? Bool == true || space.size.height < dayHeight
+            scheduleRows(useUpcoming ? upcoming : today, data: data, next: next,
+                         afterLastPrayer: !useUpcoming && afterLastPrayer,
+                         largeText: largeText, showCountdown: showCountdown)
           }
-        }.frame(maxWidth:.infinity,maxHeight:.infinity,alignment:.leading)
+        }.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
       } else { Empty() }
     }.environment(\.layoutDirection, (data?.rtl ?? (systemIsArabic)) ? .rightToLeft : .leftToRight)
       .widgetURL(URL(string:"mrequran://mre-quran/prayer-times"))
+  }
+
+  private func scheduleRows(_ rows: [Row], data: Payload, next: Row?, afterLastPrayer: Bool,
+                            largeText: Bool, showCountdown: Bool) -> some View {
+    VStack(spacing: family == .systemLarge ? 6 : 1) {
+      ForEach(rows) { row in
+        let coming = row.id == next?.id && (row.at == next?.at || afterLastPrayer)
+        VStack(spacing: 0) {
+          if coming, showCountdown, let next {
+            TimeLeft(data: data, at: next.at, now: entry.date)
+              .font(.caption2).foregroundStyle(.secondary)
+              .fixedSize(horizontal: true, vertical: false)
+          }
+          HStack(spacing: 4) {
+            Text(row.name)
+            Spacer(minLength: 0)
+            Text(coming ? (next?.time ?? row.time) : row.time).monospacedDigit().bold()
+          }.font(family == .systemLarge ? .body : .system(size: largeText ? 15 : 12))
+        }
+        .lineLimit(1)
+        .padding(.horizontal, 4)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(RoundedRectangle(cornerRadius: 6).fill(coming ? Color.primary.opacity(0.1) : .clear))
+        .accessibilityElement(children: .combine)
+      }
+    }
   }
 }
 private struct AdhkarEntry: TimelineEntry { let date: Date; let payload: AdhkarPayload? }
