@@ -7,6 +7,7 @@ import 'package:mre_quran/core/l10n/l10n.dart';
 import 'package:mre_quran/core/theme/app_theme.dart';
 import 'package:mre_quran/features/mushaf/domain/mushaf_edition.dart';
 import 'package:mre_quran/features/mushaf/presentation/ayah_actions_sheet.dart';
+import 'package:mre_quran/features/mushaf/presentation/tafsir_sheet.dart';
 import 'package:mre_quran/features/quran_index/application/quran_metadata_provider.dart';
 import 'package:mre_quran/features/quran_index/domain/quran_metadata.dart';
 import 'package:mre_quran/features/quran_text/application/quran_text_providers.dart';
@@ -179,6 +180,11 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.textContaining('البقرة · آية ٢٥٧'), findsOneWidget);
     expect(find.textContaining('[257]', findRichText: true), findsOneWidget);
+    // In RTL the previous ayah is reached by swiping toward the start.
+    await tester.drag(find.byType(PageView), const Offset(-350, 0));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('البقرة · آية ٢٥٦'), findsOneWidget);
+    expect(find.textContaining('[256]', findRichText: true), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -216,5 +222,56 @@ void main() {
     await tester.tap(find.text('open'));
     await tester.pumpAndSettle();
     expect(find.text('التفسير'), findsNothing);
+  });
+
+  testWidgets('English tafsir swipes with large text on an expanded screen', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1000, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final container = _container();
+    addTearDown(container.dispose);
+    final text = await tester.runAsync(
+      () => container.read(quranTextProvider.future),
+    ) as QuranText;
+    for (final ayah in const [AyahRef(2, 256), AyahRef(2, 257)]) {
+      await tester.runAsync(
+        () => container.read(
+          readingTafsirProvider((MushafEditions.hafs, ayah)).future,
+        ),
+      );
+    }
+    final scroll = ScrollController();
+    addTearDown(scroll.dispose);
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp(
+          theme: AppTheme.dark,
+          locale: const Locale('en'),
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: appLocalizationsDelegates,
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context)
+                .copyWith(textScaler: const TextScaler.linear(2)),
+            child: child!,
+          ),
+          home: Scaffold(
+            body: TafsirSheet(
+              edition: MushafEditions.hafs,
+              text: HafsAyahTexts(text, fontFamily: 'KfgqpcHafs'),
+              initial: const AyahRef(2, 256),
+              scroll: scroll,
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.drag(find.byType(PageView), const Offset(-600, 0));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('٢٥٧'), findsWidgets);
+    expect(tester.takeException(), isNull);
   });
 }

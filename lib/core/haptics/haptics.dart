@@ -1,3 +1,6 @@
+import 'package:flutter/services.dart';
+
+import '../diagnostics/app_logger.dart';
 import 'platform_haptics.dart';
 
 /// What a device does for each kind of feedback. Tests replace it to record
@@ -25,6 +28,18 @@ abstract interface class HapticsBackend {
 abstract final class Haptics {
   /// Whether the person wants vibration. Set from the Settings switch.
   static bool enabled = true;
+
+  /// Shares the setting with the Android home-screen counter.
+  static Future<void> syncWidgetSetting(bool value) async {
+    try {
+      await const MethodChannel('net.mrecode.mre_quran/widget_haptics')
+          .invokeMethod<void>('setEnabled', value);
+    } on MissingPluginException {
+      // Other platforms do not have the Android widget.
+    } on PlatformException catch (error) {
+      AppLogger.debug('Widget haptics setting failed: ${error.code}');
+    }
+  }
 
   /// How feedback is produced. Replaced in tests.
   static HapticsBackend backend = PlatformHaptics();

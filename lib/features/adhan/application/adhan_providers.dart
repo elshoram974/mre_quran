@@ -53,9 +53,21 @@ final adhanPlatformProvider = Provider<AdhanPlatform>(
 /// app (if any), then each tap while the app runs.
 final adhanTapsProvider = StreamProvider<ReminderTap>((ref) async* {
   final platform = ref.watch(adhanPlatformProvider);
-  final launch = await platform.takeLaunchPayload();
-  if (launch != null) yield ReminderTap(launch);
-  yield* platform.taps.map(ReminderTap.new);
+  // Subscribe before asking for the launch payload: a new intent can arrive
+  // while that request is in flight, and broadcast streams do not buffer it.
+  final pending = StreamController<ReminderTap>();
+  final subscription = platform.taps.listen(
+    (payload) => pending.add(ReminderTap(payload)),
+    onError: pending.addError,
+  );
+  try {
+    final launch = await platform.takeLaunchPayload();
+    if (launch != null) yield ReminderTap(launch);
+    yield* pending.stream;
+  } finally {
+    await subscription.cancel();
+    await pending.close();
+  }
 });
 
 /// Whether this phone can play the adhan by itself.

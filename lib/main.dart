@@ -38,6 +38,7 @@ Future<void> main() async {
   ).wait;
   // Crashlytics exists only after Firebase is initialised above.
   Haptics.enabled = settings.hapticsEnabled;
+  unawaited(Haptics.syncWidgetSetting(settings.hapticsEnabled));
   final crashReporter = FirebaseCrashReporter();
   await crashReporter.setCollectionEnabled(settings.crashReportsEnabled);
   FlutterError.onError = (details) =>

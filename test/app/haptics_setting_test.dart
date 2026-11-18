@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mre_quran/app/quran_app.dart';
@@ -75,6 +76,22 @@ void main() {
   testWidgets(
     'the app follows the vibration setting, and the switch changes it',
     (tester) async {
+      final widgetSettings = <bool>[];
+      const channel = MethodChannel('net.mrecode.mre_quran/widget_haptics');
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(channel, (
+        call,
+      ) async {
+        if (call.method == 'setEnabled') {
+          widgetSettings.add(call.arguments as bool);
+        }
+        return null;
+      });
+      addTearDown(
+        () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+          channel,
+          null,
+        ),
+      );
       final repository = await pumpSettings(
         tester,
         backend: RecordingHaptics(),
@@ -105,6 +122,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(Haptics.enabled, isTrue);
       expect(repository.settings.hapticsEnabled, isTrue);
+      expect(widgetSettings, containsAllInOrder([false, true]));
     },
   );
 

@@ -84,7 +84,10 @@ class _AppShortcutsScopeState extends ConsumerState<AppShortcutsScope> {
             if (shortcut != AppShortcut.reader) {
               ref.read(opensOnReaderProvider.notifier).openedElsewhere();
             }
-            unawaited(shortcut.open(ref.read(routerProvider)));
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) unawaited(shortcut.open(ref.read(routerProvider)));
+            });
+            WidgetsBinding.instance.ensureVisualUpdate();
           }
         }
       }),

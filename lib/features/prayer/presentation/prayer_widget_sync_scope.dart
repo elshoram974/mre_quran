@@ -34,24 +34,52 @@ class _PrayerWidgetSyncScopeState extends ConsumerState<PrayerWidgetSyncScope> {
     _subscriptions.addAll([
       ref.listenManual<NextPrayer?>(
         nextPrayerProvider,
-        (_, NextPrayer? value) => unawaited(_sync(value)),
+        (_, _) => _scheduleSync(),
       ),
       ref.listenManual(
         settingsProvider.select((value) => value.value?.useArabicDigits),
-        (_, _) => unawaited(_sync(ref.read(nextPrayerProvider))),
+        (_, _) => _scheduleSync(),
       ),
       ref.listenManual(
         settingsProvider.select((value) => value.value?.localeCode),
-        (_, _) => unawaited(_sync(ref.read(nextPrayerProvider))),
+        (_, _) => _scheduleSync(),
       ),
       ref.listenManual(
         settingsProvider.select((value) => value.value?.widgetSeconds),
-        (_, _) => unawaited(_sync(ref.read(nextPrayerProvider))),
+        (_, _) => _scheduleSync(),
       ),
     ]);
+  }
+
+  bool _syncScheduled = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    Localizations.maybeLocaleOf(context);
+    _scheduleSync();
+  }
+
+  void _scheduleSync() {
+    if (_syncScheduled) return;
+    _syncScheduled = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      _syncScheduled = false;
+      if (!mounted) return;
+      // Locale changes may temporarily remove delegates while they reload.
+      // didChangeDependencies schedules another update when they are ready.
+      if (Localizations.of<MaterialLocalizations>(
+                context,
+                MaterialLocalizations,
+              ) ==
+              null ||
+          Localizations.of<AppLocalizations>(context, AppLocalizations) ==
+              null) {
+        return;
+      }
       unawaited(_sync(ref.read(nextPrayerProvider)));
     });
+    WidgetsBinding.instance.ensureVisualUpdate();
   }
 
   @override

@@ -44,6 +44,9 @@ the app a reader gets, so never judge speed from them.
 - The saved settings are passed to the app before the first frame (`initialSettingsProvider`), so there is
   no default-theme flash.
 - Settings apply at once and persist in the background, with rollback on failure.
+- All 15 independent settings reads now start together, including the six
+  display and haptic settings that were still read one after another. A unit
+  test holds storage reads open and checks that all have started.
 - Index search keys are computed once (`IndexSearcher`), not per keystroke.
 
 ## Results
@@ -71,6 +74,24 @@ Frame timing after warm-up, per phase (build / raster, milliseconds):
 
 These were taken before the search-key change and include emulator buffer-swap cost, so the raster
 columns overstate what a phone will show. Re-run on a real device before trusting any single number.
+
+In a later profile run on the API 28 emulator with software rendering, the first
+frame rasterized in 612, 978 and 989 ms after the settings-read change. The
+earlier three runs on the same emulator were 751, 946 and 1,043 ms, but the
+reader's saved page and settings changed between the runs. They do not prove a
+speedup; the concurrency test proves only that the six extra serial waits were
+removed. Repeat with the same saved state and on a physical phone to compare.
+The warm profile scenario after that change completed on the same emulator:
+tabs averaged 2.2 ms build / 13.4 ms raster, the sheet 1.5 / 12.6 ms, and
+index scrolling 0.9 / 15.1 ms. Index close had a worst raster frame of 72.8 ms;
+these software-rendered emulator figures do not establish physical-device
+performance or a regression against the earlier host-GPU measurements.
+The same run measured six verified page turns per phase after warm-up: sliding
+forward/back averaged 1.2 ms build and 15.3 ms raster; realistic forward
+averaged 1.2 / 22.8 ms and realistic back 1.5 / 29.3 ms. Worst raster frames
+were 35.8, 29.1, 63.8 and 110.4 ms respectively. This uses the emulator's
+software renderer; check realistic turning on a real device before attributing
+the cost to a specific effect or changing its appearance.
 
 ## Rules
 

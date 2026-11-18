@@ -5,6 +5,7 @@ import 'dart:async';
 
 import 'package:flutter/widgets.dart';
 
+import '../core/theme/app_tokens.dart';
 import '../features/about/presentation/about_page.dart';
 import '../features/home_widgets/presentation/home_widgets_page.dart';
 import '../features/adhkar/presentation/adhkar_group_page.dart';
@@ -30,7 +31,25 @@ final routerProvider = Provider<GoRouter>((ref) {
   final router = GoRouter(
     initialLocation: ref.read(initialLocationProvider),
     routes: [
-      StatefulShellRoute.indexedStack(
+      StatefulShellRoute(
+        navigatorContainerBuilder: (context, shell, children) => Stack(
+          children: [
+            for (var i = 0; i < children.length; i++)
+              Offstage(
+                offstage: i != shell.currentIndex,
+                child: AnimatedOpacity(
+                  opacity: i == shell.currentIndex ? 1 : 0,
+                  duration: MediaQuery.disableAnimationsOf(context)
+                      ? Duration.zero
+                      : AppTokens.motionMedium,
+                  child: TickerMode(
+                    enabled: i == shell.currentIndex,
+                    child: children[i],
+                  ),
+                ),
+              ),
+          ],
+        ),
         builder: (context, state, shell) => AppShell(navigationShell: shell),
         branches: [
           StatefulShellBranch(
@@ -69,51 +88,67 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AppRoute.quranSearch.path,
-        builder: (context, state) => const QuranSearchPage(),
+        pageBuilder: (context, state) =>
+            _page(context, state, const QuranSearchPage()),
       ),
       GoRoute(
         path: AppRoute.quranIndex.path,
-        builder: (context, state) => const QuranIndexPage(),
+        pageBuilder: (context, state) =>
+            _page(context, state, const QuranIndexPage()),
       ),
       GoRoute(
         path: AppRoute.adhkarSession.path,
-        builder: (context, state) => AdhkarSessionPage(
-          collectionId: state.pathParameters['id']!,
-          focusOrder: int.tryParse(state.uri.queryParameters['focus'] ?? ''),
+        pageBuilder: (context, state) => _page(
+          context,
+          state,
+          AdhkarSessionPage(
+            collectionId: state.pathParameters['id']!,
+            focusOrder: int.tryParse(state.uri.queryParameters['focus'] ?? ''),
+          ),
         ),
       ),
       GoRoute(
         path: AppRoute.adhkarGroup.path,
-        builder: (context, state) =>
-            AdhkarGroupPage(groupId: state.pathParameters['id']!),
+        pageBuilder: (context, state) => _page(
+          context,
+          state,
+          AdhkarGroupPage(groupId: state.pathParameters['id']!),
+        ),
       ),
       GoRoute(
         path: AppRoute.prayerTimes.path,
-        builder: (context, state) => const PrayerTimesPage(),
+        pageBuilder: (context, state) =>
+            _page(context, state, const PrayerTimesPage()),
       ),
       GoRoute(
         path: AppRoute.prayerLocationPicker.path,
-        builder: (context, state) => const PrayerLocationPickerPage(),
+        pageBuilder: (context, state) =>
+            _page(context, state, const PrayerLocationPickerPage()),
       ),
       GoRoute(
         path: AppRoute.adhan.path,
-        builder: (context, state) => const AdhanPage(),
+        pageBuilder: (context, state) =>
+            _page(context, state, const AdhanPage()),
       ),
       GoRoute(
         path: AppRoute.qibla.path,
-        builder: (context, state) => const QiblaPage(),
+        pageBuilder: (context, state) =>
+            _page(context, state, const QiblaPage()),
       ),
       GoRoute(
         path: AppRoute.adhkarSearch.path,
-        builder: (context, state) => const AdhkarSearchPage(),
+        pageBuilder: (context, state) =>
+            _page(context, state, const AdhkarSearchPage()),
       ),
       GoRoute(
         path: AppRoute.about.path,
-        builder: (context, state) => const AboutPage(),
+        pageBuilder: (context, state) =>
+            _page(context, state, const AboutPage()),
       ),
       GoRoute(
         path: AppRoute.widgets.path,
-        builder: (context, state) => const HomeWidgetsPage(),
+        pageBuilder: (context, state) =>
+            _page(context, state, const HomeWidgetsPage()),
       ),
     ],
   );
@@ -128,6 +163,28 @@ final routerProvider = Provider<GoRouter>((ref) {
   ref.onDispose(router.dispose);
   return router;
 });
+
+Page<void> _page(BuildContext context, GoRouterState state, Widget child) {
+  final duration = MediaQuery.disableAnimationsOf(context)
+      ? Duration.zero
+      : AppTokens.motionMedium;
+  return CustomTransitionPage<void>(
+    key: state.pageKey,
+    transitionDuration: duration,
+    reverseTransitionDuration: duration,
+    child: child,
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      final curved = CurvedAnimation(parent: animation, curve: Curves.easeOut);
+      return FadeTransition(
+        opacity: curved,
+        child: ScaleTransition(
+          scale: Tween<double>(begin: 0.98, end: 1).animate(curved),
+          child: child,
+        ),
+      );
+    },
+  );
+}
 
 /// Stable paths used by navigation and tests.
 enum AppRoute {

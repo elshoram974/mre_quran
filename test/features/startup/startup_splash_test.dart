@@ -8,7 +8,6 @@ import 'package:mre_quran/core/l10n/l10n.dart';
 import 'package:mre_quran/features/quran_text/application/quran_text_providers.dart';
 import 'package:mre_quran/features/quran_text/domain/quran_text.dart';
 import 'package:mre_quran/features/startup/application/startup_providers.dart';
-import 'package:mre_quran/features/startup/data/launch_screen.dart';
 import 'package:mre_quran/features/startup/presentation/reader_painted_mark.dart';
 import 'package:mre_quran/features/startup/presentation/startup_splash.dart';
 import 'package:mre_quran/l10n/generated/app_localizations.dart';
@@ -21,12 +20,10 @@ void main() {
     required Completer<QuranText> text,
     String location = '/reader',
     bool reduceMotion = false,
-    bool overlay = true,
-    _HeldLaunchScreen? launch,
+    bool? overlay = true,
   }) async {
     final container = ProviderContainer(
       overrides: [
-        launchScreenProvider.overrideWithValue(launch ?? _HeldLaunchScreen()),
         quranTextProvider.overrideWith((ref) => text.future),
         initialLocationProvider.overrideWithValue(location),
       ],
@@ -97,26 +94,24 @@ void main() {
     expect(name, findsNothing);
   });
 
-  testWidgets('on Android it draws nothing itself, and lets the platform\'s '
-      'turning launch screen go once the app is ready', (tester) async {
-    final text = Completer<QuranText>();
-    final launch = _HeldLaunchScreen();
-    final container = await pump(
-      tester,
-      text: text,
-      overlay: false,
-      launch: launch,
-    );
+  testWidgets('without an overlay the screen is immediately visible', (
+    tester,
+  ) async {
+    await pump(tester, text: Completer<QuranText>(), overlay: false);
     expect(name, findsNothing);
     expect(find.text('screen'), findsOneWidget);
-    await tester.pump(const Duration(seconds: 1));
-    expect(launch.released, 0);
-    text.completeError(StateError('no text'));
-    container.read(readerPaintedProvider.notifier).painted();
-    await tester.pump();
-    expect(launch.released, 1);
+  });
+
+  testWidgets('Android uses the animated overlay and it cannot block forever', (
+    tester,
+  ) async {
+    await pump(tester, text: Completer<QuranText>(), overlay: null);
+    expect(name, findsOneWidget);
     await tester.pump(const Duration(seconds: 5));
-    expect(launch.released, 1, reason: 'once only');
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump();
+    expect(name, findsNothing);
+    expect(find.text('screen'), findsOneWidget);
   });
 
   testWidgets('a page view marks the reader painted on its first frame', (
@@ -134,44 +129,14 @@ void main() {
     expect(container.read(readerPaintedProvider), isTrue);
   });
 
-  testWidgets('on Android it goes the moment the app is ready, with no '
-      'least wait', (tester) async {
-    final text = Completer<QuranText>();
-    final launch = _HeldLaunchScreen();
-    final container = await pump(
-      tester,
-      text: text,
-      overlay: false,
-      launch: launch,
-    );
-    text.completeError(StateError('no text'));
-    container.read(readerPaintedProvider.notifier).painted();
-    await tester.pump();
-    expect(launch.released, 1);
-  });
-
   testWidgets('when a notification or widget opens another screen over the '
       'Mushaf, it waits only for the text', (tester) async {
     final text = Completer<QuranText>();
-    final launch = _HeldLaunchScreen();
-    final container = await pump(
-      tester,
-      text: text,
-      overlay: false,
-      launch: launch,
-    );
+    final container = await pump(tester, text: text, overlay: false);
     container.read(opensOnReaderProvider.notifier).openedElsewhere();
     text.completeError(StateError('no text'));
     await tester.pump();
-    expect(launch.released, 1);
+    expect(container.read(startupReadyProvider), isTrue);
     expect(container.read(readerPaintedProvider), isFalse);
   });
-}
-
-/// A launch screen that counts how often it was let go.
-class _HeldLaunchScreen implements LaunchScreen {
-  int released = 0;
-
-  @override
-  Future<void> release() async => released++;
 }

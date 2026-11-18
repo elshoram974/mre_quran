@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/notifications/reminder_payload.dart';
 import '../../../core/time/ticking_clock.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import '../../settings/application/settings_provider.dart';
 import '../application/adhkar_providers.dart';
 import '../application/adhkar_widget_sync.dart';
@@ -36,7 +37,15 @@ class _AdhkarWidgetSyncScopeState extends ConsumerState<AdhkarWidgetSyncScope> {
         (_, _) => _scheduleSync(),
       ),
     ]);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _scheduleSync());
+  }
+
+  bool _syncScheduled = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    Localizations.maybeLocaleOf(context);
+    _scheduleSync();
   }
 
   @override
@@ -47,7 +56,20 @@ class _AdhkarWidgetSyncScopeState extends ConsumerState<AdhkarWidgetSyncScope> {
     super.dispose();
   }
 
-  void _scheduleSync() => unawaited(_sync());
+  void _scheduleSync() {
+    if (_syncScheduled) return;
+    _syncScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _syncScheduled = false;
+      if (!mounted ||
+          Localizations.of<AppLocalizations>(context, AppLocalizations) ==
+              null) {
+        return;
+      }
+      unawaited(_sync());
+    });
+    WidgetsBinding.instance.ensureVisualUpdate();
+  }
 
   Future<void> _sync() {
     final catalog = ref.read(adhkarCatalogProvider).value;

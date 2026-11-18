@@ -61,10 +61,27 @@ class TafsirSheet extends ConsumerStatefulWidget {
 class _TafsirSheetState extends ConsumerState<TafsirSheet> {
   late final AyahOrder _order = AyahOrder.of(widget.text);
   late AyahRef _ayah = widget.initial;
+  late final PageController _pages = PageController(
+    initialPage: _order.indexOf(_ayah),
+  );
+
+  @override
+  void dispose() {
+    _pages.dispose();
+    super.dispose();
+  }
 
   void _step(int by) {
-    setState(() => _ayah = _order.step(_ayah, by));
-    if (widget.scroll.hasClients) widget.scroll.jumpTo(0);
+    final page = _order.indexOf(_order.step(_ayah, by));
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _pages.jumpToPage(page);
+    } else {
+      _pages.animateToPage(
+        page,
+        duration: AppTokens.motionMedium,
+        curve: Curves.easeOut,
+      );
+    }
   }
 
   /// The tafsir to paste: its words, the quoted Quran in the usual ornate
@@ -135,83 +152,110 @@ class _TafsirSheetState extends ConsumerState<TafsirSheet> {
           ),
         ),
         Expanded(
-          child: ListView(
-            controller: widget.scroll,
-            padding: const EdgeInsetsDirectional.fromSTEB(
-              AppTokens.gutterCompact,
-              0,
-              AppTokens.gutterCompact,
-              AppTokens.gutterCompact,
-            ),
-            children: [
-              // The ayah, whole, in the Mushaf's script.
-              AppSurfaceCard(
-                padding: const EdgeInsetsDirectional.all(14),
-                child: Directionality(
-                  textDirection: TextDirection.rtl,
-                  child: Text.rich(
-                    TextSpan(
-                      children: [
-                        TextSpan(text: widget.text.display(_ayah)),
-                        TextSpan(
-                          text: switch (widget.text.mark(_ayah)) {
-                            final String mark => ' $mark',
-                            null => ' ﴿${digits(_ayah.ayah)}﴾',
-                          },
-                          style: TextStyle(color: colors.ayahNumber),
-                        ),
-                      ],
+          child: PageView.builder(
+            controller: _pages,
+            itemCount: _order.total,
+            onPageChanged: (page) {
+              setState(() => _ayah = _order.at(page));
+            },
+            itemBuilder: (context, page) {
+              final ayah = _order.at(page);
+              return Consumer(
+                builder: (context, ref, _) {
+                  final tafsir = ref.watch(
+                    readingTafsirProvider((widget.edition, ayah)),
+                  );
+                  return ListView(
+                    key: ValueKey(ayah),
+                    primary: false,
+                    controller: page == _order.indexOf(_ayah)
+                        ? widget.scroll
+                        : null,
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                      AppTokens.gutterCompact,
+                      0,
+                      AppTokens.gutterCompact,
+                      AppTokens.gutterCompact,
                     ),
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontFamily: widget.text.fontFamily,
-                      fontSize: 22,
-                      height: 1.9,
-                      color: colors.ink,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: AppTokens.spaceMedium),
-              switch (tafsir) {
-                AsyncValue(:final value?) => Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    for (final entry in value) ...[
-                      // Said when the tafsir is of another number, as Hafs
-                      // counts it.
-                      if (value.length > 1 || entry.hafs != _ayah)
-                        Padding(
-                          padding: const EdgeInsetsDirectional.only(bottom: 4),
-                          child: Text(
-                            l10n.tafsirOfHafsAyah(digits(entry.hafs.ayah)),
-                            style: theme.textTheme.labelLarge?.copyWith(
-                              color: theme.colorScheme.primary,
+                    children: [
+                      // The ayah, whole, in the Mushaf's script.
+                      AppSurfaceCard(
+                        padding: const EdgeInsetsDirectional.all(14),
+                        child: Directionality(
+                          textDirection: TextDirection.rtl,
+                          child: Text.rich(
+                            TextSpan(
+                              children: [
+                                TextSpan(text: widget.text.display(ayah)),
+                                TextSpan(
+                                  text: switch (widget.text.mark(ayah)) {
+                                    final String mark => ' $mark',
+                                    null => ' ﴿${digits(ayah.ayah)}﴾',
+                                  },
+                                  style: TextStyle(color: colors.ayahNumber),
+                                ),
+                              ],
+                            ),
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontFamily: widget.text.fontFamily,
+                              fontSize: 22,
+                              height: 1.9,
+                              color: colors.ink,
                             ),
                           ),
                         ),
-                      _TafsirText(
-                        tafsir: entry.tafsir,
-                        quranFont: AppTokens.mushafFontFamily,
                       ),
-                      const SizedBox(height: AppTokens.spaceSmall),
+                      const SizedBox(height: AppTokens.spaceMedium),
+                      switch (tafsir) {
+                        AsyncValue(:final value?) => Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            for (final entry in value) ...[
+                              // Said when the tafsir is of another number, as Hafs
+                              // counts it.
+                              if (value.length > 1 || entry.hafs != ayah)
+                                Padding(
+                                  padding: const EdgeInsetsDirectional.only(
+                                    bottom: 4,
+                                  ),
+                                  child: Text(
+                                    l10n.tafsirOfHafsAyah(
+                                      digits(entry.hafs.ayah),
+                                    ),
+                                    style: theme.textTheme.labelLarge?.copyWith(
+                                      color: theme.colorScheme.primary,
+                                    ),
+                                  ),
+                                ),
+                              _TafsirText(
+                                tafsir: entry.tafsir,
+                                quranFont: AppTokens.mushafFontFamily,
+                              ),
+                              const SizedBox(height: AppTokens.spaceSmall),
+                            ],
+                          ],
+                        ),
+                        AsyncValue(hasError: true) => Text(
+                          l10n.tafsirLoadError,
+                        ),
+                        _ => const Padding(
+                          padding: EdgeInsetsDirectional.all(24),
+                          child: Center(child: CircularProgressIndicator()),
+                        ),
+                      },
+                      const SizedBox(height: AppTokens.spaceMedium),
+                      Text(
+                        l10n.tafsirCredit,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
                     ],
-                  ],
-                ),
-                AsyncValue(hasError: true) => Text(l10n.tafsirLoadError),
-                _ => const Padding(
-                  padding: EdgeInsetsDirectional.all(24),
-                  child: Center(child: CircularProgressIndicator()),
-                ),
-              },
-              const SizedBox(height: AppTokens.spaceMedium),
-              Text(
-                l10n.tafsirCredit,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ],
+                  );
+                },
+              );
+            },
           ),
         ),
         AppSheetDragArea(

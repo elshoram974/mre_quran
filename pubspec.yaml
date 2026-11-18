@@ -91,10 +91,9 @@ flutter:
       platforms: [ios]
     - path: assets/adhan/ios/adhan_fajr.caf
       platforms: [ios]
-    # "made by MRECode" under the splash's star, which only iOS draws in
-    # Flutter (Android's launch screen has it natively); 2.0x and 3.0x too.
+    # "made by MRECode" under the Flutter splash; 2.0x and 3.0x too.
     - path: assets/brand/splash_brand.png
-      platforms: [ios]
+      platforms: [android, ios]
     - assets/adhkar/LICENSE.seen-arabic.txt
   fonts:
     - family: AmiriQuran

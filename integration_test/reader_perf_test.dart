@@ -1,9 +1,12 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:mre_quran/app/shell/expanding_nav_bar.dart';
+import 'package:mre_quran/features/mushaf/application/reading_position_provider.dart';
 import 'package:mre_quran/features/mushaf/presentation/flip/book_flip.dart';
 import 'package:mre_quran/features/settings/application/settings_provider.dart';
+import 'package:mre_quran/features/settings/domain/app_settings.dart';
 import 'package:mre_quran/main.dart' as app;
 
 /// Frame timing of turning the printed Mushaf's pages, one report per way of
@@ -21,7 +24,8 @@ void main() {
     // The app installs its own error handlers; keep the test's, so a failed
     // expectation fails the test instead of being logged as a crash.
     final testErrors = FlutterError.onError;
-    app.main();
+    await app.main();
+    FlutterError.onError = testErrors;
 
     /// Lets the app run for [time]. Not `pumpAndSettle`: a page that is
     /// still loading shimmers for as long as it loads.
@@ -33,15 +37,33 @@ void main() {
     }
 
     await run(const Duration(seconds: 6));
-    FlutterError.onError = testErrors;
-    final mushaf = find.text('المصحف');
-    if (mushaf.evaluate().isNotEmpty) {
-      await tester.tap(mushaf.first);
+    final nav = find.byType(ExpandingNavBar);
+    if (tester.widget<ExpandingNavBar>(nav).index != 0) {
+      final readerTab = find
+          .descendant(of: nav, matching: find.byType(InkWell))
+          .first;
+      await tester.tapAt(tester.getCenter(readerTab, warnIfMissed: false));
       await run(const Duration(seconds: 3));
+    }
+    if (find.text('لاحقًا').evaluate().isNotEmpty) {
+      await tester.tap(find.text('لاحقًا'));
+      await run(const Duration(seconds: 1));
     }
     final book = find.byType(BookFlip);
     expect(book, findsOneWidget, reason: 'the reader is open');
     final container = ProviderScope.containerOf(tester.element(book));
+    final original = container.read(settingsProvider).value!;
+    final originalPage = await container.read(readingPositionProvider.future);
+
+    await container
+        .read(settingsProvider.notifier)
+        .save(original.copyWith(readerMode: ReaderMode.printed));
+    await container.read(readingPositionProvider.notifier).setPage(50);
+    await run(const Duration(seconds: 2));
+    if (find.text('لاحقًا').evaluate().isNotEmpty) {
+      await tester.tap(find.text('لاحقًا'));
+      await run(const Duration(seconds: 1));
+    }
 
     Future<void> realistic(bool on) async {
       final settings = container.read(settingsProvider).value!;
@@ -55,12 +77,17 @@ void main() {
     /// opens right to left.
     Future<void> turn(int count, {required bool forward}) async {
       for (var i = 0; i < count; i++) {
+        final previous = container.read(readingPositionProvider).value!;
         await tester.timedDrag(
           book,
           Offset(forward ? 320 : -320, 0),
           const Duration(milliseconds: 350),
         );
         await run(const Duration(milliseconds: 1200));
+        expect(
+          container.read(readingPositionProvider).value,
+          previous + (forward ? 1 : -1),
+        );
       }
     }
 
@@ -79,11 +106,18 @@ void main() {
     };
 
     // First pass fetches and prepares the pages; only the second is measured.
-    for (final phase in phases.values) {
-      await phase();
-    }
-    for (final entry in phases.entries) {
-      await binding.traceAction(entry.value, reportKey: entry.key);
+    try {
+      for (final phase in phases.values) {
+        await phase();
+      }
+      for (final entry in phases.entries) {
+        await binding.traceAction(entry.value, reportKey: entry.key);
+      }
+    } finally {
+      await container.read(settingsProvider.notifier).save(original);
+      await container
+          .read(readingPositionProvider.notifier)
+          .setPage(originalPage);
     }
   });
 }

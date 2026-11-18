@@ -32,6 +32,7 @@ class QuranApp extends ConsumerWidget {
     ref.listen(settingsProvider, (_, next) {
       next.whenData((value) {
         Haptics.enabled = value.hapticsEnabled;
+        unawaited(Haptics.syncWidgetSetting(value.hapticsEnabled));
         unawaited(
           ref
               .read(crashReporterProvider)
@@ -55,7 +56,12 @@ class QuranApp extends ConsumerWidget {
         final tap = next.value;
         if (tap != null) {
           ref.read(opensOnReaderProvider.notifier).openedElsewhere();
-          unawaited(openReminder(ref.read(routerProvider), tap.payload));
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (context.mounted) {
+              unawaited(openReminder(ref.read(routerProvider), tap.payload));
+            }
+          });
+          WidgetsBinding.instance.ensureVisualUpdate();
         }
       });
     return MediaQuery(
@@ -75,8 +81,7 @@ class QuranApp extends ConsumerWidget {
         darkTheme: AppTheme.of(settings.theme.nightPaper, settings.accent),
         themeMode: settings.materialThemeMode,
         routerConfig: ref.watch(routerProvider),
-        // StartupSplash lets the launch screen go once the first screen is
-        // ready; without it the launch screen waits for its time limit.
+        // The native launch screen hands over to the bounded Flutter overlay.
         builder: (context, child) => _SystemBars(
           child: StartupSplash(
             child: AppShortcutsScope(

@@ -8,16 +8,12 @@ import '../../../core/config/app_config.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../application/startup_providers.dart';
-import '../data/launch_screen.dart';
 
 /// Keeps the app covered while it starts, so no loading is ever seen.
 ///
-/// On Android the platform's own launch screen does it: its star turns
-/// until this lets it go. Where a launch screen can neither turn nor wait
-/// (iOS), this draws the same star turning on the paper, in the place the
-/// launch screen draws it still, with the app's name fading in under it. The first screen is built and loads
-/// underneath (the Quran text and the Mushaf page, at the same time), and
-/// the splash fades away once it is ready, so no loading is ever seen.
+/// Android and iOS hand over from their native launch screen to this overlay.
+/// The emblem draws itself, then bounces gently while the first screen loads
+/// underneath. The overlay fades away once the screen is ready.
 ///
 /// Where it draws the splash, it stays at least [least], so it never only
 /// flickers. It stays at most [most], so a slow device or a page that cannot
@@ -32,8 +28,7 @@ class StartupSplash extends ConsumerStatefulWidget {
     this.overlay,
   });
 
-  /// Whether this draws the splash itself; by default only on iOS, whose
-  /// launch screen cannot wait.
+  /// Whether this draws the splash itself; by default on Android and iOS.
   final bool? overlay;
 
   /// The app.
@@ -48,10 +43,14 @@ class StartupSplash extends ConsumerStatefulWidget {
 }
 
 class _StartupSplashState extends ConsumerState<StartupSplash>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late final AnimationController _turn = AnimationController(
     vsync: this,
     duration: AppTokens.splashTurn,
+  );
+  late final AnimationController _intro = AnimationController(
+    vsync: this,
+    duration: AppTokens.splashLeast,
   );
   bool _named = false;
   bool _leastPassed = false;
@@ -73,8 +72,10 @@ class _StartupSplashState extends ConsumerState<StartupSplash>
     super.didChangeDependencies();
     if (!_overlay || MediaQuery.disableAnimationsOf(context)) {
       _turn.stop();
+      _intro.value = 1;
     } else if (!_turn.isAnimating && !_fading) {
       unawaited(_turn.repeat());
+      if (!_intro.isCompleted) unawaited(_intro.forward());
     }
     // The name fades in once the splash is on screen.
     if (!_named) {
@@ -85,7 +86,9 @@ class _StartupSplashState extends ConsumerState<StartupSplash>
   }
 
   bool get _overlay =>
-      widget.overlay ?? Theme.of(context).platform == TargetPlatform.iOS;
+      widget.overlay ??
+      (Theme.of(context).platform == TargetPlatform.iOS ||
+          Theme.of(context).platform == TargetPlatform.android);
 
   void _update(VoidCallback change) {
     if (mounted) setState(change);
@@ -96,6 +99,7 @@ class _StartupSplashState extends ConsumerState<StartupSplash>
     _least?.cancel();
     _most?.cancel();
     _turn.dispose();
+    _intro.dispose();
     super.dispose();
   }
 
@@ -104,11 +108,10 @@ class _StartupSplashState extends ConsumerState<StartupSplash>
     final ready = ref.watch(startupReadyProvider);
     // The least time keeps a splash drawn here from only flickering. The
     // platform's launch screen has been up since the process started, so
-    // it goes the moment the app is ready.
+    // it goes the moment the app is ready when there is no overlay.
     final waited = _leastPassed || !_overlay;
     if (!_fading && ((ready && waited) || _timedOut)) {
       _fading = true;
-      unawaited(ref.read(launchScreenProvider).release());
     }
     if (!_overlay) return widget.child;
     // Without animations there is no fade to wait for.
@@ -140,6 +143,7 @@ class _StartupSplashState extends ConsumerState<StartupSplash>
                   excludeSemantics: true,
                   child: _Emblem(
                     turn: _turn,
+                    intro: _intro,
                     named: _named,
                     color: scheme.primary,
                   ),
@@ -156,9 +160,15 @@ class _StartupSplashState extends ConsumerState<StartupSplash>
 /// The app's star in the middle of the screen, as the launch screen has
 /// it, and its name beneath.
 class _Emblem extends StatelessWidget {
-  const _Emblem({required this.turn, required this.named, required this.color});
+  const _Emblem({
+    required this.turn,
+    required this.intro,
+    required this.named,
+    required this.color,
+  });
 
   final Animation<double> turn;
+  final Animation<double> intro;
   final bool named;
   final Color color;
 
@@ -168,10 +178,26 @@ class _Emblem extends StatelessWidget {
     return Stack(
       alignment: Alignment.center,
       children: [
-        SizedBox.square(
-          dimension: AppTokens.splashEmblem,
-          child: CustomPaint(
-            painter: _StarPainter(turn: turn, color: color),
+        AnimatedBuilder(
+          animation: Listenable.merge([turn, intro]),
+          builder: (context, child) {
+            final wave = math.sin(turn.value * 2 * math.pi);
+            final bounce = math.max(0.0, wave);
+            final entrance = Curves.easeOutBack.transform(intro.value);
+            return Transform.translate(
+              offset: Offset(0, -bounce * AppTokens.spaceSmall),
+              child: Transform.scale(
+                scaleX: entrance * (1 - bounce * 0.035),
+                scaleY: entrance * (1 + bounce * 0.05),
+                child: child,
+              ),
+            );
+          },
+          child: SizedBox.square(
+            dimension: AppTokens.splashEmblem,
+            child: CustomPaint(
+              painter: _StarPainter(turn: turn, intro: intro, color: color),
+            ),
           ),
         ),
         // Below the star, which stays exactly in the middle.
@@ -213,18 +239,17 @@ class _Emblem extends StatelessWidget {
 }
 
 /// "made by MRECode" ([AppConfig.brand]), drawn by
-/// tool/app_icon/render_splash_brand_test.dart; bundled for iOS only, the
-/// one platform whose splash this draws.
+/// tool/app_icon/render_splash_brand_test.dart.
 const String _brand = 'assets/brand/splash_brand.png';
 
 /// An eight-pointed star of two squares, lightly filled, with a disc at its
-/// heart: turned by [turn] through an eighth of a circle, after which it
-/// looks as it began, so the turn never jumps. The disc breathes with it.
+/// heart. The outline draws on entry and the disc breathes while loading.
 class _StarPainter extends CustomPainter {
-  _StarPainter({required this.turn, required this.color})
-    : super(repaint: turn);
+  _StarPainter({required this.turn, required this.intro, required this.color})
+    : super(repaint: Listenable.merge([turn, intro]));
 
   final Animation<double> turn;
+  final Animation<double> intro;
   final Color color;
 
   @override
@@ -237,27 +262,35 @@ class _StarPainter extends CustomPainter {
     for (final start in [0.0, math.pi / 4]) {
       final square = Path();
       for (var i = 0; i < 4; i++) {
-        final a = start + t * math.pi / 4 + i * math.pi / 2 - math.pi / 2;
+        final a = start + i * math.pi / 2 - math.pi / 2;
         final p = centre + Offset(math.cos(a), math.sin(a)) * radius;
         i == 0 ? square.moveTo(p.dx, p.dy) : square.lineTo(p.dx, p.dy);
       }
       star.addPath(square..close(), Offset.zero);
     }
     final breath = 1 + 0.12 * math.sin(t * 2 * math.pi);
-    canvas
-      ..drawPath(star, Paint()..color = color.withValues(alpha: 0.14))
-      ..drawPath(
-        star,
+    canvas.drawPath(
+      star,
+      Paint()..color = color.withValues(alpha: 0.14 * intro.value),
+    );
+    for (final metric in star.computeMetrics()) {
+      canvas.drawPath(
+        metric.extractPath(0, metric.length * intro.value),
         Paint()
           ..color = color
           ..style = PaintingStyle.stroke
           ..strokeWidth = size.shortestSide * 0.035
           ..strokeJoin = StrokeJoin.round,
-      )
-      ..drawCircle(centre, radius * 0.16 * breath, Paint()..color = color);
+      );
+    }
+    canvas.drawCircle(
+      centre,
+      radius * 0.16 * breath * intro.value,
+      Paint()..color = color,
+    );
   }
 
   @override
   bool shouldRepaint(_StarPainter old) =>
-      old.color != color || old.turn != turn;
+      old.color != color || old.turn != turn || old.intro != intro;
 }

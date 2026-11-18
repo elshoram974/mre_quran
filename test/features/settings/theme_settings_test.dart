@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -16,12 +18,73 @@ import 'package:shared_preferences_platform_interface/shared_preferences_async_p
 
 import '../../helpers/memory_settings_repository.dart';
 
+final class _DelayedPreferences extends InMemorySharedPreferencesAsync {
+  _DelayedPreferences() : super.empty();
+
+  final started = <String>{};
+  final gate = Completer<void>();
+
+  Future<void> _wait(String key) {
+    started.add(key);
+    return gate.future;
+  }
+
+  @override
+  Future<String?> getString(
+    String key,
+    SharedPreferencesOptions options,
+  ) async {
+    await _wait(key);
+    return super.getString(key, options);
+  }
+
+  @override
+  Future<bool?> getBool(String key, SharedPreferencesOptions options) async {
+    await _wait(key);
+    return super.getBool(key, options);
+  }
+
+  @override
+  Future<double?> getDouble(
+    String key,
+    SharedPreferencesOptions options,
+  ) async {
+    await _wait(key);
+    return super.getDouble(key, options);
+  }
+}
+
 void main() {
   group('LocalSettingsRepository', () {
     setUp(() {
       SharedPreferencesAsyncPlatform.instance =
           InMemorySharedPreferencesAsync.empty();
     });
+
+    test(
+      'starts all independent settings reads before waiting for storage',
+      () async {
+        final platform = _DelayedPreferences();
+        SharedPreferencesAsyncPlatform.instance = platform;
+        final loading = LocalSettingsRepository(SharedPreferencesAsync())
+            .load();
+        try {
+          await Future<void>.delayed(Duration.zero);
+          expect(platform.started, hasLength(15));
+          expect(
+            platform.started,
+            containsAll([
+              'settings.haptics',
+              'settings.surah_frame',
+              'settings.widget_seconds',
+            ]),
+          );
+        } finally {
+          platform.gate.complete();
+        }
+        expect((await loading).hapticsEnabled, isTrue);
+      },
+    );
 
     test('keeps the page theme and the accent', () async {
       final repository = LocalSettingsRepository(SharedPreferencesAsync());

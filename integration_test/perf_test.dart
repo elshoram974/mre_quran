@@ -2,8 +2,8 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:mre_quran/app/shell/expanding_nav_bar.dart';
 import 'package:mre_quran/core/widgets/app_select_field.dart';
-import 'package:mre_quran/features/settings/domain/app_settings.dart';
 import 'package:mre_quran/main.dart' as app;
 
 /// Frame-timing scenarios, one report per phase. Run with:
@@ -16,30 +16,64 @@ void main() {
   testWidgets('tabs, sheets, and index stay smooth', (tester) async {
     debugProfileBuildsEnabled = true;
     debugProfilePaintsEnabled = true;
-    app.main();
-    await tester.pumpAndSettle(const Duration(seconds: 2));
+    final testErrorHandler = FlutterError.onError;
+    await app.main();
+    FlutterError.onError = testErrorHandler;
+    // Wait for the bounded startup overlay before exercising controls.
+    await tester.pump();
+    final brand = find.image(const AssetImage('assets/brand/splash_brand.png'));
+    for (var i = 0; i < 20 && brand.evaluate().isNotEmpty; i++) {
+      await tester.pump(const Duration(milliseconds: 500));
+    }
+    expect(brand, findsNothing);
+    await tester.pumpAndSettle();
+    // A first run may offer the offline Mushaf before the reader is used.
+    if (find.text('لاحقًا').evaluate().isNotEmpty) {
+      await tester.tap(find.text('لاحقًا'));
+      await tester.pumpAndSettle();
+    }
+    WidgetController.hitTestWarningShouldBeFatal = true;
+    addTearDown(() => WidgetController.hitTestWarningShouldBeFatal = false);
 
     Future<void> tapText(String text) async {
       await tester.tap(find.text(text).first);
       await tester.pumpAndSettle();
     }
 
+    Future<void> tapTab(int index) async {
+      final tabs = find.descendant(
+        of: find.byType(ExpandingNavBar),
+        matching: find.byType(InkWell),
+      );
+      await tester.tapAt(tester.getCenter(tabs.at(index), warnIfMissed: false));
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<ExpandingNavBar>(find.byType(ExpandingNavBar)).index,
+        index,
+      );
+    }
+
     final phases = <String, Future<void> Function()>{
       'tabs': () async {
-        for (final tab in ['الأدعية', 'العلامات', 'الإعدادات', 'المصحف']) {
-          await tapText(tab);
+        for (final tab in [1, 2, 3, 0]) {
+          await tapTab(tab);
         }
       },
       'sheet': () async {
-        await tapText('الإعدادات');
-        await tester.tap(find.byType(AppSelectField<AppThemePreference>));
+        await tapTab(3);
+        await tester.tap(find.byType(AppSelectField<String>).first);
         await tester.pumpAndSettle();
         await tester.tapAt(const Offset(20, 120));
         await tester.pumpAndSettle();
-        await tapText('المصحف');
+        await tapTab(0);
       },
       'index_open': () async {
-        await tapText('الفهرس');
+        if (find.byTooltip('الفهرس').evaluate().isEmpty) {
+          await tester.tapAt(tester.getCenter(find.byType(Scaffold).first));
+          await tester.pumpAndSettle();
+        }
+        await tester.tap(find.byTooltip('الفهرس'));
+        await tester.pumpAndSettle();
       },
       'index_scroll': () async {
         final list = find.byType(Scrollable).first;

@@ -2,6 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools">
     <!-- Pages and packs download from the network. -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.VIBRATE"/>
     <!-- Download progress and adhkar reminders. Asked for only when a download
          starts or a reminder is turned on, never at launch. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
@@ -104,14 +105,6 @@
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
             </intent-filter>
         </receiver>
-        <!-- Takes a tap on a prayer widget; draws nothing. -->
-        <activity
-            android:name=".WidgetTapActivity"
-            android:excludeFromRecents="true"
-            android:exported="false"
-            android:noHistory="true"
-            android:taskAffinity=""
-            android:theme="@android:style/Theme.NoDisplay" />
         <receiver
             android:name=".PrayerWidgetProvider"
             android:exported="false"

@@ -32,6 +32,27 @@ class LocalSettingsRepository implements SettingsRepository {
 
   @override
   Future<AppSettings> load() async {
+    final (basic, display) = await (
+      (
+        _preferences.getString(_themeKey),
+        _preferences.getString(_localeKey),
+        _preferences.getBool(_reduceMotionKey),
+        _preferences.getBool(_arabicDigitsKey),
+        _preferences.getBool(_crashReportsKey),
+        _preferences.getString(_startupKey),
+        _preferences.getDouble(_readerFontScaleKey),
+        _preferences.getBool(_realisticTurnKey),
+        _preferences.getString(_readerModeKey),
+      ).wait,
+      (
+        _preferences.getString(_readerPageLayoutKey),
+        _preferences.getBool(_hapticsKey),
+        _preferences.getString(_accentKey),
+        _preferences.getString(_mushafEditionKey),
+        _preferences.getString(_surahFrameKey),
+        _preferences.getBool(_widgetSecondsKey),
+      ).wait,
+    ).wait;
     final (
       theme,
       locale,
@@ -42,23 +63,15 @@ class LocalSettingsRepository implements SettingsRepository {
       fontScale,
       realisticTurn,
       readerMode,
-    ) = await (
-      _preferences.getString(_themeKey),
-      _preferences.getString(_localeKey),
-      _preferences.getBool(_reduceMotionKey),
-      _preferences.getBool(_arabicDigitsKey),
-      _preferences.getBool(_crashReportsKey),
-      _preferences.getString(_startupKey),
-      _preferences.getDouble(_readerFontScaleKey),
-      _preferences.getBool(_realisticTurnKey),
-      _preferences.getString(_readerModeKey),
-    ).wait;
-    final readerPageLayout = await _preferences.getString(_readerPageLayoutKey);
-    final haptics = await _preferences.getBool(_hapticsKey);
-    final accent = await _preferences.getString(_accentKey);
-    final edition = await _preferences.getString(_mushafEditionKey);
-    final surahFrame = await _preferences.getString(_surahFrameKey);
-    final widgetSeconds = await _preferences.getBool(_widgetSecondsKey);
+    ) = basic;
+    final (
+      readerPageLayout,
+      haptics,
+      accent,
+      edition,
+      surahFrame,
+      widgetSeconds,
+    ) = display;
     return AppSettings(
       theme: AppThemePreference.values.firstWhere(
         (item) => item.name == theme,

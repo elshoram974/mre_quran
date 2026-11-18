@@ -18,7 +18,6 @@ internal object PrayerWidgetRenderer {
 
     private const val PREFERENCES = "prayer_widget"
     private const val PAYLOAD = "payload"
-    private const val RENDERED_AT = "rendered_at"
     private const val PRAYER_TIMES = "prayer:times"
     private const val REQUEST_CODE = 401
     private const val MINUTE = 60_000L
@@ -115,23 +114,7 @@ internal object PrayerWidgetRenderer {
             }
             manager.updateAppWidget(id, views)
         }
-        context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE).edit().putLong(RENDERED_AT, now).apply()
         scheduleRefresh(context, now)
-    }
-
-    /**
-     * Whether a tap should redraw the widgets instead of opening the app: they
-     * hold times that still cover [now], but were last drawn in an earlier
-     * minute, so the next prayer or the time left on screen may be out of date.
-     * The system can hold the minute refresh back while the phone sleeps.
-     *
-     * Without times that cover [now] only the app can help, so the tap opens it.
-     */
-    fun needsRedraw(context: Context, now: Long): Boolean {
-        val preferences = context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE)
-        val model = WidgetModel.parse(preferences.getString(PAYLOAD, null)) ?: return false
-        if (model.nextAfter(now) == null) return false
-        return preferences.getLong(RENDERED_AT, 0) / MINUTE != now / MINUTE
     }
 
     /** Opens the app on its prayer times. */
@@ -295,11 +278,11 @@ internal object PrayerWidgetRenderer {
         context.getSystemService(AlarmManager::class.java).cancel(refreshIntent(context))
     }
 
-    /** A tap goes to [WidgetTapActivity], which redraws stale widgets or opens the app. */
+    /** A tap always opens prayer times, including when the widget is stale. */
     private fun tapIntent(context: Context): PendingIntent = PendingIntent.getActivity(
         context,
         REQUEST_CODE,
-        Intent(context, WidgetTapActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+        appIntent(context),
         PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
     )
 

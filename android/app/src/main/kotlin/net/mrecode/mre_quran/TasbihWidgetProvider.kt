@@ -7,6 +7,9 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.os.Build
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.widget.RemoteViews
 
 /**
@@ -24,9 +27,24 @@ class TasbihWidgetProvider : AppWidgetProvider() {
 
     override fun onReceive(context: Context, intent: Intent) {
         when (intent.action) {
-            ACTION_COUNT -> change(context) { it + 1 }
+            ACTION_COUNT -> {
+                change(context) { it + 1 }
+                tick(context)
+            }
             ACTION_RESET -> change(context) { 0 }
             else -> super.onReceive(context, intent)
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun tick(context: Context) {
+        if (!context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE).getBoolean(HAPTICS, true)) return
+        val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator ?: return
+        if (!vibrator.hasVibrator()) return
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            vibrator.vibrate(VibrationEffect.createOneShot(14, 110))
+        } else {
+            vibrator.vibrate(14)
         }
     }
 
@@ -62,7 +80,13 @@ class TasbihWidgetProvider : AppWidgetProvider() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
 
-    private companion object {
+    companion object {
+        fun setHapticsEnabled(context: Context, enabled: Boolean) {
+            context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE)
+                .edit().putBoolean(HAPTICS, enabled).apply()
+        }
+
+        private const val HAPTICS = "haptics"
         /** The size the widget is drawn at before scaling: two cells by one. */
         const val BASE_WIDTH_DP = 140f
         const val BASE_HEIGHT_DP = 60f
