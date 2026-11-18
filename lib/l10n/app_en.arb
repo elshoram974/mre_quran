@@ -268,7 +268,7 @@
   "hijriMonth12": "Dhu al-Hijjah",
   "hijriDateLine": "{day} {month} {year} AH",
   "@hijriDateLine": {"placeholders": {"day": {"type": "String"}, "month": {"type": "String"}, "year": {"type": "String"}}},
-  "prayerWidgetEmpty": "Open Mushafi to set your location",
+  "prayerWidgetEmpty": "Open Mushafi to refresh prayer times",
   "adhanTitle": "Adhan",
   "adhanTileSubtitle": "The voice and how the alert behaves",
   "adhanSectionAlert": "Alert",

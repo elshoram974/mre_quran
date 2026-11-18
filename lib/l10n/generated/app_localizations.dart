@@ -1594,7 +1594,7 @@ abstract class AppLocalizations {
   /// No description provided for @prayerWidgetEmpty.
   ///
   /// In en, this message translates to:
-  /// **'Open Mushafi to set your location'**
+  /// **'Open Mushafi to refresh prayer times'**
   String get prayerWidgetEmpty;
 
   /// No description provided for @adhanTitle.

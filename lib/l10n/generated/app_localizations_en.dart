@@ -863,7 +863,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get prayerWidgetEmpty => 'Open Mushafi to set your location';
+  String get prayerWidgetEmpty => 'Open Mushafi to refresh prayer times';
 
   @override
   String get adhanTitle => 'Adhan';

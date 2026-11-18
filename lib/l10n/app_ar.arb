@@ -259,7 +259,7 @@
   "hijriMonth12": "ذو الحجة",
   "hijriDateLine": "{day} {month} {year} هـ",
   "@hijriDateLine": {"placeholders": {"day": {"type": "String"}, "month": {"type": "String"}, "year": {"type": "String"}}},
-  "prayerWidgetEmpty": "افتح مصحفي لتحديد موقعك",
+  "prayerWidgetEmpty": "افتح مصحفي لتحديث مواقيت الصلاة",
   "adhanTitle": "الأذان",
   "adhanTileSubtitle": "الصوت وطريقة عمل التنبيه",
   "adhanSectionAlert": "التنبيه",

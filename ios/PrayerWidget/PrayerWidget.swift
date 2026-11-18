@@ -114,7 +114,7 @@ struct RefreshPrayerWidgetIntent: AppIntent {
 private struct PrayerWidgetTap: ViewModifier {
   let entry: Entry
   @ViewBuilder func body(content: Content) -> some View {
-    if #available(iOS 17.0, *), entry.awaitingReload {
+    if #available(iOS 17.0, *), entry.awaitingReload, entry.payload?.day(entry.date) != nil {
       Button(intent: RefreshPrayerWidgetIntent()) {
         content.contentShape(Rectangle())
       }.buttonStyle(.plain).accessibilityHint(Text("Refresh prayer times"))

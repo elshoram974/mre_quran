@@ -860,7 +860,7 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get prayerWidgetEmpty => 'افتح مصحفي لتحديد موقعك';
+  String get prayerWidgetEmpty => 'افتح مصحفي لتحديث مواقيت الصلاة';
 
   @override
   String get adhanTitle => 'الأذان';
