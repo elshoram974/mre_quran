@@ -244,6 +244,28 @@ void main() {
       expect(scheduler.exactRequests, 1);
     });
 
+    testWidgets('explains exact timing when the first alert is enabled', (
+      tester,
+    ) async {
+      final scheduler = FakeReminderScheduler()..exactAllowed = false;
+      await _pump(
+        tester,
+        place: _cairo,
+        scheduler: scheduler,
+        hints: _AllHints(),
+      );
+      await _reveal(tester, find.text('تنبيه للصلوات الخمس'));
+      await tester.tap(find.text('تنبيه للصلوات الخمس'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('متابعة'));
+      await tester.pumpAndSettle();
+      expect(find.text('السماح بالتوقيت الدقيق'), findsWidgets);
+      expect(scheduler.exactRequests, 0);
+      await tester.tap(find.text('لاحقًا'));
+      await tester.pumpAndSettle();
+      expect(find.text('جرّب الأذان الآن'), findsOneWidget);
+    });
+
     testWidgets('no exact-alarm note when exact alarms are already allowed', (
       tester,
     ) async {

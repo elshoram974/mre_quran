@@ -11,6 +11,9 @@ import android.os.SystemClock
 import android.view.View
 import android.widget.RemoteViews
 import org.json.JSONObject
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 /** Draws the three prayer widgets from the data the app last sent. */
 internal object PrayerWidgetRenderer {
@@ -87,22 +90,26 @@ internal object PrayerWidgetRenderer {
             manager.updateAppWidget(id, views)
         }
         for (id in schedule) {
-            val views = scheduleViews(context, model, now)
-            // Base: two cells by two.
-            val scale = WidgetScale.of(manager, id, 140f, 150f)
-            WidgetScale.text(views, R.id.schedule_date, 12f, scale)
-            WidgetScale.text(views, R.id.schedule_hijri, 10f, scale)
+            val options = manager.getAppWidgetOptions(id)
+            val width = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 0)
+            val height = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 0)
+            val compact = width <= 0 || width < 110
+            val views = scheduleViews(context, model, now, compact, height in 1..134)
+            // Base: one cell by two.
+            val scale = WidgetScale.of(manager, id, 70f, 140f)
+            WidgetScale.text(views, R.id.schedule_date, if (compact) 9f else 12f, scale)
+            WidgetScale.text(views, R.id.schedule_hijri, if (compact) 8f else 10f, scale)
             for (index in rowIds.indices) {
-                WidgetScale.text(views, nameIds[index], 12f, scale)
-                WidgetScale.text(views, timeIds[index], 12f, scale)
+                WidgetScale.text(views, nameIds[index], if (compact) 9f else 12f, scale)
+                WidgetScale.text(views, timeIds[index], if (compact) 9f else 12f, scale)
                 WidgetScale.text(views, leftIds[index], 10f, scale)
             }
             manager.updateAppWidget(id, views)
         }
         for (id in cards) {
             val views = cardViews(context, model, now)
-            // Base: four cells by two.
-            val scale = WidgetScale.of(manager, id, 280f, 150f)
+            // Base: three cells by two.
+            val scale = WidgetScale.of(manager, id, 210f, 150f)
             WidgetScale.text(views, R.id.card_label, 11f, scale)
             WidgetScale.text(views, R.id.card_name, 26f, scale)
             WidgetScale.text(views, R.id.card_time, 16f, scale)
@@ -218,8 +225,12 @@ internal object PrayerWidgetRenderer {
         }
     }
 
-    private fun scheduleViews(context: Context, model: WidgetModel?, now: Long): RemoteViews {
+    private fun scheduleViews(context: Context, model: WidgetModel?, now: Long, compact: Boolean, short: Boolean): RemoteViews {
         val views = RemoteViews(context.packageName, R.layout.prayer_schedule_widget)
+        if (short) {
+            views.setInt(R.id.schedule_date, "setMaxLines", 1)
+            views.setInt(R.id.schedule_hijri, "setMaxLines", 1)
+        }
         val day = model?.dayAt(now)
         if (model == null || day == null) {
             views.setTextViewText(R.id.schedule_date, context.getString(R.string.prayer_widget_name))
@@ -227,6 +238,7 @@ internal object PrayerWidgetRenderer {
             rowIds.forEach { views.setViewVisibility(it, View.GONE) }
         } else {
             val next = model.nextAfter(now)
+            val compactTime = if (compact) SimpleDateFormat("HH:mm", Locale.ROOT) else null
             // After the day's last prayer the coming one is tomorrow's Fajr.
             // It takes today's Fajr row, with tomorrow's time, so the widget
             // always points at a prayer.
@@ -240,9 +252,13 @@ internal object PrayerWidgetRenderer {
                 // The coming prayer is lit, under a line saying how long is left.
                 val coming = next != null && row.id == next.id && (tomorrow || row.at == next.at)
                 views.setTextViewText(nameIds[index], row.name)
-                views.setTextViewText(timeIds[index], if (coming) next!!.time else row.time)
+                val at = if (coming) next!!.at else row.at
+                val time = if (compactTime != null) {
+                    digits(compactTime.format(Date(at)), model.arabicDigits)
+                } else if (coming) next!!.time else row.time
+                views.setTextViewText(timeIds[index], time)
                 views.setInt(rowId, "setBackgroundResource", if (coming) R.drawable.widget_row_next else 0)
-                views.setViewVisibility(leftIds[index], if (coming) View.VISIBLE else View.GONE)
+                views.setViewVisibility(leftIds[index], if (coming && !compact) View.VISIBLE else View.GONE)
                 if (coming) views.setTextViewText(leftIds[index], remaining(model, next!!.at - now))
             }
         }

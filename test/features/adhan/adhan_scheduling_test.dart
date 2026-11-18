@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -46,8 +48,10 @@ _Harness _harness({
   AdhanSettings settings = const AdhanSettings(),
   Set<String> saved = const {},
   bool iosSounds = true,
+  FakeReminderScheduler? schedulerOverride,
 }) {
-  final scheduler = FakeReminderScheduler()..exactAllowed = exact;
+  final scheduler =
+      schedulerOverride ?? (FakeReminderScheduler()..exactAllowed = exact);
   final platform = FakeAdhanPlatform(supported: supported);
   final adhan = MemoryAdhanRepository()..settings = settings;
   final store = FakeVoiceStore(saved: saved);
@@ -75,6 +79,20 @@ _Harness _harness({
     adhan: adhan,
     store: store,
   );
+}
+
+class _BlockingScheduler extends FakeReminderScheduler {
+  final entered = Completer<void>();
+  final release = Completer<void>();
+
+  @override
+  Future<Set<int>> pendingIds() async {
+    if (!entered.isCompleted) {
+      entered.complete();
+      await release.future;
+    }
+    return super.pendingIds();
+  }
 }
 
 /// Says whether the iOS sounds could be put in place.
@@ -143,6 +161,50 @@ void main() {
     expect(h.platform.alarms, isEmpty);
     expect(_atTimeNotifications(h), hasLength(_atTimeWithin));
   });
+
+  test(
+    'granting exact alarms replaces approximate notices with adhan alarms',
+    () async {
+      final h = _harness(exact: false);
+      await h.turnAllOn();
+      expect(_atTimeNotifications(h), isNotEmpty);
+      expect(h.platform.alarms, isEmpty);
+
+      h.scheduler.exactAllowed = true;
+      expect(
+        await h.container.read(prayerProvider.notifier).allowExactAlarms(),
+        isTrue,
+      );
+
+      expect(h.platform.alarms, hasLength(_allAlarms));
+      expect(_atTimeNotifications(h), isEmpty);
+      final expected = PrayerDay.compute(_cairo, PrayerMethod.egyptian, _now);
+      expect(h.platform.alarms.first.at, expected.fajr);
+    },
+  );
+
+  test(
+    'overlapping schedule changes leave the latest prayer selection',
+    () async {
+      final scheduler = _BlockingScheduler();
+      final h = _harness(schedulerOverride: scheduler);
+      await h.container.read(prayerProvider.future);
+      final notifier = h.container.read(prayerProvider.notifier);
+      final first = notifier.setAlert(DailyPrayer.fajr, true);
+      await scheduler.entered.future;
+      final second = notifier.setAlert(DailyPrayer.isha, true);
+      scheduler.release.complete();
+      await Future.wait([first, second]);
+      expect(h.container.read(prayerProvider).value!.settings.alerts, {
+        DailyPrayer.fajr,
+        DailyPrayer.isha,
+      });
+      expect(h.platform.alarms.map((alarm) => alarm.announce).toSet(), {
+        'fajr',
+        'isha',
+      });
+    },
+  );
 
   test(
     'a phone that cannot play by itself keeps normal notifications',

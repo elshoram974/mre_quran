@@ -30,6 +30,8 @@ class AdhanService : Service() {
     private var player: MediaPlayer? = null
     private var flip: FlipDetector? = null
     private var focus: AudioFocusRequest? = null
+    private var legacyFocusAcquired = false
+    private val legacyFocusListener = AudioManager.OnAudioFocusChangeListener { }
     private val steps = ArrayDeque<() -> MediaPlayer?>()
     private val main = Handler(Looper.getMainLooper())
 
@@ -63,10 +65,19 @@ class AdhanService : Service() {
 
     private fun play(sequence: List<() -> MediaPlayer?>) {
         val audio = getSystemService(AudioManager::class.java)
-        focus = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)
-            .setAudioAttributes(AdhanAudio.alarmAttributes())
-            .build()
-            .also { audio.requestAudioFocus(it) }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            focus = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)
+                .setAudioAttributes(AdhanAudio.alarmAttributes())
+                .build()
+                .also { audio.requestAudioFocus(it) }
+        } else {
+            @Suppress("DEPRECATION")
+            legacyFocusAcquired = audio.requestAudioFocus(
+                legacyFocusListener,
+                AudioManager.STREAM_ALARM,
+                AudioManager.AUDIOFOCUS_GAIN_TRANSIENT,
+            ) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
+        }
         steps.clear()
         steps.addAll(sequence)
         playNext()
@@ -108,8 +119,15 @@ class AdhanService : Service() {
             it.release()
         }
         player = null
-        focus?.let { getSystemService(AudioManager::class.java).abandonAudioFocusRequest(it) }
+        val audio = getSystemService(AudioManager::class.java)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            focus?.let { audio.abandonAudioFocusRequest(it) }
+        } else if (legacyFocusAcquired) {
+            @Suppress("DEPRECATION")
+            audio.abandonAudioFocus(legacyFocusListener)
+        }
         focus = null
+        legacyFocusAcquired = false
     }
 
     private fun finish() {

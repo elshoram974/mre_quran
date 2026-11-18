@@ -220,11 +220,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get widgetSizeTall =>
-      'Suggested Android size: two columns by two rows.';
+      'Suggested Android size: one column by two rows.';
 
   @override
   String get widgetSizeWide =>
-      'Suggested Android size: four columns by two rows.';
+      'Suggested Android size: three columns by two rows.';
 
   @override
   String get widgetIosTasbihHint =>
@@ -260,7 +260,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get widgetPrayerScheduleDescription =>
-      'Today\'s five prayers and sunrise, with the day and Gregorian and Hijri dates.';
+      'Today\'s five prayers and sunrise, with the day and Gregorian and Hijri dates. The narrow size uses 24-hour times.';
 
   @override
   String get widgetTasbih => 'Tasbih';

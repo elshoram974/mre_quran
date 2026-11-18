@@ -13,6 +13,9 @@ enum AppHint {
   /// An invitation to configure prayer alerts and the adhan.
   configureAdhan,
 
+  /// Explain why prayer alerts need exact alarms when first enabled.
+  exactPrayerTiming,
+
   /// After the adhan was tried: put the prayer times on the home screen.
   tryWidgets,
 

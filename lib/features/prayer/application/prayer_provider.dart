@@ -99,6 +99,7 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
   PrayerRepository get _repository => ref.read(prayerRepositoryProvider);
   LocationSource get _location => ref.read(locationSourceProvider);
   ReminderScheduler get _scheduler => ref.read(reminderSchedulerProvider);
+  Future<void> _scheduleQueue = Future.value();
 
   @override
   Future<PrayerState> build() async {
@@ -208,8 +209,20 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
     change: (settings) => settings.copyWith(afterMinutes: minutes),
   );
 
-  /// Opens the system page where exact alarms may be allowed.
-  Future<bool> allowExactAlarms() => _scheduler.requestExact();
+  /// Opens the system page and replaces approximate alarms after approval.
+  Future<bool> allowExactAlarms() async {
+    final allowed = await _scheduler.requestExact();
+    if (allowed) await reschedule();
+    return allowed;
+  }
+
+  /// Replaces pending alarms using the current permissions and settings.
+  Future<void> reschedule() async {
+    final current = await future;
+    if (current.settings.needsSchedule) {
+      await _schedule(current.settings, current.place);
+    }
+  }
 
   Future<PrayerResult> _change({
     required bool needsPermission,
@@ -301,7 +314,18 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
   static int get notificationLimit =>
       defaultTargetPlatform == TargetPlatform.android ? 150 : 48;
 
-  Future<void> _schedule(PrayerSettings settings, PrayerPlace? place) async {
+  Future<void> _schedule(PrayerSettings settings, PrayerPlace? place) {
+    // Replacing a plan cancels and recreates alarms. Serialize replacements so
+    // an older startup or voice-change request cannot overwrite a newer one.
+    final next = _scheduleQueue.then((_) => _replaceSchedule(settings, place));
+    _scheduleQueue = next;
+    return next;
+  }
+
+  Future<void> _replaceSchedule(
+    PrayerSettings settings,
+    PrayerPlace? place,
+  ) async {
     try {
       for (final id in await _scheduler.pendingIds()) {
         if (PrayerAlertPlan.owns(id)) await _scheduler.cancel(id);

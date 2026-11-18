@@ -102,6 +102,19 @@ figures expose a possible slow path but are not a controlled comparison with
 the earlier results. Repeat on an idle host and a physical device before
 concluding whether the sheet regressed.
 
+The profile scenario was run again on a separate API 28 software-rendered
+emulator after the adhan suggestion and widget changes. Average build / raster
+times were 4.8 / 30.9 ms for tabs, 6.4 / 25.7 ms for the settings sheet,
+6.2 / 34.3 ms opening the index, 7.7 / 58.3 ms scrolling it, 3.3 / 31.0 ms
+searching, and 3.2 / 22.1 ms closing it. Only 4–28 frames were sampled per
+phase, and other builds and emulators were active on the host. These numbers
+are not a controlled before-and-after comparison and do not establish device
+performance; repeat on an idle host and a physical device.
+Three subsequent profile startup traces on that emulator reached the first
+rasterized frame in 1,179, 1,066 and 973 ms after engine start. The host was
+still shared with other processes, so this spread is a measurement of this
+run, not proof of a change in startup speed.
+
 ## Rules
 
 - Do not await independent work one after another before `runApp`. Run it in parallel.

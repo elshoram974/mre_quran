@@ -491,13 +491,13 @@ abstract class AppLocalizations {
   /// No description provided for @widgetSizeTall.
   ///
   /// In en, this message translates to:
-  /// **'Suggested Android size: two columns by two rows.'**
+  /// **'Suggested Android size: one column by two rows.'**
   String get widgetSizeTall;
 
   /// No description provided for @widgetSizeWide.
   ///
   /// In en, this message translates to:
-  /// **'Suggested Android size: four columns by two rows.'**
+  /// **'Suggested Android size: three columns by two rows.'**
   String get widgetSizeWide;
 
   /// No description provided for @widgetIosTasbihHint.
@@ -557,7 +557,7 @@ abstract class AppLocalizations {
   /// No description provided for @widgetPrayerScheduleDescription.
   ///
   /// In en, this message translates to:
-  /// **'Today\'s five prayers and sunrise, with the day and Gregorian and Hijri dates.'**
+  /// **'Today\'s five prayers and sunrise, with the day and Gregorian and Hijri dates. The narrow size uses 24-hour times.'**
   String get widgetPrayerScheduleDescription;
 
   /// No description provided for @widgetTasbih.

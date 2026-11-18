@@ -217,12 +217,11 @@ class AppLocalizationsAr extends AppLocalizations {
       'على أندرويد: خليتان عرضًا، وصف أو صفان حسب الشاشة الرئيسية.';
 
   @override
-  String get widgetSizeTall =>
-      'المقاس المقترح على أندرويد: خليتان عرضًا وصفان.';
+  String get widgetSizeTall => 'المقاس المقترح على أندرويد: خلية عرضًا وصفان.';
 
   @override
   String get widgetSizeWide =>
-      'المقاس المقترح على أندرويد: أربع خلايا عرضًا وصفان.';
+      'المقاس المقترح على أندرويد: ثلاث خلايا عرضًا وصفان.';
 
   @override
   String get widgetIosTasbihHint => 'العد من الويدجت يتطلب iOS 17 أو أحدث.';
@@ -257,7 +256,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get widgetPrayerScheduleDescription =>
-      'صلوات اليوم الخمس والشروق مع اليوم والتاريخين الميلادي والهجري.';
+      'صلوات اليوم الخمس والشروق مع اليوم والتاريخين الميلادي والهجري. في المقاس الضيق تُعرض المواقيت بنظام 24 ساعة.';
 
   @override
   String get widgetTasbih => 'المسبحة';

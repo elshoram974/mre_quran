@@ -85,6 +85,25 @@ class _PrayerTimesPageState extends ConsumerState<PrayerTimesPage> {
     setState(() => _result = result);
     final on = ref.read(prayerProvider).value?.settings.alerts.isNotEmpty;
     if (!first || result != PrayerResult.ok || on != true) return;
+    final exact = await ref.read(reminderSchedulerProvider).canScheduleExact();
+    if (!mounted) return;
+    if (!exact) {
+      final allow = await showAppHint(
+        context,
+        ref,
+        hint: AppHint.exactPrayerTiming,
+        icon: Icons.alarm_outlined,
+        title: l10n.prayerChannelName,
+        body: l10n.prayerExactNote,
+        action: l10n.prayerExactAllow,
+      );
+      if (!mounted) return;
+      if (allow) {
+        await ref.read(prayerProvider.notifier).allowExactAlarms();
+        if (!mounted) return;
+        ref.invalidate(exactAlarmsAllowedProvider);
+      }
+    }
     final tried = await showAppHint(
       context,
       ref,

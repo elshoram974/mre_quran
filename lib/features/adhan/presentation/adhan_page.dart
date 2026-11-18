@@ -16,6 +16,7 @@ import '../application/adhan_providers.dart';
 import '../domain/adhan_settings.dart';
 import '../domain/adhan_voice.dart';
 import '../../home_widgets/presentation/widget_hint.dart';
+import '../../prayer/application/prayer_provider.dart';
 import 'custom_voice_card.dart';
 import 'voice_card.dart';
 
@@ -223,8 +224,14 @@ class _AlertSection extends ConsumerWidget {
             alignment: AlignmentDirectional.centerStart,
             child: TextButton(
               onPressed: () async {
-                await ref.read(reminderSchedulerProvider).requestExact();
-                ref.invalidate(adhanExactAllowedProvider);
+                final allowed = await ref
+                    .read(reminderSchedulerProvider)
+                    .requestExact();
+                if (!context.mounted) return;
+                if (allowed) {
+                  await ref.read(prayerProvider.notifier).reschedule();
+                }
+                if (context.mounted) ref.invalidate(adhanExactAllowedProvider);
               },
               child: Text(l10n.prayerExactAllow),
             ),

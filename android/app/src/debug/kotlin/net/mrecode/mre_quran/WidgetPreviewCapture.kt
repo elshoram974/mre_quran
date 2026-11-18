@@ -27,10 +27,10 @@ class WidgetPreviewCapture : Activity() {
 
     private val shots = listOf(
         Shot(R.layout.prayer_widget, "prayer_widget_preview", 172, 72),
-        Shot(R.layout.prayer_schedule_widget, "prayer_schedule_widget_preview", 172, 150),
+        Shot(R.layout.prayer_schedule_widget, "prayer_schedule_widget_preview", 72, 150),
         Shot(R.layout.adhkar_widget, "adhkar_widget_preview", 172, 72),
         Shot(R.layout.tasbih_widget, "tasbih_widget_preview", 172, 72),
-        Shot(R.layout.prayer_card_widget, "prayer_card_widget_preview", 330, 160),
+        Shot(R.layout.prayer_card_widget, "prayer_card_widget_preview", 215, 160),
     )
 
     private val stage by lazy { FrameLayout(this) }
