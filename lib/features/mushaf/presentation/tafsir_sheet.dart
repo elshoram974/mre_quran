@@ -13,28 +13,39 @@ import '../../quran_text/domain/ayah_range.dart';
 import '../../quran_text/domain/ayah_share_text.dart';
 import '../../quran_text/domain/ayah_texts.dart';
 import '../../quran_text/domain/tafsir.dart';
+import '../domain/mushaf_edition.dart';
 import '../../settings/application/digits_provider.dart';
 
-/// Opens Al-Tafsir Al-Muyassar of [ayah], with the ayah above it, and steps
-/// to the ayah before or after it.
-Future<void> showTafsir(BuildContext context, AyahTexts text, AyahRef ayah) =>
-    AppSheet.showFilling<void>(
-      context: context,
-      builder: (_, scroll) =>
-          TafsirSheet(text: text, initial: ayah, scroll: scroll),
-    );
+/// Opens Al-Tafsir Al-Muyassar of [ayah] of [edition], with the ayah above
+/// it in the reading's own script, and steps to the ayah before or after it.
+/// An ayah of a reading that numbers it otherwise gets the tafsir of the
+/// Hafs ayah(s) it is.
+Future<void> showTafsir(
+  BuildContext context,
+  MushafEdition edition,
+  AyahTexts text,
+  AyahRef ayah,
+) => AppSheet.showFilling<void>(
+  context: context,
+  builder: (_, scroll) =>
+      TafsirSheet(edition: edition, text: text, initial: ayah, scroll: scroll),
+);
 
 /// The body of the tafsir sheet.
 class TafsirSheet extends ConsumerStatefulWidget {
   /// Creates the sheet on [initial].
   const TafsirSheet({
     super.key,
+    required this.edition,
     required this.text,
     required this.initial,
     required this.scroll,
   });
 
-  /// The app's own (Hafs) text, which the tafsir explains.
+  /// The reading the ayah is from.
+  final MushafEdition edition;
+
+  /// That reading's text.
   final AyahTexts text;
 
   /// The ayah the sheet opens on.
@@ -59,8 +70,12 @@ class _TafsirSheetState extends ConsumerState<TafsirSheet> {
   /// The tafsir to paste: its words, the quoted Quran in the usual ornate
   /// brackets (the source writes them in the Mushaf font's own glyphs), and
   /// where it is from.
-  String _copyText(Tafsir tafsir, String place) {
-    final words = tafsir.plain.replaceAll('ﵡ', '﴿').replaceAll('ﵠ', '﴾');
+  String _copyText(List<({AyahRef hafs, Tafsir tafsir})> tafsir, String place) {
+    final words = tafsir
+        .map((entry) => entry.tafsir.plain)
+        .join('\n')
+        .replaceAll('ﵡ', '﴿')
+        .replaceAll('ﵠ', '﴾');
     return AyahShareText.rightToLeft(
       '$words\n[${context.l10n.tafsirTitle} · $place]',
     );
@@ -72,7 +87,7 @@ class _TafsirSheetState extends ConsumerState<TafsirSheet> {
     final theme = Theme.of(context);
     final colors = QuranColors.of(context);
     final digits = ref.watch(digitsFormatterProvider);
-    final tafsir = ref.watch(ayahTafsirProvider(_ayah));
+    final tafsir = ref.watch(readingTafsirProvider((widget.edition, _ayah)));
     final place =
         '${widget.text.metadata.surah(_ayah.surah).arabicName} · '
         '${l10n.ayahNumber(digits(_ayah.ayah))}';
@@ -159,9 +174,29 @@ class _TafsirSheetState extends ConsumerState<TafsirSheet> {
               ),
               const SizedBox(height: AppTokens.spaceMedium),
               switch (tafsir) {
-                AsyncValue(:final value?) => _TafsirText(
-                  tafsir: value,
-                  quranFont: widget.text.fontFamily,
+                AsyncValue(:final value?) => Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (final entry in value) ...[
+                      // Said when the tafsir is of another number, as Hafs
+                      // counts it.
+                      if (value.length > 1 || entry.hafs != _ayah)
+                        Padding(
+                          padding: const EdgeInsetsDirectional.only(bottom: 4),
+                          child: Text(
+                            l10n.tafsirOfHafsAyah(digits(entry.hafs.ayah)),
+                            style: theme.textTheme.labelLarge?.copyWith(
+                              color: theme.colorScheme.primary,
+                            ),
+                          ),
+                        ),
+                      _TafsirText(
+                        tafsir: entry.tafsir,
+                        quranFont: AppTokens.mushafFontFamily,
+                      ),
+                      const SizedBox(height: AppTokens.spaceSmall),
+                    ],
+                  ],
                 ),
                 AsyncValue(hasError: true) => Text(l10n.tafsirLoadError),
                 _ => const Padding(

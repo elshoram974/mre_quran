@@ -104,6 +104,16 @@ class SvgPageStore {
     return decoded;
   }
 
+  /// Whether both files of [page] are on the device, so it opens offline.
+  Future<bool> isOnDevice(int page) async {
+    final folder = await _folder();
+    for (final extension in _extensions) {
+      final name = SvgManifest.fileName(page, extension);
+      if (!await File('$folder/$name$_packed').exists()) return false;
+    }
+    return true;
+  }
+
   /// Makes sure the two files of [page] are on the device, without decoding
   /// them. Concurrent calls for one page share one download.
   Future<void> fetch(int page) =>

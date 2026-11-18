@@ -141,6 +141,66 @@ class AppLocalizationsAr extends AppLocalizations {
   String get creditsTitle => 'النسب والمصادر';
 
   @override
+  String get hintNever => 'لا تذكرني مرة أخرى';
+
+  @override
+  String get hintLater => 'لاحقًا';
+
+  @override
+  String get hintPermissionsTitle => 'سنطلب إذنين';
+
+  @override
+  String get hintPermissionsBody =>
+      'لننبّهك بالأذان نحتاج إذن الإشعارات، ولحساب المواقيت نحتاج موقعك التقريبي. يُحسب كل شيء على جهازك، ولا يُرسل موقعك إلى أي خادم.';
+
+  @override
+  String get hintPermissionsAction => 'متابعة';
+
+  @override
+  String get hintTryAdhanTitle => 'جرّب الأذان الآن';
+
+  @override
+  String get hintTryAdhanBody =>
+      'اسمع التنبيه كما سيأتي وقت الصلاة، وتأكد أن الصوت مسموع، قبل أول صلاة.';
+
+  @override
+  String get hintTryAdhanAction => 'جرّب الآن';
+
+  @override
+  String get hintWidgetsTitle => 'المواقيت على شاشتك الرئيسية';
+
+  @override
+  String get hintWidgetsBody =>
+      'أداة «بطاقة الصلاة» تعرض الصلاة القادمة والوقت المتبقي لها وصلوات اليوم، دون أن تفتح التطبيق.';
+
+  @override
+  String get hintWidgetsBodyIos =>
+      'أداة «بطاقة الصلاة» تعرض الصلاة القادمة والوقت المتبقي لها وصلوات اليوم. لإضافتها: اضغط مطولًا على الشاشة الرئيسية، ثم «+»، وابحث عن «مصحفي».';
+
+  @override
+  String get hintWidgetsAction => 'أضف الأداة';
+
+  @override
+  String get hintWidgetsActionIos => 'حسنًا';
+
+  @override
+  String get hintWidgetsManual =>
+      'اضغط مطولًا على الشاشة الرئيسية، ثم «الأدوات»، وابحث عن «مصحفي».';
+
+  @override
+  String get hintOfflineTitle => 'انتبه: المصحف يحتاج الإنترنت';
+
+  @override
+  String hintOfflineBody(String size) {
+    return 'صفحات المصحف تُحمَّل من الإنترنت عند فتحها. الصفحات التي فتحتها مرة تبقى على جهازك وتعمل دون إنترنت، أما غيرها فلن يظهر بلا اتصال. نزّل المصحف كاملًا ($size م.ب) ليعمل في أي وقت ومكان.';
+  }
+
+  @override
+  String hintOfflineAction(String name) {
+    return 'نزّل مصحف $name كاملًا';
+  }
+
+  @override
   String get creditsPermissionPending => 'الإذن قيد الطلب';
 
   @override
@@ -1099,6 +1159,11 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get tafsirTitle => 'التفسير الميسر';
+
+  @override
+  String tafsirOfHafsAyah(String number) {
+    return 'تفسير الآية $number بترقيم حفص';
+  }
 
   @override
   String get tafsirCredit =>

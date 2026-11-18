@@ -178,6 +178,18 @@ final class PrayerWidgetSync {
   static const _channel = MethodChannel('net.mrecode.mre_quran/prayer_widget');
 
   /// Replaces the widget's data, or clears it when no prayer place exists.
+  /// Asks the launcher to add the prayer card to the home screen. False
+  /// where it cannot (iOS, or a launcher that does not take such requests).
+  static Future<bool> pin() async {
+    try {
+      return await _channel.invokeMethod<bool>('pin') ?? false;
+    } on MissingPluginException {
+      return false;
+    } on PlatformException {
+      return false;
+    }
+  }
+
   static Future<void> update(PrayerWidgetData? data) async {
     try {
       await _channel.invokeMethod<void>('update', data?.toMap());

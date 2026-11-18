@@ -356,6 +356,108 @@ abstract class AppLocalizations {
   /// **'Credits'**
   String get creditsTitle;
 
+  /// No description provided for @hintNever.
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t remind me again'**
+  String get hintNever;
+
+  /// No description provided for @hintLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Later'**
+  String get hintLater;
+
+  /// No description provided for @hintPermissionsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'We will ask for two permissions'**
+  String get hintPermissionsTitle;
+
+  /// No description provided for @hintPermissionsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'To alert you with the adhan we need permission for notifications, and to work out the times, your approximate location. Everything is worked out on your device; your location is never sent to any server.'**
+  String get hintPermissionsBody;
+
+  /// No description provided for @hintPermissionsAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get hintPermissionsAction;
+
+  /// No description provided for @hintTryAdhanTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Try the adhan now'**
+  String get hintTryAdhanTitle;
+
+  /// No description provided for @hintTryAdhanBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Hear the alert as it will come at prayer time, and check that the sound is loud enough, before the first prayer.'**
+  String get hintTryAdhanBody;
+
+  /// No description provided for @hintTryAdhanAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Try it now'**
+  String get hintTryAdhanAction;
+
+  /// No description provided for @hintWidgetsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Prayer times on your home screen'**
+  String get hintWidgetsTitle;
+
+  /// No description provided for @hintWidgetsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The Prayer card widget shows the coming prayer, the time left and the day\'s prayers, without opening the app.'**
+  String get hintWidgetsBody;
+
+  /// No description provided for @hintWidgetsBodyIos.
+  ///
+  /// In en, this message translates to:
+  /// **'The Prayer card widget shows the coming prayer, the time left and the day\'s prayers. To add it: touch and hold the home screen, tap +, and search for Mushafi.'**
+  String get hintWidgetsBodyIos;
+
+  /// No description provided for @hintWidgetsAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Add the widget'**
+  String get hintWidgetsAction;
+
+  /// No description provided for @hintWidgetsActionIos.
+  ///
+  /// In en, this message translates to:
+  /// **'OK'**
+  String get hintWidgetsActionIos;
+
+  /// No description provided for @hintWidgetsManual.
+  ///
+  /// In en, this message translates to:
+  /// **'Touch and hold the home screen, tap Widgets, and search for Mushafi.'**
+  String get hintWidgetsManual;
+
+  /// No description provided for @hintOfflineTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Note: the Mushaf needs the internet'**
+  String get hintOfflineTitle;
+
+  /// No description provided for @hintOfflineBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The Mushaf\'s pages are downloaded when you open them. Pages you have opened once stay on your device and work offline; the others will not show without a connection. Download the whole Mushaf ({size} MB) so it works anytime, anywhere.'**
+  String hintOfflineBody(String size);
+
+  /// No description provided for @hintOfflineAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Download the whole {name} Mushaf'**
+  String hintOfflineAction(String name);
+
   /// No description provided for @creditsPermissionPending.
   ///
   /// In en, this message translates to:
@@ -1968,6 +2070,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Al-Tafsir Al-Muyassar'**
   String get tafsirTitle;
+
+  /// No description provided for @tafsirOfHafsAyah.
+  ///
+  /// In en, this message translates to:
+  /// **'Tafsir of ayah {number} as Hafs numbers it'**
+  String tafsirOfHafsAyah(String number);
 
   /// No description provided for @tafsirCredit.
   ///

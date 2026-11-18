@@ -150,7 +150,7 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
       texts,
       ayah,
       bookmarks: edition.matchesAppText,
-      tafsir: edition.matchesAppText,
+      tafsir: edition,
       onSelectMore: () =>
           ref.read(ayahSelectionProvider.notifier).start(edition, texts, ayah),
     );

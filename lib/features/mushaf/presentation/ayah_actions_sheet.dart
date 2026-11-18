@@ -12,12 +12,13 @@ import '../../quran_index/domain/quran_metadata.dart';
 import '../../quran_text/domain/ayah_range.dart';
 import '../../quran_text/domain/ayah_texts.dart';
 import '../../settings/application/digits_provider.dart';
+import '../domain/mushaf_edition.dart';
 import 'ayah_share_format.dart';
 import 'ayah_share_sheet.dart';
 import 'tafsir_sheet.dart';
 
 /// Opens the actions for [target]: copy with its reference, read its tafsir
-/// (when [tafsir] is on), share, choose more ayahs with it when
+/// (the reading [tafsir] it is from; none when null), share, choose more ayahs with it when
 /// [onSelectMore] is given, and, when [bookmarks] is on, bookmark. The ayah itself floats above the sheet, so the person sees
 /// what they are about to copy or share.
 ///
@@ -28,7 +29,7 @@ Future<void> showAyahActions(
   AyahTexts text,
   AyahRef target, {
   bool bookmarks = true,
-  bool tafsir = true,
+  MushafEdition? tafsir = MushafEditions.hafs,
   VoidCallback? onSelectMore,
 }) => AppSheet.show<void>(
   context: context,
@@ -129,7 +130,7 @@ class _AyahActions extends ConsumerWidget {
   final AyahTexts text;
   final AyahRef target;
   final bool bookmarks;
-  final bool tafsir;
+  final MushafEdition? tafsir;
   final VoidCallback? onSelectMore;
 
   @override
@@ -170,15 +171,14 @@ class _AyahActions extends ConsumerWidget {
               messenger?.showSnackBar(SnackBar(content: Text(l10n.ayahCopied)));
             },
           ),
-          // Al-Tafsir Al-Muyassar explains the app's own (Hafs) text.
-          if (tafsir)
+          if (tafsir case final edition?)
             ListTile(
               leading: const Icon(Icons.menu_book_outlined),
               title: Text(l10n.tafsirAction),
               onTap: () {
                 final root = Navigator.of(context, rootNavigator: true);
                 Navigator.of(context).pop();
-                showTafsir(root.context, text, target);
+                showTafsir(root.context, edition, text, target);
               },
             ),
           ListTile(

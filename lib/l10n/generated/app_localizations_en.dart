@@ -143,6 +143,66 @@ class AppLocalizationsEn extends AppLocalizations {
   String get creditsTitle => 'Credits';
 
   @override
+  String get hintNever => 'Don\'t remind me again';
+
+  @override
+  String get hintLater => 'Later';
+
+  @override
+  String get hintPermissionsTitle => 'We will ask for two permissions';
+
+  @override
+  String get hintPermissionsBody =>
+      'To alert you with the adhan we need permission for notifications, and to work out the times, your approximate location. Everything is worked out on your device; your location is never sent to any server.';
+
+  @override
+  String get hintPermissionsAction => 'Continue';
+
+  @override
+  String get hintTryAdhanTitle => 'Try the adhan now';
+
+  @override
+  String get hintTryAdhanBody =>
+      'Hear the alert as it will come at prayer time, and check that the sound is loud enough, before the first prayer.';
+
+  @override
+  String get hintTryAdhanAction => 'Try it now';
+
+  @override
+  String get hintWidgetsTitle => 'Prayer times on your home screen';
+
+  @override
+  String get hintWidgetsBody =>
+      'The Prayer card widget shows the coming prayer, the time left and the day\'s prayers, without opening the app.';
+
+  @override
+  String get hintWidgetsBodyIos =>
+      'The Prayer card widget shows the coming prayer, the time left and the day\'s prayers. To add it: touch and hold the home screen, tap +, and search for Mushafi.';
+
+  @override
+  String get hintWidgetsAction => 'Add the widget';
+
+  @override
+  String get hintWidgetsActionIos => 'OK';
+
+  @override
+  String get hintWidgetsManual =>
+      'Touch and hold the home screen, tap Widgets, and search for Mushafi.';
+
+  @override
+  String get hintOfflineTitle => 'Note: the Mushaf needs the internet';
+
+  @override
+  String hintOfflineBody(String size) {
+    return 'The Mushaf\'s pages are downloaded when you open them. Pages you have opened once stay on your device and work offline; the others will not show without a connection. Download the whole Mushaf ($size MB) so it works anytime, anywhere.';
+  }
+
+  @override
+  String hintOfflineAction(String name) {
+    return 'Download the whole $name Mushaf';
+  }
+
+  @override
   String get creditsPermissionPending => 'Permission being asked for';
 
   @override
@@ -1100,6 +1160,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tafsirTitle => 'Al-Tafsir Al-Muyassar';
+
+  @override
+  String tafsirOfHafsAyah(String number) {
+    return 'Tafsir of ayah $number as Hafs numbers it';
+  }
 
   @override
   String get tafsirCredit =>

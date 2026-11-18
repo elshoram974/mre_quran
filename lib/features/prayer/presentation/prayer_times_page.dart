@@ -5,7 +5,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/router.dart';
+import '../../../core/hints/hints.dart';
 import '../../../core/l10n/l10n.dart';
+import '../../../core/widgets/app_hint_sheet.dart';
+import '../../adhan/application/adhan_providers.dart';
 import '../../../core/layout/adaptive_layout.dart';
 import '../../../core/notifications/reminder_scheduler_provider.dart';
 import '../../../core/theme/app_tokens.dart';
@@ -25,6 +28,7 @@ import '../domain/prayer_alerts.dart';
 import '../domain/prayer_times.dart';
 import 'prayer_labels.dart';
 import 'prayer_no_place.dart';
+import 'widget_hint.dart';
 
 /// Whether exact alarms are allowed (always true off Android).
 final exactAlarmsAllowedProvider = FutureProvider.autoDispose<bool>(
@@ -44,9 +48,49 @@ class PrayerTimesPage extends ConsumerStatefulWidget {
 class _PrayerTimesPageState extends ConsumerState<PrayerTimesPage> {
   PrayerResult _result = PrayerResult.ok;
 
-  Future<void> _run(Future<PrayerResult> Function() action) async {
+  /// Runs [action]. When it turns the first alert on ([enabling]), the
+  /// permissions it asks for are said first, once ever; once the alerts are
+  /// on, the adhan is offered to try.
+  Future<void> _run(
+    Future<PrayerResult> Function() action, {
+    bool enabling = false,
+  }) async {
+    final l10n = context.l10n;
+    final first =
+        enabling &&
+        (ref.read(prayerProvider).value?.settings.alerts.isEmpty ?? true);
+    if (first) {
+      await showAppHint(
+        context,
+        ref,
+        hint: AppHint.permissions,
+        icon: Icons.verified_user_outlined,
+        title: l10n.hintPermissionsTitle,
+        body: l10n.hintPermissionsBody,
+        action: l10n.hintPermissionsAction,
+        once: true,
+      );
+      if (!mounted) return;
+    }
     final result = await action();
-    if (mounted) setState(() => _result = result);
+    if (!mounted) return;
+    setState(() => _result = result);
+    final on = ref.read(prayerProvider).value?.settings.alerts.isNotEmpty;
+    if (!first || result != PrayerResult.ok || on != true) return;
+    final tried = await showAppHint(
+      context,
+      ref,
+      hint: AppHint.tryAdhan,
+      icon: Icons.volume_up_outlined,
+      title: l10n.hintTryAdhanTitle,
+      body: l10n.hintTryAdhanBody,
+      action: l10n.hintTryAdhanAction,
+    );
+    if (!tried || !mounted) return;
+    await ref.read(adhanTesterProvider)(l10n);
+    // While it plays: the home-screen widgets are the next thing to try.
+    await Future<void>.delayed(const Duration(seconds: 6));
+    if (mounted) await offerWidgets(context, ref);
   }
 
   @override
@@ -105,7 +149,8 @@ class _Content extends ConsumerWidget {
 
   final PrayerState state;
   final PrayerResult result;
-  final Future<void> Function(Future<PrayerResult> Function()) onRun;
+  final Future<void> Function(Future<PrayerResult> Function(), {bool enabling})
+  onRun;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -140,8 +185,10 @@ class _Content extends ConsumerWidget {
                   ),
                   alert: settings.alerts.contains(DailyPrayer.fajr),
                   highlighted: next?.prayer == DailyPrayer.fajr,
-                  onAlert: (on) =>
-                      onRun(() => notifier.setAlert(DailyPrayer.fajr, on)),
+                  onAlert: (on) => onRun(
+                    () => notifier.setAlert(DailyPrayer.fajr, on),
+                    enabling: on,
+                  ),
                 ),
                 _TimeRow(
                   icon: sunriseIcon,
@@ -164,7 +211,10 @@ class _Content extends ConsumerWidget {
                     ),
                     alert: settings.alerts.contains(prayer),
                     highlighted: next?.prayer == prayer,
-                    onAlert: (on) => onRun(() => notifier.setAlert(prayer, on)),
+                    onAlert: (on) => onRun(
+                      () => notifier.setAlert(prayer, on),
+                      enabling: on,
+                    ),
                   ),
               ],
             ),
@@ -190,7 +240,8 @@ class _Content extends ConsumerWidget {
             children: [
               AppSwitchTile(
                 value: allAlerts,
-                onChanged: (on) => onRun(() => notifier.setAllAlerts(on)),
+                onChanged: (on) =>
+                    onRun(() => notifier.setAllAlerts(on), enabling: on),
                 title: l10n.prayerAlertsAll,
                 subtitle: l10n.prayerAlertsHint,
                 icon: Icons.notifications_active_outlined,

@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:mre_quran/core/l10n/l10n.dart';
 import 'package:mre_quran/core/theme/app_theme.dart';
+import 'package:mre_quran/features/mushaf/domain/mushaf_edition.dart';
 import 'package:mre_quran/features/mushaf/presentation/ayah_actions_sheet.dart';
 import 'package:mre_quran/features/quran_index/application/quran_metadata_provider.dart';
 import 'package:mre_quran/features/quran_index/domain/quran_metadata.dart';
@@ -32,6 +33,57 @@ ProviderContainer _container() => ProviderContainer(
 );
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  group(
+    'an ayah of another reading gets the tafsir of the Hafs ayah(s) it is',
+    () {
+      late ProviderContainer container;
+      setUp(() => container = _container());
+      tearDown(() => container.dispose());
+
+      Future<List<AyahRef>> hafsOf(MushafEdition edition, AyahRef ayah) =>
+          container.read(hafsAyahsProvider((edition, ayah)).future);
+
+      test(
+        'Warsh: Al-Fatiha counts no basmala, Al Imran 1 is two Hafs ayahs',
+        () async {
+          expect(await hafsOf(MushafEditions.warsh, const AyahRef(1, 1)), [
+            const AyahRef(1, 2),
+          ]);
+          expect(await hafsOf(MushafEditions.warsh, const AyahRef(1, 7)), [
+            const AyahRef(1, 7),
+          ]);
+          expect(await hafsOf(MushafEditions.warsh, const AyahRef(3, 1)), [
+            const AyahRef(3, 1),
+            const AyahRef(3, 2),
+          ]);
+        },
+      );
+
+      test('Shu\'bah counts as Hafs, and Hafs is itself', () async {
+        for (final edition in [MushafEditions.shubah, MushafEditions.hafs]) {
+          expect(await hafsOf(edition, const AyahRef(3, 1)), [
+            const AyahRef(3, 1),
+          ]);
+        }
+      });
+
+      test('every reading\'s map stays inside its surah and Hafs\'s ayahs', () {
+        for (final name in ['warsh', 'qalon', 'douri']) {
+          final map = parseHafsMap(
+            File('assets/quran/riwayat/${name}_hafs.txt').readAsStringSync(),
+          );
+          expect(map, isNotEmpty, reason: name);
+          for (final MapEntry(:key, :value) in map.entries) {
+            expect(value, isNotEmpty, reason: '$name $key');
+            expect(value.every((hafs) => hafs.surah == key.surah), isTrue);
+          }
+        }
+      });
+    },
+  );
+
   test('a tafsir is split into its words and the Quran it quotes', () {
     final tafsir = Tafsir.parse(
       "[1] أبتدئ <span class='aya'>ﵡ ٱللَّهِﵠ</span> علم على الرب",
@@ -86,12 +138,13 @@ void main() {
       () => container.read(quranTextProvider.future),
     ) as QuranText;
     // Read on another isolate, in real time.
-    await tester.runAsync(
-      () => container.read(ayahTafsirProvider(const AyahRef(2, 256)).future),
-    );
-    await tester.runAsync(
-      () => container.read(ayahTafsirProvider(const AyahRef(2, 257)).future),
-    );
+    for (final ayah in const [AyahRef(2, 256), AyahRef(2, 257)]) {
+      await tester.runAsync(
+        () => container.read(
+          readingTafsirProvider((MushafEditions.hafs, ayah)).future,
+        ),
+      );
+    }
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
@@ -130,7 +183,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('another reading offers no tafsir: it explains the Hafs text', (
+  testWidgets('without a reading to explain, no tafsir is offered', (
     tester,
   ) async {
     final container = _container();
@@ -152,7 +205,7 @@ void main() {
                   context,
                   HafsAyahTexts(text, fontFamily: 'KfgqpcHafs'),
                   const AyahRef(2, 256),
-                  tafsir: false,
+                  tafsir: null,
                 ),
                 child: const Text('open'),
               ),

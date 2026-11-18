@@ -13,9 +13,9 @@ import '../../../core/widgets/app_switch_tile.dart';
 import '../../../core/widgets/app_tile_card.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../application/adhan_providers.dart';
-import '../data/adhan_platform.dart';
 import '../domain/adhan_settings.dart';
 import '../domain/adhan_voice.dart';
+import '../../prayer/presentation/widget_hint.dart';
 import 'custom_voice_card.dart';
 import 'voice_card.dart';
 
@@ -42,11 +42,27 @@ class AdhanPage extends ConsumerWidget {
       body: Builder(
         builder: (context) {
           final padding = pagePadding(context);
+          // Where the adhan cannot play by itself (iOS): what happens
+          // instead, and a way to hear it.
           if (supported.value == false) {
             return ContentContainer(
-              child: Padding(
+              child: ListView(
                 padding: padding,
-                child: AppNotice(l10n.adhanUnsupported),
+                children: [
+                  AppNotice(l10n.adhanUnsupported),
+                  const SizedBox(height: 12),
+                  AppTileCard(
+                    icon: Icons.notifications_active_outlined,
+                    title: l10n.adhanTest,
+                    subtitle: l10n.adhanTestHint,
+                    trailing: const Icon(Icons.play_arrow),
+                    onTap: () async {
+                      await ref.read(adhanTesterProvider)(l10n);
+                      await Future<void>.delayed(const Duration(seconds: 6));
+                      if (context.mounted) await offerWidgets(context, ref);
+                    },
+                  ),
+                ],
               ),
             );
           }
@@ -228,26 +244,10 @@ class _AlertSection extends ConsumerWidget {
 
   Future<void> _test(BuildContext context, WidgetRef ref) async {
     final l10n = context.l10n;
-    final config = await buildAdhanConfig(
-      settings: settings,
-      voices: await ref.read(adhanCatalogProvider.future),
-      store: ref.read(voiceStoreProvider),
-      l10n: l10n,
-    );
-    await ref
-        .read(adhanPlatformProvider)
-        .test(
-          AdhanAlarm(
-            id: 0,
-            at: DateTime.now(),
-            title: l10n.adhanTestTitle,
-            body: l10n.adhanTestBody,
-            // The test plays what the next Dhuhr would: announcement, adhan,
-            // dua.
-            announce: 'dhuhr',
-          ),
-          config,
-        );
+    await ref.read(adhanTesterProvider)(l10n);
+    // While it plays: the home-screen widgets are the next thing to try.
+    await Future<void>.delayed(const Duration(seconds: 6));
+    if (context.mounted) await offerWidgets(context, ref);
   }
 }
 

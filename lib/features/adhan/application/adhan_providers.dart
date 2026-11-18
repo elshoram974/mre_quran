@@ -6,6 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/notifications/reminder_payload.dart';
+import '../../../core/notifications/reminder_scheduler.dart';
+import '../../../core/notifications/reminder_scheduler_provider.dart';
 import '../../../core/notifications/reminder_tap.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../data/adhan_catalog.dart';
@@ -133,6 +135,59 @@ Future<AdhanAlertConfig> buildAdhanConfig({
     payload: ReminderPayload.prayerTimes,
   );
 }
+
+/// Starts the alert now, as at prayer time, so the person can hear it. Where
+/// the adhan plays by itself (Android) the platform plays it, announcement,
+/// adhan and dua. Elsewhere (iOS) a notification comes in a few seconds,
+/// ringing with the adhan's opening, as at prayer time.
+Future<void> testAdhan(Ref ref, AppLocalizations l10n) async {
+  final settings = await ref.read(adhanSettingsProvider.future);
+  final platform = ref.read(adhanPlatformProvider);
+  if (await platform.isSupported()) {
+    final config = await buildAdhanConfig(
+      settings: settings,
+      voices: await ref.read(adhanCatalogProvider.future),
+      store: ref.read(voiceStoreProvider),
+      l10n: l10n,
+    );
+    await platform.test(
+      AdhanAlarm(
+        id: 0,
+        at: DateTime.now(),
+        title: l10n.adhanTestTitle,
+        body: l10n.adhanTestBody,
+        // What the next Dhuhr would play: announcement, adhan, dua.
+        announce: 'dhuhr',
+      ),
+      config,
+    );
+    return;
+  }
+  final scheduler = ref.read(reminderSchedulerProvider);
+  final sounds = await ref.read(iosAdhanSoundsProvider).install();
+  await scheduler.scheduleOnce(
+    id: adhanTestNotificationId,
+    at: DateTime.now().add(const Duration(seconds: 3)),
+    title: l10n.adhanTestTitle,
+    body: l10n.adhanTestBody,
+    channel: ReminderChannel.prayer,
+    channelName: l10n.prayerChannelName,
+    payload: ReminderPayload.prayerTimes,
+    exact: true,
+    iosSound: sounds ? LibraryIosAdhanSounds.of(fajr: false) : null,
+  );
+}
+
+/// The id of the notification that tries the alert where the adhan cannot
+/// play by itself.
+const int adhanTestNotificationId = 7009998;
+
+/// Lets the adhan be tried from a widget: [testAdhan] with the widget's
+/// [WidgetRef].
+final adhanTesterProvider = Provider<Future<void> Function(AppLocalizations)>(
+  (ref) =>
+      (l10n) => testAdhan(ref, l10n),
+);
 
 /// Where a voice's file stands on the phone.
 @immutable

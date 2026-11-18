@@ -96,21 +96,8 @@ class PackTile extends ConsumerWidget {
   /// The reading this tile is for.
   final MushafEdition edition;
 
-  /// Words of the download's notification.
-  PackNotificationText _text(AppLocalizations l10n) {
-    final name = edition.name(l10n.localeName);
-    return PackNotificationText(
-      runningTitle: l10n.packNotifyRunningTitle(name),
-      // The downloader fills in the percentage.
-      runningBody: '{progress}',
-      completeTitle: l10n.packNotifyCompleteTitle(name),
-      completeBody: l10n.packNotifyCompleteBody,
-      errorTitle: l10n.packNotifyErrorTitle(name),
-      errorBody: l10n.packNotifyErrorBody,
-      pausedTitle: l10n.packNotifyPausedTitle(name),
-      pausedBody: l10n.packNotifyPausedBody,
-    );
-  }
+  PackNotificationText _text(AppLocalizations l10n) =>
+      packNotificationText(edition, l10n);
 
   Future<void> _download(BuildContext context, WidgetRef ref) async {
     final l10n = context.l10n;
@@ -402,4 +389,23 @@ class _DeleteWarningState extends State<_DeleteWarning> {
       ),
     );
   }
+}
+
+/// Words of the notification of [edition]'s download.
+PackNotificationText packNotificationText(
+  MushafEdition edition,
+  AppLocalizations l10n,
+) {
+  final name = edition.name(l10n.localeName);
+  return PackNotificationText(
+    runningTitle: l10n.packNotifyRunningTitle(name),
+    // The downloader fills in the percentage.
+    runningBody: '{progress}',
+    completeTitle: l10n.packNotifyCompleteTitle(name),
+    completeBody: l10n.packNotifyCompleteBody,
+    errorTitle: l10n.packNotifyErrorTitle(name),
+    errorBody: l10n.packNotifyErrorBody,
+    pausedTitle: l10n.packNotifyPausedTitle(name),
+    pausedBody: l10n.packNotifyPausedBody,
+  );
 }

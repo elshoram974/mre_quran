@@ -18,6 +18,8 @@ class EditionText {
     required this.sha256,
     required this.fontFamily,
     this.unmatchedSurahs = const {},
+    this.hafsMap,
+    this.hafsMapSha256,
   });
 
   /// The bundled text file.
@@ -32,6 +34,14 @@ class EditionText {
   /// Surahs whose ayahs the text and the printed pages count differently.
   /// Their ayahs give no text, so none is ever tied to the wrong words.
   final Set<int> unmatchedSurahs;
+
+  /// Which Hafs ayah(s) each ayah is, where its number does not say
+  /// (`surah|ayah|hafs,hafs` lines from `tool/build_riwaya_tafsir_map.py`),
+  /// so its tafsir is the right one. Null for a reading that counts as Hafs.
+  final String? hafsMap;
+
+  /// SHA-256 of [hafsMap], checked before it is used.
+  final String? hafsMapSha256;
 }
 
 /// One printed Mushaf the reader can show.
@@ -143,6 +153,9 @@ abstract final class MushafEditions {
     names: {'ar': 'ورش عن نافع', 'en': "Warsh from Nafi'"},
     text: EditionText(
       asset: AppAssets.warshText,
+      hafsMap: 'assets/quran/riwayat/warsh_hafs.txt',
+      hafsMapSha256:
+          '75976296adf358e8171bbc7aeb4909b2a66f50cd4c2178ac58fd08fa96de33ea',
       sha256:
           'cbeedd60925ef4a88bee92480a197aa8c22026d433ceaaf79005a37d1d2c5890',
       fontFamily: 'KfgqpcWarsh',
@@ -159,6 +172,9 @@ abstract final class MushafEditions {
     names: {'ar': 'قالون عن نافع', 'en': "Qalun from Nafi'"},
     text: EditionText(
       asset: AppAssets.qalonText,
+      hafsMap: 'assets/quran/riwayat/qalon_hafs.txt',
+      hafsMapSha256:
+          '75976296adf358e8171bbc7aeb4909b2a66f50cd4c2178ac58fd08fa96de33ea',
       sha256:
           '86aba2d384f5e2f0927c81a70c8062af8765924243c9ae304e5c5642388d8fcd',
       fontFamily: 'KfgqpcQalon',
@@ -175,6 +191,9 @@ abstract final class MushafEditions {
     names: {'ar': 'الدوري عن أبي عمرو', 'en': 'Al-Duri from Abu Amr'},
     text: EditionText(
       asset: AppAssets.douriText,
+      hafsMap: 'assets/quran/riwayat/douri_hafs.txt',
+      hafsMapSha256:
+          'edab3a6bf280b9347580353480ea931e2edb99ac263abade53996716ea812997',
       sha256:
           '9b5e13f4ee7a952f886baf6e1810ad32d4adb13138848da7a02ff9ea7bc08083',
       fontFamily: 'KfgqpcDouri',
