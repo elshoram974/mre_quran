@@ -269,7 +269,7 @@ the project owner from <https://qurancomplex.gov.sa>.
 | | |
 |---|---|
 | Source | <https://github.com/elshoram974/quran-svg> (fork of `quran-ws/quran-svg`), commit `b4155f07e4aea087d2c458069acff9f7c7e749f6`, folder `mushafs/hafs/kfqc` |
-| Served from | `https://cdn.quran.ws/svg/pages/v1.1.1/hafs-kfqc/NNN.svg` and `NNN.json` (versioned, immutable). Checked byte-identical to the commit above |
+| Served from | The owner's fork, at that commit, straight from GitHub: `https://raw.githubusercontent.com/elshoram974/quran-svg/b4155f07…/mushafs/hafs/kfqc/svg/NNN.svg` and `…/json/NNN.json` (owner's decision, 2026-11-19; it used to be `cdn.quran.ws`). Immutable while the fork keeps that commit. Sample pages of all five readings were fetched and match the manifests' SHA-256. jsDelivr was tried and refused: the repository is over its 50 MB limit and it answers 403 for most files |
 | Artwork | Traced from the King Fahd Complex's digital Madinah Mushaf master files, Hafs, 1441 AH (`1441-AI-hafs.zip`, SHA-256 `280c5d71…9eef`, recorded in the source's `docs/PROVENANCE.md`). Rights remain with the Complex, which publishes it as free for "websites, software, and other similar intermediates"; only printing for commercial sale is reserved (source `NOTICE.md`) |
 | Ayah polygons (JSON) | Quran.ws, CC BY 4.0, attribution waived for use inside a product. The app credits it anyway on the About screen |
 | Size | 604 pages, 374 MB as served, about 91 MB on the device (kept gzip-compressed) |

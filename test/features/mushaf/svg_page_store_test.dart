@@ -45,7 +45,9 @@ void main() {
         expect(manifest.pageCount, 604);
         expect(
           manifest.url(10, 'svg').toString(),
-          'https://cdn.quran.ws/svg/pages/v1.1.1/${edition.id}/010.svg',
+          'https://raw.githubusercontent.com/elshoram974/quran-svg/'
+          'b4155f07e4aea087d2c458069acff9f7c7e749f6/mushafs/'
+          '${edition.id.replaceAll('-', '/')}/svg/010.svg',
         );
         expect(
           [for (final archive in manifest.archives) archive.url.toString()],
@@ -77,9 +79,16 @@ void main() {
       final manifest = SvgManifestParser.parse(file.readAsStringSync());
       expect(manifest.pageCount, 604);
       expect(manifest.edition, 'hafs-kfqc');
+      // The owner's fork, at the commit the artwork was checked against.
       expect(
         manifest.url(10, 'svg').toString(),
-        'https://cdn.quran.ws/svg/pages/v1.1.1/hafs-kfqc/010.svg',
+        'https://raw.githubusercontent.com/elshoram974/quran-svg/'
+        'b4155f07e4aea087d2c458069acff9f7c7e749f6/mushafs/hafs/kfqc/svg/010.svg',
+      );
+      expect(
+        manifest.url(10, 'json').toString(),
+        'https://raw.githubusercontent.com/elshoram974/quran-svg/'
+        'b4155f07e4aea087d2c458069acff9f7c7e749f6/mushafs/hafs/kfqc/json/010.json',
       );
       expect(
         manifest.entry(10).svgSha256,

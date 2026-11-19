@@ -56,7 +56,7 @@ void main() {
     late Future<void> fatal;
     expect(
       () => fatal = reporter.recordFlutterFatalError(
-        FlutterErrorDetails(exception: 'e'),
+        const FlutterErrorDetails(exception: 'e'),
       ),
       returnsNormally,
     );

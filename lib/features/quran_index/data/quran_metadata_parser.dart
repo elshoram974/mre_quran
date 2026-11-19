@@ -20,6 +20,7 @@ abstract final class QuranMetadataParser {
   static const int _juzCount = 30;
   static const int _pageCount = 604;
   static const int _rubCount = 240;
+  static const int _sajdaCount = 15;
 
   /// Parses [source] and checks the structural counts of the Madinah Mushaf.
   static QuranMetadata parse(String source) {
@@ -34,14 +35,17 @@ abstract final class QuranMetadataParser {
     final juzNodes = root.findAllElements('juz').toList();
     final pageNodes = root.findAllElements('page').toList();
     final rubNodes = root.findAllElements('quarter').toList();
+    final sajdaNodes = root.findAllElements('sajda').toList();
     if (suraNodes.length != _surahCount ||
         juzNodes.length != _juzCount ||
         pageNodes.length != _pageCount ||
-        rubNodes.length != _rubCount) {
+        rubNodes.length != _rubCount ||
+        sajdaNodes.length != _sajdaCount) {
       throw QuranMetadataFormatException(
         'Expected $_surahCount surahs, $_juzCount juz, $_pageCount pages, '
-        '$_rubCount quarters; found ${suraNodes.length}, ${juzNodes.length}, '
-        '${pageNodes.length}, ${rubNodes.length}.',
+        '$_rubCount quarters, $_sajdaCount sajdas; found ${suraNodes.length}, '
+        '${juzNodes.length}, ${pageNodes.length}, ${rubNodes.length}, '
+        '${sajdaNodes.length}.',
       );
     }
 
@@ -82,6 +86,15 @@ abstract final class QuranMetadataParser {
       rubStarts: List.unmodifiable([
         for (final node in rubNodes)
           AyahRef(_int(node, 'sura'), _int(node, 'aya')),
+      ]),
+      sajdas: List.unmodifiable([
+        for (final node in sajdaNodes)
+          Sajda(
+            number: _int(node, 'index'),
+            surah: _int(node, 'sura'),
+            ayah: _int(node, 'aya'),
+            startPage: pageOf(_int(node, 'sura'), _int(node, 'aya')),
+          ),
       ]),
     );
   }

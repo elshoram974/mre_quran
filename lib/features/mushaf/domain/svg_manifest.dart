@@ -27,7 +27,8 @@ class SvgManifest {
   /// Name of the edition, used as its folder on the device.
   final String edition;
 
-  /// Folder the files are served from; versioned and immutable.
+  /// Folder the files are served from, versioned and immutable: its `svg`
+  /// and `json` folders hold the page files.
   final Uri base;
 
   /// Size of every page together as kept on the device, compressed: what
@@ -57,7 +58,9 @@ class SvgManifest {
   static String fileName(int page, String extension) =>
       '${page.toString().padLeft(3, '0')}.$extension';
 
-  /// Address of a file of [page].
-  Uri url(int page, String extension) =>
-      base.replace(path: '${base.path}/${fileName(page, extension)}');
+  /// Address of a file of [page]: `svg/NNN.svg` or `json/NNN.json` under
+  /// [base].
+  Uri url(int page, String extension) => base.replace(
+    path: '${base.path}/$extension/${fileName(page, extension)}',
+  );
 }

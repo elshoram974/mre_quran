@@ -103,6 +103,58 @@ void main() {
     }
   });
 
+  test('has the fifteen sajda ayahs of the Madinah Mushaf, in order', () {
+    final sajdas = metadata.sajdas;
+    expect(sajdas, hasLength(15));
+    expect(
+      [for (final sajda in sajdas) sajda.number],
+      [for (var number = 1; number <= 15; number++) number],
+    );
+    expect((sajdas.first.surah, sajdas.first.ayah), (7, 206));
+    expect((sajdas.last.surah, sajdas.last.ayah), (96, 19));
+    // Al-Hajj has two.
+    expect(
+      [
+        for (final s in sajdas)
+          if (s.surah == 22) s.ayah,
+      ],
+      [18, 77],
+    );
+    for (var i = 0; i < sajdas.length; i++) {
+      final sajda = sajdas[i];
+      expect(
+        sajda.ayah,
+        inInclusiveRange(1, metadata.surah(sajda.surah).ayahCount),
+      );
+      expect(sajda.startPage, metadata.pageOf(sajda.surah, sajda.ayah));
+      if (i > 0) {
+        expect(
+          AyahRef(
+            sajda.surah,
+            sajda.ayah,
+          ).compareTo(AyahRef(sajdas[i - 1].surah, sajdas[i - 1].ayah)),
+          greaterThan(0),
+        );
+      }
+    }
+  });
+
+  test('juzOf finds the juz an ayah is in', () {
+    expect(metadata.juzOf(const AyahRef(1, 1)), 1);
+    expect(metadata.juzOf(const AyahRef(2, 141)), 1);
+    expect(metadata.juzOf(const AyahRef(2, 142)), 2);
+    expect(
+      metadata.juzOf(const AyahRef(3, 1)),
+      3,
+      reason: 'juz 3 begins at 2:253',
+    );
+    expect(metadata.juzOf(const AyahRef(7, 206)), 9);
+    expect(metadata.juzOf(const AyahRef(114, 6)), 30);
+    for (final juz in metadata.juzs) {
+      expect(metadata.juzOf(AyahRef(juz.surah, juz.ayah)), juz.number);
+    }
+  });
+
   test('pageOf agrees with a linear scan for every ayah', () {
     for (final surah in metadata.surahs) {
       for (var ayah = 1; ayah <= surah.ayahCount; ayah++) {

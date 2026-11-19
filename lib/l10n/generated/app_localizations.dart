@@ -2161,6 +2161,12 @@ abstract class AppLocalizations {
   /// **'Hizb'**
   String get indexHizb;
 
+  /// No description provided for @indexSajda.
+  ///
+  /// In en, this message translates to:
+  /// **'Sajdas'**
+  String get indexSajda;
+
   /// No description provided for @indexSearchHint.
   ///
   /// In en, this message translates to:
@@ -2197,11 +2203,17 @@ abstract class AppLocalizations {
   /// **'Juz {number}'**
   String juzTitle(String number);
 
-  /// No description provided for @hizbTitle.
+  /// No description provided for @sajdaTitle.
   ///
   /// In en, this message translates to:
-  /// **'Hizb {number}'**
-  String hizbTitle(String number);
+  /// **'Sajda in {surah}'**
+  String sajdaTitle(String surah);
+
+  /// No description provided for @sajdaAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Ayah {ayah} · Juz {juz}'**
+  String sajdaAt(String ayah, String juz);
 
   /// No description provided for @juzStartsAt.
   ///
@@ -2334,6 +2346,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Mushaf text, script and Al-Tafsir Al-Muyassar: King Fahd Glorious Quran Printing Complex, Madinah (Uthmanic Hafs script, version 2.0, and the Tafseer Mouaser data, version 3), https://qurancomplex.gov.sa. Bundled unchanged and checked by checksum. The Complex offers them for digital use with credit; all rights remain with it.'**
   String get creditsMushafScript;
+
+  /// No description provided for @hizbTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hizb {number}'**
+  String hizbTitle(String number);
 
   /// No description provided for @copyAyah.
   ///

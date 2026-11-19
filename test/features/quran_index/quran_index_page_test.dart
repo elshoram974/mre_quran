@@ -103,6 +103,60 @@ void main() {
     expect(find.text('الجزء ٢'), findsOneWidget);
   });
 
+  testWidgets('the surahs are divided by the juz they begin in', (
+    tester,
+  ) async {
+    await _pumpIndex(tester);
+    // Al-Fatiha and Al-Baqara begin in juz 1, Al-Imran in juz 3; no surah
+    // begins in juz 2, so it has no heading.
+    expect(find.text('الجزء ١'), findsOneWidget);
+    expect(find.text('الجزء ٣'), findsOneWidget);
+    expect(find.text('الجزء ٢'), findsNothing);
+    final first = tester.getTopLeft(find.text('الجزء ١')).dy;
+    expect(first, lessThan(tester.getTopLeft(find.text('الفاتحة')).dy));
+    expect(
+      tester.getTopLeft(find.text('الجزء ٣')).dy,
+      greaterThan(tester.getTopLeft(find.text('البقرة')).dy),
+    );
+    expect(
+      tester.getTopLeft(find.text('الجزء ٣')).dy,
+      lessThan(tester.getTopLeft(find.text('آل عمران')).dy),
+    );
+    // A search lists what it finds, with no headings.
+    await tester.enterText(find.byType(TextField), 'بقره');
+    await tester.pumpAndSettle();
+    expect(find.text('البقرة'), findsOneWidget);
+    expect(find.text('الجزء ١'), findsNothing);
+  });
+
+  testWidgets('lists the sajda ayahs, in order, with their juz', (
+    tester,
+  ) async {
+    await _pumpIndex(tester);
+    await tester.tap(find.text('السجدات'));
+    await tester.pumpAndSettle();
+    expect(find.text('سجدة الأعراف'), findsOneWidget);
+    expect(find.text('الآية ٢٠٦ · الجزء ٩'), findsOneWidget);
+    // Al-Hajj has two.
+    expect(find.text('سجدة الحج'), findsNWidgets(2));
+    expect(
+      tester.getTopLeft(find.text('سجدة الأعراف')).dy,
+      lessThan(tester.getTopLeft(find.text('سجدة الرعد')).dy),
+    );
+    await tester.enterText(find.byType(TextField), 'الحج');
+    await tester.pumpAndSettle();
+    expect(find.text('سجدة الحج'), findsNWidgets(2));
+    expect(find.text('سجدة الأعراف'), findsNothing);
+  });
+
+  testWidgets('four tabs fit a narrow screen at 2x text', (tester) async {
+    await _pumpIndex(tester, locale: 'en', width: 320, textScale: 2);
+    await tester.tap(find.text('Sajdas'));
+    await tester.pumpAndSettle();
+    expect(find.text('Sajda in الأعراف'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('lists the hizb under the juz they are halves of', (
     tester,
   ) async {

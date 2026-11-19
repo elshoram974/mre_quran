@@ -50,5 +50,12 @@ void main() {
     // By the surah a hizb begins in: only Al-Fatiha's own begins at 1:1.
     expect(searcher.hizbs('الفاتحة').map((h) => h.number), [1]);
     expect(searcher.hizbs('zzzz'), isEmpty);
+    expect(searcher.sajdas(''), hasLength(15));
+    expect(searcher.sajdas('٥').map((s) => s.number), [5]);
+    expect(searcher.sajdas('الحج').map((s) => (s.surah, s.ayah)), [
+      (22, 18),
+      (22, 77),
+    ]);
+    expect(searcher.sajdas('zzzz'), isEmpty);
   });
 }

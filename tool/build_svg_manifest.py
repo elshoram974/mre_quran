@@ -30,6 +30,11 @@ from pathlib import Path
 VERSION = "v1.1.1"
 COMMIT = "b4155f07e4aea087d2c458069acff9f7c7e749f6"
 EDITION = re.compile(r"^[a-z]+(-[a-z]+)+$")
+# The owner's fork of quran-ws/quran-svg (owner's decision, 2026-11-19): the page
+# files are served from it at the pinned commit, straight from GitHub (jsDelivr
+# refuses this repository: it is over its 50 MB limit), and the two archives are
+# the assets of its release.
+FORK = "elshoram974/quran-svg"
 RELEASE = f"https://github.com/quran-ws/quran-svg/releases/download/{VERSION}"
 PAGES = 604
 
@@ -67,7 +72,10 @@ def main() -> None:
         "edition": edition,
         "version": VERSION,
         "commit": COMMIT,
-        "base": f"https://cdn.quran.ws/svg/pages/{VERSION}/{edition}",
+        "base": (
+            f"https://raw.githubusercontent.com/{FORK}/{COMMIT}"
+            f"/mushafs/{edition.replace('-', '/')}"
+        ),
         # Size of every page together as kept on the device (gzip).
         "packedBytes": packed,
         # The whole Mushaf in two files, for the offline download.

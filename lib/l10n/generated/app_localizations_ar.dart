@@ -1186,6 +1186,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get indexHizb => 'الأحزاب';
 
   @override
+  String get indexSajda => 'السجدات';
+
+  @override
   String get indexSearchHint => 'ابحث بالاسم أو الرقم';
 
   @override
@@ -1218,8 +1221,13 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String hizbTitle(String number) {
-    return 'الحزب $number';
+  String sajdaTitle(String surah) {
+    return 'سجدة $surah';
+  }
+
+  @override
+  String sajdaAt(String ayah, String juz) {
+    return 'الآية $ayah · الجزء $juz';
   }
 
   @override
@@ -1309,6 +1317,11 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get creditsMushafScript =>
       'نص المصحف وخطه والتفسير الميسر: مجمع الملك فهد لطباعة المصحف الشريف بالمدينة المنورة (خط النص العثماني لرواية حفص، الإصدار 2.0، وبيانات التفسير الميسر، الإصدار 3)، https://qurancomplex.gov.sa. الملفات مضمّنة كما هي دون تعديل، ويُتحقق منها بالبصمة. يتيحها المجمع للاستخدام الرقمي مع ذكر المصدر، وجميع الحقوق محفوظة له.';
+
+  @override
+  String hizbTitle(String number) {
+    return 'الحزب $number';
+  }
 
   @override
   String get copyAyah => 'نسخ الآية';

@@ -378,6 +378,7 @@
   "indexSurahs": "Surahs",
   "indexJuz": "Juz",
   "indexHizb": "Hizb",
+  "indexSajda": "Sajdas",
   "indexSearchHint": "Search by name or number",
   "revelationMeccan": "Meccan",
   "revelationMedinan": "Medinan",
@@ -408,10 +409,21 @@
       }
     }
   },
-  "hizbTitle": "Hizb {number}",
-  "@hizbTitle": {
+  "sajdaTitle": "Sajda in {surah}",
+  "@sajdaTitle": {
     "placeholders": {
-      "number": {
+      "surah": {
+        "type": "String"
+      }
+    }
+  },
+  "sajdaAt": "Ayah {ayah} · Juz {juz}",
+  "@sajdaAt": {
+    "placeholders": {
+      "ayah": {
+        "type": "String"
+      },
+      "juz": {
         "type": "String"
       }
     }

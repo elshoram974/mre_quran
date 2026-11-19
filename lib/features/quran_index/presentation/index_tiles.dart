@@ -112,6 +112,46 @@ class HizbTile extends StatelessWidget {
   }
 }
 
+/// A row of the sajda list.
+class SajdaTile extends StatelessWidget {
+  /// Creates a row for [sajda], in the surah named [surahName], in [juz].
+  const SajdaTile({
+    super.key,
+    required this.sajda,
+    required this.surahName,
+    required this.juz,
+    required this.digits,
+    required this.onTap,
+  });
+
+  /// Sajda to show.
+  final Sajda sajda;
+
+  /// Arabic name of the surah it is in.
+  final String surahName;
+
+  /// The juz it is in.
+  final int juz;
+
+  /// Formats numbers for display.
+  final String Function(int) digits;
+
+  /// Called when the row is tapped.
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return IndexRow(
+      number: digits(sajda.number),
+      title: l10n.sajdaTitle(surahName),
+      subtitle: l10n.sajdaAt(digits(sajda.ayah), digits(juz)),
+      page: l10n.pageNumber(digits(sajda.startPage)),
+      onTap: onTap,
+    );
+  }
+}
+
 /// The heading over a group of rows, such as the juz a pair of hizb belong
 /// to.
 class IndexSectionHeader extends StatelessWidget {

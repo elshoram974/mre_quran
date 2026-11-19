@@ -105,6 +105,21 @@ class IndexSearcher {
     ];
   }
 
+  /// Sajdas matching [query] by number, or by the name of the surah they are
+  /// in.
+  List<Sajda> sajdas(String query) {
+    final key = normalizeSearchKey(query);
+    if (key.isEmpty) return metadata.sajdas;
+    return [
+      for (final sajda in metadata.sajdas)
+        if ('${sajda.number}' == key ||
+            _surahKeys[sajda.surah - 1]
+                .take(2)
+                .any((name) => name.contains(key)))
+          sajda,
+    ];
+  }
+
   /// Hizb matching [query] by number, or by the name of the surah it starts
   /// in.
   List<Hizb> hizbs(String query) {

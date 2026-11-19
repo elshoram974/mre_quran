@@ -124,7 +124,7 @@ abstract final class MushafEditions {
     id: 'hafs-kfqc',
     names: {'ar': 'حفص عن عاصم', 'en': 'Hafs from Asim'},
     manifestSha256:
-        '198cd724391c97dd1c93d8bf5db5961403a1dce31d901293baa46442b7f24cc4',
+        'df84c7faa1dfe9bf541af46d35c2e55a1815c59a2dd6f900343fdcfacb413a6e',
     matchesAppText: true,
     // The name it had when it was the only edition, so a download begun
     // then is still found.
@@ -144,7 +144,7 @@ abstract final class MushafEditions {
       fontFamily: 'KfgqpcShubah',
     ),
     manifestSha256:
-        '59ad875d1ab8f84c45c68adf22e2c252f7221b51f68f299dafbfb9714977ffa9',
+        'b3735975b5b713f07649e2319553c45d266dbdaca9485825d6b086582be014aa',
   );
 
   /// Warsh from Nafi'.
@@ -161,7 +161,7 @@ abstract final class MushafEditions {
       fontFamily: 'KfgqpcWarsh',
     ),
     manifestSha256:
-        'df541939a31ce75511ce73eabe02fdd9974157828566d5d16d747e529bf02ff3',
+        'd4a1708419ba22755f0626127e5932f3d65b5a626499c7928cd0f1131091bfce',
   );
 
   /// Qalun from Nafi'.
@@ -180,7 +180,7 @@ abstract final class MushafEditions {
       fontFamily: 'KfgqpcQalon',
     ),
     manifestSha256:
-        'da6f77792cc2047a3d28af22ef2b9f6564337c4c1724a30e3259236bd2369084',
+        '5021c66e156cf2e1403336b5be532d0dcab7fca5ddb1aab9f594fd3d97a8aa42',
   );
 
   /// Al-Duri from Abu Amr.
@@ -202,7 +202,7 @@ abstract final class MushafEditions {
       unmatchedSurahs: {67},
     ),
     manifestSha256:
-        '14e2a34164c3ccd8507cdda714629d9a5e3870f3ede4cbefe3efea22fce7a90e',
+        '849a890f5790f086cfe65da5dcba16db2e9669785a7ab603cb94b4ce5ae9dbf8',
   );
 
   /// All of them. The first is the default.

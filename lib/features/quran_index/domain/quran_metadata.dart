@@ -117,6 +117,31 @@ class Hizb {
   int get juz => (number - 1) ~/ 2 + 1;
 }
 
+/// An ayah at which the reader prostrates (sajdat al-tilawa), as marked in the
+/// Madinah Mushaf: fifteen in all.
+@immutable
+class Sajda {
+  /// Creates a sajda.
+  const Sajda({
+    required this.number,
+    required this.surah,
+    required this.ayah,
+    required this.startPage,
+  });
+
+  /// 1–15, in reading order.
+  final int number;
+
+  /// Surah of the ayah.
+  final int surah;
+
+  /// Ayah number within [surah].
+  final int ayah;
+
+  /// Page of the Madinah Mushaf that contains the ayah.
+  final int startPage;
+}
+
 /// First ayah of a Mushaf page.
 @immutable
 class PageStart {
@@ -139,6 +164,7 @@ class QuranMetadata {
     required this.juzs,
     required this.pageStarts,
     required this.rubStarts,
+    required this.sajdas,
   });
 
   /// All surahs in order.
@@ -149,6 +175,9 @@ class QuranMetadata {
 
   /// First ayah of every page; index 0 is page 1.
   final List<PageStart> pageStarts;
+
+  /// The sajda ayahs in reading order.
+  final List<Sajda> sajdas;
 
   /// First ayah of each rub' al-hizb (quarter of a hizb); index 0 is rub' 1.
   /// There are 240, so 60 hizb of four quarters each.
@@ -190,6 +219,17 @@ class QuranMetadata {
       }
     }
     return low + 1;
+  }
+
+  /// The juz (1–30) that contains [ref]: the last one that begins at or before
+  /// it.
+  int juzOf(AyahRef ref) {
+    var juz = 1;
+    for (final candidate in juzs) {
+      if (AyahRef(candidate.surah, candidate.ayah).compareTo(ref) > 0) break;
+      juz = candidate.number;
+    }
+    return juz;
   }
 
   /// The hizb (1–60) that contains [ref].

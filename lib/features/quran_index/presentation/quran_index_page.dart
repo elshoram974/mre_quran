@@ -17,11 +17,11 @@ import '../domain/reader_destination.dart';
 import 'index_skeleton.dart';
 import 'index_tiles.dart';
 
-enum _IndexTab { surahs, juz, hizb }
+enum _IndexTab { surahs, juz, hizb, sajda }
 
-/// Surah, juz and hizb index. Pops with the chosen Mushaf page number.
+/// Surah, juz, hizb and sajda index. Pops with the chosen Mushaf page number.
 ///
-/// The three lists are pages of a tab view: swipe between them, or pick one
+/// The four lists are pages of a tab view: swipe between them, or pick one
 /// above. The tabs and the search field stay at the top while a list
 /// scrolls under them.
 class QuranIndexPage extends ConsumerStatefulWidget {
@@ -166,6 +166,7 @@ class _IndexHeader extends StatelessWidget {
                 _IndexTab.surahs: l10n.indexSurahs,
                 _IndexTab.juz: l10n.indexJuz,
                 _IndexTab.hizb: l10n.indexHizb,
+                _IndexTab.sajda: l10n.indexSajda,
               },
             ),
             const SizedBox(height: 12),
@@ -201,27 +202,39 @@ class _IndexList extends ConsumerWidget {
   final ScrollController? scroll;
   final bool inSheet;
 
+  /// The lines of this list. Without a search, the surahs and the hizb sit
+  /// under the juz they begin in, divided by its heading; a search lists
+  /// what it finds.
+  List<_IndexLine> _lines() {
+    final metadata = searcher.metadata;
+    final grouped = query.trim().isEmpty;
+    return switch (tab) {
+      _IndexTab.surahs => _withJuzHeadings<Surah>(
+        searcher.surahs(query),
+        grouped: grouped,
+        juz: (surah) => metadata.juzOf(AyahRef(surah.number, 1)),
+        row: _SurahRow.new,
+      ),
+      _IndexTab.juz => [for (final juz in searcher.juzs(query)) _JuzRow(juz)],
+      _IndexTab.hizb => _withJuzHeadings<Hizb>(
+        searcher.hizbs(query),
+        grouped: grouped,
+        juz: (hizb) => hizb.juz,
+        row: _HizbRow.new,
+      ),
+      _IndexTab.sajda => [
+        for (final sajda in searcher.sajdas(query)) _SajdaRow(sajda),
+      ],
+    };
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final metadata = searcher.metadata;
     final digits = ref.watch(digitsFormatterProvider);
     final padding = pagePadding(context);
-    final surahs = tab == _IndexTab.surahs
-        ? searcher.surahs(query)
-        : const <Surah>[];
-    final juzs = tab == _IndexTab.juz ? searcher.juzs(query) : const <Juz>[];
-    final hizbs = tab == _IndexTab.hizb
-        ? searcher.hizbs(query)
-        : const <Hizb>[];
-    // Without a search, the hizb sit under the juz they halve; a search lists
-    // what it finds.
-    final hizbRows = _hizbRows(hizbs, grouped: query.trim().isEmpty);
-    final count = switch (tab) {
-      _IndexTab.surahs => surahs.length,
-      _IndexTab.juz => juzs.length,
-      _IndexTab.hizb => hizbRows.length,
-    };
+    final lines = _lines();
 
     void open(int page) {
       final destination = ReaderDestination(page: page);
@@ -232,7 +245,7 @@ class _IndexList extends ConsumerWidget {
       }
     }
 
-    if (count == 0) return Center(child: Text(l10n.noResults));
+    if (lines.isEmpty) return Center(child: Text(l10n.noResults));
     return ListView.builder(
       controller: scroll,
       primary: false,
@@ -243,36 +256,43 @@ class _IndexList extends ConsumerWidget {
         padding.end,
         padding.bottom,
       ),
-      itemCount: count,
-      itemBuilder: (context, index) => switch (tab) {
-        _IndexTab.surahs => _rowPadding(
+      itemCount: lines.length,
+      itemBuilder: (context, index) => switch (lines[index]) {
+        _JuzHeading(:final juz) => IndexSectionHeader(
+          title: l10n.juzTitle(digits(juz)),
+        ),
+        _SurahRow(:final surah) => _rowPadding(
           SurahTile(
-            surah: surahs[index],
+            surah: surah,
             digits: digits,
-            onTap: () => open(surahs[index].startPage),
+            onTap: () => open(surah.startPage),
           ),
         ),
-        _IndexTab.juz => _rowPadding(
+        _JuzRow(:final juz) => _rowPadding(
           JuzTile(
-            juz: juzs[index],
-            surahName: metadata.surah(juzs[index].surah).arabicName,
+            juz: juz,
+            surahName: metadata.surah(juz.surah).arabicName,
             digits: digits,
-            onTap: () => open(juzs[index].startPage),
+            onTap: () => open(juz.startPage),
           ),
         ),
-        _IndexTab.hizb => switch (hizbRows[index]) {
-          final _JuzHeading heading => IndexSectionHeader(
-            title: l10n.juzTitle(digits(heading.juz)),
+        _HizbRow(:final hizb) => _rowPadding(
+          HizbTile(
+            hizb: hizb,
+            surahName: metadata.surah(hizb.surah).arabicName,
+            digits: digits,
+            onTap: () => open(hizb.startPage),
           ),
-          final _HizbRow row => _rowPadding(
-            HizbTile(
-              hizb: row.hizb,
-              surahName: metadata.surah(row.hizb.surah).arabicName,
-              digits: digits,
-              onTap: () => open(row.hizb.startPage),
-            ),
+        ),
+        _SajdaRow(:final sajda) => _rowPadding(
+          SajdaTile(
+            sajda: sajda,
+            surahName: metadata.surah(sajda.surah).arabicName,
+            juz: metadata.juzOf(AyahRef(sajda.surah, sajda.ayah)),
+            digits: digits,
+            onTap: () => open(sajda.startPage),
           ),
-        },
+        ),
       },
     );
   }
@@ -281,34 +301,58 @@ class _IndexList extends ConsumerWidget {
       Padding(padding: const EdgeInsets.symmetric(vertical: 3), child: row);
 }
 
-/// A line of the hizb list: the heading of a juz, or one of its hizb.
-sealed class _HizbListItem {
-  const _HizbListItem();
+/// A line of an index list: a juz heading, or an entry.
+sealed class _IndexLine {
+  const _IndexLine();
 }
 
-class _JuzHeading extends _HizbListItem {
+class _JuzHeading extends _IndexLine {
   const _JuzHeading(this.juz);
 
   final int juz;
 }
 
-class _HizbRow extends _HizbListItem {
+class _SurahRow extends _IndexLine {
+  const _SurahRow(this.surah);
+
+  final Surah surah;
+}
+
+class _JuzRow extends _IndexLine {
+  const _JuzRow(this.juz);
+
+  final Juz juz;
+}
+
+class _HizbRow extends _IndexLine {
   const _HizbRow(this.hizb);
 
   final Hizb hizb;
 }
 
-/// [hizbs] as list lines, with a juz heading before the first hizb of each
-/// juz when [grouped].
-List<_HizbListItem> _hizbRows(List<Hizb> hizbs, {required bool grouped}) {
-  final rows = <_HizbListItem>[];
-  int? juz;
-  for (final hizb in hizbs) {
-    if (grouped && hizb.juz != juz) {
-      juz = hizb.juz;
-      rows.add(_JuzHeading(juz));
+class _SajdaRow extends _IndexLine {
+  const _SajdaRow(this.sajda);
+
+  final Sajda sajda;
+}
+
+/// [items] as list lines, with a heading before the first item of each juz
+/// when [grouped]. A juz none of the items begins in has no heading.
+List<_IndexLine> _withJuzHeadings<T>(
+  List<T> items, {
+  required bool grouped,
+  required int Function(T item) juz,
+  required _IndexLine Function(T item) row,
+}) {
+  final lines = <_IndexLine>[];
+  int? current;
+  for (final item in items) {
+    final number = juz(item);
+    if (grouped && number != current) {
+      current = number;
+      lines.add(_JuzHeading(number));
     }
-    rows.add(_HizbRow(hizb));
+    lines.add(row(item));
   }
-  return rows;
+  return lines;
 }
