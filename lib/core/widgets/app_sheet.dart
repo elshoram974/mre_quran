@@ -60,7 +60,7 @@ abstract final class AppSheet {
         builder: (context, scroll) => SingleChildScrollView(
           controller: scroll,
           keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-          child: builder(context),
+          child: Builder(builder: builder),
         ),
       );
     }
@@ -80,7 +80,7 @@ abstract final class AppSheet {
             controller: scroll,
             physics: const ClampingScrollPhysics(),
             keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-            child: builder(context),
+            child: Builder(builder: builder),
           ),
         ),
       ),
@@ -347,8 +347,10 @@ class _FillingSheetHostState extends State<_FillingSheetHost> {
         initialChildSize: widget.initialSize,
         minChildSize: AppSheet._minSize,
         maxChildSize: AppSheet._maxSize,
-        builder: (context, scroll) =>
-            _SheetSurface(fill: true, child: widget.builder(context, scroll)),
+        builder: (context, scroll) => _SheetSurface(
+          fill: true,
+          child: Builder(builder: (context) => widget.builder(context, scroll)),
+        ),
       ),
     ),
   );
@@ -385,7 +387,7 @@ class _SheetSurface extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final body = Column(
+    final column = Column(
       mainAxisSize: fill ? MainAxisSize.max : MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -394,6 +396,19 @@ class _SheetSurface extends StatelessWidget {
       ],
     );
     if (!context.isCupertino) {
+      // The surface runs to the screen's bottom edge, behind the system bar,
+      // so it keeps its own content clear of it. A body then reads no bottom
+      // inset and cannot add it a second time.
+      final body = Padding(
+        padding: EdgeInsetsDirectional.only(
+          bottom: MediaQuery.paddingOf(context).bottom,
+        ),
+        child: MediaQuery.removePadding(
+          context: context,
+          removeBottom: true,
+          child: column,
+        ),
+      );
       return Material(
         color: scheme.surfaceContainerLow,
         shape: const RoundedRectangleBorder(
@@ -417,7 +432,7 @@ class _SheetSurface extends StatelessWidget {
         shape: const LiquidRoundedSuperellipse(
           borderRadius: AppTokens.radiusSheetFloating,
         ),
-        child: Material(type: MaterialType.transparency, child: body),
+        child: Material(type: MaterialType.transparency, child: column),
       ),
     );
   }

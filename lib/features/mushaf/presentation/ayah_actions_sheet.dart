@@ -209,7 +209,10 @@ class _AyahActions extends ConsumerWidget {
               ),
               title: Text(bookmarked ? l10n.removeBookmark : l10n.addBookmark),
               onTap: () async {
-                await ref.read(bookmarksProvider.notifier).toggle(target);
+                // Captured now: the sheet (and its `ref`) is gone by the time
+                // the Undo action can be tapped.
+                final notifier = ref.read(bookmarksProvider.notifier);
+                await notifier.toggle(target);
                 if (!context.mounted) return;
                 Navigator.of(context).pop();
                 messenger?.showSnackBar(
@@ -219,8 +222,7 @@ class _AyahActions extends ConsumerWidget {
                     ),
                     action: SnackBarAction(
                       label: l10n.undo,
-                      onPressed: () =>
-                          ref.read(bookmarksProvider.notifier).toggle(target),
+                      onPressed: () => notifier.toggle(target),
                     ),
                   ),
                 );

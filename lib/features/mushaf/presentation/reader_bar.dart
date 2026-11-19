@@ -40,6 +40,8 @@ class ReaderChip extends StatelessWidget {
       child: Semantics(
         button: true,
         label: label == null ? tooltip : '$label, $tooltip',
+        // The node replaces its children's semantics, so it carries the tap.
+        onTap: onPressed,
         excludeSemantics: true,
         // The visible pill is small; the touch target is the full 48 dp.
         child: SizedBox(
@@ -252,6 +254,9 @@ class ReaderToolbar extends StatelessWidget {
               child: Semantics(
                 button: true,
                 label: searchLabel,
+                // The node replaces its children's semantics, so it carries
+                // the tap.
+                onTap: onSearch,
                 excludeSemantics: true,
                 child: InkWell(
                   onTap: onSearch,
@@ -334,6 +339,8 @@ class ReaderPlacePill extends StatelessWidget {
       child: Semantics(
         button: true,
         label: '$title, $subtitle, $tooltip',
+        // The node replaces its children's semantics, so it carries the tap.
+        onTap: onPressed,
         excludeSemantics: true,
         child: ReaderFloatingSurface(
           padding: EdgeInsets.zero,

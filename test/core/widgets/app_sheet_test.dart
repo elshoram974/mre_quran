@@ -45,6 +45,49 @@ void main() {
     );
   }
 
+  testWidgets('a short sheet clears the system bar at the bottom', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(400, 800);
+    tester.view.devicePixelRatio = 1;
+    // The 3-button navigation bar of an edge-to-edge Android phone.
+    tester.view.padding = const FakeViewPadding(bottom: 48);
+    tester.view.viewPadding = const FakeViewPadding(bottom: 48);
+    addTearDown(tester.view.reset);
+    double? insetSeenByBody;
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        home: Builder(
+          builder: (context) => Scaffold(
+            body: ElevatedButton(
+              onPressed: () => AppSheet.show<void>(
+                context: context,
+                builder: (context) {
+                  insetSeenByBody = MediaQuery.paddingOf(context).bottom;
+                  return const SizedBox(
+                    height: 40,
+                    child: Text('last', key: Key('last')),
+                  );
+                },
+              ),
+              child: const Text('open'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+
+    expect(
+      tester.getRect(find.byKey(const Key('last'))).bottom,
+      lessThanOrEqualTo(800 - 48),
+    );
+    // The sheet took the inset: a body that also pads for it would double it.
+    expect(insetSeenByBody, 0);
+  });
+
   testWidgets('dragging a short sheet down dismisses it', (tester) async {
     await tester.pumpWidget(
       MaterialApp(

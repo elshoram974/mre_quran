@@ -98,6 +98,24 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('the floating bar tabs can be activated by assistive tech', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    await _pump(tester, const Size(390, 844));
+    for (final label in ['المصحف', 'العلامات']) {
+      expect(
+        tester.getSemantics(find.bySemanticsLabel(label)),
+        isSemantics(isButton: true, hasTapAction: true),
+      );
+    }
+    // Activating a tab through its semantics, not a pointer, switches to it.
+    tester.semantics.tap(find.semantics.byLabel('العلامات'));
+    await tester.pumpAndSettle();
+    expect(find.text('لا توجد علامات بعد').hitTestable(), findsOneWidget);
+    semantics.dispose();
+  });
+
   testWidgets('a phone gets the floating bar', (tester) async {
     await _pump(tester, const Size(390, 844));
     expect(find.byType(ExpandingNavBar), findsOneWidget);

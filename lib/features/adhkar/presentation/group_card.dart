@@ -29,13 +29,16 @@ class GroupCard extends ConsumerWidget {
     final digits = ref.watch(digitsFormatterProvider);
     final title = group.title(Localizations.localeOf(context).languageCode);
     final subtitle = context.l10n.adhkarListCount(digits(count));
+    void open() => context.push(AppRoute.adhkarGroupPath(group.id));
     return Semantics(
       button: true,
       label: '$title, $subtitle',
+      // The node replaces its children's semantics, so it carries the tap.
+      onTap: open,
       excludeSemantics: true,
       child: AppCard(
         padding: const EdgeInsetsDirectional.all(AppTokens.cardPadding),
-        onTap: () => context.push(AppRoute.adhkarGroupPath(group.id)),
+        onTap: open,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

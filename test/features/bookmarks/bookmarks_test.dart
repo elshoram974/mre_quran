@@ -180,5 +180,12 @@ void main() {
     expect(repo.items.single.ref, const AyahRef(2, 255));
     expect(find.text('البقرة · آية ٢٥٥'), findsOneWidget);
     expect(find.text('لا توجد علامات بعد'), findsNothing);
+
+    // The sheet is gone by now; Undo must still work without its `ref`.
+    await tester.tap(find.text('تراجع'));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    expect(repo.items, isEmpty);
+    expect(find.text('لا توجد علامات بعد'), findsOneWidget);
   });
 }

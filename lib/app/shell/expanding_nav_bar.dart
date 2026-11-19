@@ -103,6 +103,9 @@ class _Item extends StatelessWidget {
       button: true,
       selected: selected,
       label: destination.label,
+      // The node replaces its children's semantics, so it carries the tap
+      // itself; otherwise Switch Access and Voice Access find no action.
+      onTap: onTap,
       excludeSemantics: true,
       child: AnimatedContainer(
         duration: duration,

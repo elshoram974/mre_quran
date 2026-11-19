@@ -97,7 +97,7 @@ abstract final class AppPalette {
   /// Roles shared by every light paper (tertiary, error, scrim).
   static const ColorScheme _lightBase = ColorScheme(
     brightness: Brightness.light,
-    primary: Color(0xFF8A6416),
+    primary: Color(0xFF825E15),
     onPrimary: Color(0xFFFFFFFF),
     secondary: Color(0xFF615847),
     onSecondary: Color(0xFFFFFFFF),
@@ -225,7 +225,7 @@ abstract final class AppPalette {
 
   static const Map<AppAccent, _Tone> _lightAccents = {
     AppAccent.gold: _Tone(
-      primary: Color(0xFF8A6416),
+      primary: Color(0xFF825E15),
       onPrimary: Color(0xFFFFFFFF),
       container: Color(0xFFF2E3BD),
       onContainer: Color(0xFF3D2C05),
@@ -274,7 +274,7 @@ abstract final class AppPalette {
       inverse: Color(0xFFF2AAA4),
     ),
     AppAccent.brown: _Tone(
-      primary: Color(0xFF7A5A2E),
+      primary: Color(0xFF78582D),
       onPrimary: Color(0xFFFFFFFF),
       container: Color(0xFFEAD7B4),
       onContainer: Color(0xFF33230A),
@@ -288,7 +288,7 @@ abstract final class AppPalette {
       onPrimary: Color(0xFF2B1E00),
       container: Color(0xFF3B3220),
       onContainer: Color(0xFFF3DFAF),
-      inverse: Color(0xFF8A6416),
+      inverse: Color(0xFF825E15),
     ),
     AppAccent.emerald: _Tone(
       primary: Color(0xFF7DD3A6),
@@ -337,7 +337,7 @@ abstract final class AppPalette {
       onPrimary: Color(0xFF3A2A0E),
       container: Color(0xFF3E3222),
       onContainer: Color(0xFFF3E3C6),
-      inverse: Color(0xFF7A5A2E),
+      inverse: Color(0xFF78582D),
     ),
   };
 }

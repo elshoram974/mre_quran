@@ -134,6 +134,26 @@ void main() {
       expect(find.text('تابع'), findsOneWidget);
     });
 
+    testWidgets('a screen reader can tap the counter and hears each count', (
+      tester,
+    ) async {
+      final semantics = tester.ensureSemantics();
+      await pumpAdhkarApp(tester, catalog: fixtureCatalogWithPrayer());
+      await tapVisible(tester, find.text('ابدأ'));
+      await tester.pumpAndSettle();
+      final counter = find.bySemanticsLabel(RegExp('اضغط للعدّ'));
+      expect(
+        tester.getSemantics(counter),
+        isSemantics(isButton: true, hasTapAction: true, isLiveRegion: true),
+      );
+      expect(find.text('٠ من ١'), findsOneWidget);
+      tester.semantics.tap(find.semantics.byLabel(RegExp('اضغط للعدّ')));
+      await tester.pumpAndSettle();
+      expect(find.text('٠ من ١'), findsNothing);
+      expect(tester.takeException(), isNull);
+      semantics.dispose();
+    });
+
     testWidgets('finishing a list offers the next one', (tester) async {
       await pumpAdhkarApp(tester, catalog: fixtureCatalogWithPrayer());
       await tapVisible(tester, find.text('ابدأ'));

@@ -87,6 +87,8 @@ class _FrameChoice extends StatelessWidget {
       button: true,
       selected: selected,
       label: label,
+      // The node replaces its children's semantics, so it carries the tap.
+      onTap: onTap,
       excludeSemantics: true,
       child: Material(
         color: colors.paper,

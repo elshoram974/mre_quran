@@ -34,6 +34,14 @@ void main() {
           ),
           'primary on surface': (scheme.primary, scheme.surface),
           'primary on card': (scheme.primary, raised),
+          'primary on primaryContainer': (
+            scheme.primary,
+            scheme.primaryContainer,
+          ),
+          'primary on surfaceContainerLow': (
+            scheme.primary,
+            scheme.surfaceContainerLow,
+          ),
           'onPrimary on primary': (scheme.onPrimary, scheme.primary),
           'onPrimaryContainer on primaryContainer': (
             scheme.onPrimaryContainer,

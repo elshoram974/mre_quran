@@ -64,14 +64,14 @@ void main() {
     }
     expect(
       tester.getSemantics(find.bySemanticsLabel('مُدبَّب')),
-      isSemantics(isButton: true, isSelected: true),
+      isSemantics(isButton: true, isSelected: true, hasTapAction: true),
     );
     await tester.tap(find.text('مُقوَّس'));
     await tester.pumpAndSettle();
     expect(settings.settings.surahFrame, SurahFrameStyle.arch);
     expect(
       tester.getSemantics(find.bySemanticsLabel('مُقوَّس')),
-      isSemantics(isButton: true, isSelected: true),
+      isSemantics(isButton: true, isSelected: true, hasTapAction: true),
     );
   });
 

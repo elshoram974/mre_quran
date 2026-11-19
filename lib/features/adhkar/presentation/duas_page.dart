@@ -172,16 +172,19 @@ class _SearchBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    void open() => context.push(AppRoute.adhkarSearch.path);
     return Semantics(
       button: true,
       label: context.l10n.adhkarSearchHint,
+      // The node replaces its children's semantics, so it carries the tap.
+      onTap: open,
       excludeSemantics: true,
       child: Material(
         color: scheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(AppTokens.radiusField),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
-          onTap: () => context.push(AppRoute.adhkarSearch.path),
+          onTap: open,
           child: Container(
             height: AppTokens.minTarget + 4,
             padding: const EdgeInsetsDirectional.symmetric(horizontal: 16),

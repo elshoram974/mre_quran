@@ -56,6 +56,10 @@ class DhikrCounter extends ConsumerWidget {
     final button = Semantics(
       button: !done,
       label: l10n.adhkarCounterLabel(digits(count), digits(dhikr.repeat)),
+      // The node replaces its children's semantics, so it carries the tap.
+      onTap: done ? null : onCount,
+      // A tap changes the label; announce the new count to a screen reader.
+      liveRegion: true,
       excludeSemantics: true,
       child: done
           ? _DoneBadge(label: l10n.done)
