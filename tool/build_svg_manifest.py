@@ -33,9 +33,9 @@ EDITION = re.compile(r"^[a-z]+(-[a-z]+)+$")
 # The owner's fork of quran-ws/quran-svg (owner's decision, 2026-11-19): the page
 # files are served from it at the pinned commit, straight from GitHub (jsDelivr
 # refuses this repository: it is over its 50 MB limit), and the two archives are
-# the assets of its release.
+# the assets of its v1.1.1 release (a mirror of quran-ws/quran-svg's, same bytes).
 FORK = "elshoram974/quran-svg"
-RELEASE = f"https://github.com/quran-ws/quran-svg/releases/download/{VERSION}"
+RELEASE = f"https://github.com/{FORK}/releases/download/{VERSION}"
 PAGES = 604
 
 

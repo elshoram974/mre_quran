@@ -53,7 +53,7 @@ void main() {
           [for (final archive in manifest.archives) archive.url.toString()],
           [
             for (final kind in ['svg', 'json'])
-              'https://github.com/quran-ws/quran-svg/releases/download/'
+              'https://github.com/elshoram974/quran-svg/releases/download/'
                   'v1.1.1/${edition.id}-$kind.zip',
           ],
         );
@@ -104,7 +104,7 @@ void main() {
       );
       expect(
         manifest.archives.first.url.toString(),
-        'https://github.com/quran-ws/quran-svg/releases/download/v1.1.1/'
+        'https://github.com/elshoram974/quran-svg/releases/download/v1.1.1/'
         'hafs-kfqc-svg.zip',
       );
       expect(manifest.downloadBytes, greaterThan(100 * 1000 * 1000));

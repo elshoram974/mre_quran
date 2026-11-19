@@ -292,10 +292,13 @@ subpath per printed line, except on pages 1–2, where it is a bare `x,y x,y …
 pages declare a view box with a negative origin. `SvgPageParser` handles both and is tested on the
 real polygon files of pages 1 and 3 (`test/fixtures/svg`).
 
-**Offline download.** The whole Mushaf is fetched as the two assets of the source's `v1.1.1` release,
-`hafs-kfqc-svg.zip` (121,647,518 bytes, SHA-256 `5d5e29ea…fc91`) and `hafs-kfqc-json.zip` (492,327
-bytes, SHA-256 `27dd192c…6c13`); both digests match the ones GitHub publishes for the assets, and all
-604 pages inside were checked against the per-page checksums. The system downloader fetches them
+**Offline download.** The whole Mushaf is fetched as the two assets of the `v1.1.1` release of the owner's
+fork, <https://github.com/elshoram974/quran-svg/releases/tag/v1.1.1> (a mirror of the upstream release, the
+same bytes; the ten archives of the five readings, uploaded by the owner on 2026-11-19; it used to be
+`quran-ws/quran-svg`). For the Hafs reading: `hafs-kfqc-svg.zip` (121,647,518 bytes, SHA-256 `5d5e29ea…fc91`)
+and `hafs-kfqc-json.zip` (492,327 bytes, SHA-256 `27dd192c…6c13`). Every uploaded asset's size and SHA-256
+(as GitHub reports it) was compared with the manifests' and all ten match; a real download of one was
+checked too. All 604 pages inside were checked against the per-page checksums. The system downloader fetches them
 (a data-sync foreground service on Android, a background `URLSession` on iOS), so the download
 carries on when the app is closed, and its notification can pause or cancel it. An archive is used
 only if it matches its SHA-256; each page inside is then checked against its own SHA-256 before it
