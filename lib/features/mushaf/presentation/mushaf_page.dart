@@ -2,7 +2,6 @@ import 'dart:math' as math;
 
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../app/router.dart';
 import '../../../core/l10n/l10n.dart';
@@ -132,9 +131,9 @@ class MushafPage extends ConsumerWidget {
         ),
       ],
       actions: [
-        icon(Icons.settings_outlined, l10n.settings, () {
-          context.go(AppRoute.settings.path);
-        }),
+        // icon(Icons.settings_outlined, l10n.settings, () {
+        //   context.go(AppRoute.settings.path);
+        // }),
       ],
     );
     // Where the reader is (a tap opens the page scrubber) and the display

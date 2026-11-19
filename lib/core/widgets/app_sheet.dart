@@ -24,7 +24,7 @@ import '../theme/app_tokens.dart';
 abstract final class AppSheet {
   /// Smallest and largest share of the screen a draggable sheet takes.
   static const double _minSize = 0.3;
-  static const double _maxSize = 0.92;
+  static const double _maxSize = 0.95;
 
   /// Shows a tall sheet whose body fills it and lays itself out: a header
   /// that stays, a part that scrolls, a bar pinned at the bottom.

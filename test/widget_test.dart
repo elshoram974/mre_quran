@@ -234,6 +234,53 @@ void main() {
     debugDefaultTargetPlatformOverride = null;
   });
 
+  testWidgets('on iOS a SnackBar from any tab is shown', (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final container = ProviderContainer(
+      overrides: [
+        settingsRepositoryProvider.overrideWithValue(
+          MemorySettingsRepository(),
+        ),
+        lastTabRepositoryProvider.overrideWithValue(MemoryLastTabRepository()),
+        quranMetadataSourceProvider.overrideWithValue(
+          FakeQuranMetadataSource(),
+        ),
+        readingPositionRepositoryProvider.overrideWithValue(
+          MemoryReadingPositionRepository(),
+        ),
+        quranTextSourceProvider.overrideWithValue(FakeQuranTextSource()),
+        bookmarksRepositoryProvider.overrideWithValue(
+          MemoryBookmarksRepository(),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const QuranApp()),
+    );
+    await tester.pumpAndSettle();
+
+    ScaffoldMessenger.of(tester.element(find.byType(GlassTabBar)))
+        .showSnackBar(const SnackBar(content: Text('hello')));
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    expect(find.text('hello'), findsOneWidget);
+    // It floats above the glass tab bar, not behind it.
+    final surface = find.descendant(
+      of: find.byType(SnackBar),
+      matching: find.byType(Material),
+    );
+    expect(
+      tester.getRect(surface.first).bottom,
+      lessThanOrEqualTo(tester.getRect(find.byType(GlassTabBar)).top),
+    );
+  });
+
   testWidgets('the Mushaf keeps clear of the Android navigation bar', (
     tester,
   ) async {

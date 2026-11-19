@@ -102,6 +102,7 @@ class _ReaderControlsState extends State<ReaderControls> {
             key: const ValueKey('pills'),
             maxScaleFactor: 1.3,
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Flexible(
                   child: ConstrainedBox(

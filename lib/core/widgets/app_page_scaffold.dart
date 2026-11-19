@@ -76,7 +76,19 @@ class GlassInsetBody extends StatelessWidget {
           bottom: media.padding.bottom + (compact ? AppTokens.barClearance : 0),
         ),
       ),
-      child: child,
+      // A glass screen has no Material Scaffold, and a SnackBar has nowhere
+      // to appear without one. This transparent one gives it a place. The
+      // empty bottom bar is the glass bar's room: a SnackBar floats above it,
+      // and the page still runs underneath, as `extendBody` keeps it.
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        resizeToAvoidBottomInset: false,
+        extendBody: true,
+        bottomNavigationBar: compact
+            ? const SizedBox(height: AppTokens.barClearance)
+            : null,
+        body: child,
+      ),
     );
   }
 }
