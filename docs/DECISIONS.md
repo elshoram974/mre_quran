@@ -267,17 +267,20 @@
 
 ## D-032: The launch screen goes the moment the first screen is ready
 
-- **Decision:** `StartupSplash` stays mounted in the app's builder: it is what lets Android's launch screen go
-  (without it the screen waited for its 4-second limit, its star stopped after 1.6 s, and the app looked
-  frozen). On Android there is no least time: the launch screen goes as soon as the Quran text is read and
-  the Mushaf page is drawn. The first page appears without fading (nobody sees a fade under the launch
-  screen), and the pages around it are prepared only after it, so they do not compete with it. The text's
-  three checksums are computed off the main thread, the files read at once, and the search keys built only
-  when search is first used. When a notification, widget or shortcut opens another screen over the Mushaf
-  (`opensOnReaderProvider`), the launch screen waits only for the text.
-- **Measured** (emulator, profile build, cold start): ready at ~0.85 s after the process started, from ~1.5 s,
-  and from 5.2 s with the launch screen held to its limit. Opening from the prayer widget no longer waits
-  for the limit.
+- **Decision:** Only the platform's own launch screen shows; Flutter draws no splash. Android and iOS keep
+  their launch screen until Flutter sends its first frame, so `main` holds that frame back
+  (`LaunchHold`, `deferFirstFrame`): the first screen is built, laid out and painted underneath, and
+  `LaunchGate` lets the frame through as soon as the Quran text is read and the Mushaf page is drawn
+  (`startupReadyProvider`). When a notification, widget or shortcut opens another screen over the Mushaf
+  (`opensOnReaderProvider`), it waits only for the text. The hold has its own limit (`AppTokens.launchMost`,
+  4 s, timed from `main`, not from a widget), so nothing that goes wrong while the app builds can keep the
+  launch screen up. The pages around the first are prepared only after it, and the text's checksums are
+  computed off the main thread.
+- **Why not hold Android's launch screen natively** (`setKeepOnScreenCondition`): Flutter already delays
+  Android's first draw until its own first frame, and holding the draw from both sides left the app stuck
+  on its launch screen.
+- **Measured** (emulator, profile build, cold start, before this change): ready at ~0.85 s after the process
+  started.
 
 ## D-033: Vibration is for counting only
 
@@ -361,8 +364,23 @@
   published from it with GitHub Pages. Its `LINKS.md` lists every address the app downloads from.
 - **Splash:** "made by" over "MRECode" under the star, one picture (Marcellus and Cormorant Garamond
   Italic, OFL, drawn by `tool/app_icon/render_splash_brand_test.dart`): Android 12+ branding image, the launch
-  window before Android 12 (`drawable/launch_compat.xml`), the iOS storyboard and StartupSplash.
+  window before Android 12 (`drawable/launch_compat.xml`) and the iOS storyboard.
 - **Default adhan:** Nasser Al-Qatami (bundled); Mishary Alafasy's adhan is a download. Mishary's Fajr adhan
   stays the bundled Fajr default.
 - **App facts:** names, version, and every outside address (media, privacy policy, WhatsApp, email) are in
   `lib/core/config/app_config.dart`.
+
+## D-043: Every launch leaves a trace until it is on screen
+
+- **Decision:** `StartupTrace` (`MainActivity.kt`/`StartupTrace.kt` on Android, `AppDelegate.swift` on iOS)
+  notes each step of a launch: where it came from (the icon, a restore, or the intent's action and extra
+  names; the launch option names on iOS), the engine, the activity or scene lifecycle, Dart's own steps
+  (`dart:main`, any start-up service that timed out, `dart:runApp`, `release:ready` or `release:limit`), and
+  the first frame on screen. Each step goes to the system log (logcat tag `MushafiStartup`; iOS subsystem
+  `net.mrecode.mreQuran`, category `startup`) and is kept on the device until the first frame is shown.
+  When a launch never got there (and was not left by the person within 3 s), the next launch reports it
+  through `AppLogger.launchStalled` as a non-fatal `LaunchStalled` carrying its steps.
+- **Why:** a launch that stayed on the launch screen happened on a device and could not be reproduced on
+  emulators; the trace says where it stopped the next time it happens.
+- **Privacy:** step names, milliseconds, the OS version and the intent's extra names only; reported only when
+  crash reports are on, and never from debug builds.

@@ -6,9 +6,8 @@
 //   Android  res/drawable-*dpi/splash_brand.png: the branding image of
 //            Android 12 and later (values-v31/styles.xml), and the bottom
 //            layer of the launch window before 12 (drawable/launch_compat.xml);
-//   iOS      Assets.xcassets/LaunchBrand.imageset (LaunchScreen.storyboard);
-//   Flutter  assets/brand/splash_brand.png, 2.0x and 3.0x (StartupSplash,
-//            which takes over from the storyboard on iOS).
+//   iOS      Assets.xcassets/LaunchBrand.imageset (LaunchScreen.storyboard).
+// The launch screen is native only; Flutter draws no splash of its own.
 //
 // The letters: Marcellus (Brian J. Bonislawsky, Astigmatic) and Cormorant
 // Garamond Italic (the Cormorant Project), both SIL Open Font License 1.1,
@@ -30,7 +29,6 @@ const Color _gold = Color(0xFF8A6416);
 const String _fonts = 'app_assets/brand/fonts';
 const String _res = 'android/app/src/main/res';
 const String _ios = 'ios/Runner/Assets.xcassets/LaunchBrand.imageset';
-const String _flutter = 'assets/brand';
 
 /// The picture's size in dp or points, as Android 12 wants its branding
 /// image.
@@ -111,12 +109,6 @@ void main() {
           'idiom': 'universal',
           'scale': '${scale}x',
         });
-        _write(
-          scale == 1
-              ? '$_flutter/splash_brand.png'
-              : '$_flutter/$scale.0x/splash_brand.png',
-          await _draw(scale.toDouble()),
-        );
       }
       File('$_ios/Contents.json').writeAsStringSync(
         '${const JsonEncoder.withIndent('  ').convert({

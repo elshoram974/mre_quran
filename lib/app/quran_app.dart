@@ -11,7 +11,7 @@ import '../core/widgets/pinch_zoom.dart';
 import '../features/adhan/application/adhan_providers.dart';
 import '../features/adhan/presentation/adhan_suggestion_scope.dart';
 import '../features/startup/application/startup_providers.dart';
-import '../features/startup/presentation/startup_splash.dart';
+import '../features/startup/presentation/launch_gate.dart';
 import '../features/adhkar/presentation/adhkar_widget_sync_scope.dart';
 import '../features/prayer/application/prayer_provider.dart';
 import '../features/prayer/presentation/prayer_widget_sync_scope.dart';
@@ -83,10 +83,10 @@ class QuranApp extends ConsumerWidget {
         darkTheme: AppTheme.of(settings.theme.nightPaper, settings.accent),
         themeMode: settings.materialThemeMode,
         routerConfig: ref.watch(routerProvider),
-        // The native launch screen hands over to the bounded Flutter overlay.
+        // The native launch screen stays until the first screen is ready.
         builder: (context, child) => _PinchTextScale(
           child: _SystemBars(
-            child: StartupSplash(
+            child: LaunchGate(
               child: AdhanSuggestionScope(
                 child: AppShortcutsScope(
                   child: AdhkarWidgetSyncScope(

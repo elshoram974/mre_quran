@@ -11,6 +11,7 @@ class MainActivity : FlutterActivity() {
     private val widgetChannel = "net.mrecode.mre_quran/prayer_widget"
     private val adhkarWidgetChannel = "net.mrecode.mre_quran/adhkar_widget"
     private val homeWidgetsChannel = "net.mrecode.mre_quran/home_widgets"
+    private val startupChannel = "net.mrecode.mre_quran/startup"
     private var adhan: AdhanChannel? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
@@ -58,6 +59,19 @@ class MainActivity : FlutterActivity() {
                 AdhkarWidgetRenderer.save(this, call.arguments as? Map<String, Any?>)
                 result.success(null)
             }
+        // Dart notes its own start-up steps, and reports a launch that stalled.
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, startupChannel)
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "mark" -> {
+                        (call.arguments as? String)?.let { StartupTrace.mark(this, it) }
+                        result.success(null)
+                    }
+                    "takeStalled" -> result.success(StartupTrace.takeStalled(this))
+                    else -> result.notImplemented()
+                }
+            }
+        StartupTrace.mark(this, "engine")
         adhan = AdhanChannel(this, flutterEngine.dartExecutor.binaryMessenger)
         deliverAdhanTap(intent)
     }
@@ -69,10 +83,42 @@ class MainActivity : FlutterActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        StartupTrace.begin(this, intent, restored = savedInstanceState != null)
         // Let Flutter draw its first frame. Holding Android's pre-draw until
         // Flutter paints can make the two wait for each other indefinitely.
         installSplashScreen()
         super.onCreate(savedInstanceState)
+    }
+
+    override fun onStart() {
+        super.onStart()
+        StartupTrace.mark(this, "start")
+    }
+
+    override fun onResume() {
+        super.onResume()
+        StartupTrace.mark(this, "resume")
+    }
+
+    override fun onPause() {
+        StartupTrace.mark(this, "pause")
+        super.onPause()
+    }
+
+    override fun onStop() {
+        StartupTrace.mark(this, "stop")
+        super.onStop()
+    }
+
+    override fun onDestroy() {
+        StartupTrace.mark(this, "destroy")
+        super.onDestroy()
+    }
+
+    /** The launch screen goes: Flutter's first frame is on screen. */
+    override fun onFlutterUiDisplayed() {
+        super.onFlutterUiDisplayed()
+        StartupTrace.mark(this, StartupTrace.DISPLAYED)
     }
 
     @Deprecated("Flutter's activity still reports results this way")

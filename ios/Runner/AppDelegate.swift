@@ -3,6 +3,7 @@ import GoogleMaps
 import UIKit
 import UserNotifications
 import WidgetKit
+import os
 
 @main
 @objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
@@ -10,6 +11,7 @@ import WidgetKit
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
+    StartupTrace.begin(from: launchOptions)
     if let key = Bundle.main.object(forInfoDictionaryKey: "GMSApiKey") as? String,
        !key.isEmpty,
        !key.hasPrefix("$(") {
@@ -24,6 +26,23 @@ import WidgetKit
 
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
+    // Dart notes its own start-up steps, and reports a launch that stalled.
+    let startupChannel = FlutterMethodChannel(
+      name: "net.mrecode.mre_quran/startup",
+      binaryMessenger: engineBridge.applicationRegistrar.messenger()
+    )
+    startupChannel.setMethodCallHandler { call, callback in
+      switch call.method {
+      case "mark":
+        if let step = call.arguments as? String { StartupTrace.mark(step) }
+        callback(nil)
+      case "takeStalled":
+        callback(StartupTrace.takeStalled())
+      default:
+        callback(FlutterMethodNotImplemented)
+      }
+    }
+    StartupTrace.mark("engine")
     let channel = FlutterMethodChannel(
       name: "net.mrecode.mre_quran/prayer_widget",
       binaryMessenger: engineBridge.applicationRegistrar.messenger()
@@ -132,5 +151,80 @@ import WidgetKit
       }
       callback(nil)
     }
+  }
+}
+
+/// Notes each step of a launch, from its start to Flutter's first frame on
+/// screen, so a launch that stays on the launch screen can be told about
+/// afterwards: what started it and the last step it reached. Each step goes
+/// to the system log (category "startup") and is kept on the device until the
+/// first frame is on screen; the next launch hands an unfinished one to Dart,
+/// which reports it. Nothing personal is kept: step names, milliseconds, the
+/// launch option names, and the iOS version.
+enum StartupTrace {
+  private static let currentKey = "startupTrace.current"
+  private static let stalledKey = "startupTrace.stalled"
+  private static let firstFrame = "dart:firstFrame"
+  /// A launch left by the person before this is not counted as stalled.
+  private static let leftQuicklyMs = 3000
+  private static let log = Logger(subsystem: "net.mrecode.mreQuran", category: "startup")
+  private static var begunAt = CACurrentMediaTime()
+  private static var open = false
+  private static var observers: [NSObjectProtocol] = []
+
+  /// Starts the trace of a launch, keeping the last one if it stalled.
+  static func begin(from options: [UIApplication.LaunchOptionsKey: Any]?) {
+    let defaults = UserDefaults.standard
+    if let previous = defaults.string(forKey: currentKey), stalled(previous) {
+      defaults.set(previous, forKey: stalledKey)
+      log.warning("previous launch never showed its first frame: \(previous, privacy: .public)")
+    }
+    begunAt = CACurrentMediaTime()
+    open = true
+    let names = (options?.keys.map { $0.rawValue } ?? []).sorted().joined(separator: ",")
+    let line = "ios \(UIDevice.current.systemVersion) from \(names.isEmpty ? "icon" : names):"
+    defaults.set(line, forKey: currentKey)
+    log.info("\(line, privacy: .public)")
+    let center = NotificationCenter.default
+    for (name, step) in [
+      (UIScene.didActivateNotification, "active"),
+      (UIScene.willDeactivateNotification, "pause"),
+      (UIScene.didEnterBackgroundNotification, "background"),
+    ] {
+      observers.append(center.addObserver(forName: name, object: nil, queue: .main) { _ in
+        mark(step)
+      })
+    }
+  }
+
+  /// Notes [step] of the launch under way; nothing once it is on screen.
+  static func mark(_ step: String) {
+    guard open else { return }
+    let at = Int((CACurrentMediaTime() - begunAt) * 1000)
+    if step == firstFrame {
+      open = false
+      observers.forEach(NotificationCenter.default.removeObserver)
+      observers.removeAll()
+    }
+    let defaults = UserDefaults.standard
+    defaults.set("\(defaults.string(forKey: currentKey) ?? "") \(step)@\(at)", forKey: currentKey)
+    log.info("\(step, privacy: .public) at \(at)ms")
+  }
+
+  /// The trace of a launch that stalled, once; nil when none did.
+  static func takeStalled() -> String? {
+    let defaults = UserDefaults.standard
+    guard let stalled = defaults.string(forKey: stalledKey) else { return nil }
+    defaults.removeObject(forKey: stalledKey)
+    return stalled
+  }
+
+  /// Whether [trace] never reached the screen, and was not simply left by
+  /// the person within a moment of tapping.
+  private static func stalled(_ trace: String) -> Bool {
+    if trace.contains(" \(firstFrame)@") { return false }
+    guard let range = trace.range(of: #" pause@(\d+)"#, options: .regularExpression),
+          let left = Int(trace[range].dropFirst(" pause@".count)) else { return true }
+    return left >= leftQuicklyMs
   }
 }

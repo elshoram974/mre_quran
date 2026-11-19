@@ -9,9 +9,8 @@
 //            background is @color/ic_launcher_background),
 //   iOS      Assets.xcassets/AppIcon.appiconset (full square, no alpha),
 //   stores   docs/store/icon-512.png,
-// and the star of iOS's launch screen (LaunchImage.imageset, 96 points), as
-// StartupSplash draws it still, so the hand-over to it is seamless. Android's
-// launch star is a vector: res/drawable/splash_star.xml.
+// and the star of iOS's launch screen (LaunchImage.imageset, 96 points).
+// Android's launch star is a vector: res/drawable/splash_star.xml.
 //
 // Run: flutter test tool/app_icon/render_app_icon_test.dart
 import 'dart:io';
@@ -228,7 +227,7 @@ void _paint(Canvas canvas, double s, _Layer layer, {bool round = false}) {
   );
 }
 
-/// The launch star in the gold accent, as StartupSplash draws it at rest:
+/// The launch star in the gold accent, as Android draws it at rest:
 /// two squares of radius 0.43 of the side, lightly filled, and a disc.
 void _launchStar(Canvas canvas, double s) {
   const gold = Color(0xFF8A6416);

@@ -127,14 +127,7 @@ abstract final class AppTokens {
   /// Outline of a chosen option.
   static const double selectedOutline = 2;
 
-  /// Shortest and longest the start-up splash shows, how long its star
-  /// takes to turn an eighth of a circle, and how long its name takes to
-  /// fade in.
-  static const Duration splashLeast = Duration(milliseconds: 700);
-  static const Duration splashMost = Duration(seconds: 4);
-  static const Duration splashTurn = Duration(milliseconds: 1600);
-  static const Duration splashName = Duration(milliseconds: 500);
-
-  /// Size of the start-up splash's star.
-  static const double splashEmblem = 96;
+  /// The longest the native launch screen stays while the first screen
+  /// loads.
+  static const Duration launchMost = Duration(seconds: 4);
 }
