@@ -280,6 +280,19 @@
   on its launch screen.
 - **Measured** (emulator, profile build, cold start, before this change): ready at ~0.85 s after the process
   started.
+- **The emblem keeps moving until the screen goes** (Android 12+, `splash_star.xml`): the contours draw once,
+  then the emblem hops on a loop, so the launch screen is never still while the app is not ready. It stops
+  when the first frame is shown, or at the hold's limit (`AppTokens.launchMost`, 4 s), whichever comes
+  first. Older Android and iOS draw a still launch screen; they cannot animate it.
+- **Start-up must not end before `runApp`** (2026-11-19, found on a Xiaomi POCO X3 NFC, Android 12, from the
+  hung process's own log): the launch screen waits for the first frame, so `main` ending early leaves it up for
+  good, with no crash and no ANR. A launch opened from the adhan's notice stopped in `main` with
+  `type 'Null' is not a subtype of type 'bool'` from Crashlytics (`setCrashlyticsCollectionEnabled`), which
+  throws on the call itself, before it returns a future, while its native side has not reported yet. The call
+  was an argument to `_optionalStartup`, so nothing caught it. Now `optionalStartup` takes the step as a
+  function and catches it where it is called, `FirebaseCrashReporter`'s methods are `async` so a plugin that
+  is not ready fails the future and never the caller, and `main` falls back to opening the app on its defaults
+  if anything else before `runApp` throws (the failure is then rethrown, so it is reported).
 
 ## D-033: Vibration is for counting only
 

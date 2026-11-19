@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The contours draw in sequence. One short hop lands on the complete emblem.
-     The static vector is also the resting frame on older launchers. -->
+<!-- The contours draw once, then the emblem hops until the launch screen
+     goes. The static vector is also the resting frame on older launchers. -->
 <animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:aapt="http://schemas.android.com/aapt">
     <aapt:attr name="android:drawable">
@@ -30,20 +30,29 @@
                 android:valueFrom="0" android:valueTo="1" android:valueType="floatType" />
         </aapt:attr>
     </target>
+    <!-- The emblem hops again and again while the app opens: it starts when
+         the contours are drawn and goes on until the launch screen goes, so
+         the screen is never still while the app is not ready. -->
     <target android:name="emblem">
         <aapt:attr name="android:animation">
-            <set android:ordering="sequentially">
-                <objectAnimator android:propertyName="translateY" android:duration="260"
-                    android:interpolator="@android:anim/decelerate_interpolator"
-                    android:valueFrom="0" android:valueTo="-15" android:valueType="floatType" />
-                <objectAnimator android:propertyName="translateY" android:duration="230"
-                    android:interpolator="@android:anim/accelerate_interpolator"
-                    android:valueFrom="-15" android:valueTo="0" android:valueType="floatType" />
-                <objectAnimator android:propertyName="scaleY" android:duration="90"
-                    android:valueFrom="1" android:valueTo="0.91" android:valueType="floatType" />
-                <objectAnimator android:propertyName="scaleY" android:duration="140"
-                    android:valueFrom="0.91" android:valueTo="1" android:valueType="floatType" />
-            </set>
+            <objectAnimator android:duration="1400" android:startOffset="520"
+                android:repeatCount="-1" android:repeatMode="restart">
+                <propertyValuesHolder android:propertyName="translateY">
+                    <keyframe android:fraction="0" android:value="0" />
+                    <keyframe android:fraction="0.19" android:value="-15"
+                        android:interpolator="@android:anim/decelerate_interpolator" />
+                    <keyframe android:fraction="0.36" android:value="0"
+                        android:interpolator="@android:anim/accelerate_interpolator" />
+                    <keyframe android:fraction="1" android:value="0" />
+                </propertyValuesHolder>
+                <propertyValuesHolder android:propertyName="scaleY">
+                    <keyframe android:fraction="0" android:value="1" />
+                    <keyframe android:fraction="0.36" android:value="1" />
+                    <keyframe android:fraction="0.43" android:value="0.91" />
+                    <keyframe android:fraction="0.53" android:value="1" />
+                    <keyframe android:fraction="1" android:value="1" />
+                </propertyValuesHolder>
+            </objectAnimator>
         </aapt:attr>
     </target>
 </animated-vector>

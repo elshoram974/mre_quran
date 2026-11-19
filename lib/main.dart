@@ -20,6 +20,7 @@ import 'features/settings/application/settings_provider.dart';
 import 'features/settings/data/settings_repository.dart';
 import 'features/settings/domain/app_settings.dart';
 import 'features/startup/application/launch_hold.dart';
+import 'features/startup/application/optional_startup.dart';
 import 'features/startup/application/startup_providers.dart';
 import 'features/startup/data/startup_trace.dart';
 import 'features/startup/data/last_tab_repository.dart';
@@ -29,9 +30,34 @@ import 'core/notifications/reminder_scheduler_provider.dart';
 /// screen can be reported by the next.
 final StartupTrace _trace = StartupTrace.platform();
 
+/// Whether `runApp` has been called with the app's real set-up.
+bool _appStarted = false;
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   _trace.mark('dart:main');
+  try {
+    await _start();
+  } on Object catch (error, stackTrace) {
+    // The launch screen stays until the first frame, so a start-up step that
+    // fails must never end `main` before the app is on its way: whatever went
+    // wrong, the app opens, on its defaults, and the failure is reported.
+    _trace.mark('start-up:failed');
+    AppLogger.debug('Start-up failed: ${error.runtimeType}');
+    if (!_appStarted) {
+      _appStarted = true;
+      runApp(
+        LiquidGlassWidgets.wrap(
+          brightnessResolver: Theme.maybeBrightnessOf,
+          child: const ProviderScope(child: QuranApp()),
+        ),
+      );
+    }
+    Error.throwWithStackTrace(error, stackTrace);
+  }
+}
+
+Future<void> _start() async {
   // Android 15+ always draws edge to edge; earlier versions do the same so
   // the app looks and lays out alike everywhere.
   unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge));
@@ -39,28 +65,28 @@ Future<void> main() async {
   // Independent start-up work runs in parallel so the first frame waits only
   // for the slowest item, not the sum of all of them.
   // Shader warm-up has no bearing on whether the destination can open.
-  unawaited(_optionalStartup('glass', LiquidGlassWidgets.initialize()));
+  unawaited(_optionalStartup('glass', LiquidGlassWidgets.initialize));
   final (firebase, storedSettings, lastTab, reminderScheduler) = await (
     _optionalStartup(
       'Firebase',
-      Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform),
+      () => Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      ),
     ),
-    _optionalStartup('settings', LocalSettingsRepository(preferences).load()),
-    _optionalStartup('last tab', LocalLastTabRepository(preferences).load()),
+    _optionalStartup('settings', LocalSettingsRepository(preferences).load),
+    _optionalStartup('last tab', LocalLastTabRepository(preferences).load),
     LocalReminderScheduler.create(),
   ).wait;
   _trace.mark('dart:services');
   final settings = storedSettings ?? const AppSettings();
   Haptics.enabled = settings.hapticsEnabled;
   unawaited(Haptics.syncWidgetSetting(settings.hapticsEnabled));
-  final CrashReporter crashReporter = firebase == null
-      ? const NoopCrashReporter()
-      : FirebaseCrashReporter();
+  final crashReporter = _crashReporter(firebase);
   if (storedSettings != null) {
     unawaited(
       _optionalStartup(
         'crash collection',
-        crashReporter.setCollectionEnabled(settings.crashReportsEnabled),
+        () => crashReporter.setCollectionEnabled(settings.crashReportsEnabled),
       ),
     );
   }
@@ -89,6 +115,7 @@ Future<void> main() async {
   );
   _trace.mark('dart:runApp');
   unawaited(_reportStalledLaunch(crashReporter));
+  _appStarted = true;
   runApp(
     LiquidGlassWidgets.wrap(
       brightnessResolver: Theme.maybeBrightnessOf,
@@ -106,14 +133,25 @@ Future<void> main() async {
   );
 }
 
-/// An unavailable platform service must not strand the native launch window.
-Future<T?> _optionalStartup<T>(String service, Future<T> task) async {
+/// An unavailable platform service must not strand the native launch window:
+/// the step is given up on after its limit, or when it throws.
+Future<T?> _optionalStartup<T>(String service, FutureOr<T> Function() task) =>
+    optionalStartup(
+      service,
+      task,
+      onUnavailable: (service) => _trace.mark('unavailable:$service'),
+    );
+
+/// The reporter for this launch: Firebase's when it started and its
+/// Crashlytics can be had, otherwise one that reports nothing.
+CrashReporter _crashReporter(FirebaseApp? firebase) {
+  if (firebase == null) return const NoopCrashReporter();
   try {
-    return await task.timeout(const Duration(seconds: 2));
+    return FirebaseCrashReporter();
   } on Object catch (error) {
-    AppLogger.debug('Startup $service unavailable: ${error.runtimeType}');
-    _trace.mark('unavailable:$service');
-    return null;
+    AppLogger.debug('Crash reporting unavailable: ${error.runtimeType}');
+    _trace.mark('unavailable:crashlytics');
+    return const NoopCrashReporter();
   }
 }
 

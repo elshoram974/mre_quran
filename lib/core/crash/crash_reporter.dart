@@ -45,15 +45,20 @@ class FirebaseCrashReporter implements CrashReporter {
 
   /// Debug builds never report: their crashes are the developer's, seen
   /// in the console, and would bury the real ones.
+  ///
+  /// Every method here is `async`, so a plugin that is not ready (it throws
+  /// before it returns a future, as Crashlytics does when its native side
+  /// has not reported yet) fails the returned future, never the caller: a
+  /// caller that is `main` would otherwise end before `runApp`.
   @override
-  Future<void> setCollectionEnabled(bool enabled) =>
+  Future<void> setCollectionEnabled(bool enabled) async =>
       _crashlytics.setCrashlyticsCollectionEnabled(enabled && !kDebugMode);
 
   @override
-  Future<void> log(String message) => _crashlytics.log(message);
+  Future<void> log(String message) async => _crashlytics.log(message);
 
   @override
-  Future<void> recordFlutterFatalError(FlutterErrorDetails details) =>
+  Future<void> recordFlutterFatalError(FlutterErrorDetails details) async =>
       _crashlytics.recordFlutterFatalError(details);
 
   @override
@@ -62,6 +67,6 @@ class FirebaseCrashReporter implements CrashReporter {
     StackTrace stackTrace, {
     String? reason,
     bool fatal = false,
-  }) =>
+  }) async =>
       _crashlytics.recordError(error, stackTrace, reason: reason, fatal: fatal);
 }
