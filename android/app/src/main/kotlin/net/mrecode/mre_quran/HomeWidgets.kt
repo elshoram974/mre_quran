@@ -66,8 +66,7 @@ object HomeWidgets {
         val background = when (appearance(context)) {
             "navy" -> R.drawable.widget_card_bg
             "green" -> R.drawable.widget_bg
-            // The app's own navy and gold, the same on every widget.
-            else -> R.drawable.widget_card_bg
+            else -> if (root == R.id.card_root) R.drawable.widget_card_bg else R.drawable.widget_bg
         }
         views.setInt(root, "setBackgroundResource", background)
     }

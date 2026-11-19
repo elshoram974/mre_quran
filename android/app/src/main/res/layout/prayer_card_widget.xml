@@ -4,6 +4,8 @@
      it), and the day's prayers and sunrise along the bottom with the coming one
      framed in gold. The text here is the sample shown in the widget picker,
      with Asr coming; PrayerWidgetRenderer replaces it. -->
+<!-- The coming prayer at the top, the day's five at the bottom; the star sits
+     in the middle, so a taller widget shows it in the room between them. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/card_root"
     android:layout_width="match_parent"
@@ -14,7 +16,7 @@
     <ImageView
         android:layout_width="96dp"
         android:layout_height="96dp"
-        android:layout_gravity="center_horizontal|top"
+        android:layout_gravity="center"
         android:layout_marginTop="-6dp"
         android:importantForAccessibility="no"
         android:src="@drawable/widget_card_star" />
@@ -32,7 +34,7 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:gravity="center_vertical"
+            android:gravity="top"
             android:orientation="horizontal">
 
             <LinearLayout

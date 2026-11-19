@@ -5,7 +5,7 @@
     android:id="@+id/schedule_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/widget_card_bg">
+    android:background="@drawable/widget_bg">
 
 
     <LinearLayout
