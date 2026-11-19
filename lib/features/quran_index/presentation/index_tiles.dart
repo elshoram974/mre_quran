@@ -76,6 +76,76 @@ class JuzTile extends StatelessWidget {
   }
 }
 
+/// A row of the hizb list.
+class HizbTile extends StatelessWidget {
+  /// Creates a row for [hizb] starting in the surah named [surahName].
+  const HizbTile({
+    super.key,
+    required this.hizb,
+    required this.surahName,
+    required this.digits,
+    required this.onTap,
+  });
+
+  /// Hizb to show.
+  final Hizb hizb;
+
+  /// Arabic name of the surah the hizb starts in.
+  final String surahName;
+
+  /// Formats numbers for display.
+  final String Function(int) digits;
+
+  /// Called when the row is tapped.
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return IndexRow(
+      number: digits(hizb.number),
+      title: l10n.hizbTitle(digits(hizb.number)),
+      subtitle: l10n.juzStartsAt(surahName, digits(hizb.ayah)),
+      page: l10n.pageNumber(digits(hizb.startPage)),
+      onTap: onTap,
+    );
+  }
+}
+
+/// The heading over a group of rows, such as the juz a pair of hizb belong
+/// to.
+class IndexSectionHeader extends StatelessWidget {
+  /// Creates a heading reading [title].
+  const IndexSectionHeader({super.key, required this.title});
+
+  /// What the group is.
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return Padding(
+      padding: const EdgeInsetsDirectional.only(start: 4, top: 14, bottom: 4),
+      child: Semantics(
+        header: true,
+        child: Row(
+          children: [
+            Text(
+              title,
+              style: theme.textTheme.labelLarge?.copyWith(
+                color: scheme.primary,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(child: Divider(height: 1, color: scheme.outlineVariant)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 /// A numbered row of the index and of search results.
 class IndexRow extends StatelessWidget {
   /// Creates a row.

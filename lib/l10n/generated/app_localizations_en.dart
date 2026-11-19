@@ -1191,6 +1191,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get indexJuz => 'Juz';
 
   @override
+  String get indexHizb => 'Hizb';
+
+  @override
   String get indexSearchHint => 'Search by name or number';
 
   @override
@@ -1218,6 +1221,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String juzTitle(String number) {
     return 'Juz $number';
+  }
+
+  @override
+  String hizbTitle(String number) {
+    return 'Hizb $number';
   }
 
   @override
@@ -1305,11 +1313,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get creditsMushafScript =>
       'Mushaf text, script and Al-Tafsir Al-Muyassar: King Fahd Glorious Quran Printing Complex, Madinah (Uthmanic Hafs script, version 2.0, and the Tafseer Mouaser data, version 3), https://qurancomplex.gov.sa. Bundled unchanged and checked by checksum. The Complex offers them for digital use with credit; all rights remain with it.';
-
-  @override
-  String hizbTitle(String number) {
-    return 'Hizb $number';
-  }
 
   @override
   String get copyAyah => 'Copy ayah';

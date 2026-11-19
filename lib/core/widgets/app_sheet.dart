@@ -8,8 +8,10 @@ import '../theme/app_tokens.dart';
 ///
 /// [initialSize] is the share of the screen an expandable sheet opens at.
 /// Short content gets a sheet sized to the content. Long content
-/// ([expandable]) gets a draggable sheet that snaps between half and almost
-/// full height and scrolls its body.
+/// ([expandable]) gets a draggable sheet that scrolls its body and rests
+/// wherever it is let go, from a third of the screen up to the full height:
+/// it does not snap, so it can stop half way as readily as it can reach the
+/// top, and a flick up takes it all the way.
 ///
 /// Every sheet closes the same way: drag it down from anywhere. Once what it
 /// holds is scrolled to the top, pulling further down takes the sheet with
@@ -22,9 +24,10 @@ import '../theme/app_tokens.dart';
 /// keyboard height and shrinks to the room left, and its body scrolls when
 /// that room is short.
 abstract final class AppSheet {
-  /// Smallest and largest share of the screen a draggable sheet takes.
+  /// Smallest and largest share of the screen a draggable sheet takes. The
+  /// largest is the whole room under the status bar.
   static const double _minSize = 0.3;
-  static const double _maxSize = 0.95;
+  static const double _maxSize = 1;
 
   /// Shows a tall sheet whose body fills it and lays itself out: a header
   /// that stays, a part that scrolls, a bar pinned at the bottom.
@@ -217,7 +220,8 @@ class _PullToCloseState extends State<_PullToClose>
 
 /// Lets a part of a filling sheet that does not scroll, such as its header,
 /// drag the sheet: up to make it taller, down to shrink it and then close
-/// it. Use it inside [AppSheet.showFilling]; elsewhere it is just [child].
+/// it. The sheet stays where it is let go; a flick carries it to the top, or
+/// away. Use it inside [AppSheet.showFilling]; elsewhere it is just [child].
 class AppSheetDragArea extends StatelessWidget {
   /// Creates a drag area over [child].
   const AppSheetDragArea({super.key, required this.child});
@@ -244,23 +248,21 @@ class AppSheetDragArea extends StatelessWidget {
 
 /// The size controller of a filling sheet, for [AppSheetDragArea].
 class _FillingSheet extends InheritedWidget {
-  const _FillingSheet({
-    required this.controller,
-    required this.restSize,
-    required super.child,
-  });
+  const _FillingSheet({required this.controller, required super.child});
 
   final DraggableScrollableController controller;
 
-  /// The size the sheet opened at.
-  final double restSize;
-
-  /// Below this share of the screen a released sheet closes.
-  static const double _closeBelow = 0.5;
+  /// Below this share of the screen a released sheet closes. Half the screen
+  /// and more is a place to stop.
+  static const double _closeBelow = 0.35;
 
   /// A downward fling faster than this, in pixels a second, closes the
   /// sheet.
   static const double _closeFling = 900;
+
+  /// An upward fling faster than this, in pixels a second, takes the sheet
+  /// to the top.
+  static const double _expandFling = 700;
 
   static _FillingSheet? maybeOf(BuildContext context) =>
       context.getInheritedWidgetOfExactType<_FillingSheet>();
@@ -282,23 +284,23 @@ class _FillingSheet extends InheritedWidget {
       _closeSheet(context);
       return;
     }
-    final target = controller.size > (restSize + AppSheet._maxSize) / 2
-        ? AppSheet._maxSize
-        : restSize;
+    // Let go slowly, the sheet stays where it is; a flick up reaches the top.
+    if (velocity >= -_expandFling || controller.size >= AppSheet._maxSize) {
+      return;
+    }
     if (animate) {
       controller.animateTo(
-        target,
+        AppSheet._maxSize,
         duration: AppTokens.motionMedium,
         curve: Curves.easeOutCubic,
       );
     } else {
-      controller.jumpTo(target);
+      controller.jumpTo(AppSheet._maxSize);
     }
   }
 
   @override
-  bool updateShouldNotify(_FillingSheet old) =>
-      old.controller != controller || old.restSize != restSize;
+  bool updateShouldNotify(_FillingSheet old) => old.controller != controller;
 }
 
 class _FillingSheetHost extends StatefulWidget {
@@ -336,14 +338,13 @@ class _FillingSheetHostState extends State<_FillingSheetHost> {
   @override
   Widget build(BuildContext context) => _FillingSheet(
     controller: _controller,
-    restSize: widget.initialSize,
     child: NotificationListener<ScrollEndNotification>(
       onNotification: _onScrollEnd,
       child: DraggableScrollableSheet(
         controller: _controller,
         expand: false,
-        snap: true,
-        snapSizes: [widget.initialSize],
+        // No snapping: the sheet rests where it is let go.
+        snap: false,
         initialChildSize: widget.initialSize,
         minChildSize: AppSheet._minSize,
         maxChildSize: AppSheet._maxSize,

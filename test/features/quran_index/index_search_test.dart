@@ -44,5 +44,11 @@ void main() {
   test('searchJuzs finds by number', () {
     expect(searcher.juzs('3').map((j) => j.number), contains(3));
     expect(searcher.juzs(''), hasLength(30));
+    expect(searcher.hizbs(''), hasLength(60));
+    expect(searcher.hizbs('5').map((h) => h.number), [5]);
+    expect(searcher.hizbs('٥').map((h) => h.number), [5]);
+    // By the surah a hizb begins in: only Al-Fatiha's own begins at 1:1.
+    expect(searcher.hizbs('الفاتحة').map((h) => h.number), [1]);
+    expect(searcher.hizbs('zzzz'), isEmpty);
   });
 }

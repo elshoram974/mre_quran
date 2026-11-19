@@ -166,6 +166,67 @@ void main() {
     });
   }
 
+  group('a draggable sheet rests where it is let go', () {
+    double top(WidgetTester tester) =>
+        tester.getTopLeft(find.byType(AppSheetDragArea).first).dy;
+
+    // A slow drag of the handle, well under any flick's speed. It ends with
+    // the finger lifted, before anything settles.
+    Future<void> slowDrag(WidgetTester tester, double dy) => tester.timedDrag(
+      find.byType(AppSheetDragArea).first,
+      Offset(0, dy),
+      const Duration(milliseconds: 800),
+    );
+
+    testWidgets('half way up, and half way down again', (tester) async {
+      await openSheet(tester, expandable: true);
+      final opened = top(tester);
+
+      await slowDrag(tester, -100);
+      final up = top(tester);
+      await tester.pumpAndSettle();
+      expect(up, lessThan(opened - 50));
+      // Nothing snapped it anywhere once let go.
+      expect(top(tester), closeTo(up, 1));
+
+      await slowDrag(tester, 70);
+      final down = top(tester);
+      await tester.pumpAndSettle();
+      expect(down, greaterThan(up + 30));
+      expect(top(tester), closeTo(down, 1));
+    });
+
+    testWidgets('and can stay at half the screen', (tester) async {
+      await openSheet(tester, expandable: true);
+      // The sheet opens at 0.6 of 800 px; a 130 px pull leaves it near 0.46,
+      // below the middle that used to close it.
+      await slowDrag(tester, 130);
+      final released = top(tester);
+      await tester.pumpAndSettle();
+      expect(find.byType(AppSheetDragArea), findsOneWidget);
+      expect(released, greaterThan(800 * 0.4 + 80));
+      expect(top(tester), closeTo(released, 1));
+    });
+
+    testWidgets('a flick up reaches the top of the screen', (tester) async {
+      await openSheet(tester, expandable: true);
+      await tester.fling(
+        find.byType(AppSheetDragArea).first,
+        const Offset(0, -200),
+        2000,
+      );
+      await tester.pumpAndSettle();
+      expect(top(tester), closeTo(0, 1));
+    });
+
+    testWidgets('a pull down far enough closes it', (tester) async {
+      await openSheet(tester, expandable: true);
+      await slowDrag(tester, 400);
+      await tester.pumpAndSettle();
+      expect(find.byType(AppSheetDragArea), findsNothing);
+    });
+  });
+
   testWidgets('a short pull from the top lets the sheet spring back', (
     tester,
   ) async {

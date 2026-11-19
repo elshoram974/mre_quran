@@ -90,6 +90,33 @@ class Juz {
   final int startPage;
 }
 
+/// A hizb (half a juz) entry of the Quran index.
+@immutable
+class Hizb {
+  /// Creates a hizb.
+  const Hizb({
+    required this.number,
+    required this.surah,
+    required this.ayah,
+    required this.startPage,
+  });
+
+  /// 1–60.
+  final int number;
+
+  /// Surah of the first ayah.
+  final int surah;
+
+  /// Ayah number of the first ayah within [surah].
+  final int ayah;
+
+  /// Page of the Madinah Mushaf that contains the first ayah.
+  final int startPage;
+
+  /// The juz (1–30) this hizb is half of: two hizb to a juz.
+  int get juz => (number - 1) ~/ 2 + 1;
+}
+
 /// First ayah of a Mushaf page.
 @immutable
 class PageStart {
@@ -126,6 +153,22 @@ class QuranMetadata {
   /// First ayah of each rub' al-hizb (quarter of a hizb); index 0 is rub' 1.
   /// There are 240, so 60 hizb of four quarters each.
   final List<AyahRef> rubStarts;
+
+  /// All 60 hizb in order. A hizb is four quarters (rub'), so each begins at
+  /// every fourth entry of [rubStarts]: derived from the bundled source, not
+  /// listed by hand.
+  late final List<Hizb> hizbs = List.unmodifiable([
+    for (var number = 1; number <= rubStarts.length ~/ 4; number++)
+      Hizb(
+        number: number,
+        surah: rubStarts[(number - 1) * 4].surah,
+        ayah: rubStarts[(number - 1) * 4].ayah,
+        startPage: pageOf(
+          rubStarts[(number - 1) * 4].surah,
+          rubStarts[(number - 1) * 4].ayah,
+        ),
+      ),
+  ]);
 
   late final Map<AyahRef, int> _rubByStart = {
     for (var i = 0; i < rubStarts.length; i++) rubStarts[i]: i + 1,

@@ -103,6 +103,59 @@ void main() {
     expect(find.text('الجزء ٢'), findsOneWidget);
   });
 
+  testWidgets('lists the hizb under the juz they are halves of', (
+    tester,
+  ) async {
+    await _pumpIndex(tester);
+    await tester.tap(find.text('الأحزاب'));
+    await tester.pumpAndSettle();
+    expect(find.text('الجزء ١'), findsOneWidget);
+    expect(find.text('الحزب ١'), findsOneWidget);
+    expect(find.text('الحزب ٢'), findsOneWidget);
+    expect(find.text('الجزء ٢'), findsOneWidget);
+    // The third hizb opens the second juz, in Al-Baqara on page 22.
+    expect(find.text('الحزب ٣'), findsOneWidget);
+    expect(find.text('يبدأ من البقرة، الآية ١٤٢'), findsOneWidget);
+    expect(find.text('صفحة ٢٢'), findsOneWidget);
+    // Each heading comes before its hizb.
+    expect(
+      tester.getTopLeft(find.text('الجزء ٢')).dy,
+      greaterThan(tester.getTopLeft(find.text('الحزب ٢')).dy),
+    );
+    expect(
+      tester.getTopLeft(find.text('الجزء ٢')).dy,
+      lessThan(tester.getTopLeft(find.text('الحزب ٣')).dy),
+    );
+  });
+
+  testWidgets('a search in the hizb list finds hizb, without headings', (
+    tester,
+  ) async {
+    await _pumpIndex(tester);
+    await tester.tap(find.text('الأحزاب'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), '٣');
+    await tester.pumpAndSettle();
+    expect(find.text('الحزب ٣'), findsOneWidget);
+    expect(find.text('الحزب ١'), findsNothing);
+    expect(find.text('الجزء ٢'), findsNothing);
+    await tester.enterText(find.byType(TextField), 'zzzz');
+    await tester.pumpAndSettle();
+    expect(find.text('لا توجد نتائج'), findsOneWidget);
+  });
+
+  testWidgets('the hizb list reads in English at a narrow width and 2x text', (
+    tester,
+  ) async {
+    await _pumpIndex(tester, locale: 'en', width: 320, textScale: 2);
+    await tester.tap(find.text('Hizb'));
+    await tester.pumpAndSettle();
+    // The numbers keep the app's digit style, here the default Arabic-Indic.
+    expect(find.text('Hizb ١'), findsOneWidget);
+    expect(find.text('Juz ١'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('English, large text, and a narrow screen do not overflow', (
     tester,
   ) async {

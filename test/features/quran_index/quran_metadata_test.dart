@@ -67,6 +67,42 @@ void main() {
     }
   });
 
+  test('has 60 hizb, two to a juz, each beginning on a quarter', () {
+    final hizbs = metadata.hizbs;
+    expect(hizbs, hasLength(60));
+    expect(
+      [for (final hizb in hizbs) hizb.number],
+      [for (var number = 1; number <= 60; number++) number],
+    );
+    expect(
+      (hizbs.first.surah, hizbs.first.ayah, hizbs.first.startPage),
+      (1, 1, 1),
+    );
+    // The second hizb begins at Al-Baqara 2:75.
+    expect((hizbs[1].surah, hizbs[1].ayah), (2, 75));
+    for (final hizb in hizbs) {
+      final start = AyahRef(hizb.surah, hizb.ayah);
+      expect(metadata.rubStartingAt(start), (hizb.number - 1) * 4 + 1);
+      expect(metadata.hizbOf(start), hizb.number);
+      expect(hizb.startPage, metadata.pageOf(hizb.surah, hizb.ayah));
+    }
+    // A juz is its two hizb: the first begins where the juz does.
+    for (final juz in metadata.juzs) {
+      final first = hizbs[(juz.number - 1) * 2];
+      expect(
+        (first.surah, first.ayah, first.startPage),
+        (juz.surah, juz.ayah, juz.startPage),
+      );
+      expect(first.juz, juz.number);
+      expect(hizbs[(juz.number - 1) * 2 + 1].juz, juz.number);
+    }
+    // Reading order: each begins on a later page than the one before, or the
+    // same page.
+    for (var i = 1; i < hizbs.length; i++) {
+      expect(hizbs[i].startPage, greaterThanOrEqualTo(hizbs[i - 1].startPage));
+    }
+  });
+
   test('pageOf agrees with a linear scan for every ayah', () {
     for (final surah in metadata.surahs) {
       for (var ayah = 1; ayah <= surah.ayahCount; ayah++) {

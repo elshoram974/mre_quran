@@ -104,4 +104,19 @@ class IndexSearcher {
           juz,
     ];
   }
+
+  /// Hizb matching [query] by number, or by the name of the surah it starts
+  /// in.
+  List<Hizb> hizbs(String query) {
+    final key = normalizeSearchKey(query);
+    if (key.isEmpty) return metadata.hizbs;
+    return [
+      for (final hizb in metadata.hizbs)
+        if ('${hizb.number}' == key ||
+            _surahKeys[hizb.surah - 1]
+                .take(2)
+                .any((name) => name.contains(key)))
+          hizb,
+    ];
+  }
 }

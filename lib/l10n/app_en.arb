@@ -377,6 +377,7 @@
   "quranIndex": "Index",
   "indexSurahs": "Surahs",
   "indexJuz": "Juz",
+  "indexHizb": "Hizb",
   "indexSearchHint": "Search by name or number",
   "revelationMeccan": "Meccan",
   "revelationMedinan": "Medinan",
@@ -401,6 +402,14 @@
   },
   "juzTitle": "Juz {number}",
   "@juzTitle": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "hizbTitle": "Hizb {number}",
+  "@hizbTitle": {
     "placeholders": {
       "number": {
         "type": "String"
