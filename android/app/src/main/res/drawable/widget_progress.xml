@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The adhkar widget's progress: a soft track and a gold bar, drawn here so
+     every Android version shows the same bar (Android 16's own horizontal
+     style is a hairline). -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@android:id/background">
+        <shape android:shape="rectangle">
+            <corners android:radius="3dp" />
+            <solid android:color="@color/widget_pill" />
+        </shape>
+    </item>
+    <item android:id="@android:id/progress">
+        <clip>
+            <shape android:shape="rectangle">
+                <corners android:radius="3dp" />
+                <solid android:color="@color/widget_accent" />
+            </shape>
+        </clip>
+    </item>
+</layer-list>

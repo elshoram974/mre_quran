@@ -9,14 +9,14 @@ a real phone before release.
 Startup, in profile mode (three runs, take the spread):
 
 ```
-fvm flutter run --profile --trace-startup -d DEVICE_ID
+flutter run --profile --trace-startup -d DEVICE_ID
 cat build/start_up_info.json
 ```
 
 Frame timing for tabs, sheets, and the index, one report per phase (the first pass only warms up):
 
 ```
-fvm flutter drive --no-dds --profile \
+flutter drive --no-dds --profile \
   --driver=test_driver/perf_driver.dart \
   --target=integration_test/perf_test.dart -d DEVICE_ID
 ```

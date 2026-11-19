@@ -27,7 +27,7 @@ import 'core/notifications/reminder_scheduler_provider.dart';
 
 /// Each launch's steps, kept natively, so one that stays on the launch
 /// screen can be reported by the next.
-const StartupTrace _trace = MethodChannelStartupTrace();
+final StartupTrace _trace = StartupTrace.platform();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -122,6 +122,6 @@ Future<T?> _optionalStartup<T>(String service, Future<T> task) async {
 Future<void> _reportStalledLaunch(CrashReporter reporter) async {
   await WidgetsBinding.instance.waitUntilFirstFrameRasterized;
   _trace.mark('dart:firstFrame');
-  final stalled = await _trace.takeStalled();
+  final stalled = _trace.takeStalled();
   if (stalled != null) AppLogger.launchStalled(reporter, stalled);
 }

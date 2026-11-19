@@ -14,7 +14,7 @@ adb=(adb)
 app=net.mrecode.mre_quran
 res=android/app/src/main/res
 
-fvm flutter build apk --debug
+flutter build apk --debug
 "${adb[@]}" install -r build/app/outputs/flutter-apk/app-debug.apk >/dev/null
 "${adb[@]}" shell am start -W -n "$app/.WidgetPreviewCapture" >/dev/null
 for _ in $(seq 1 30); do

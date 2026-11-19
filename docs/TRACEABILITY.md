@@ -2,7 +2,7 @@
 
 | Requirement area | Implementation | Tests | Status |
 | --- | --- | --- | --- |
-| FVM toolchain and conventions | `AGENTS.md`, `.fvmrc` | command gates | Partial |
+| Flutter toolchain and conventions | `AGENTS.md` | command gates | Partial |
 | Arabic-first adaptive shell | existing `lib/app`, `lib/core/layout` | `test/widget_test.dart` | Partial |
 | Liquid Glass and new iPhone/fold support | shader chrome, constraint-based shell | RTL/LTR + width tests; iOS simulator build | Partial |
 | Exact 604-page Lite reader | pending verified QCF assets | pending integrity/golden tests | Blocked |

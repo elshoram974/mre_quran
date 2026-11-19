@@ -11,9 +11,6 @@ import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
-import android.os.VibrationAttributes
-import android.media.AudioAttributes
-import android.provider.Settings
 import android.widget.RemoteViews
 
 /**
@@ -42,23 +39,23 @@ class TasbihWidgetProvider : AppWidgetProvider() {
         change(context) { it + 1 }
     }
 
+    /**
+     * The same short pulse as a count in the app (PlatformHaptics.tick: 14 ms
+     * at amplitude 110), straight from the vibrator. Touch feedback is not
+     * used: phones often have it switched off, which would silence the
+     * widget while the app's own setting says to vibrate.
+     */
     @Suppress("DEPRECATION")
     private fun tick(context: Context) {
         if (!context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE).getBoolean(HAPTICS, true)) return
-        if (Settings.System.getInt(context.contentResolver, Settings.System.HAPTIC_FEEDBACK_ENABLED, 1) == 0) return
         val vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             context.getSystemService(VibratorManager::class.java)?.defaultVibrator
         } else context.getSystemService(Vibrator::class.java)
         if (vibrator == null || !vibrator.hasVibrator()) return
-        val touch = AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ASSISTANCE_SONIFICATION).build()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val effect = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK)
-            } else VibrationEffect.createOneShot(25, VibrationEffect.DEFAULT_AMPLITUDE)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                vibrator.vibrate(effect, VibrationAttributes.createForUsage(VibrationAttributes.USAGE_TOUCH))
-            } else vibrator.vibrate(effect, touch)
-        } else vibrator.vibrate(25, touch)
+            val amplitude = if (vibrator.hasAmplitudeControl()) 110 else VibrationEffect.DEFAULT_AMPLITUDE
+            vibrator.vibrate(VibrationEffect.createOneShot(14, amplitude))
+        } else vibrator.vibrate(14)
     }
 
     private fun change(context: Context, next: (Int) -> Int) {

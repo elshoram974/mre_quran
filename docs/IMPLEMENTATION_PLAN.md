@@ -25,7 +25,7 @@ The reader itself remains visually quiet and never places blur over Quran text.
 
 ## Phase 0 — foundation
 
-1. Pin and use Flutter 3.47.5 / Dart 3.13.4 through FVM.
+1. Use the latest stable Flutter (3.50.0 / Dart 3.14.0).
 2. Preserve the existing app identity: `MRE Quran`, bundle id
    `net.mrecode.mreQuran`.
 3. Adopt strict analysis, ARB localization, Riverpod, typed `go_router`, and

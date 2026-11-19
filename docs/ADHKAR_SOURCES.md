@@ -137,7 +137,7 @@ Listed by the tool as `note:` on every build. Have a scholar review these before
 3. **Add a collection:** a block in the manifest. `variants` picks entries by their `type` number;
    `group` is `daily`, `prayer` or `duas`; `sessionWindowMinutes` makes counts last that long after the
    last tap (the after-prayer list uses 30); `reminderTime` (`HH:mm`) gives it a reminder.
-4. Run `fvm flutter test test/features/adhkar`.
+4. Run `flutter test test/features/adhkar`.
 
 Check that the generated file is current: `python3 tool/build_adhkar.py --cache <folder> --check`.
 

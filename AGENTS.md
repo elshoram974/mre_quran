@@ -2,12 +2,12 @@
 
 ## Toolchain
 
-- Use `fvm flutter`; this repository pins Flutter 3.47.5 and Dart 3.13.4.
-- Run `fvm flutter pub get` after a dependency change.
+- Use the latest stable Flutter (3.50.0, Dart 3.14.0) on the PATH. No FVM or other version manager.
+- Run `flutter pub get` after a dependency change.
 - Run `dart format --output=none --set-exit-if-changed lib test`.
-- Run `fvm flutter analyze` and `fvm flutter test` before committing.
+- Run `flutter analyze` and `flutter test` before committing.
 - Measure performance with the commands in `docs/PERFORMANCE.md` after changing start-up, the shell, sheets, or the index.
-- Use `fvm flutter build appbundle --release --obfuscate --split-debug-info=build/symbols` for Android release candidates.
+- Use `flutter build appbundle --release --obfuscate --split-debug-info=build/symbols` for Android release candidates.
 
 ## Architecture
 

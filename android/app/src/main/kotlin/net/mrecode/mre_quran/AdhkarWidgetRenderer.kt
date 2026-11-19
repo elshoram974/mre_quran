@@ -46,7 +46,7 @@ internal object AdhkarWidgetRenderer {
             val scale = WidgetScale.of(width, height, 140f, 60f)
             WidgetScale.text(views, R.id.adhkar_widget_label, 12f, scale)
             WidgetScale.text(views, R.id.adhkar_widget_count, 12f, scale)
-            WidgetScale.text(views, R.id.adhkar_widget_title, 18f, scale)
+            WidgetScale.text(views, R.id.adhkar_widget_title, 16f, scale)
             manager.updateAppWidget(id, views)
         }
     }

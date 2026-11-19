@@ -27,7 +27,7 @@ import 'package:mre_quran/main.dart' as app;
 
 /// Exercises the real application across startup, reader, shortcuts and
 /// reminder destinations. Native launcher taps need a separate Android test.
-/// Run with `fvm flutter drive --no-dds --profile
+/// Run with `flutter drive --no-dds --profile
 /// --driver=test_driver/perf_driver.dart
 /// --target=integration_test/startup_navigation_test.dart -d DEVICE_ID`.
 void main() {

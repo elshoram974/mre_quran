@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.SystemClock
 import android.util.Log
+import androidx.annotation.Keep
 
 /**
  * Notes each step of a launch, from the activity's creation to Flutter's
@@ -14,8 +15,11 @@ import android.util.Log
  * the device until the launch shows its first frame. The next launch hands
  * an unfinished one to Dart, which reports it. Nothing personal is kept:
  * step names, milliseconds, the intent's action and extra names, and the
- * Android version.
+ * Android version. Dart calls [mark] and [takeStalled] directly through JNI
+ * (lib/features/startup/data/startup_trace.dart), so they are static and
+ * kept from shrinking.
  */
+@Keep
 object StartupTrace {
     private const val TAG = "MushafiStartup"
     private const val PREFS = "startup_trace"
@@ -45,6 +49,7 @@ object StartupTrace {
     }
 
     /** Notes [step] of the launch under way; nothing once it is on screen. */
+    @JvmStatic
     fun mark(context: Context, step: String) {
         if (!open) return
         val at = SystemClock.elapsedRealtime() - begunAt
@@ -56,6 +61,7 @@ object StartupTrace {
     }
 
     /** The trace of a launch that stalled, once; null when none did. */
+    @JvmStatic
     fun takeStalled(context: Context): String? {
         val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         val stalled = prefs.getString(STALLED, null) ?: return null

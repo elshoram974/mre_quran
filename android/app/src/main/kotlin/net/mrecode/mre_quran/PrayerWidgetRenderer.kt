@@ -10,6 +10,7 @@ import android.os.Build
 import android.os.SystemClock
 import android.view.View
 import android.widget.RemoteViews
+import kotlin.math.roundToInt
 import org.json.JSONObject
 
 /** Draws the three prayer widgets from the data the app last sent. */
@@ -93,9 +94,9 @@ internal object PrayerWidgetRenderer {
             // Base: two cells by one.
             val scale = WidgetScale.of(width, height, 140f, 60f)
             WidgetScale.text(views, R.id.prayer_widget_label, 11f, scale)
-            WidgetScale.text(views, R.id.prayer_widget_name, 16f, scale)
+            WidgetScale.text(views, R.id.prayer_widget_name, 17f, scale)
             WidgetScale.text(views, R.id.prayer_widget_date, 9f, scale)
-            WidgetScale.text(views, R.id.prayer_widget_time, 15f, scale)
+            WidgetScale.text(views, R.id.prayer_widget_time, 16f, scale)
             WidgetScale.text(views, R.id.prayer_widget_remaining, 11f, scale)
             WidgetScale.text(views, R.id.prayer_widget_seconds, 11f, scale)
             manager.updateAppWidget(id, views)
@@ -252,7 +253,7 @@ internal object PrayerWidgetRenderer {
         val upcomingCount = if (availableHeight in 1f..69f && (showCountdown || largerText)) 2 else 3
         val views = scheduleViews(context, model, now, upcoming, upcomingCount, showDate, options)
         HomeWidgets.applyBackground(context, views, R.id.schedule_root)
-        if (!showDate) WidgetScale.padding(context, views, R.id.schedule_body, 4f, 2f, 1f)
+        if (!showDate) WidgetScale.padding(context, views, R.id.schedule_body, 10f, 4f, 1f)
         // Leave room for both calendar lines and the next prayer's extra line
         // before enlarging the whole timetable on a wide launcher grid.
         val baseHeight = when {
@@ -326,6 +327,10 @@ internal object PrayerWidgetRenderer {
                     views.setViewVisibility(secondsIds[index], View.GONE)
                 }
                 views.setInt(rowId, "setBackgroundResource", if (coming) R.drawable.widget_row_next else 0)
+                // The highlight keeps its text off its rounded bottom edge.
+                val side = (8 * context.resources.displayMetrics.density).roundToInt()
+                val bottom = if (coming) (3 * context.resources.displayMetrics.density).roundToInt() else 0
+                views.setViewPadding(rowId, side, 0, side, bottom)
             }
         }
         direction(views, R.id.schedule_root, model)

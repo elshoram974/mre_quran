@@ -11,7 +11,6 @@ class MainActivity : FlutterActivity() {
     private val widgetChannel = "net.mrecode.mre_quran/prayer_widget"
     private val adhkarWidgetChannel = "net.mrecode.mre_quran/adhkar_widget"
     private val homeWidgetsChannel = "net.mrecode.mre_quran/home_widgets"
-    private val startupChannel = "net.mrecode.mre_quran/startup"
     private var adhan: AdhanChannel? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
@@ -58,18 +57,6 @@ class MainActivity : FlutterActivity() {
                 @Suppress("UNCHECKED_CAST")
                 AdhkarWidgetRenderer.save(this, call.arguments as? Map<String, Any?>)
                 result.success(null)
-            }
-        // Dart notes its own start-up steps, and reports a launch that stalled.
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, startupChannel)
-            .setMethodCallHandler { call, result ->
-                when (call.method) {
-                    "mark" -> {
-                        (call.arguments as? String)?.let { StartupTrace.mark(this, it) }
-                        result.success(null)
-                    }
-                    "takeStalled" -> result.success(StartupTrace.takeStalled(this))
-                    else -> result.notImplemented()
-                }
             }
         StartupTrace.mark(this, "engine")
         adhan = AdhanChannel(this, flutterEngine.dartExecutor.binaryMessenger)

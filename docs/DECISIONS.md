@@ -7,11 +7,10 @@
 - **Reason:** The application already exists and the request did not provide a
   replacement identity.
 
-## D-002: Use FVM Flutter 3.47.5
+## D-002: Latest stable Flutter, no version manager
 
-- **Decision:** Run project commands through `fvm flutter`.
-- **Alternatives:** Use the globally selected Flutter 3.44.1.
-- **Reason:** `.fvmrc` and `pubspec.yaml` require Flutter 3.47.5 / Dart 3.13.4.
+- **Decision:** Use the latest stable Flutter on the PATH (3.50.0, Dart 3.14.0 at the time of writing), with
+  plain `flutter` commands. No FVM: the owner keeps the machine on the latest stable.
 
 ## D-003: Adapt by constraints
 

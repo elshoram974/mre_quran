@@ -21,7 +21,7 @@ import 'package:mre_quran/main.dart' as app;
 /// find a surah, change the display, and look at the offline download. Run
 /// it online and again with the device in airplane mode; it must pass both
 /// ways. Run in profile mode:
-/// `fvm flutter drive --no-dds --profile
+/// `flutter drive --no-dds --profile
 ///  --driver=test_driver/perf_driver.dart
 ///  --target=integration_test/app_flow_test.dart -d DEVICE_ID`
 /// To check an uncached page offline, disable the device's network and add

@@ -741,7 +741,7 @@ packages:
     source: hosted
     version: "1.1.0"
   jni:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: jni
       sha256: "6b9ca0602fef0230e83149afbe3f9f8227e94f2bbe84a1da4f14d699742f402d"
@@ -749,7 +749,7 @@ packages:
     source: hosted
     version: "1.1.0"
   jni_flutter:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: jni_flutter
       sha256: b2310cdd4c18c65c081ab141a41efa94aa26c65431803703ece51996f174f351
@@ -885,7 +885,7 @@ packages:
     source: hosted
     version: "0.5.0"
   objective_c:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: objective_c
       sha256: "5c80c2ad6e2c0397de5db38c6d653e69616a3397e13aa7633bf39eb668f2041b"
@@ -1586,5 +1586,5 @@ packages:
     source: hosted
     version: "3.1.4"
 sdks:
-  dart: ">=3.13.4 <4.0.0"
+  dart: ">=3.14.0 <4.0.0"
   flutter: ">=3.47.0"

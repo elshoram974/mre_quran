@@ -11,7 +11,7 @@ import 'package:mre_quran/main.dart' as app;
 
 /// Frame timing of turning the printed Mushaf's pages, one report per way of
 /// turning. Run with:
-/// `fvm flutter drive --no-dds --profile
+/// `flutter drive --no-dds --profile
 ///  --driver=test_driver/perf_driver.dart
 ///  --target=integration_test/reader_perf_test.dart -d DEVICE_ID`
 ///

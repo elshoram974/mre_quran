@@ -11,7 +11,7 @@ import 'package:mre_quran/features/quran_index/presentation/quran_index_page.dar
 import 'package:mre_quran/main.dart' as app;
 
 /// Frame-timing scenarios, one report per phase. Run with:
-/// `fvm flutter drive --no-dds --profile
+/// `flutter drive --no-dds --profile
 ///  --driver=test_driver/perf_driver.dart
 ///  --target=integration_test/perf_test.dart -d DEVICE_ID`
 void main() {

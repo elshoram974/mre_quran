@@ -26,22 +26,6 @@ import os
 
   func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
     GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
-    // Dart notes its own start-up steps, and reports a launch that stalled.
-    let startupChannel = FlutterMethodChannel(
-      name: "net.mrecode.mre_quran/startup",
-      binaryMessenger: engineBridge.applicationRegistrar.messenger()
-    )
-    startupChannel.setMethodCallHandler { call, callback in
-      switch call.method {
-      case "mark":
-        if let step = call.arguments as? String { StartupTrace.mark(step) }
-        callback(nil)
-      case "takeStalled":
-        callback(StartupTrace.takeStalled())
-      default:
-        callback(FlutterMethodNotImplemented)
-      }
-    }
     StartupTrace.mark("engine")
     let channel = FlutterMethodChannel(
       name: "net.mrecode.mre_quran/prayer_widget",
@@ -152,6 +136,17 @@ import os
       callback(nil)
     }
   }
+}
+
+/// What Dart calls directly through the Objective-C runtime
+/// (lib/features/startup/data/startup_trace.dart), with no platform channel.
+@objc(MushafiStartupTrace)
+final class StartupTraceBridge: NSObject {
+  /// Notes [step] of the launch under way.
+  @objc static func mark(_ step: String) { StartupTrace.mark(step) }
+
+  /// The trace of an earlier launch that stalled, once.
+  @objc static func takeStalled() -> String? { StartupTrace.takeStalled() }
 }
 
 /// Notes each step of a launch, from its start to Flutter's first frame on

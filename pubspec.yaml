@@ -4,7 +4,7 @@ publish_to: none
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.13.4
+  sdk: ^3.14.0
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -32,9 +32,14 @@ dependencies:
   go_router: ^18.0.2
   hijri: ^3.0.1
   intl: ^0.20.3
+  # Direct, synchronous calls into the app's own Kotlin (JNI) and Swift
+  # (Objective-C runtime) code, without a platform channel.
+  jni: ^1.1.0
+  jni_flutter: ^1.0.3
   liquid_glass_widgets: ^1.17.5
   meta: ^1.19.0
   mre_fields: ^0.4.0
+  objective_c: ^9.6.2
   path_provider: ^2.1.6
   sensors_plus: ^7.1.1
   shared_preferences: ^2.5.3

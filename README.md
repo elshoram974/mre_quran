@@ -4,12 +4,12 @@ Arabic-first Flutter foundation for a Quran app. Android and iOS runners are inc
 
 ## Run
 
-Use Flutter 3.47.5 / Dart 3.13.4, pinned in `.fvmrc`. With FVM, run
-`fvm install` and prefix Flutter commands with `fvm`.
+Use the latest stable Flutter (3.50.0, Dart 3.14.0) on the PATH; no version
+manager.
 
 ```sh
-fvm flutter pub get
-fvm flutter run
+flutter pub get
+flutter run
 ```
 
 ## Structure
@@ -56,8 +56,8 @@ It is not a Quran rendering or Quran data package.
 
 ```sh
 dart format --output=none --set-exit-if-changed lib test
-fvm flutter analyze
-fvm flutter test
+flutter analyze
+flutter test
 ```
 
 Widget coverage checks Arabic RTL, navigation, theme interaction, resizing,

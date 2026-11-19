@@ -3,7 +3,10 @@
 // with the book the app is for.
 //
 // Writes every size the platforms ask for, from this one drawing:
-//   Android  res/mipmap-*/ic_launcher.png (rounded square, before Android 8),
+//   Android  res/mipmap-*/ic_launcher.png (full square, no transparent
+//            corner, so a launcher that puts a legacy icon on a plate of its
+//            own shows no white around it) and ic_launcher_round.png (a
+//            disc, for launchers that ask for a round icon),
 //            res/mipmap-*/ic_launcher_foreground.png and
 //            ic_launcher_monochrome.png (adaptive and themed icons; the
 //            background is @color/ic_launcher_background),
@@ -47,7 +50,12 @@ void main() {
           '$_res/mipmap-$name/ic_launcher.png',
           48 * scale,
           _Layer.full,
-          round: true,
+        );
+        await _write(
+          '$_res/mipmap-$name/ic_launcher_round.png',
+          48 * scale,
+          _Layer.full,
+          disc: true,
         );
         await _write(
           '$_res/mipmap-$name/ic_launcher_foreground.png',
@@ -97,11 +105,11 @@ Future<void> _write(
   String path,
   double size,
   _Layer layer, {
-  bool round = false,
+  bool disc = false,
 }) => _writeWith(
   path,
   size,
-  (canvas, side) => _paint(canvas, side, layer, round: round),
+  (canvas, side) => _paint(canvas, side, layer, disc: disc),
 );
 
 Future<void> _writeWith(
@@ -123,24 +131,20 @@ Future<void> _writeWith(
     ..writeAsBytesSync(bytes!.buffer.asUint8List());
 }
 
-void _paint(Canvas canvas, double s, _Layer layer, {bool round = false}) {
+void _paint(Canvas canvas, double s, _Layer layer, {bool disc = false}) {
   final centre = Offset(s / 2, s / 2);
   final mono = layer == _Layer.monochrome;
   final gold = mono ? Colors.white : _gold;
   final cream = mono ? Colors.white : _cream;
 
   if (layer == _Layer.full) {
-    final rect = Offset.zero & Size.square(s);
-    final shape = round
-        ? RRect.fromRectAndRadius(
-            rect.deflate(s * 0.04),
-            Radius.circular(s * 0.22),
-          )
-        : RRect.fromRectAndRadius(rect, Radius.zero);
-    canvas.drawRRect(
-      shape,
-      Paint()..shader = ui.Gradient.radial(centre, s * 0.7, [_navy, _navyDeep]),
-    );
+    final paper = Paint()
+      ..shader = ui.Gradient.radial(centre, s * 0.7, [_navy, _navyDeep]);
+    if (disc) {
+      canvas.drawCircle(centre, s / 2, paper);
+    } else {
+      canvas.drawRect(Offset.zero & Size.square(s), paper);
+    }
   }
 
   // The adaptive foreground keeps its drawing in the middle 66 of 108, the

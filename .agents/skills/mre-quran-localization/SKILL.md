@@ -6,7 +6,7 @@ description: Maintain MRE Quran ARB localization, Arabic/English locale state, a
 # MRE Quran localization
 
 - Keep all user-visible text in `lib/l10n/app_en.arb` and `app_ar.arb`.
-- Run `fvm flutter gen-l10n` after an ARB change. Import the generated typed API
+- Run `flutter gen-l10n` after an ARB change. Import the generated typed API
   through `core/l10n/l10n.dart`; do not introduce string-key lookup or globals.
 - Keep Arabic as default. Persist only supported locale codes through
   `AppSettings` and expose language choices from one catalog.
