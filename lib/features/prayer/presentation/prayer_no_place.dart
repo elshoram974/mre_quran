@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/l10n/l10n.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../application/prayer_provider.dart';
 import 'location_problem_notice.dart';
@@ -50,7 +51,10 @@ class PrayerNoPlace extends ConsumerWidget {
             icon: const Icon(Icons.settings_outlined),
             label: Text(action),
           ),
-        TextButton.icon(
+        // A button with a border, not a bare word: it is the other way to
+        // the same answer.
+        const SizedBox(height: AppTokens.spaceSmall),
+        OutlinedButton.icon(
           onPressed: onChooseMap,
           icon: const Icon(Icons.map_outlined),
           label: Text(l10n.prayerChooseMap),
