@@ -2077,6 +2077,42 @@ abstract class AppLocalizations {
   /// **'Alerts and feedback'**
   String get settingsAlerts;
 
+  /// No description provided for @settingsAppearanceHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Colours, language, digits and motion'**
+  String get settingsAppearanceHint;
+
+  /// No description provided for @settingsReadingHint.
+  ///
+  /// In en, this message translates to:
+  /// **'How the Mushaf is shown, and what opens first'**
+  String get settingsReadingHint;
+
+  /// No description provided for @settingsOfflineHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Download Mushaf pages to read without internet'**
+  String get settingsOfflineHint;
+
+  /// No description provided for @settingsAlertsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Adhan, adhkar and Friday reminders, and vibration'**
+  String get settingsAlertsHint;
+
+  /// No description provided for @settingsRemindersHint.
+  ///
+  /// In en, this message translates to:
+  /// **'The adhkar, and Surat Al-Kahf on Friday'**
+  String get settingsRemindersHint;
+
+  /// No description provided for @settingsPrivacyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Crash reports and the privacy policy'**
+  String get settingsPrivacyHint;
+
   /// No description provided for @settingsHapticsUnsupported.
   ///
   /// In en, this message translates to:

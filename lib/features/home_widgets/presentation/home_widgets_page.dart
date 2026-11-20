@@ -5,6 +5,8 @@ import '../../../core/l10n/l10n.dart';
 import '../../../core/layout/adaptive_layout.dart';
 import '../../../core/theme/app_platform.dart';
 import '../../../core/theme/app_tokens.dart';
+import '../../../core/widgets/app_group_card.dart';
+import '../../../core/widgets/app_switch_tile.dart';
 import '../../../core/widgets/app_notice.dart';
 import '../../../core/widgets/app_section_header.dart';
 import '../../../core/widgets/app_select_field.dart';
@@ -125,6 +127,20 @@ class HomeWidgetsPage extends ConsumerWidget {
               ),
               const SizedBox(height: AppTokens.spaceSmall),
               Text(l10n.widgetLanguageHint, style: theme.textTheme.bodySmall),
+              const SizedBox(height: AppTokens.spaceSmall),
+              AppGroupCard(
+                children: [
+                  AppSwitchTile(
+                    value: settings.widgetSeconds,
+                    onChanged: (value) => ref
+                        .read(settingsProvider.notifier)
+                        .save(settings.copyWith(widgetSeconds: value)),
+                    icon: Icons.timer_outlined,
+                    title: l10n.settingsWidgetSeconds,
+                    subtitle: l10n.settingsWidgetSecondsHint,
+                  ),
+                ],
+              ),
             ],
             const SizedBox(height: AppTokens.spaceMedium * 2),
             AppSectionHeader(title: l10n.widgetsEach),

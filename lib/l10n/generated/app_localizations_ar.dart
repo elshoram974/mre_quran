@@ -1139,6 +1139,25 @@ class AppLocalizationsAr extends AppLocalizations {
   String get settingsAlerts => 'التنبيهات والاهتزاز';
 
   @override
+  String get settingsAppearanceHint => 'الألوان واللغة والأرقام والحركة';
+
+  @override
+  String get settingsReadingHint => 'طريقة عرض المصحف وما يفتح مع التطبيق';
+
+  @override
+  String get settingsOfflineHint => 'نزّل صفحات المصحف لتقرأ بلا إنترنت';
+
+  @override
+  String get settingsAlertsHint =>
+      'الأذان وتذكير الأذكار وتذكير الجمعة والاهتزاز';
+
+  @override
+  String get settingsRemindersHint => 'الأذكار وسورة الكهف يوم الجمعة';
+
+  @override
+  String get settingsPrivacyHint => 'تقارير الأعطال وسياسة الخصوصية';
+
+  @override
   String get settingsHapticsUnsupported => 'هذا الجهاز لا يدعم الاهتزاز.';
 
   @override

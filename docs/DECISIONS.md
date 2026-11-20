@@ -472,3 +472,14 @@
   scheduled when the app starts, without asking. The reminders sheet asks once when it opens with a reminder on, and,
   if the phone refuses notifications, says so in red at the top: a switch that is on must not promise what cannot
   happen.
+
+## D-050: The prayer page is a tab, and the settings are a list of pages
+
+- **Decision:** The bar has five tabs: Mushaf, Adhkar, **Adhan** (the prayer times, their alerts, the qibla and the
+  adhan's voice), Bookmarks, Settings. Everything that used to push the prayer page now switches to the tab, so
+  there is one prayer page and no copy over another screen.
+- **The settings** are a list of what can be set (`SettingsPage`): *Appearance* (colours, language, digits, motion),
+  *Reading* (what opens first, the reader's mode, layout, frame, page turn), *Offline Mushaf*, *Alerts and
+  vibration* (the prayer times, the adhan, the reminders, vibration), *Widgets* (which also holds the seconds on the
+  prayer widgets), *Privacy*, and, under *Contact us*, WhatsApp, e-mail and *About*. Each opens a page of its own, at
+  `/settings/<name>`, so no page is long.

@@ -158,8 +158,32 @@ void main() {
     await _openSection(tester, 'بطاقة الصلاة');
     // The preview now speaks English, while the page stays Arabic.
     expect(find.text('Next prayer'), findsWidgets);
-    expect(find.text('لغة الويدجتس', skipOffstage: false), findsOneWidget);
+    // The page stays Arabic: back at the general settings, the label is Arabic.
+    await tester.scrollUntilVisible(
+      find.text('لغة الويدجتس'),
+      -300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('لغة الويدجتس'), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('the seconds on the prayer widgets are among the settings for '
+      'all of them', (tester) async {
+    await _pump(tester);
+    expect(find.text('الثواني في أداة المواقيت'), findsOneWidget);
+    await tester.tap(find.text('الثواني في أداة المواقيت'));
+    await tester.pumpAndSettle();
+    final switchTile = tester.widget<Switch>(
+      find.descendant(
+        of: find.ancestor(
+          of: find.text('الثواني في أداة المواقيت'),
+          matching: find.byType(ListTile),
+        ),
+        matching: find.byType(Switch),
+      ),
+    );
+    expect(switchTile.value, isTrue);
   });
 
   testWidgets('where the launcher takes no requests, it says how', (
@@ -276,12 +300,22 @@ void main() {
   testWidgets('on iOS it gives the steps', (tester) async {
     await _pump(tester, pinnable: false, platform: TargetPlatform.iOS);
     expect(find.textContaining('ابحث عن «مصحفي»'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      _name('بطاقة الصلاة'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
     expect(_name('بطاقة الصلاة'), findsOneWidget);
   });
 
   testWidgets('English LTR in dark mode', (tester) async {
     await _pump(tester, locale: 'en', theme: AppTheme.dark);
     expect(find.text('Home-screen widgets'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('Add'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
     expect(find.text('Add'), findsWidgets);
     expect(tester.takeException(), isNull);
   });

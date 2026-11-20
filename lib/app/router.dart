@@ -20,6 +20,11 @@ import '../features/prayer/presentation/prayer_location_picker_page.dart';
 import '../features/prayer/presentation/qibla_page.dart';
 import '../features/quran_index/presentation/quran_index_page.dart';
 import '../features/quran_text/presentation/quran_search_page.dart';
+import '../features/settings/presentation/alerts_settings_page.dart';
+import '../features/settings/presentation/appearance_settings_page.dart';
+import '../features/settings/presentation/offline_settings_page.dart';
+import '../features/settings/presentation/privacy_settings_page.dart';
+import '../features/settings/presentation/reading_settings_page.dart';
 import '../features/settings/presentation/settings_page.dart';
 import '../features/startup/application/startup_providers.dart';
 import 'app_shell.dart';
@@ -126,6 +131,31 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoute.adhkarSearch.path,
         pageBuilder: (context, state) =>
             _page(context, state, const AdhkarSearchPage()),
+      ),
+      GoRoute(
+        path: AppRoute.settingsAppearance.path,
+        pageBuilder: (context, state) =>
+            _page(context, state, const AppearanceSettingsPage()),
+      ),
+      GoRoute(
+        path: AppRoute.settingsReading.path,
+        pageBuilder: (context, state) =>
+            _page(context, state, const ReadingSettingsPage()),
+      ),
+      GoRoute(
+        path: AppRoute.settingsOffline.path,
+        pageBuilder: (context, state) =>
+            _page(context, state, const OfflineSettingsPage()),
+      ),
+      GoRoute(
+        path: AppRoute.settingsAlerts.path,
+        pageBuilder: (context, state) =>
+            _page(context, state, const AlertsSettingsPage()),
+      ),
+      GoRoute(
+        path: AppRoute.settingsPrivacy.path,
+        pageBuilder: (context, state) =>
+            _page(context, state, const PrivacySettingsPage()),
       ),
       GoRoute(
         path: AppRoute.about.path,
@@ -276,6 +306,11 @@ enum AppRoute {
   duas('/duas'),
   bookmarks('/bookmarks'),
   settings('/settings'),
+  settingsAppearance('/settings/appearance'),
+  settingsReading('/settings/reading'),
+  settingsOffline('/settings/offline'),
+  settingsAlerts('/settings/alerts'),
+  settingsPrivacy('/settings/privacy'),
   about('/about'),
   widgets('/widgets'),
   quranIndex('/quran-index'),

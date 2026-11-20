@@ -5,13 +5,16 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mre_quran/app/quran_app.dart';
+import 'package:mre_quran/app/router.dart';
+import 'package:mre_quran/core/l10n/l10n.dart';
+import 'package:mre_quran/l10n/generated/app_localizations.dart';
 import 'package:mre_quran/core/haptics/haptics.dart';
 import 'package:mre_quran/core/widgets/app_shimmer.dart';
 import 'package:mre_quran/features/bookmarks/application/bookmarks_provider.dart';
 import 'package:mre_quran/features/mushaf/application/reading_position_provider.dart';
 import 'package:mre_quran/features/quran_index/application/quran_metadata_provider.dart';
 import 'package:mre_quran/features/quran_text/application/quran_text_providers.dart';
-import 'package:mre_quran/features/settings/presentation/settings_page.dart';
+import 'package:mre_quran/features/settings/presentation/alerts_settings_page.dart';
 import 'package:mre_quran/features/settings/application/settings_provider.dart';
 import 'package:mre_quran/features/settings/domain/app_settings.dart';
 import 'package:mre_quran/features/startup/application/startup_providers.dart';
@@ -62,7 +65,7 @@ void main() {
       overrides: [
         settingsRepositoryProvider.overrideWithValue(repository),
         lastTabRepositoryProvider.overrideWithValue(MemoryLastTabRepository()),
-        initialLocationProvider.overrideWithValue('/settings'),
+        initialLocationProvider.overrideWithValue(AppRoute.settingsAlerts.path),
         quranMetadataSourceProvider.overrideWithValue(
           FakeQuranMetadataSource(),
         ),
@@ -88,7 +91,11 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [settingsRepositoryProvider.overrideWithValue(repository)],
-        child: const MaterialApp(home: Scaffold(body: SettingsPage())),
+        child: const MaterialApp(
+          localizationsDelegates: appLocalizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: AlertsSettingsPage(),
+        ),
       ),
     );
     expect(find.byType(AppShimmer), findsOneWidget);
@@ -124,7 +131,7 @@ void main() {
 
       final list = find
           .descendant(
-            of: find.byType(SettingsPage),
+            of: find.byType(AlertsSettingsPage),
             matching: find.byType(Scrollable),
           )
           .first;

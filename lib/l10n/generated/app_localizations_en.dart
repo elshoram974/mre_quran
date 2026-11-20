@@ -1150,6 +1150,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsAlerts => 'Alerts and feedback';
 
   @override
+  String get settingsAppearanceHint => 'Colours, language, digits and motion';
+
+  @override
+  String get settingsReadingHint =>
+      'How the Mushaf is shown, and what opens first';
+
+  @override
+  String get settingsOfflineHint =>
+      'Download Mushaf pages to read without internet';
+
+  @override
+  String get settingsAlertsHint =>
+      'Adhan, adhkar and Friday reminders, and vibration';
+
+  @override
+  String get settingsRemindersHint => 'The adhkar, and Surat Al-Kahf on Friday';
+
+  @override
+  String get settingsPrivacyHint => 'Crash reports and the privacy policy';
+
+  @override
   String get settingsHapticsUnsupported => 'This device cannot vibrate.';
 
   @override
