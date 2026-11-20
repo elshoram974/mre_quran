@@ -251,6 +251,34 @@ void main() {
       });
     }
 
+    testWidgets('the evidence and the dhikr\'s own heading follow the size '
+        'too, and pinching the evidence resizes them', (tester) async {
+      await pumpAdhkarApp(
+        tester,
+        catalog: fixtureCatalogWithPrayer(),
+        adhkarFontScale: 1.5,
+      );
+      await tapVisible(tester, find.text('ابدأ'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('الدليل').first);
+      await tester.pumpAndSettle();
+      double evidenceSize() => tester
+          .widgetList<SelectableText>(find.byType(SelectableText))
+          .first
+          .style!
+          .fontSize!;
+      expect(evidenceSize(), closeTo(19 * 1.5, 0.01));
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(SelectableText).first),
+      );
+      await pinch(tester, find.byType(SelectableText).first, 100, 60);
+      expect(evidenceSize(), lessThan(19 * 1.5));
+      expect(
+        container.read(settingsProvider).value!.adhkarFontScale,
+        lessThan(1.5),
+      );
+    });
+
     testWidgets('the size kept is the size the words open at', (tester) async {
       await pumpAdhkarApp(
         tester,

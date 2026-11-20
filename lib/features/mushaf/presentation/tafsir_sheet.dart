@@ -1,3 +1,5 @@
+import '../../../core/widgets/app_snack_bar.dart';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -273,9 +275,7 @@ class _TafsirSheetState extends ConsumerState<TafsirSheet> {
                       await Clipboard.setData(
                         ClipboardData(text: _copyText(tafsir.value!, place)),
                       );
-                      messenger?.showSnackBar(
-                        SnackBar(content: Text(l10n.tafsirCopied)),
-                      );
+                      messenger?.showSnackBar(AppSnackBar(l10n.tafsirCopied));
                     },
               icon: const Icon(Icons.copy_outlined),
               label: Text(l10n.tafsirCopy),

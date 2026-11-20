@@ -1,3 +1,5 @@
+import '../../../core/widgets/app_snack_bar.dart';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -28,9 +30,8 @@ class PrayerScheduleOptionsSection extends ConsumerWidget {
           .read(prayerScheduleOptionsProvider.notifier)
           .save(value);
       if (!context.mounted || saved) return;
-      ScaffoldMessenger.maybeOf(
-        context,
-      )?.showSnackBar(SnackBar(content: Text(l10n.widgetScheduleSaveFailed)));
+      ScaffoldMessenger.maybeOf(context)
+          ?.showSnackBar(AppSnackBar(l10n.widgetScheduleSaveFailed));
     }
 
     return Column(

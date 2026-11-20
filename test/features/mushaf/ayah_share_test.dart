@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mre_quran/core/l10n/l10n.dart';
+import 'package:mre_quran/core/config/store_links.dart';
 import 'package:mre_quran/core/sharing/sharer.dart';
 import 'package:mre_quran/core/theme/app_theme.dart';
 import 'package:mre_quran/features/mushaf/presentation/ayah_share_card.dart';
@@ -182,6 +183,7 @@ void main() {
       AyahRange initial = const AyahRange.single(AyahRef(2, 255)),
       Size size = const Size(400, 860),
       double textScale = 1,
+      List<StoreLink> stores = const [],
     }) async {
       tester.view.physicalSize = size;
       tester.platformDispatcher.textScaleFactorTestValue = textScale;
@@ -212,6 +214,7 @@ void main() {
           ),
           quranTextSourceProvider.overrideWithValue(FakeQuranTextSource()),
           sharerProvider.overrideWithValue(sharer),
+          storeLinksProvider.overrideWithValue(stores),
           ayahPrinterProvider.overrideWithValue(printer),
         ],
       );
@@ -279,6 +282,77 @@ void main() {
         '${text.uthmani(const AyahRef(2, 256))} (٢٥٦)﴾\n'
         '\u200F[البقرة: ٢٥٥–٢٥٦ · صفحة ٤٢]',
       );
+    });
+
+    group('the app under what is shared', () {
+      Future<void> openWithStores(
+        WidgetTester tester,
+        List<StoreLink> stores,
+      ) => open(tester, stores: stores);
+
+      const stores = [
+        StoreLink('Google Play', 'https://play.google.com/store/apps/x'),
+        StoreLink('App Store', 'https://apps.apple.com/app/x'),
+      ];
+
+      testWidgets('shared as text, the ayahs carry the app and its stores, '
+          'and nothing is added when it is copied', (tester) async {
+        await openWithStores(tester, stores);
+        await tester.tap(find.text('نسخ'));
+        await tester.pump();
+        expect(copied, isNot(contains('Google Play')));
+        await tester.tap(find.text('مشاركة كنص'));
+        await tester.pump();
+        final shared = sharer.texts.single;
+        expect(shared, contains('[البقرة: ٢٥٥ · صفحة ٤٢]'));
+        expect(shared, contains('حمّل تطبيق مصحفي:'));
+        expect(
+          shared,
+          contains('Google Play: https://play.google.com/store/apps/x'),
+        );
+        expect(shared, contains('App Store: https://apps.apple.com/app/x'));
+        // Every line reads from the right.
+        for (final line in shared.split('\n')) {
+          expect(line, startsWith('\u200F'));
+        }
+      });
+
+      testWidgets('shared as a picture, the words beside it carry them too', (
+        tester,
+      ) async {
+        await openWithStores(tester, stores);
+        await tester.runAsync(() async {
+          await tester.tap(find.text('مشاركة كصورة'));
+          for (var i = 0; i < 20 && sharer.shares.isEmpty; i++) {
+            await Future<void>.delayed(const Duration(milliseconds: 50));
+            await tester.pump();
+          }
+        });
+        expect(
+          sharer.shares.single.text,
+          contains('Google Play: https://play.google.com/store/apps/x'),
+        );
+      });
+
+      testWidgets('a store with no address is not shown', (tester) async {
+        await openWithStores(tester, const [
+          StoreLink('App Store', 'https://apps.apple.com/app/x'),
+        ]);
+        await tester.tap(find.text('مشاركة كنص'));
+        await tester.pump();
+        final shared = sharer.texts.single;
+        expect(shared, contains('App Store: https://apps.apple.com/app/x'));
+        expect(shared, isNot(contains('Google Play')));
+        expect(shared, isNot(contains('AppGallery')));
+      });
+
+      testWidgets('with no store at all, nothing is added', (tester) async {
+        await openWithStores(tester, const []);
+        await tester.tap(find.text('مشاركة كنص'));
+        await tester.pump();
+        expect(sharer.texts.single, endsWith('[البقرة: ٢٥٥ · صفحة ٤٢]'));
+        expect(sharer.texts.single, isNot(contains('حمّل')));
+      });
     });
 
     testWidgets('shares as text', (tester) async {

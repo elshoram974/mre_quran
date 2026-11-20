@@ -58,8 +58,15 @@ The single rule file for UI/UX. `AGENTS.md` points here. The design plan is in
 4. Back never closes the app by accident: sheets and pushed routes pop first; at the shell, another tab returns to the Mushaf, and back on the Mushaf asks before closing.
 
 1. Routes are typed `go_router` routes. Tabs are listed once in `AppRoute.tabs`, in the same order as the shell branches.
-2. The app opens on the last used tab or on the Mushaf, per the startup setting. The Mushaf tab reopens at the last page read.
+2. The app opens on the Mushaf unless the person chose the last used tab in the settings. The Mushaf tab reopens at the last page read.
 3. Adding a tab means: route, branch, `AppRoute.tabs`, destination, ARB strings, and a test.
+
+## 7b. The app's identity
+
+1. Whatever the app says in passing or asks is the app's: a snack bar is `AppSnackBar` (never `SnackBar`), a question is `AppConfirmSheet` and a hint is `showAppHint`, both signed with `AppBrand` (the mark and the name). Dialogs, pickers and menus take the theme's paper, edge and corners (`AppTheme`), never a screen's own.
+2. A notice the person must not miss is `AppNotice(important: true)`: red, boxed, with its action inside.
+3. Anything shared ends with the app's name and its store links (`appShareFooter`), each from `AppConfig.stores`; a store with no address is left out, and with none there is no footer.
+4. Text size is changed only where there is text to read (the adhkar and the typeset Mushaf), by a slider in the view settings or two fingers on the text, never by scaling the app.
 
 ## 8. Before finishing UI work
 

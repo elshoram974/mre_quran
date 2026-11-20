@@ -2065,47 +2065,29 @@ abstract class AppLocalizations {
   /// **'Show as a list'**
   String get adhkarShowList;
 
-  /// No description provided for @settingsReading.
-  ///
-  /// In en, this message translates to:
-  /// **'Reading'**
-  String get settingsReading;
-
-  /// No description provided for @settingsAlerts.
-  ///
-  /// In en, this message translates to:
-  /// **'Alerts and feedback'**
-  String get settingsAlerts;
-
-  /// No description provided for @settingsAppearanceHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Colours, language, digits and motion'**
-  String get settingsAppearanceHint;
-
-  /// No description provided for @settingsReadingHint.
-  ///
-  /// In en, this message translates to:
-  /// **'How the Mushaf is shown, and what opens first'**
-  String get settingsReadingHint;
-
   /// No description provided for @settingsOfflineHint.
   ///
   /// In en, this message translates to:
   /// **'Download Mushaf pages to read without internet'**
   String get settingsOfflineHint;
 
-  /// No description provided for @settingsAlertsHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Adhan, adhkar and Friday reminders, and vibration'**
-  String get settingsAlertsHint;
-
   /// No description provided for @settingsRemindersHint.
   ///
   /// In en, this message translates to:
   /// **'The adhkar, and Surat Al-Kahf on Friday'**
   String get settingsRemindersHint;
+
+  /// No description provided for @settingsViewHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Colours, language, text size and how the Mushaf is shown'**
+  String get settingsViewHint;
+
+  /// No description provided for @settingsFeel.
+  ///
+  /// In en, this message translates to:
+  /// **'Motion and touch'**
+  String get settingsFeel;
 
   /// No description provided for @settingsPrivacyHint.
   ///
@@ -2509,6 +2491,24 @@ abstract class AppLocalizations {
   /// **'Text size'**
   String get textSize;
 
+  /// No description provided for @textSizeMushaf.
+  ///
+  /// In en, this message translates to:
+  /// **'Mushaf text size'**
+  String get textSizeMushaf;
+
+  /// No description provided for @textSizeAdhkar.
+  ///
+  /// In en, this message translates to:
+  /// **'Adhkar and evidence text size'**
+  String get textSizeAdhkar;
+
+  /// No description provided for @textSizeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'You can also change it with two fingers on the text.'**
+  String get textSizeHint;
+
   /// No description provided for @readerLoadError.
   ///
   /// In en, this message translates to:
@@ -2652,6 +2652,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not share'**
   String get shareFailed;
+
+  /// No description provided for @shareGetApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Get {app}:'**
+  String shareGetApp(String app);
+
+  /// No description provided for @shareAppMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'I recommend {app}: the Mushaf, adhkar and prayer times in one place.'**
+  String shareAppMessage(String app);
+
+  /// No description provided for @shareApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Share the app'**
+  String get shareApp;
+
+  /// No description provided for @shareAppHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Send the app\'s link to someone you love'**
+  String get shareAppHint;
 
   /// No description provided for @shareLimit.
   ///

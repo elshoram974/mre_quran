@@ -14,7 +14,7 @@ import 'package:mre_quran/features/bookmarks/application/bookmarks_provider.dart
 import 'package:mre_quran/features/mushaf/application/reading_position_provider.dart';
 import 'package:mre_quran/features/quran_index/application/quran_metadata_provider.dart';
 import 'package:mre_quran/features/quran_text/application/quran_text_providers.dart';
-import 'package:mre_quran/features/settings/presentation/alerts_settings_page.dart';
+import 'package:mre_quran/features/settings/presentation/view_settings_page.dart';
 import 'package:mre_quran/features/settings/application/settings_provider.dart';
 import 'package:mre_quran/features/settings/domain/app_settings.dart';
 import 'package:mre_quran/features/startup/application/startup_providers.dart';
@@ -65,7 +65,7 @@ void main() {
       overrides: [
         settingsRepositoryProvider.overrideWithValue(repository),
         lastTabRepositoryProvider.overrideWithValue(MemoryLastTabRepository()),
-        initialLocationProvider.overrideWithValue(AppRoute.settingsAlerts.path),
+        initialLocationProvider.overrideWithValue(AppRoute.settingsView.path),
         quranMetadataSourceProvider.overrideWithValue(
           FakeQuranMetadataSource(),
         ),
@@ -94,7 +94,7 @@ void main() {
         child: const MaterialApp(
           localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: AlertsSettingsPage(),
+          home: ViewSettingsPage(),
         ),
       ),
     );
@@ -131,7 +131,7 @@ void main() {
 
       final list = find
           .descendant(
-            of: find.byType(AlertsSettingsPage),
+            of: find.byType(ViewSettingsPage),
             matching: find.byType(Scrollable),
           )
           .first;
@@ -141,13 +141,6 @@ void main() {
         scrollable: list,
       );
       await tester.ensureVisible(find.text('الاهتزاز'));
-      await tester.pumpAndSettle();
-      // Down from under the app bar, slowly, so it stops there.
-      await tester.timedDrag(
-        list,
-        const Offset(0, 300),
-        const Duration(seconds: 1),
-      );
       await tester.pumpAndSettle();
       await tester.tap(find.text('الاهتزاز'));
       await tester.pumpAndSettle();

@@ -1,3 +1,5 @@
+import '../../../core/widgets/app_snack_bar.dart';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -44,9 +46,7 @@ class HomeWidgetsPage extends ConsumerWidget {
       final asked = await ref.read(homeWidgetsPlatformProvider).pin(widget);
       if (messenger?.mounted != true) return;
       messenger!.showSnackBar(
-        SnackBar(
-          content: Text(asked ? l10n.widgetsAddAsked : l10n.hintWidgetsManual),
-        ),
+        AppSnackBar(asked ? l10n.widgetsAddAsked : l10n.hintWidgetsManual),
       );
     }
 
@@ -102,7 +102,7 @@ class HomeWidgetsPage extends ConsumerWidget {
                     ref.invalidate(widgetAppearanceProvider);
                   } else {
                     messenger?.showSnackBar(
-                      SnackBar(content: Text(l10n.widgetStyleSaveFailed)),
+                      AppSnackBar(l10n.widgetStyleSaveFailed),
                     );
                   }
                 },

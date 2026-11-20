@@ -1,3 +1,7 @@
+import '../../../core/widgets/app_snack_bar.dart';
+
+import 'dart:async';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,9 +10,13 @@ import '../../../app/router.dart';
 import '../../../core/config/app_config.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/layout/adaptive_layout.dart';
+import '../../../core/config/store_links.dart';
 import '../../../core/links/link_opener.dart';
+import '../../../core/sharing/app_share_text.dart';
+import '../../../core/sharing/sharer.dart';
 import '../../../core/widgets/app_section_header.dart';
 import '../../../core/widgets/app_tile_card.dart';
+import '../../adhkar/presentation/reminders_sheet.dart';
 import 'settings_body.dart';
 
 /// The settings, as a list of the things that can be set: each opens a page of
@@ -26,16 +34,23 @@ class SettingsPage extends ConsumerWidget {
       children: [
         AppTileCard(
           icon: Icons.palette_outlined,
-          title: l10n.appearance,
-          subtitle: l10n.settingsAppearanceHint,
-          onTap: () => context.push(AppRoute.settingsAppearance.path),
+          title: l10n.displayOptions,
+          subtitle: l10n.settingsViewHint,
+          onTap: () => context.push(AppRoute.settingsView.path),
         ),
         const SizedBox(height: settingsGap),
         AppTileCard(
-          icon: Icons.menu_book_outlined,
-          title: l10n.settingsReading,
-          subtitle: l10n.settingsReadingHint,
-          onTap: () => context.push(AppRoute.settingsReading.path),
+          icon: Icons.volume_up_outlined,
+          title: l10n.adhanTitle,
+          subtitle: l10n.adhanTileSubtitle,
+          onTap: () => context.push(AppRoute.adhan.path),
+        ),
+        const SizedBox(height: settingsGap),
+        AppTileCard(
+          icon: Icons.notifications_none_outlined,
+          title: l10n.adhkarReminders,
+          subtitle: l10n.settingsRemindersHint,
+          onTap: () => RemindersSheet.show(context),
         ),
         const SizedBox(height: settingsGap),
         AppTileCard(
@@ -43,13 +58,6 @@ class SettingsPage extends ConsumerWidget {
           title: l10n.offlineMushaf,
           subtitle: l10n.settingsOfflineHint,
           onTap: () => context.push(AppRoute.settingsOffline.path),
-        ),
-        const SizedBox(height: settingsGap),
-        AppTileCard(
-          icon: Icons.notifications_active_outlined,
-          title: l10n.settingsAlerts,
-          subtitle: l10n.settingsAlertsHint,
-          onTap: () => context.push(AppRoute.settingsAlerts.path),
         ),
         const SizedBox(height: settingsGap),
         AppTileCard(
@@ -81,6 +89,17 @@ class SettingsPage extends ConsumerWidget {
           onTap: () => _open(context, ref, AppConfig.mail),
         ),
         const SizedBox(height: settingsGap),
+        // Only when a store has the app: otherwise there is nothing to send.
+        if (appShareText(l10n, ref.watch(storeLinksProvider))
+            case final text?) ...[
+          AppTileCard(
+            icon: Icons.ios_share_outlined,
+            title: l10n.shareApp,
+            subtitle: l10n.shareAppHint,
+            onTap: () => unawaited(ref.read(sharerProvider).shareText(text)),
+          ),
+          const SizedBox(height: settingsGap),
+        ],
         AppTileCard(
           icon: Icons.info_outline,
           title: l10n.about,
@@ -100,6 +119,6 @@ class SettingsPage extends ConsumerWidget {
     final messenger = ScaffoldMessenger.maybeOf(context);
     final failed = context.l10n.contactFailed;
     if (await ref.read(linkOpenerProvider).open(uri)) return;
-    messenger?.showSnackBar(SnackBar(content: Text(failed)));
+    messenger?.showSnackBar(AppSnackBar(failed));
   }
 }

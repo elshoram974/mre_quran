@@ -1144,28 +1144,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adhkarShowList => 'Show as a list';
 
   @override
-  String get settingsReading => 'Reading';
-
-  @override
-  String get settingsAlerts => 'Alerts and feedback';
-
-  @override
-  String get settingsAppearanceHint => 'Colours, language, digits and motion';
-
-  @override
-  String get settingsReadingHint =>
-      'How the Mushaf is shown, and what opens first';
-
-  @override
   String get settingsOfflineHint =>
       'Download Mushaf pages to read without internet';
 
   @override
-  String get settingsAlertsHint =>
-      'Adhan, adhkar and Friday reminders, and vibration';
+  String get settingsRemindersHint => 'The adhkar, and Surat Al-Kahf on Friday';
 
   @override
-  String get settingsRemindersHint => 'The adhkar, and Surat Al-Kahf on Friday';
+  String get settingsViewHint =>
+      'Colours, language, text size and how the Mushaf is shown';
+
+  @override
+  String get settingsFeel => 'Motion and touch';
 
   @override
   String get settingsPrivacyHint => 'Crash reports and the privacy policy';
@@ -1414,6 +1404,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get textSize => 'Text size';
 
   @override
+  String get textSizeMushaf => 'Mushaf text size';
+
+  @override
+  String get textSizeAdhkar => 'Adhkar and evidence text size';
+
+  @override
+  String get textSizeHint =>
+      'You can also change it with two fingers on the text.';
+
+  @override
   String get readerLoadError => 'The Mushaf could not be loaded.';
 
   @override
@@ -1493,6 +1493,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shareFailed => 'Could not share';
+
+  @override
+  String shareGetApp(String app) {
+    return 'Get $app:';
+  }
+
+  @override
+  String shareAppMessage(String app) {
+    return 'I recommend $app: the Mushaf, adhkar and prayer times in one place.';
+  }
+
+  @override
+  String get shareApp => 'Share the app';
+
+  @override
+  String get shareAppHint => 'Send the app\'s link to someone you love';
 
   @override
   String shareLimit(String count) {

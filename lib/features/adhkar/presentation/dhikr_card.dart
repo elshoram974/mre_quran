@@ -65,6 +65,8 @@ class DhikrCard extends ConsumerWidget {
     final digits = ref.watch(digitsFormatterProvider);
     final count = ref.watch(dhikrCountProvider((collection, dhikr)));
     final done = count >= dhikr.repeat;
+    // The size the person chose for the adhkar's text.
+    final size = ref.watch(adhkarFontScaleProvider);
 
     // Opaque on every platform: the words may be Quran text, never on glass.
     return RepaintBoundary(
@@ -96,9 +98,9 @@ class DhikrCard extends ConsumerWidget {
                           textDirection: TextDirection.rtl,
                           child: Text(
                             dhikr.repeatLabel,
-                            style: theme.textTheme.labelLarge?.copyWith(
-                              color: scheme.primary,
-                            ),
+                            style: theme.textTheme.labelLarge
+                                ?.scaledBy(size)
+                                .copyWith(color: scheme.primary),
                           ),
                         ),
                       ),
@@ -120,9 +122,9 @@ class DhikrCard extends ConsumerWidget {
                 child: Text(
                   dhikr.label!,
                   textAlign: TextAlign.center,
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    color: scheme.primary,
-                  ),
+                  style: theme.textTheme.titleSmall
+                      ?.scaledBy(size)
+                      .copyWith(color: scheme.primary),
                 ),
               ),
               const SizedBox(height: 8),
@@ -143,6 +145,14 @@ class DhikrCard extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// A text style at [factor] of its size: the adhkar's text follows the size the
+/// person chose.
+extension AdhkarTextSize on TextStyle {
+  /// This style with its size multiplied by [factor].
+  TextStyle scaledBy(double factor) =>
+      copyWith(fontSize: (fontSize ?? 14) * factor);
 }
 
 /// "After Fajr and Maghrib only": for a dhikr said after some prayers only.

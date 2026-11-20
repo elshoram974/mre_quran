@@ -1133,26 +1133,16 @@ class AppLocalizationsAr extends AppLocalizations {
   String get adhkarShowList => 'عرض كقائمة';
 
   @override
-  String get settingsReading => 'القراءة';
-
-  @override
-  String get settingsAlerts => 'التنبيهات والاهتزاز';
-
-  @override
-  String get settingsAppearanceHint => 'الألوان واللغة والأرقام والحركة';
-
-  @override
-  String get settingsReadingHint => 'طريقة عرض المصحف وما يفتح مع التطبيق';
-
-  @override
   String get settingsOfflineHint => 'نزّل صفحات المصحف لتقرأ بلا إنترنت';
 
   @override
-  String get settingsAlertsHint =>
-      'الأذان وتذكير الأذكار وتذكير الجمعة والاهتزاز';
+  String get settingsRemindersHint => 'الأذكار وسورة الكهف يوم الجمعة';
 
   @override
-  String get settingsRemindersHint => 'الأذكار وسورة الكهف يوم الجمعة';
+  String get settingsViewHint => 'الألوان واللغة وحجم الخط وشكل المصحف';
+
+  @override
+  String get settingsFeel => 'الحركة واللمس';
 
   @override
   String get settingsPrivacyHint => 'تقارير الأعطال وسياسة الخصوصية';
@@ -1405,6 +1395,15 @@ class AppLocalizationsAr extends AppLocalizations {
   String get textSize => 'حجم الخط';
 
   @override
+  String get textSizeMushaf => 'حجم خط المصحف';
+
+  @override
+  String get textSizeAdhkar => 'حجم خط الأذكار والدليل';
+
+  @override
+  String get textSizeHint => 'يمكنك أيضًا تغييره بإصبعين على النص.';
+
+  @override
   String get readerLoadError => 'تعذّر تحميل المصحف.';
 
   @override
@@ -1484,6 +1483,22 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get shareFailed => 'تعذّرت المشاركة';
+
+  @override
+  String shareGetApp(String app) {
+    return 'حمّل تطبيق $app:';
+  }
+
+  @override
+  String shareAppMessage(String app) {
+    return 'أنصحك بتطبيق $app: المصحف والأذكار ومواقيت الصلاة في مكان واحد.';
+  }
+
+  @override
+  String get shareApp => 'شارك التطبيق';
+
+  @override
+  String get shareAppHint => 'أرسل رابط التطبيق لمن تحب';
 
   @override
   String shareLimit(String count) {

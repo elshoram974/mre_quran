@@ -1,6 +1,8 @@
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
+import '../../../core/widgets/app_snack_bar.dart';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -8,6 +10,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/diagnostics/app_logger.dart';
 import '../../../core/l10n/l10n.dart';
+import '../../../core/config/store_links.dart';
+import '../../../core/sharing/app_share_text.dart';
 import '../../../core/sharing/sharer.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/app_sheet.dart';
@@ -91,11 +95,22 @@ class _AyahShareSheetState extends ConsumerState<AyahShareSheet> {
     ref.read(digitsFormatterProvider),
   );
 
+  /// What goes out when the ayahs are shared: the text, and under it the
+  /// app's name and where to get it, from each store that has it. Copying
+  /// takes the ayahs alone.
+  String _shared() {
+    final footer = appShareFooter(context.l10n, ref.read(storeLinksProvider));
+    final text = _text();
+    return footer == null
+        ? text
+        : '$text\n${AyahShareText.rightToLeft('\n$footer')}';
+  }
+
   Future<void> _copy() async {
     final l10n = context.l10n;
     final messenger = ScaffoldMessenger.maybeOf(context);
     await Clipboard.setData(ClipboardData(text: _text()));
-    messenger?.showSnackBar(SnackBar(content: Text(l10n.ayahsCopied)));
+    messenger?.showSnackBar(AppSnackBar(l10n.ayahsCopied));
   }
 
   Future<void> _run(
@@ -111,7 +126,7 @@ class _AyahShareSheetState extends ConsumerState<AyahShareSheet> {
     } on Object catch (error) {
       AppLogger.debug('Ayah share failed: ${error.runtimeType}');
       messenger?.showSnackBar(
-        SnackBar(content: Text(printing ? l10n.printFailed : l10n.shareFailed)),
+        AppSnackBar(printing ? l10n.printFailed : l10n.shareFailed),
       );
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -119,7 +134,7 @@ class _AyahShareSheetState extends ConsumerState<AyahShareSheet> {
   }
 
   Future<void> _shareText() =>
-      _run(() => ref.read(sharerProvider).shareText(_text()));
+      _run(() => ref.read(sharerProvider).shareText(_shared()));
 
   Future<List<SharedImage>> _captureImages() async {
     final start = _range.start;
@@ -144,7 +159,7 @@ class _AyahShareSheetState extends ConsumerState<AyahShareSheet> {
 
   Future<void> _shareImages() => _run(() async {
     final images = await _captureImages();
-    await ref.read(sharerProvider).shareImages(images, text: _text());
+    await ref.read(sharerProvider).shareImages(images, text: _shared());
   });
 
   Future<void> _printImages() => _run(() async {

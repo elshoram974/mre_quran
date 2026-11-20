@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../theme/app_tokens.dart';
+import 'app_mark.dart';
 import 'app_sheet.dart';
 
 /// Shared yes/no confirmation, shown as an [AppSheet].
@@ -26,6 +27,12 @@ abstract final class AppConfirmSheet {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // Who is asking.
+            const Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: AppBrand(),
+            ),
+            const SizedBox(height: 12),
             Text(title, style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 8),
             Text(message, style: Theme.of(context).textTheme.bodyMedium),

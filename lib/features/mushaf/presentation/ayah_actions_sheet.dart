@@ -1,3 +1,5 @@
+import '../../../core/widgets/app_snack_bar.dart';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -168,7 +170,7 @@ class _AyahActions extends ConsumerWidget {
               );
               if (!context.mounted) return;
               Navigator.of(context).pop();
-              messenger?.showSnackBar(SnackBar(content: Text(l10n.ayahCopied)));
+              messenger?.showSnackBar(AppSnackBar(l10n.ayahCopied));
             },
           ),
           if (tafsir case final edition?)
@@ -216,10 +218,8 @@ class _AyahActions extends ConsumerWidget {
                 if (!context.mounted) return;
                 Navigator.of(context).pop();
                 messenger?.showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      bookmarked ? l10n.bookmarkRemoved : l10n.bookmarkAdded,
-                    ),
+                  AppSnackBar(
+                    bookmarked ? l10n.bookmarkRemoved : l10n.bookmarkAdded,
                     action: SnackBarAction(
                       label: l10n.undo,
                       onPressed: () => notifier.toggle(target),

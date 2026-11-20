@@ -5,6 +5,7 @@ import '../hints/hints.dart';
 import '../l10n/l10n.dart';
 import '../theme/app_tokens.dart';
 import 'app_icon_badge.dart';
+import 'app_mark.dart';
 import 'app_sheet.dart';
 
 /// Shows [hint] in a sheet, when it may be shown (not turned off for good,
@@ -94,9 +95,13 @@ class _HintBodyState extends State<_HintBody> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Align(
-            alignment: AlignmentDirectional.centerStart,
-            child: AppIconBadge(widget.icon, emphasized: true),
+          Row(
+            children: [
+              AppIconBadge(widget.icon, emphasized: true),
+              const Spacer(),
+              // Who is speaking.
+              const AppBrand(),
+            ],
           ),
           const SizedBox(height: AppTokens.spaceMedium),
           Text(widget.title, style: theme.textTheme.titleLarge),

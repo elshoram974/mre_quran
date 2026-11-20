@@ -1,3 +1,5 @@
+import '../../../core/widgets/app_snack_bar.dart';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -103,7 +105,7 @@ class AyahSelectionBar extends ConsumerWidget {
         ClipboardData(text: ayahShareText(context, texts, range, digits)),
       );
       ref.read(ayahSelectionProvider.notifier).clear();
-      messenger?.showSnackBar(SnackBar(content: Text(l10n.ayahsCopied)));
+      messenger?.showSnackBar(AppSnackBar(l10n.ayahsCopied));
     }
 
     Future<void> share() async {

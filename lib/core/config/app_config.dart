@@ -33,6 +33,25 @@ abstract final class AppConfig {
   /// The email address people can write to.
   static const String email = 'riyadm2001@gmail.com';
 
+  /// The app's page in Google Play. Leave it empty until the app is there:
+  /// an empty address is left out of everything that shares the app.
+  static const String googlePlayUrl = '';
+
+  /// The app's page in the App Store. Empty until it is there.
+  static const String appStoreUrl = '';
+
+  /// The app's page in Huawei AppGallery. Empty until it is there.
+  static const String appGalleryUrl = '';
+
+  /// The stores, each with the name people know it by (which never changes
+  /// with the language) and its address; the ones with no address are
+  /// dropped by [StoreLink.available].
+  static const List<({String store, String url})> stores = [
+    (store: 'Google Play', url: googlePlayUrl),
+    (store: 'App Store', url: appStoreUrl),
+    (store: 'AppGallery', url: appGalleryUrl),
+  ];
+
   /// Opens a WhatsApp chat with [whatsAppNumber].
   static final Uri whatsApp = Uri.https('wa.me', '/$whatsAppNumber');
 

@@ -1,3 +1,5 @@
+import '../../../core/widgets/app_snack_bar.dart';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -119,7 +121,7 @@ class PackTile extends ConsumerWidget {
     try {
       await ref.read(mushafPackProvider(edition).notifier).start(text);
     } on Object {
-      messenger?.showSnackBar(SnackBar(content: Text(failed)));
+      messenger?.showSnackBar(AppSnackBar(failed));
     }
   }
 

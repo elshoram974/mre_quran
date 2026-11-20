@@ -1,3 +1,5 @@
+import '../../../core/widgets/app_snack_bar.dart';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -77,7 +79,7 @@ class _OfflineMushafHintState extends ConsumerState<OfflineMushafHint> {
             .read(mushafPackProvider(edition).notifier)
             .start(packNotificationText(edition, l10n));
       } on Object {
-        messenger?.showSnackBar(SnackBar(content: Text(l10n.packStartError)));
+        messenger?.showSnackBar(AppSnackBar(l10n.packStartError));
       }
     } on Object {
       // A hint that cannot be worked out is simply not shown.

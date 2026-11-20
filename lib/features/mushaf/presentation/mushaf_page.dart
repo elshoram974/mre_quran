@@ -1,5 +1,7 @@
 import 'dart:math' as math;
 
+import '../../../core/widgets/app_snack_bar.dart';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -92,7 +94,7 @@ class MushafPage extends ConsumerWidget {
       }
       messenger
         ?..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(message)));
+        ..showSnackBar(AppSnackBar(message));
     }
 
     Widget icon(IconData data, String tooltip, VoidCallback onPressed) =>

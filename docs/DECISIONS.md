@@ -483,3 +483,20 @@
   vibration* (the prayer times, the adhan, the reminders, vibration), *Widgets* (which also holds the seconds on the
   prayer widgets), *Privacy*, and, under *Contact us*, WhatsApp, e-mail and *About*. Each opens a page of its own, at
   `/settings/<name>`, so no page is long.
+
+## D-051: The adhkar's text size, the view settings, the app's identity, and the app's links
+
+- **Text size:** `AppSettings.adhkarFontScale` sizes the adhkar's words, their heading, and the evidence sheet;
+  `readerFontScale` sizes the typeset Mushaf. Both are set by a slider on the *Display* settings page (and the
+  Mushaf's by the one in its display options), or by two fingers on the text (D-048).
+- **The settings** are one entry for everything about the view (*Display*: colours, language and digits, the two text
+  sizes, what opens first, how the Mushaf is shown, motion and vibration) and one entry for each other thing: the
+  adhan, the reminders, the offline Mushaf, the widgets, privacy. Adhan and reminders open straight onto their own
+  page and sheet.
+- **Identity:** `AppSnackBar` (the app's mark, the accent's edge), `AppBrand` (the mark and the name) on the
+  confirmation and hint sheets, and one set of paper, edge and corners for dialogs, the time picker, menus and
+  tooltips in `AppTheme`. `AppMark` draws the launch screen's star.
+- **The app's links:** `AppConfig.googlePlayUrl`, `appStoreUrl` and `appGalleryUrl`, empty until the app is in that
+  store. `StoreLink.available` keeps the ones that are real web addresses. Shared ayahs (as text or beside pictures)
+  end with the app's name and one line per store, each line from the right; copying takes the ayahs alone. A
+  *Share the app* tile in the settings sends the same lines, and is not there while no store has the app.

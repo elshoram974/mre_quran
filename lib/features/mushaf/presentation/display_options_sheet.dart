@@ -5,6 +5,7 @@ import '../../../core/l10n/l10n.dart';
 import '../../../core/widgets/app_segmented_control.dart';
 import '../../../core/widgets/app_sheet.dart';
 import '../../../core/widgets/app_switch_tile.dart';
+import '../../../core/widgets/text_size_slider.dart';
 import '../../settings/application/settings_provider.dart';
 import '../../settings/domain/app_settings.dart';
 import '../../settings/presentation/theme_pickers.dart';
@@ -104,31 +105,14 @@ class _TextSize extends ConsumerWidget {
     final notifier = ref.read(settingsProvider.notifier);
     return Padding(
       padding: const EdgeInsetsDirectional.only(top: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            context.l10n.textSize,
-            style: Theme.of(context).textTheme.titleSmall,
-          ),
-          Row(
-            children: [
-              const Icon(Icons.text_decrease, size: 20),
-              Expanded(
-                child: Slider.adaptive(
-                  value: settings.readerFontScale,
-                  min: AppSettings.minReaderFontScale,
-                  max: AppSettings.maxReaderFontScale,
-                  divisions: 8,
-                  label: '${(settings.readerFontScale * 100).round()}%',
-                  onChanged: (value) =>
-                      notifier.save(settings.copyWith(readerFontScale: value)),
-                ),
-              ),
-              const Icon(Icons.text_increase, size: 20),
-            ],
-          ),
-        ],
+      child: TextSizeSlider(
+        title: context.l10n.textSize,
+        hint: context.l10n.textSizeHint,
+        value: settings.readerFontScale,
+        min: AppSettings.minReaderFontScale,
+        max: AppSettings.maxReaderFontScale,
+        onChanged: (value) =>
+            notifier.save(settings.copyWith(readerFontScale: value)),
       ),
     );
   }

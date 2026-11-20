@@ -1,3 +1,5 @@
+import '../../../core/widgets/app_snack_bar.dart';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -171,11 +173,9 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
     ScaffoldMessenger.maybeOf(context)
       ?..hideCurrentSnackBar()
       ..showSnackBar(
-        SnackBar(
-          content: Text(
-            l10n.selectionLimitReached(
-              ref.read(digitsFormatterProvider)(ayahShareLimit),
-            ),
+        AppSnackBar(
+          l10n.selectionLimitReached(
+            ref.read(digitsFormatterProvider)(ayahShareLimit),
           ),
         ),
       );
@@ -225,10 +225,8 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
     ScaffoldMessenger.maybeOf(context)
       ?..hideCurrentSnackBar()
       ..showSnackBar(
-        SnackBar(
-          content: Text(
-            landscape ? l10n.pinchTextHint : l10n.pinchLandscapeHint,
-          ),
+        AppSnackBar(
+          landscape ? l10n.pinchTextHint : l10n.pinchLandscapeHint,
           action: SnackBarAction(
             label: landscape ? l10n.pinchTextAction : l10n.pinchLandscapeAction,
             onPressed: landscape ? _showAsText : turnReaderLandscape,

@@ -7,8 +7,10 @@ import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/app_sheet.dart';
 import '../../quran_text/application/quran_text_providers.dart';
 import '../../settings/application/digits_provider.dart';
+import '../application/adhkar_font_scale_provider.dart';
 import '../application/passage_text.dart';
 import '../domain/dhikr.dart';
+import 'adhkar_pinch.dart';
 
 /// Shows the evidence behind a dhikr: its source, virtue, and hadith.
 abstract final class EvidenceSheet {
@@ -17,7 +19,9 @@ abstract final class EvidenceSheet {
       AppSheet.show<void>(
         context: context,
         expandable: true,
-        builder: (context) => _EvidenceBody(dhikr: dhikr),
+        // The evidence is adhkar text too: two fingers resize it as they
+        // resize the adhkar.
+        builder: (context) => AdhkarPinch(child: _EvidenceBody(dhikr: dhikr)),
       );
 }
 
@@ -38,6 +42,7 @@ class _EvidenceBody extends ConsumerWidget {
               .whenData((text) => describePassage(passage, text, digits))
               .value;
     final theme = Theme.of(context);
+    final size = ref.watch(adhkarFontScaleProvider);
     final sections = <(String, String)>[
       if (quran != null) (l10n.adhkarQuranLabel, quran),
       (l10n.adhkarSourceLabel, dhikr.source),
@@ -73,7 +78,7 @@ class _EvidenceBody extends ConsumerWidget {
                 text,
                 style: TextStyle(
                   fontFamily: AppTokens.quranFontFamily,
-                  fontSize: 19,
+                  fontSize: 19 * size,
                   height: 1.9,
                   color: theme.colorScheme.onSurface,
                 ),

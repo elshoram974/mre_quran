@@ -126,11 +126,22 @@ abstract final class AppTheme {
         selectedTileColor: scheme.secondaryContainer,
       ),
       dividerTheme: DividerThemeData(color: scheme.outlineVariant, space: 1),
+      // What the app says in passing: a floating card in the accent's own
+      // edge, its action in the accent, and (see AppSnackBar) the app's mark.
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
         backgroundColor: scheme.inverseSurface,
-        contentTextStyle: TextStyle(color: scheme.onInverseSurface),
-        shape: RoundedRectangleBorder(borderRadius: fieldRadius),
+        contentTextStyle: text.bodyMedium?.copyWith(
+          color: scheme.onInverseSurface,
+        ),
+        actionTextColor: scheme.inversePrimary,
+        disabledActionTextColor: scheme.onInverseSurface.withValues(alpha: 0.5),
+        elevation: 0,
+        insetPadding: const EdgeInsets.all(AppTokens.gutterCompact),
+        shape: RoundedRectangleBorder(
+          borderRadius: fieldRadius,
+          side: BorderSide(color: scheme.inversePrimary.withValues(alpha: 0.5)),
+        ),
       ),
       bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: scheme.surfaceContainerLow,
@@ -192,12 +203,50 @@ abstract final class AppTheme {
           side: BorderSide(color: scheme.outlineVariant),
         ),
       ),
+      // Dialogs, pickers and menus: the same raised paper, the same hairline
+      // edge and the same corners as the cards and sheets, with the accent for
+      // what is chosen.
       dialogTheme: DialogThemeData(
         backgroundColor: surfaces.raised,
         surfaceTintColor: Colors.transparent,
+        titleTextStyle: text.titleLarge?.copyWith(color: scheme.onSurface),
+        contentTextStyle: text.bodyMedium?.copyWith(
+          color: scheme.onSurfaceVariant,
+        ),
+        iconColor: scheme.primary,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppTokens.radiusSheet),
+          side: BorderSide(color: surfaces.hairline),
         ),
+      ),
+      timePickerTheme: TimePickerThemeData(
+        backgroundColor: surfaces.raised,
+        hourMinuteColor: scheme.primaryContainer,
+        hourMinuteTextColor: scheme.onPrimaryContainer,
+        dayPeriodColor: scheme.primaryContainer,
+        dayPeriodTextColor: scheme.onPrimaryContainer,
+        dialBackgroundColor: scheme.surfaceContainerHighest,
+        dialHandColor: scheme.primary,
+        entryModeIconColor: scheme.primary,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppTokens.radiusSheet),
+          side: BorderSide(color: surfaces.hairline),
+        ),
+      ),
+      popupMenuTheme: PopupMenuThemeData(
+        color: surfaces.raised,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: fieldRadius,
+          side: BorderSide(color: surfaces.hairline),
+        ),
+      ),
+      tooltipTheme: TooltipThemeData(
+        decoration: BoxDecoration(
+          color: scheme.inverseSurface,
+          borderRadius: fieldRadius,
+        ),
+        textStyle: text.bodySmall?.copyWith(color: scheme.onInverseSurface),
       ),
       extensions: [
         surfaces,

@@ -4,16 +4,16 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:mre_quran/app/router.dart';
 import 'package:mre_quran/core/l10n/l10n.dart';
+import 'package:mre_quran/core/config/store_links.dart';
 import 'package:mre_quran/core/links/link_opener.dart';
+import 'package:mre_quran/core/sharing/sharer.dart';
 import 'package:mre_quran/core/theme/app_theme.dart';
 import 'package:mre_quran/features/settings/application/settings_provider.dart';
 import 'package:mre_quran/features/settings/domain/app_settings.dart';
-import 'package:mre_quran/features/settings/presentation/alerts_settings_page.dart';
-import 'package:mre_quran/features/settings/presentation/appearance_settings_page.dart';
 import 'package:mre_quran/features/settings/presentation/offline_settings_page.dart';
 import 'package:mre_quran/features/settings/presentation/privacy_settings_page.dart';
-import 'package:mre_quran/features/settings/presentation/reading_settings_page.dart';
 import 'package:mre_quran/features/settings/presentation/settings_page.dart';
+import 'package:mre_quran/features/settings/presentation/view_settings_page.dart';
 import 'package:mre_quran/l10n/generated/app_localizations.dart';
 
 import '../../helpers/memory_settings_repository.dart';
@@ -27,6 +27,8 @@ Future<MemorySettingsRepository> _pump(
   ThemeData? theme,
   Uri? policy,
   List<String>? visited,
+  List<StoreLink> stores = const [],
+  Sharer? sharer,
 }) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
@@ -63,6 +65,8 @@ Future<MemorySettingsRepository> _pump(
       overrides: [
         settingsRepositoryProvider.overrideWithValue(repository),
         privacyPolicyProvider.overrideWithValue(policy),
+        storeLinksProvider.overrideWithValue(stores),
+        if (sharer != null) sharerProvider.overrideWithValue(sharer),
       ],
       child: MaterialApp.router(
         routerConfig: router,
@@ -97,10 +101,10 @@ void main() {
       (
         'ar',
         [
-          'المظهر',
-          'القراءة',
+          'العرض',
+          'الأذان',
+          'التذكيرات',
           'المصحف دون اتصال',
-          'التنبيهات والاهتزاز',
           'أدوات الشاشة الرئيسية',
           'الخصوصية',
         ],
@@ -108,50 +112,85 @@ void main() {
       (
         'en',
         [
-          'Appearance',
-          'Reading',
+          'Display',
+          'Adhan',
+          'Reminders',
           'Offline Mushaf',
-          'Alerts and feedback',
           'Home-screen widgets',
           'Privacy',
         ],
       ),
     ]) {
-      testWidgets('names what can be set, and each opens a page of its own in '
-          '$locale', (tester) async {
-        final visited = <String>[];
-        await _pump(
-          tester,
-          const SettingsPage(),
-          locale: locale,
-          visited: visited,
-        );
-        // Nothing is set on this page: it only leads to the pages that do.
+      testWidgets('names what can be set in $locale, with the view on its '
+          'own', (tester) async {
+        await _pump(tester, const SettingsPage(), locale: locale);
+        // Nothing is set on this page: it only leads to what is.
         expect(find.byType(Switch), findsNothing);
-        final paths = [
-          AppRoute.settingsAppearance.path,
-          AppRoute.settingsReading.path,
-          AppRoute.settingsOffline.path,
-          AppRoute.settingsAlerts.path,
-          AppRoute.widgets.path,
-          AppRoute.settingsPrivacy.path,
-        ];
-        for (final (index, title) in tiles.indexed) {
+        for (final title in tiles) {
           await _reveal(tester, find.text(title));
-          await tester.tap(find.text(title));
-          await tester.pumpAndSettle();
-          expect(visited.last, paths[index]);
-          router(tester).pop();
-          await tester.pumpAndSettle();
+          expect(find.text(title), findsOneWidget);
         }
       });
     }
+
+    testWidgets('the view, the adhan, the offline pages, the widgets and '
+        'privacy each open a page of their own', (tester) async {
+      final visited = <String>[];
+      await _pump(tester, const SettingsPage(), visited: visited);
+      final paths = {
+        'العرض': AppRoute.settingsView.path,
+        'الأذان': AppRoute.adhan.path,
+        'المصحف دون اتصال': AppRoute.settingsOffline.path,
+        'أدوات الشاشة الرئيسية': AppRoute.widgets.path,
+        'الخصوصية': AppRoute.settingsPrivacy.path,
+      };
+      for (final entry in paths.entries) {
+        await _reveal(tester, find.text(entry.key));
+        await tester.tap(find.text(entry.key));
+        await tester.pumpAndSettle();
+        expect(visited.last, entry.value);
+        router(tester).pop();
+        await tester.pumpAndSettle();
+      }
+    });
 
     testWidgets('the contact and about tiles stay at the end', (tester) async {
       await _pump(tester, const SettingsPage());
       await _reveal(tester, find.text('تواصل معنا'));
       expect(find.text('واتساب'), findsOneWidget);
       await _reveal(tester, find.textContaining('الإصدار'));
+    });
+
+    testWidgets('sharing the app is offered when a store has it, and sends '
+        'every store\'s link', (tester) async {
+      final sharer = _RecordingSharer();
+      await _pump(
+        tester,
+        const SettingsPage(),
+        stores: const [
+          StoreLink('Google Play', 'https://play.google.com/store/apps/x'),
+          StoreLink('App Store', 'https://apps.apple.com/app/x'),
+        ],
+        sharer: sharer,
+      );
+      await _reveal(tester, find.text('شارك التطبيق'));
+      await tester.tap(find.text('شارك التطبيق'));
+      await tester.pumpAndSettle();
+      final text = sharer.texts.single;
+      expect(text, contains('مصحفي'));
+      expect(
+        text,
+        contains('Google Play: https://play.google.com/store/apps/x'),
+      );
+      expect(text, contains('App Store: https://apps.apple.com/app/x'));
+      expect(text, isNot(contains('AppGallery')));
+    });
+
+    testWidgets('with no store address there is nothing to share, so no '
+        'tile', (tester) async {
+      await _pump(tester, const SettingsPage());
+      await _reveal(tester, find.textContaining('الإصدار'));
+      expect(find.text('شارك التطبيق'), findsNothing);
     });
 
     for (final (name, size, scale) in [
@@ -173,32 +212,42 @@ void main() {
     }
   });
 
-  group('the appearance page', () {
-    testWidgets('changes the language and the digits', (tester) async {
-      final repository = await _pump(tester, const AppearanceSettingsPage());
-      await tester.tap(find.text('الأرقام العربية'));
+  group('the view page', () {
+    testWidgets('has a slider for the Mushaf text and one for the adhkar '
+        'text, and each keeps its own size', (tester) async {
+      final repository = await _pump(tester, const ViewSettingsPage());
+      await _reveal(tester, find.text('حجم خط المصحف'));
+      expect(find.text('حجم خط الأذكار والدليل'), findsOneWidget);
+      final sliders = find.byType(Slider);
+      expect(sliders, findsNWidgets(2));
+      // Drag the adhkar slider to its far end (the larger size).
+      await tester.drag(sliders.last, const Offset(-400, 0));
       await tester.pumpAndSettle();
-      expect(repository.settings.useArabicDigits, isFalse);
+      expect(repository.settings.adhkarFontScale, greaterThan(1.3));
+      expect(repository.settings.readerFontScale, 1);
+      await tester.drag(sliders.first, const Offset(400, 0));
+      await tester.pumpAndSettle();
+      expect(repository.settings.readerFontScale, lessThan(1));
+    });
+
+    testWidgets('changes the language and the digits', (tester) async {
+      final repository = await _pump(tester, const ViewSettingsPage());
+      await _reveal(tester, find.text('اللغة'));
       await tester.tap(find.text('اللغة'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('English').last);
       await tester.pumpAndSettle();
       expect(repository.settings.localeCode, 'en');
+      await _reveal(tester, find.text('الأرقام العربية'));
+      await tester.tap(find.text('الأرقام العربية'));
+      await tester.pumpAndSettle();
+      expect(repository.settings.useArabicDigits, isFalse);
     });
 
-    testWidgets('has what looks and moves, and nothing else', (tester) async {
-      await _pump(tester, const AppearanceSettingsPage());
-      expect(find.text('تقليل الحركة'), findsOneWidget);
-      expect(find.text('الاهتزاز'), findsNothing);
-      expect(find.text('عند فتح التطبيق'), findsNothing);
-    });
-  });
-
-  group('the reading page', () {
     testWidgets('opens on the Mushaf, and the person can choose the last '
         'tab', (tester) async {
-      final repository = await _pump(tester, const ReadingSettingsPage());
-      expect(find.text('المصحف'), findsWidgets);
+      final repository = await _pump(tester, const ViewSettingsPage());
+      await _reveal(tester, find.text('عند فتح التطبيق'));
       await tester.tap(find.text('عند فتح التطبيق'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('آخر تبويب').last);
@@ -206,31 +255,26 @@ void main() {
       expect(repository.settings.startupBehavior, StartupBehavior.lastTab);
     });
 
-    testWidgets('turns the page turn on', (tester) async {
-      final repository = await _pump(tester, const ReadingSettingsPage());
+    testWidgets('turns the page turn and the reduced motion on', (
+      tester,
+    ) async {
+      final repository = await _pump(tester, const ViewSettingsPage());
       await _reveal(tester, find.text('تقليب واقعي للصفحات'));
       await tester.tap(find.text('تقليب واقعي للصفحات'));
       await tester.pumpAndSettle();
       expect(repository.settings.realisticPageTurn, isTrue);
-    });
-  });
-
-  group('the alerts page', () {
-    testWidgets('gathers the prayer alerts, the adhan, the reminders and '
-        'vibration', (tester) async {
-      await _pump(tester, const AlertsSettingsPage());
-      expect(find.text('مواقيت الصلاة'), findsOneWidget);
-      expect(find.text('الأذان'), findsOneWidget);
-      expect(find.text('التذكيرات'), findsOneWidget);
-      await _reveal(tester, find.text('الاهتزاز'));
-    });
-
-    testWidgets('the adhan tile opens the adhan page', (tester) async {
-      final visited = <String>[];
-      await _pump(tester, const AlertsSettingsPage(), visited: visited);
-      await tester.tap(find.text('الأذان'));
+      await _reveal(tester, find.text('تقليل الحركة'));
+      await tester.tap(find.text('تقليل الحركة'));
       await tester.pumpAndSettle();
-      expect(visited.last, AppRoute.adhan.path);
+      expect(repository.settings.reduceMotion, isTrue);
+    });
+
+    testWidgets('keeps what has nothing to do with the view away', (
+      tester,
+    ) async {
+      await _pump(tester, const ViewSettingsPage());
+      expect(find.text('تقارير الأعطال'), findsNothing);
+      expect(find.text('التذكيرات'), findsNothing);
     });
   });
 
@@ -259,9 +303,7 @@ void main() {
 
   group('every page fits', () {
     final pages = <String, Widget>{
-      'appearance': const AppearanceSettingsPage(),
-      'reading': const ReadingSettingsPage(),
-      'alerts': const AlertsSettingsPage(),
+      'view': const ViewSettingsPage(),
       'privacy': const PrivacySettingsPage(),
       'offline': const OfflineSettingsPage(),
     };
@@ -296,3 +338,13 @@ void main() {
 /// The router the page under test sits in.
 GoRouter router(WidgetTester tester) =>
     GoRouter.of(tester.element(find.byType(Scaffold).first));
+
+class _RecordingSharer implements Sharer {
+  final List<String> texts = [];
+
+  @override
+  Future<void> shareText(String text) async => texts.add(text);
+
+  @override
+  Future<void> shareImages(List<SharedImage> images, {String? text}) async {}
+}
