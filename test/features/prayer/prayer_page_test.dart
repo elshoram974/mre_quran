@@ -68,10 +68,14 @@ Future<_Harness> _pump(
   );
   final router = GoRouter(
     routes: [
-      GoRoute(path: '/', builder: (_, _) => home ?? const PrayerTimesPage()),
+      // A tab: the shell's scaffold is what it sits in.
+      GoRoute(
+        path: '/',
+        builder: (_, _) => home ?? const Scaffold(body: PrayerTimesPage()),
+      ),
       GoRoute(
         path: AppRoute.prayerTimes.path,
-        builder: (_, _) => const PrayerTimesPage(),
+        builder: (_, _) => const Scaffold(body: PrayerTimesPage()),
       ),
     ],
   );
