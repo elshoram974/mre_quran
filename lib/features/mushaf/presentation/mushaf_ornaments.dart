@@ -507,9 +507,9 @@ abstract final class SurahFrameGeometry {
     final ends = _ends(style) * plaque.height;
     return Rect.fromLTRB(
       plaque.left + ends * 0.9,
-      plaque.top + plaque.height * 0.05,
+      plaque.top + plaque.height * 0.1,
       plaque.right - ends * 0.9,
-      plaque.bottom - plaque.height * 0.05,
+      plaque.bottom - plaque.height * 0.12,
     );
   }
 }

@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:material_ui/material_ui.dart';
@@ -71,6 +72,9 @@ class _AyahShareSheetState extends ConsumerState<AyahShareSheet> {
   );
   List<GlobalKey> _cards = [];
   bool _busy = false;
+
+  /// How many pictures the person asked for; null leaves it to the app.
+  int? _split;
 
   void _moveStart(AyahRef start) => setState(
     () => _range = _order.moveStart(_range, start, limit: ayahShareLimit),
@@ -158,7 +162,11 @@ class _AyahShareSheetState extends ConsumerState<AyahShareSheet> {
     final frame =
         ref.watch(settingsProvider).value?.surahFrame ??
         SurahFrameStyle.cartouche;
-    final pictures = AyahShareText.pictures(widget.text, _order.refs(_range));
+    final pictures = AyahShareText.pictures(
+      widget.text,
+      _order.refs(_range),
+      count: _split,
+    );
     if (_cards.length != pictures.length) {
       _cards = [for (final _ in pictures) GlobalKey()];
     }
@@ -222,6 +230,17 @@ class _AyahShareSheetState extends ConsumerState<AyahShareSheet> {
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                   ),
+                ),
+                const SizedBox(height: AppTokens.spaceSmall),
+                _PictureCount(
+                  count: pictures.length,
+                  most: math.min(
+                    _order.length(_range),
+                    AyahShareText.maxPictures,
+                  ),
+                  automatic: _split == null,
+                  digits: digits,
+                  onChanged: (count) => setState(() => _split = count),
                 ),
                 const SizedBox(height: AppTokens.spaceSmall),
                 // The pictures as they will be sent, scaled to the sheet.
@@ -356,6 +375,8 @@ class _RangeEnd extends StatelessWidget {
                 value: digits(ayah.ayah),
                 onLess: onLess,
                 onMore: onMore,
+                lessTooltip: l10n.previousAyah,
+                moreTooltip: l10n.nextAyah,
               ),
             ),
           ],
@@ -372,16 +393,19 @@ class _AyahStepper extends StatelessWidget {
     required this.value,
     required this.onLess,
     required this.onMore,
+    required this.lessTooltip,
+    required this.moreTooltip,
   });
 
   final String label;
   final String value;
   final VoidCallback? onLess;
   final VoidCallback? onMore;
+  final String lessTooltip;
+  final String moreTooltip;
 
   @override
   Widget build(BuildContext context) {
-    final l10n = context.l10n;
     final theme = Theme.of(context);
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -397,7 +421,7 @@ class _AyahStepper extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 IconButton(
-                  tooltip: l10n.previousAyah,
+                  tooltip: lessTooltip,
                   onPressed: onLess,
                   icon: const Icon(Icons.remove_rounded),
                 ),
@@ -409,7 +433,7 @@ class _AyahStepper extends StatelessWidget {
                   ),
                 ),
                 IconButton(
-                  tooltip: l10n.nextAyah,
+                  tooltip: moreTooltip,
                   onPressed: onMore,
                   icon: const Icon(Icons.add_rounded),
                 ),
@@ -418,6 +442,66 @@ class _AyahStepper extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// How many pictures the ayahs are sent as: stepped down and up to split them
+/// as wanted, or left automatic, when the app fills each picture as far as
+/// it stays readable.
+class _PictureCount extends StatelessWidget {
+  const _PictureCount({
+    required this.count,
+    required this.most,
+    required this.automatic,
+    required this.digits,
+    required this.onChanged,
+  });
+
+  /// The pictures there are now.
+  final int count;
+
+  /// The most they can be cut into.
+  final int most;
+
+  /// Whether the app chose [count].
+  final bool automatic;
+
+  final String Function(int) digits;
+
+  /// The person's choice: a number, or null to leave it automatic.
+  final ValueChanged<int?> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Expanded(
+          flex: 3,
+          child: _AyahStepper(
+            label: l10n.sharePicturesField,
+            value: digits(count),
+            onLess: count > 1 ? () => onChanged(count - 1) : null,
+            onMore: count < most ? () => onChanged(count + 1) : null,
+            lessTooltip: l10n.sharePicturesFewer,
+            moreTooltip: l10n.sharePicturesMore,
+          ),
+        ),
+        const SizedBox(width: AppTokens.spaceSmall),
+        Expanded(
+          flex: 2,
+          child: FilterChip(
+            label: SizedBox(
+              width: double.infinity,
+              child: Text(l10n.sharePicturesAuto, textAlign: TextAlign.center),
+            ),
+            selected: automatic,
+            onSelected: (_) => onChanged(null),
+          ),
+        ),
+      ],
     );
   }
 }

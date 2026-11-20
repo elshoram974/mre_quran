@@ -2635,6 +2635,30 @@ abstract class AppLocalizations {
   /// **'Picture {index} of {count}'**
   String sharePicture(String index, String count);
 
+  /// No description provided for @sharePicturesField.
+  ///
+  /// In en, this message translates to:
+  /// **'Pictures'**
+  String get sharePicturesField;
+
+  /// No description provided for @sharePicturesFewer.
+  ///
+  /// In en, this message translates to:
+  /// **'One picture fewer'**
+  String get sharePicturesFewer;
+
+  /// No description provided for @sharePicturesMore.
+  ///
+  /// In en, this message translates to:
+  /// **'One picture more'**
+  String get sharePicturesMore;
+
+  /// No description provided for @sharePicturesAuto.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic'**
+  String get sharePicturesAuto;
+
   /// No description provided for @surahAyah.
   ///
   /// In en, this message translates to:

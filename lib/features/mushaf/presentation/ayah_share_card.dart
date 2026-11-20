@@ -98,7 +98,8 @@ class AyahShareCard extends StatelessWidget {
               for (final run in runs) ...[
                 if (run != first) const SizedBox(height: 10),
                 SizedBox(
-                  height: 56,
+                  // Room for the name and, under it, the surah's count.
+                  height: 64,
                   child: SurahBanner(
                     surah: text.metadata.surah(run.surah),
                     // The reading's own count and script.
@@ -133,14 +134,13 @@ class AyahShareCard extends StatelessWidget {
                               style: verse.copyWith(fontSize: 19),
                             ),
                           ),
-                      for (var ayah = run.first; ayah <= run.last; ayah++)
-                        _Verse(
-                          text: text,
-                          ref: AyahRef(run.surah, ayah),
-                          digits: digits,
-                          style: verse,
-                          markColor: colors.ayahNumber,
-                        ),
+                      _Verses(
+                        text: text,
+                        run: run,
+                        digits: digits,
+                        style: verse,
+                        markColor: colors.ayahNumber,
+                      ),
                     ],
                   ),
                 ),
@@ -180,43 +180,66 @@ class AyahShareCard extends StatelessWidget {
   }
 }
 
-/// One ayah of the card, with its number.
-class _Verse extends StatelessWidget {
-  const _Verse({
+/// Ties an ayah's number to its last word: a line never ends on an ayah and
+/// starts the next with its number.
+const String _joiner = '\u00A0';
+
+/// The ayahs of one surah, flowing one after another as on a Mushaf page,
+/// each followed by its number. A passage of several lines is justified, so
+/// both edges are straight; one short line is centred instead.
+class _Verses extends StatelessWidget {
+  const _Verses({
     required this.text,
-    required this.ref,
+    required this.run,
     required this.digits,
     required this.style,
     required this.markColor,
   });
 
   final AyahTexts text;
-  final AyahRef ref;
+  final SurahRun run;
   final String Function(int) digits;
   final TextStyle style;
   final Color markColor;
 
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsetsDirectional.only(bottom: 6),
-    child: Text.rich(
-      TextSpan(
-        children: [
-          TextSpan(text: text.display(ref)),
+  Widget build(BuildContext context) {
+    final span = TextSpan(
+      style: style,
+      children: [
+        for (var ayah = run.first; ayah <= run.last; ayah++) ...[
+          TextSpan(text: text.display(AyahRef(run.surah, ayah))),
           // The Mushaf font's own ayah-number ornament, or the number in
           // brackets without it.
           TextSpan(
-            text: switch (text.mark(ref)) {
-              final String mark => ' $mark',
-              null => ' ﴿${digits(ref.ayah)}﴾',
+            text: switch (text.mark(AyahRef(run.surah, ayah))) {
+              final String mark => '$_joiner$mark',
+              null => '$_joiner﴿${digits(ayah)}﴾',
             },
             style: TextStyle(color: markColor),
           ),
+          if (ayah < run.last) const TextSpan(text: ' '),
         ],
+      ],
+    );
+    return Padding(
+      padding: const EdgeInsetsDirectional.only(bottom: 6),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final painter = TextPainter(
+            text: span,
+            textDirection: TextDirection.rtl,
+            textScaler: TextScaler.noScaling,
+          )..layout(maxWidth: constraints.maxWidth);
+          final oneLine = painter.computeLineMetrics().length == 1;
+          painter.dispose();
+          return Text.rich(
+            span,
+            textAlign: oneLine ? TextAlign.center : TextAlign.justify,
+            textScaler: TextScaler.noScaling,
+          );
+        },
       ),
-      textAlign: TextAlign.center,
-      textScaler: TextScaler.noScaling,
-      style: style,
-    ),
-  );
+    );
+  }
 }

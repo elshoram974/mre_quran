@@ -422,3 +422,13 @@
 - **The widgets page** keeps the settings for every widget (colours, language) at the top, then one section per
   widget that opens to its preview and the settings that belong to it alone (today only the prayer schedule's).
   Each header says what the widget is and has its own *Add* button.
+
+## D-046: Share pictures hold more ayahs, and the person chooses how many pictures
+
+- **Decision:** On the share card the ayahs of a surah flow as one justified paragraph, as on a Mushaf page, each
+  number tied to its ayah with a no-break space (a line never ends on an ayah and starts the next with its
+  number). A single short line is centred. Left automatic, a picture holds up to
+  `AyahShareText.lettersPerPicture` (1400) letters, tashkeel counted; the person can instead set the number of
+  pictures (1 to `maxPictures`, never more than the ayahs), and the letters are shared between them as evenly as
+  whole ayahs allow. The *Automatic* chip hands the choice back.
+- The surah banner leaves more room above and below the name, so its caption never touches the plaque's line.

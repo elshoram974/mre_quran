@@ -1481,6 +1481,18 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String get sharePicturesField => 'عدد الصور';
+
+  @override
+  String get sharePicturesFewer => 'صورة أقل';
+
+  @override
+  String get sharePicturesMore => 'صورة أكثر';
+
+  @override
+  String get sharePicturesAuto => 'تلقائي';
+
+  @override
   String surahAyah(String surah, String ayah) {
     return '$surah $ayah';
   }

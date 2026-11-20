@@ -12,6 +12,7 @@ import 'package:mre_quran/features/mushaf/presentation/ayah_share_sheet.dart';
 import 'package:mre_quran/features/quran_index/application/quran_metadata_provider.dart';
 import 'package:mre_quran/features/quran_index/domain/quran_metadata.dart';
 import 'package:mre_quran/features/quran_text/application/quran_text_providers.dart';
+import 'package:mre_quran/features/quran_text/domain/ayah_share_text.dart';
 import 'package:mre_quran/features/quran_text/domain/ayah_texts.dart';
 import 'package:mre_quran/features/quran_text/domain/ayah_range.dart';
 import 'package:mre_quran/features/quran_text/domain/quran_text.dart';
@@ -103,6 +104,69 @@ void main() {
         AyahRange.between(const AyahRef(3, 2), const AyahRef(2, 286)),
         const AyahRange(AyahRef(2, 286), AyahRef(3, 2)),
       );
+    });
+  });
+
+  group('cutting ayahs into pictures', () {
+    late QuranText text;
+    final ayahs = [for (var ayah = 1; ayah <= 30; ayah++) AyahRef(2, ayah)];
+
+    setUpAll(() async {
+      final container = ProviderContainer(
+        overrides: [
+          quranMetadataSourceProvider.overrideWithValue(
+            FakeQuranMetadataSource(),
+          ),
+          quranTextSourceProvider.overrideWithValue(FakeQuranTextSource()),
+        ],
+      );
+      addTearDown(container.dispose);
+      text = await container.read(quranTextProvider.future);
+    });
+
+    AyahTexts texts() => HafsAyahTexts(text, fontFamily: 'KfgqpcHafs');
+
+    test('left automatic, a picture is filled before the next begins', () {
+      final pictures = AyahShareText.pictures(texts(), ayahs);
+      expect([for (final p in pictures) ...p], ayahs);
+      for (final picture in pictures.take(pictures.length - 1)) {
+        final letters = picture.fold(
+          0,
+          (sum, ref) => sum + texts().display(ref).length,
+        );
+        expect(letters, lessThanOrEqualTo(AyahShareText.lettersPerPicture));
+      }
+    });
+
+    test('a count shares the letters out, every ayah once and in order', () {
+      for (final count in [1, 2, 3, 5, 10]) {
+        final pictures = AyahShareText.pictures(texts(), ayahs, count: count);
+        expect(pictures, hasLength(count));
+        expect([for (final p in pictures) ...p], ayahs);
+        expect(pictures.every((picture) => picture.isNotEmpty), isTrue);
+      }
+      final letters = [
+        for (final picture in AyahShareText.pictures(texts(), ayahs, count: 3))
+          picture.fold(0, (sum, ref) => sum + texts().display(ref).length),
+      ];
+      final total = letters.fold(0, (a, b) => a + b);
+      // No picture is far from a third of the letters.
+      for (final length in letters) {
+        expect(length, closeTo(total / 3, total / 8));
+      }
+    });
+
+    test('the count stays between one and the ayahs there are', () {
+      expect(AyahShareText.pictures(texts(), ayahs, count: 0), hasLength(1));
+      expect(
+        AyahShareText.pictures(texts(), ayahs, count: 99),
+        hasLength(AyahShareText.maxPictures),
+      );
+      expect(
+        AyahShareText.pictures(texts(), ayahs.take(2).toList(), count: 5),
+        hasLength(2),
+      );
+      expect(AyahShareText.pictures(texts(), const [], count: 3), isEmpty);
     });
   });
 
@@ -331,6 +395,105 @@ void main() {
         [for (final card in cards) ...card.refs],
         [for (var ayah = 1; ayah <= 20; ayah++) AyahRef(2, ayah)],
       );
+    });
+
+    testWidgets('one picture holds more ayahs, and the person splits them', (
+      tester,
+    ) async {
+      await open(
+        tester,
+        initial: const AyahRange(AyahRef(2, 255), AyahRef(2, 257)),
+      );
+      List<int> perCard() => [
+        for (final card in tester.widgetList<AyahShareCard>(
+          find.byType(AyahShareCard, skipOffstage: false),
+        ))
+          card.refs.length,
+      ];
+      // Left to the app, Ayat al-Kursi and the two after it fit one picture.
+      expect(perCard(), [3]);
+      final more = find.byTooltip('صورة أكثر');
+      await tester.ensureVisible(more);
+      await tester.tap(more);
+      await tester.pump();
+      expect(perCard().length, 2);
+      expect(perCard().fold(0, (a, b) => a + b), 3);
+      expect(
+        tester
+            .widgetList<AyahShareCard>(
+              find.byType(AyahShareCard, skipOffstage: false),
+            )
+            .map((card) => card.parts),
+        [2, 2],
+      );
+      await tester.tap(find.byTooltip('صورة أقل'));
+      await tester.pump();
+      expect(perCard(), [3]);
+      // Splitting by hand holds until the person hands it back.
+      await tester.tap(more);
+      await tester.pump();
+      await tester.tap(more);
+      await tester.pump();
+      expect(perCard(), [1, 1, 1]);
+      // There is no fourth picture of three ayahs.
+      expect(
+        tester
+            .widget<IconButton>(
+              find.widgetWithIcon(IconButton, Icons.add_rounded).last,
+            )
+            .onPressed,
+        isNull,
+      );
+      await tester.tap(find.text('تلقائي'));
+      await tester.pump();
+      expect(perCard(), [3]);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('every picture the person asked for is sent', (tester) async {
+      await open(
+        tester,
+        initial: const AyahRange(AyahRef(2, 255), AyahRef(2, 257)),
+      );
+      final more = find.byTooltip('صورة أكثر');
+      await tester.ensureVisible(more);
+      await tester.tap(more);
+      await tester.pump();
+      await tester.runAsync(() async {
+        await tester.tap(find.text('مشاركة كصورة'));
+        for (var i = 0; i < 40 && sharer.shares.isEmpty; i++) {
+          await Future<void>.delayed(const Duration(milliseconds: 50));
+          await tester.pump();
+        }
+      });
+      expect(sharer.shares.single.images.map((image) => image.name), [
+        'quran-2-255-2-257-1.png',
+        'quran-2-255-2-257-2.png',
+      ]);
+    });
+
+    testWidgets('the ayahs flow justified, each number tied to its ayah', (
+      tester,
+    ) async {
+      await open(
+        tester,
+        initial: const AyahRange(AyahRef(2, 255), AyahRef(2, 257)),
+      );
+      final flow = tester.widget<RichText>(
+        find.descendant(
+          of: find.byType(AyahShareCard),
+          matching: find.byWidgetPredicate(
+            (widget) =>
+                widget is RichText &&
+                widget.text.toPlainText().contains('\u00A0'),
+          ),
+        ),
+      );
+      expect(flow.textAlign, TextAlign.justify);
+      final plain = flow.text.toPlainText();
+      // A number follows its ayah's last word without a breaking space.
+      expect(plain, contains('\u00A0'));
+      expect(plain, isNot(contains(' ﴿')));
     });
 
     for (final (name, size, scale) in [
