@@ -32,7 +32,8 @@ abstract interface class LocationSource {
   /// from an action the person took.
   Future<PrayerPlace?> request();
 
-  /// Returns a rounded place only when permission is already given. Never asks.
+  /// Returns a rounded place only when permission is already given and
+  /// location is on. Never asks, and never makes the phone show a dialog.
   Future<PrayerPlace?> quiet();
 }
 
@@ -93,6 +94,10 @@ class GeolocatorLocationSource implements LocationSource {
   @override
   Future<PrayerPlace?> quiet() async {
     try {
+      // Asking for a fix while location is switched off makes Android show
+      // its own "turn on location" dialog. This runs each time the app
+      // starts, so it must stay silent: with location off there is no read.
+      if (!await Geolocator.isLocationServiceEnabled()) return null;
       return await _read(
         await Geolocator.checkPermission(),
         preferFresh: false,

@@ -8,9 +8,11 @@ class _LocationPlatform extends GeolocatorPlatform {
   Position? current;
   LocationSettings? requestedSettings;
   bool failCurrent = false;
+  bool serviceEnabled = true;
+  int currentReads = 0;
 
   @override
-  Future<bool> isLocationServiceEnabled() async => true;
+  Future<bool> isLocationServiceEnabled() async => serviceEnabled;
   @override
   Future<LocationPermission> checkPermission() async =>
       LocationPermission.whileInUse;
@@ -23,6 +25,7 @@ class _LocationPlatform extends GeolocatorPlatform {
     LocationSettings? locationSettings,
   }) async {
     requestedSettings = locationSettings;
+    currentReads++;
     if (failCurrent) throw StateError('location unavailable');
     return current!;
   }
@@ -64,6 +67,28 @@ void main() {
       expect(platform.requestedSettings?.accuracy, LocationAccuracy.high);
     },
   );
+
+  test('a start-up read with location switched off asks the phone for '
+      'nothing, so no turn-on-location dialog appears', () async {
+    platform
+      ..serviceEnabled = false
+      ..cached = _position(30.04, DateTime.now())
+      ..current = _position(30.0444, DateTime.now());
+    expect(await const GeolocatorLocationSource().quiet(), isNull);
+    expect(platform.currentReads, 0);
+  });
+
+  test('a start-up read with location on uses a recent cached fix', () async {
+    platform.cached = _position(
+      30.04,
+      DateTime.now().subtract(const Duration(minutes: 1)),
+    );
+    expect(
+      await const GeolocatorLocationSource().quiet(),
+      PrayerPlace(30.04, 31.2357),
+    );
+    expect(platform.currentReads, 0);
+  });
 
   test('does not fall back to a stale cached location on failure', () async {
     platform.cached = _position(

@@ -500,3 +500,12 @@
   store. `StoreLink.available` keeps the ones that are real web addresses. Shared ayahs (as text or beside pictures)
   end with the app's name and one line per store, each line from the right; copying takes the ayahs alone. A
   *Share the app* tile in the settings sends the same lines, and is not there while no store has the app.
+
+## D-052: The start-up location read is silent
+
+- **Decision:** At each start the app may refresh a device-selected place, but only when the permission is already
+  given **and location is switched on** (`LocationSource.quiet`). With location off it reads nothing.
+- **Reason:** Asking Android's fused provider for a fix while location is off makes Google Play services show its own
+  "turn on location" dialog over whatever the person is doing (reading, or looking at the prayer times). D-020's
+  "no location permission at launch" now covers that dialog too. The explicit paths (*Use my location*, the map's
+  button) already check first and say what to do in the app's own words.
