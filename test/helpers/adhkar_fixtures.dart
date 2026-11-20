@@ -146,6 +146,9 @@ class FakeReminderScheduler implements ReminderScheduler {
   int permissionRequests = 0;
   final Map<int, ({int minutes, String title, String body, String payload})>
   scheduled = {};
+
+  /// The weekday of each reminder scheduled for one day of the week.
+  final Map<int, int> weekdays = {};
   final StreamController<String> tapController = StreamController.broadcast();
 
   final String? launch;
@@ -170,7 +173,13 @@ class FakeReminderScheduler implements ReminderScheduler {
     required String body,
     required String channelName,
     required String payload,
+    int? weekday,
   }) async {
+    if (weekday == null) {
+      weekdays.remove(id);
+    } else {
+      weekdays[id] = weekday;
+    }
     scheduled[id] = (
       minutes: minutes,
       title: title,

@@ -34,6 +34,7 @@ class _NoopReminderScheduler implements ReminderScheduler {
     required String body,
     required String channelName,
     required String payload,
+    int? weekday,
   }) async {}
 
   @override

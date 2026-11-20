@@ -16,6 +16,7 @@ import '../features/adhkar/presentation/adhkar_widget_sync_scope.dart';
 import '../features/prayer/application/prayer_provider.dart';
 import '../features/prayer/presentation/prayer_widget_sync_scope.dart';
 import '../features/adhkar/application/reminders_provider.dart';
+import '../features/adhkar/application/weekly_reminders_provider.dart';
 import '../features/settings/application/settings_provider.dart';
 import '../features/settings/domain/app_settings.dart';
 import '../l10n/generated/app_localizations.dart';
@@ -46,12 +47,19 @@ class QuranApp extends ConsumerWidget {
     // from the first frame, and opens the list of a tapped reminder.
     ref
       ..listen(remindersProvider, (_, _) {})
+      ..listen(weeklyRemindersProvider, (_, _) {})
       ..listen(prayerProvider, (_, _) {})
       ..listen(reminderTapsProvider, (_, next) {
         final tap = next.value;
         if (tap != null) {
           ref.read(opensOnReaderProvider.notifier).openedElsewhere();
-          unawaited(openReminder(ref.read(routerProvider), tap.payload));
+          unawaited(
+            openReminder(
+              ref.read(routerProvider),
+              tap.payload,
+              openSurah: ref.read(reminderSurahOpenerProvider),
+            ),
+          );
         }
       })
       ..listen(adhanTapsProvider, (_, next) {
@@ -60,7 +68,13 @@ class QuranApp extends ConsumerWidget {
           ref.read(opensOnReaderProvider.notifier).openedElsewhere();
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (context.mounted) {
-              unawaited(openReminder(ref.read(routerProvider), tap.payload));
+              unawaited(
+                openReminder(
+                  ref.read(routerProvider),
+                  tap.payload,
+                  openSurah: ref.read(reminderSurahOpenerProvider),
+                ),
+              );
             }
           });
           WidgetsBinding.instance.ensureVisualUpdate();

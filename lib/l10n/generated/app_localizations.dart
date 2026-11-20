@@ -979,6 +979,18 @@ abstract class AppLocalizations {
   /// **'{count} lists'**
   String adhkarListCount(String count);
 
+  /// No description provided for @weeklyReminders.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly reminders'**
+  String get weeklyReminders;
+
+  /// No description provided for @weeklyReminderWhen.
+  ///
+  /// In en, this message translates to:
+  /// **'Every {day} · {time}'**
+  String weeklyReminderWhen(String day, String time);
+
   /// No description provided for @adhkarPrayerSection.
   ///
   /// In en, this message translates to:

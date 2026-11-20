@@ -345,14 +345,28 @@ void main() {
       await pumpAdhkarApp(tester, catalog: fixtureCatalogWithQuran());
       await tapVisible(tester, find.text('ابدأ'));
       await tester.pumpAndSettle();
-      final words = tester.widget<Text>(
-        find.textContaining('أَعُوذُ بِاللَّهِ مِنَ الشَّيْطَانِ الرَّجِيمِ'),
-      );
-      expect(words.data, startsWith(Recitation.istiadha));
+      // The isti'adha on a line of its own, centred; the ayah under it,
+      // stretched to the full line as in the Mushaf.
+      final formula = tester.widget<Text>(find.text(Recitation.istiadha));
+      expect(formula.textAlign, TextAlign.center);
       final quran = ProviderScope.containerOf(
         tester.element(find.byType(DhikrCard)),
       ).read(quranTextProvider).value!;
-      expect(words.data, contains(quran.uthmani(const AyahRef(2, 255))));
+      final ayah = tester.widget<Text>(
+        find.textContaining(quran.uthmani(const AyahRef(2, 255))),
+      );
+      expect(ayah.textAlign, TextAlign.justify);
+      expect(ayah.data, startsWith('﴿'));
+      expect(
+        tester.getTopLeft(find.text(Recitation.istiadha)).dy,
+        lessThan(
+          tester
+              .getTopLeft(
+                find.textContaining(quran.uthmani(const AyahRef(2, 255))),
+              )
+              .dy,
+        ),
+      );
 
       await tester.tap(find.text('الدليل').first);
       await tester.pumpAndSettle();

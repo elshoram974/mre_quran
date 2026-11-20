@@ -73,6 +73,24 @@ class AdhkarProgress {
     (sum, entry) => sum + countOf(collection, entry).clamp(0, entry.repeat),
   );
 
+  /// The list the person was last in the middle of: started today, not
+  /// finished, and counted most recently. Null when none is. A list counted
+  /// outside a prayer's window has no "session", but it is still where the
+  /// person stopped.
+  AdhkarCollection? lastInProgress(Iterable<AdhkarCollection> collections) {
+    AdhkarCollection? best;
+    var bestAt = -1;
+    for (final collection in collections) {
+      if (doneRepeats(collection) == 0 || isComplete(collection)) continue;
+      final at = touched[collection.id] ?? 0;
+      if (at > bestAt) {
+        best = collection;
+        bestAt = at;
+      }
+    }
+    return best;
+  }
+
   /// Whether every entry of [collection] is finished.
   bool isComplete(AdhkarCollection collection) =>
       collection.entries.isNotEmpty &&

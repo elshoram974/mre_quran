@@ -494,6 +494,14 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String get weeklyReminders => 'تذكيرات أسبوعية';
+
+  @override
+  String weeklyReminderWhen(String day, String time) {
+    return 'كل $day · $time';
+  }
+
+  @override
   String get adhkarPrayerSection => 'بعد كل صلاة';
 
   @override

@@ -203,19 +203,36 @@ class _DhikrWords extends ConsumerWidget {
             label: Text(context.l10n.retry),
           ),
           // The words are Arabic whatever the interface language is.
-          data: (text) => Directionality(
-            textDirection: TextDirection.rtl,
-            child: Text(
-              layoutAdhkarText(text),
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: AppTokens.quranFontFamily,
-                fontSize: 24,
-                height: 2,
-                color: scheme.onSurface.withValues(alpha: done ? 0.7 : 1),
-              ),
-            ),
-          ),
+          data: (text) {
+            final style = TextStyle(
+              fontFamily: AppTokens.quranFontFamily,
+              fontSize: 24,
+              height: 2,
+              color: scheme.onSurface.withValues(alpha: done ? 0.7 : 1),
+            );
+            final laidOut = layoutAdhkarText(text);
+            return Directionality(
+              textDirection: TextDirection.rtl,
+              child: dhikr.quran == null
+                  ? Text(laidOut, textAlign: TextAlign.center, style: style)
+                  // The Quran is laid out as the Mushaf's text is: its ayahs
+                  // stretched to the full line, the isti'adha and the basmala
+                  // each centred on a line of their own.
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        for (final line in laidOut.split('\n'))
+                          Text(
+                            line,
+                            textAlign: line.startsWith('﴿')
+                                ? TextAlign.justify
+                                : TextAlign.center,
+                            style: style,
+                          ),
+                      ],
+                    ),
+            );
+          },
         );
   }
 }

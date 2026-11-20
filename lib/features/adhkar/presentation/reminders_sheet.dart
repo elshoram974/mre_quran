@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart' show DateFormat;
 
 import '../../../app/router.dart';
 
@@ -15,6 +16,8 @@ import '../../../core/widgets/app_time_picker.dart';
 import '../application/adhkar_providers.dart';
 import '../../prayer/application/prayer_provider.dart';
 import '../application/reminders_provider.dart';
+import '../application/weekly_reminders_provider.dart';
+import '../domain/weekly_reminder.dart';
 import '../../prayer/domain/prayer_alerts.dart';
 import '../../settings/application/digits_provider.dart';
 import '../domain/adhkar_collection.dart';
@@ -78,6 +81,30 @@ class _RemindersBodyState extends ConsumerState<_RemindersBody> {
     );
   }
 
+  Future<void> _toggleWeekly(WeeklyReminder reminder, bool enabled) async {
+    final result = await ref
+        .read(weeklyRemindersProvider.notifier)
+        .setEnabled(reminder, enabled);
+    if (!mounted) return;
+    setState(
+      () => _notice = result == ReminderToggleResult.permissionDenied
+          ? _Notice.notifications
+          : null,
+    );
+  }
+
+  Future<void> _pickWeeklyTime(WeeklyReminder reminder, int current) async {
+    final picked = await AppTimePicker.show(
+      context: context,
+      initialMinutes: current,
+    );
+    if (picked != null) {
+      await ref
+          .read(weeklyRemindersProvider.notifier)
+          .setTime(reminder, picked);
+    }
+  }
+
   Future<void> _pickTime(AdhkarCollection collection, int current) async {
     final picked = await AppTimePicker.show(
       context: context,
@@ -101,6 +128,13 @@ class _RemindersBodyState extends ConsumerState<_RemindersBody> {
     final prayer =
         ref.watch(prayerProvider).value ??
         const PrayerState(settings: PrayerSettings());
+    final weeklySettings =
+        ref.watch(weeklyRemindersProvider).value ??
+        const <String, ReminderSetting>{};
+    final weekly =
+        ref.watch(weeklyReminderCatalogProvider).value ??
+        const <WeeklyReminder>[];
+    final locale = Localizations.localeOf(context).toString();
     final collections = [
       for (final collection
           in catalog?.collections ?? const <AdhkarCollection>[])
@@ -146,6 +180,45 @@ class _RemindersBodyState extends ConsumerState<_RemindersBody> {
                 onTap: () =>
                     _pickTime(collection, settings[collection.id]!.minutes),
               ),
+          ],
+          if (weekly.isNotEmpty) ...[
+            const Divider(height: 32),
+            Text(l10n.weeklyReminders, style: theme.textTheme.titleMedium),
+            const SizedBox(height: 4),
+            for (final reminder in weekly)
+              if (weeklySettings[reminder.id] case final setting?) ...[
+                AppSwitchTile(
+                  value: setting.enabled,
+                  onChanged: (value) => _toggleWeekly(reminder, value),
+                  title: reminder.title(language),
+                  subtitle: l10n.weeklyReminderWhen(
+                    // 1 January 2024 was a Monday.
+                    DateFormat.EEEE(locale)
+                        .format(DateTime(2024, 1, reminder.weekday)),
+                    formatReminderTime(
+                      context,
+                      setting.minutes,
+                      formatDisplayDigits,
+                    ),
+                  ),
+                  icon: Icons.event_repeat_outlined,
+                ),
+                if (setting.enabled)
+                  ListTile(
+                    title: Text(l10n.adhkarReminderTime),
+                    trailing: Text(
+                      formatReminderTime(
+                        context,
+                        setting.minutes,
+                        formatDisplayDigits,
+                      ),
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: theme.colorScheme.primary,
+                      ),
+                    ),
+                    onTap: () => _pickWeeklyTime(reminder, setting.minutes),
+                  ),
+              ],
           ],
           const Divider(height: 32),
           Text(l10n.adhkarPrayerSection, style: theme.textTheme.titleMedium),

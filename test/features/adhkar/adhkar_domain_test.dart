@@ -36,6 +36,33 @@ void main() {
       expect(progress.doneRepeats(morning), morning.totalRepeats);
     });
 
+    test('the list last stopped in is the one counted most recently, not '
+        'finished', () {
+      final all = catalog.collections;
+      var progress = const AdhkarProgress(day: '2026-10-08');
+      expect(progress.lastInProgress(all), isNull);
+      progress = progress.increment(morning, morning.entries.first, now: _t);
+      expect(progress.lastInProgress(all), morning);
+      // Counted later, so it is where the person is now.
+      progress = progress.increment(
+        evening,
+        evening.entries.first,
+        now: _t.add(const Duration(minutes: 5)),
+      );
+      expect(progress.lastInProgress(all), evening);
+      // A list that is finished is not one to go back to.
+      for (final entry in evening.entries) {
+        for (var i = 0; i < entry.repeat; i++) {
+          progress = progress.increment(
+            evening,
+            entry,
+            now: _t.add(const Duration(minutes: 6)),
+          );
+        }
+      }
+      expect(progress.lastInProgress(all), morning);
+    });
+
     test('undo takes one back and never goes below zero', () {
       final entry = morning.entries[1];
       var progress = const AdhkarProgress(day: '2026-10-08')

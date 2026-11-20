@@ -154,7 +154,13 @@ final routerProvider = Provider<GoRouter>((ref) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!ref.mounted) return;
       ref.read(opensOnReaderProvider.notifier).openedElsewhere();
-      unawaited(openReminder(router, launch));
+      unawaited(
+        openReminder(
+          router,
+          launch,
+          openSurah: ref.read(reminderSurahOpenerProvider),
+        ),
+      );
     });
   }
   ref.onDispose(() {

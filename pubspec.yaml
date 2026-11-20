@@ -93,6 +93,7 @@ flutter:
     - assets/adhkar/hisn.ar.json
     - assets/adhkar/hisn_manifest.json
     - assets/adhan/voices.json
+    - assets/reminders/weekly.json
     # The adhan's opening as iOS notification sounds; iOS only.
     - path: assets/adhan/ios/adhan_regular.caf
       platforms: [ios]

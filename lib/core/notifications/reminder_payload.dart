@@ -14,6 +14,18 @@ abstract final class ReminderPayload {
   /// Payload that opens the adhkar collection [collectionId].
   static String forCollection(String collectionId) => '$_prefix$collectionId';
 
+  static const String _surahPrefix = 'surah:';
+
+  /// Payload that opens the Mushaf at the beginning of surah [surah].
+  static String forSurah(int surah) => '$_surahPrefix$surah';
+
+  /// The surah (1 to 114) inside [payload], or null for any other payload.
+  static int? surah(String payload) {
+    if (!payload.startsWith(_surahPrefix)) return null;
+    final number = int.tryParse(payload.substring(_surahPrefix.length));
+    return number != null && number >= 1 && number <= 114 ? number : null;
+  }
+
   /// The collection id inside [payload], or null for a foreign payload.
   static String? collectionId(String payload) {
     if (!payload.startsWith(_prefix) || payload.length == _prefix.length) {

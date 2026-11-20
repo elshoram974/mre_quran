@@ -45,8 +45,9 @@ abstract interface class ReminderScheduler {
   /// person took.
   Future<bool> requestExact();
 
-  /// Fires a notification every day at [minutes] after midnight, local time.
-  /// Replaces any reminder with the same [id].
+  /// Fires a notification every day at [minutes] after midnight, local time;
+  /// with [weekday] (1 Monday to 7 Sunday, as `DateTime.weekday`), once a week
+  /// on that day. Replaces any reminder with the same [id].
   Future<void> schedule({
     required int id,
     required int minutes,
@@ -54,6 +55,7 @@ abstract interface class ReminderScheduler {
     required String body,
     required String channelName,
     required String payload,
+    int? weekday,
   });
 
   /// Shows a notification once, at the local time [at]. Replaces any reminder
@@ -191,6 +193,7 @@ class LocalReminderScheduler implements ReminderScheduler {
     required String body,
     required String channelName,
     required String payload,
+    int? weekday,
   }) async {
     await _ensureZone();
     final now = tz.TZDateTime.now(tz.local);
@@ -203,6 +206,12 @@ class LocalReminderScheduler implements ReminderScheduler {
       minutes % 60,
     );
     if (!first.isAfter(now)) first = first.add(const Duration(days: 1));
+    if (weekday != null) {
+      // The next day that falls on [weekday], on or after the first time.
+      while (first.weekday != weekday) {
+        first = first.add(const Duration(days: 1));
+      }
+    }
     await _plugin.zonedSchedule(
       id: id,
       title: title,
@@ -216,7 +225,9 @@ class LocalReminderScheduler implements ReminderScheduler {
         iOS: const DarwinNotificationDetails(),
       ),
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-      matchDateTimeComponents: DateTimeComponents.time,
+      matchDateTimeComponents: weekday == null
+          ? DateTimeComponents.time
+          : DateTimeComponents.dayOfWeekAndTime,
       payload: payload,
     );
   }

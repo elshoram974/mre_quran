@@ -36,20 +36,42 @@ void main() {
 
   test('a mid-surah ayah is wrapped and has no basmala', () {
     final result = composePassage(_passage([(2, 255, 255)]), text);
-    expect(result.startsWith('﴿'), isTrue);
+    // An ayah from inside a surah: the isti'adha, then the ayah.
+    expect(result.startsWith(Recitation.istiadha), isTrue);
     expect(result.endsWith('﴾'), isTrue);
+    expect(result, contains('\n﴿'));
     expect(result, isNot(contains(text.basmala)));
     expect(result, contains(text.uthmani(const AyahRef(2, 255))));
   });
 
-  test('the isti\'adha comes first, once, only when asked', () {
-    final with_ = composePassage(
-      _passage([(2, 255, 255)], istiadha: true),
-      text,
-    );
-    expect(with_.startsWith(Recitation.istiadha), isTrue);
-    final without = composePassage(_passage([(2, 255, 255)]), text);
-    expect(without, isNot(contains(Recitation.istiadha)));
+  test('an ayah from inside a surah always gets the isti\'adha, once', () {
+    for (final asked in [true, false]) {
+      final result = composePassage(
+        _passage([(2, 255, 255)], istiadha: asked),
+        text,
+      );
+      expect(result.startsWith(Recitation.istiadha), isTrue);
+      expect(Recitation.istiadha.allMatches(result), hasLength(1));
+    }
+  });
+
+  test('a surah from its beginning gets the basmala, not the isti\'adha, '
+      'unless asked', () {
+    final plain = composePassage(_passage([(112, 1, 4)]), text);
+    expect(plain.startsWith(text.basmala), isTrue);
+    expect(plain, isNot(contains(Recitation.istiadha)));
+    final asked = composePassage(_passage([(112, 1, 4)], istiadha: true), text);
+    expect(asked.startsWith(Recitation.istiadha), isTrue);
+    expect(asked, contains(text.basmala));
+  });
+
+  test('the end of a surah is an ayah: it gets the isti\'adha', () {
+    final result = composePassage(_passage([(18, 1, 10)]), text);
+    // Al-Kahf 1 opens its surah: basmala.
+    expect(result.startsWith(text.basmala), isTrue);
+    final ayat = composePassage(_passage([(18, 101, 110)]), text);
+    expect(ayat.startsWith(Recitation.istiadha), isTrue);
+    expect(ayat, isNot(contains(text.basmala)));
   });
 
   test('a surah opening gets its basmala, each time', () {

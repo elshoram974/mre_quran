@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "reminders": [
+    {
+      "id": "friday_kahf",
+      "weekday": 5,
+      "time": "09:00",
+      "title": {
+        "ar": "سورة الكهف",
+        "en": "Surat Al-Kahf"
+      },
+      "body": {
+        "ar": "اليوم الجمعة. لا تنسَ قراءة سورة الكهف.",
+        "en": "It is Friday. Do not forget to read Surat Al-Kahf."
+      },
+      "surah": 18
+    }
+  ]
+}

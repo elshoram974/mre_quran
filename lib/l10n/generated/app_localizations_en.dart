@@ -502,6 +502,14 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get weeklyReminders => 'Weekly reminders';
+
+  @override
+  String weeklyReminderWhen(String day, String time) {
+    return 'Every $day · $time';
+  }
+
+  @override
   String get adhkarPrayerSection => 'After each prayer';
 
   @override

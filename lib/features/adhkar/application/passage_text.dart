@@ -9,12 +9,19 @@ import '../domain/quran_passage.dart';
 /// The words of a Quran dhikr, read from the verified Quran text.
 ///
 /// Nothing is typed here. The recitation is, in order: the isti'adha when the
-/// passage starts one, then for each span the basmala (only when the span opens
+/// passage starts one (always when it begins inside a surah, as an ayah is
+/// recited; and when the data asks for it before a surah), then for each span the basmala (only when the span opens
 /// a surah that has one: not Al-Fatiha, whose basmala is its first ayah, and
 /// not At-Tawba) and the ayahs between ﴿ ﴾. Each is on its own line: the
 /// formulas above, the ayahs below.
 String composePassage(QuranPassage passage, QuranText text) {
-  final parts = <String>[if (passage.istiadha) Recitation.istiadha];
+  // An ayah from inside a surah is recited after the isti'adha; a surah from its
+  // beginning after its basmala.
+  final insideSurah =
+      passage.spans.isNotEmpty && !passage.spans.first.opensSurah;
+  final parts = <String>[
+    if (passage.istiadha || insideSurah) Recitation.istiadha,
+  ];
   for (final span in passage.spans) {
     if (span.opensSurah && text.hasBasmala(span.surah)) {
       parts.add(text.basmala);

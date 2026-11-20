@@ -85,14 +85,19 @@ class _AdhkarWidgetSyncScopeState extends ConsumerState<AdhkarWidgetSyncScope> {
       return AdhkarWidgetSync.update(null);
     }
     final settled = progress.settle(catalog.collections, now);
-    final active = ref.read(activeSessionProvider);
+    // Where the person stopped comes first: the prayer list being said, else
+    // the list they last counted in and did not finish; only then the one
+    // suggested for the hour. Its progress is what the widget's bar shows.
+    final resuming =
+        ref.read(activeSessionProvider) ??
+        settled.lastInProgress(catalog.collections);
     final collection =
-        active ?? catalog.suggestedAt(now.hour * 60 + now.minute);
+        resuming ?? catalog.suggestedAt(now.hour * 60 + now.minute);
     if (collection == null) return AdhkarWidgetSync.update(null);
     final l10n = context.l10n;
     return AdhkarWidgetSync.update(
       AdhkarWidgetData(
-        label: active == null ? l10n.adhkarSuggested : l10n.adhkarResume,
+        label: resuming == null ? l10n.adhkarSuggested : l10n.adhkarResume,
         title: collection.title(settings.localeCode),
         done: settled.doneRepeats(collection),
         total: collection.totalRepeats,

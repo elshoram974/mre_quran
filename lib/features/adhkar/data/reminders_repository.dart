@@ -15,11 +15,12 @@ abstract interface class RemindersRepository {
 
 /// SharedPreferences-backed [RemindersRepository].
 class LocalRemindersRepository implements RemindersRepository {
-  /// Creates a repository over [preferences].
-  LocalRemindersRepository(this._preferences);
+  /// Creates a repository over [preferences], keeping its choices under
+  /// [key].
+  LocalRemindersRepository(this._preferences, {this._key = 'adhkar.reminders'});
 
   final SharedPreferencesAsync _preferences;
-  static const _key = 'adhkar.reminders';
+  final String _key;
 
   @override
   Future<Map<String, ReminderSetting>> load() async {

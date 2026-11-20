@@ -148,6 +148,8 @@
   "adhkarFavoriteAdd": "أضِف إلى المفضلة",
   "adhkarFavoriteRemove": "أزِل من المفضلة",
   "adhkarListCount": "{count} قائمة",
+  "weeklyReminders": "تذكيرات أسبوعية",
+  "weeklyReminderWhen": "كل {day} · {time}",
   "adhkarPrayerSection": "بعد كل صلاة",
   "adhkarPrayerSwitch": "ذكّرني بعد كل صلاة",
   "adhkarPrayerSwitchHint": "تُحسب مواقيت الصلاة على هاتفك من موقعك التقريبي. لا يُرسَل شيء إلى أي جهة.",
