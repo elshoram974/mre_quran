@@ -41,8 +41,8 @@ final weeklyRemindersRepositoryProvider = Provider<RemindersRepository>(
   ),
 );
 
-/// The choice for every weekly reminder, by id: off until the person turns it
-/// on, at its default time.
+/// The choice for every weekly reminder, by id: what the file says until the
+/// person chooses, at its default time.
 final weeklyRemindersProvider =
     AsyncNotifierProvider<
       WeeklyRemindersNotifier,
@@ -68,7 +68,10 @@ class WeeklyRemindersNotifier
       for (final reminder in catalog)
         reminder.id:
             saved[reminder.id] ??
-            ReminderSetting(enabled: false, minutes: reminder.minutes),
+            ReminderSetting(
+              enabled: reminder.enabledByDefault,
+              minutes: reminder.minutes,
+            ),
     };
     for (final reminder in catalog) {
       if (settings[reminder.id]!.enabled) {

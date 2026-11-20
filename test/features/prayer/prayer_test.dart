@@ -388,6 +388,92 @@ void main() {
       },
     );
 
+    group('the alerts on the first place', () {
+      test('the first place turns the five alerts on and asks for '
+          'notifications then, once', () async {
+        final scheduler = FakeReminderScheduler();
+        final c = container(
+          scheduler: scheduler,
+          location: FakeLocationSource(requestResult: _cairo),
+        );
+        await c.read(prayerProvider.future);
+        expect(scheduler.permissionRequests, 0);
+        await c.read(prayerProvider.notifier).locate();
+        final state = c.read(prayerProvider).value!;
+        expect(state.settings.alerts, DailyPrayer.values.toSet());
+        expect(scheduler.permissionRequests, 1);
+        // They are planned for the place that was just given.
+        expect(scheduler.once, isNotEmpty);
+      });
+
+      test('a place chosen on the map does the same', () async {
+        final scheduler = FakeReminderScheduler();
+        final c = container(
+          scheduler: scheduler,
+          location: FakeLocationSource(),
+        );
+        await c.read(prayerProvider.future);
+        await c
+            .read(prayerProvider.notifier)
+            .setPlace(PrayerPlace(21.42, 39.83));
+        expect(
+          c.read(prayerProvider).value!.settings.alerts,
+          DailyPrayer.values.toSet(),
+        );
+        expect(scheduler.permissionRequests, 1);
+      });
+
+      test('if notifications are refused the place still saves, the alerts '
+          'stay off, and nothing asks again', () async {
+        final scheduler = FakeReminderScheduler(allow: false);
+        final c = container(
+          scheduler: scheduler,
+          location: FakeLocationSource(),
+        );
+        await c.read(prayerProvider.future);
+        await c.read(prayerProvider.notifier).setPlace(_cairo);
+        final state = c.read(prayerProvider).value!;
+        expect(state.place, _cairo);
+        expect(state.settings.alerts, isEmpty);
+        expect(scheduler.permissionRequests, 1);
+        await c
+            .read(prayerProvider.notifier)
+            .setPlace(PrayerPlace(21.42, 39.83));
+        expect(scheduler.permissionRequests, 1);
+      });
+
+      test('a person who turned them off keeps them off when the place '
+          'changes', () async {
+        final scheduler = FakeReminderScheduler();
+        final c = container(
+          scheduler: scheduler,
+          location: FakeLocationSource(),
+        );
+        await c.read(prayerProvider.future);
+        final notifier = c.read(prayerProvider.notifier);
+        await notifier.setPlace(_cairo);
+        await notifier.setAllAlerts(false);
+        await notifier.setPlace(PrayerPlace(21.42, 39.83));
+        expect(c.read(prayerProvider).value!.settings.alerts, isEmpty);
+      });
+
+      test('a place saved before is left alone: no alerts appear', () async {
+        final scheduler = FakeReminderScheduler();
+        final repo = MemoryPrayerRepository()..place = _cairo;
+        final c = container(
+          scheduler: scheduler,
+          location: FakeLocationSource(),
+          repository: repo,
+        );
+        await c.read(prayerProvider.future);
+        await c
+            .read(prayerProvider.notifier)
+            .setPlace(PrayerPlace(21.42, 39.83));
+        expect(c.read(prayerProvider).value!.settings.alerts, isEmpty);
+        expect(scheduler.permissionRequests, 0);
+      });
+    });
+
     test(
       'a map-selected place saves without requesting device location',
       () async {

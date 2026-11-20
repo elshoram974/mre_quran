@@ -459,3 +459,16 @@
 - **How:** `PinchZoom` magnifies nothing. While the fingers move it hands the size they have reached, in steps of
   0.02, to its owner, which sets its text at that size at once; on release it hands the final size to keep, once. A
   pinch counts from the size it began at, so an owner that shows the size as it changes does not compound it.
+
+## D-049: The alerts and the Friday reminder are on until the person turns them off
+
+- **Decision:** The first time a place is given (the phone's location, or a point on the map), the alert at each of
+  the five prayers comes on, and the notification permission is asked for then: the person's own tap set the
+  place. If it is refused the place still saves and the alerts stay off, and nothing asks again. It happens once: a
+  place set before, or alerts already chosen, leave it alone, and a person who turned them off keeps them off when
+  the place changes. Nothing is asked at launch.
+- **Weekly reminders** (`assets/reminders/weekly.json`) take `"enabled": true` to be on until the person turns them
+  off (the Friday Surat Al-Kahf reminder does); without it they are off until turned on. A reminder that is on is
+  scheduled when the app starts, without asking. The reminders sheet asks once when it opens with a reminder on, and,
+  if the phone refuses notifications, says so in red at the top: a switch that is on must not promise what cannot
+  happen.

@@ -42,6 +42,11 @@ void main() {
       expect(kahf.body('ar'), isNotEmpty);
     });
 
+    test('the Friday reminder is on until the person turns it off', () {
+      final kahf = reminders.singleWhere((item) => item.id == 'friday_kahf');
+      expect(kahf.enabledByDefault, isTrue);
+    });
+
     test('every reminder has a time, texts in both languages and a day', () {
       for (final reminder in reminders) {
         expect(reminder.minutes, inInclusiveRange(0, 1439));
@@ -121,6 +126,31 @@ void main() {
   });
 
   group('the payload', () {
+    test('a reminder is off by default unless the file says "enabled"', () {
+      Map<String, Object?> entry(Object? enabled) => {
+        'id': 'a',
+        'weekday': 5,
+        'time': '09:00',
+        'title': {'ar': 'x'},
+        'body': {'ar': 'y'},
+        'enabled': ?enabled,
+      };
+      expect(
+        WeeklyReminder.tryFromJson(entry(null))!.enabledByDefault,
+        isFalse,
+      );
+      expect(WeeklyReminder.tryFromJson(entry(true))!.enabledByDefault, isTrue);
+      expect(
+        WeeklyReminder.tryFromJson(entry(false))!.enabledByDefault,
+        isFalse,
+      );
+      // Only a real yes counts.
+      expect(
+        WeeklyReminder.tryFromJson(entry('yes'))!.enabledByDefault,
+        isFalse,
+      );
+    });
+
     test('names a surah, and only a real one', () {
       expect(ReminderPayload.surah(ReminderPayload.forSurah(18)), 18);
       expect(ReminderPayload.surah('surah:0'), isNull);
@@ -167,6 +197,52 @@ void main() {
         );
         expect(scheduler.permissionRequests, 0);
         expect(scheduler.scheduled, isEmpty);
+      },
+    );
+
+    test(
+      'one the file turns on is on, scheduled, and asks for nothing',
+      () async {
+        scheduler = FakeReminderScheduler();
+        repository = MemoryRemindersRepository();
+        const onByDefault = WeeklyReminder(
+          id: 'friday_kahf',
+          weekday: DateTime.friday,
+          minutes: 9 * 60,
+          titles: {'ar': 'سورة الكهف'},
+          bodies: {'ar': 'اليوم الجمعة.'},
+          surah: 18,
+          enabledByDefault: true,
+        );
+        final c = ProviderContainer(
+          overrides: [
+            weeklyReminderCatalogProvider.overrideWith(
+              (ref) async => [onByDefault],
+            ),
+            weeklyRemindersRepositoryProvider.overrideWithValue(repository),
+            reminderSchedulerProvider.overrideWithValue(scheduler),
+            settingsRepositoryProvider.overrideWithValue(
+              MemorySettingsRepository(),
+            ),
+          ],
+        );
+        addTearDown(c.dispose);
+        final settings = await c.read(weeklyRemindersProvider.future);
+        await Future<void>.delayed(Duration.zero);
+        expect(settings['friday_kahf']!.enabled, isTrue);
+        final id = ReminderPayload.notificationId('weekly:friday_kahf');
+        expect(scheduler.weekdays[id], DateTime.friday);
+        // Starting never asks for a permission.
+        expect(scheduler.permissionRequests, 0);
+        // The person's own choice then wins over the file's.
+        await c
+            .read(weeklyRemindersProvider.notifier)
+            .setEnabled(onByDefault, false);
+        expect(
+          c.read(weeklyRemindersProvider).value!['friday_kahf']!.enabled,
+          isFalse,
+        );
+        expect(scheduler.scheduled.containsKey(id), isFalse);
       },
     );
 

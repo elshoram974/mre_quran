@@ -10,7 +10,9 @@ import 'package:mre_quran/core/time/ticking_clock.dart';
 import 'package:mre_quran/features/adhkar/application/adhkar_providers.dart';
 import 'package:mre_quran/features/adhkar/application/favorites_provider.dart';
 import 'package:mre_quran/features/adhkar/application/reminders_provider.dart';
+import 'package:mre_quran/features/adhkar/application/weekly_reminders_provider.dart';
 import 'package:mre_quran/features/adhkar/domain/adhkar_collection.dart';
+import 'package:mre_quran/features/adhkar/domain/weekly_reminder.dart';
 import 'package:mre_quran/features/adhkar/presentation/adhkar_group_page.dart';
 import 'package:mre_quran/features/adhkar/presentation/adhkar_search_page.dart';
 import 'package:mre_quran/features/adhkar/presentation/adhkar_session_page.dart';
@@ -39,6 +41,7 @@ Future<FakeReminderScheduler> pumpAdhkarApp(
   MemoryFavoritesRepository? favorites,
   FakeLocationSource? location,
   double adhkarFontScale = 1,
+  List<WeeklyReminder>? weeklyReminders,
 }) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
@@ -80,6 +83,13 @@ Future<FakeReminderScheduler> pumpAdhkarApp(
         remindersRepositoryProvider.overrideWithValue(
           MemoryRemindersRepository(),
         ),
+        weeklyRemindersRepositoryProvider.overrideWithValue(
+          MemoryRemindersRepository(),
+        ),
+        if (weeklyReminders != null)
+          weeklyReminderCatalogProvider.overrideWith(
+            (ref) async => weeklyReminders,
+          ),
         reminderSchedulerProvider.overrideWithValue(scheduler),
         adhkarFavoritesRepositoryProvider.overrideWithValue(
           favorites ?? MemoryFavoritesRepository(),

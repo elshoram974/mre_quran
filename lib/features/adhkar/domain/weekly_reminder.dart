@@ -15,6 +15,7 @@ class WeeklyReminder {
     required this.titles,
     required this.bodies,
     required this.surah,
+    this.enabledByDefault = false,
   });
 
   /// Reads one entry of the JSON file. Returns null for anything unreadable,
@@ -44,6 +45,7 @@ class WeeklyReminder {
       titles: titles,
       bodies: bodies,
       surah: surah is int && surah >= 1 && surah <= 114 ? surah : null,
+      enabledByDefault: json['enabled'] == true,
     );
   }
 
@@ -74,6 +76,10 @@ class WeeklyReminder {
 
   /// The surah a tap opens the Mushaf at, if any.
   final int? surah;
+
+  /// Whether it is on until the person turns it off (`"enabled": true` in the
+  /// file); off until they turn it on otherwise.
+  final bool enabledByDefault;
 
   /// The title in [language], else Arabic, else any.
   String title(String language) => _pick(titles, language);

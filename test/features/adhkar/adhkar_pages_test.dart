@@ -9,6 +9,7 @@ import 'package:mre_quran/features/prayer/domain/prayer_times.dart';
 import 'package:mre_quran/features/quran_index/domain/quran_metadata.dart';
 import 'package:mre_quran/features/quran_text/application/quran_text_providers.dart';
 import 'package:mre_quran/features/adhkar/domain/quran_passage.dart';
+import 'package:mre_quran/features/adhkar/domain/weekly_reminder.dart';
 import 'package:mre_quran/features/adhkar/presentation/adhkar_group_page.dart';
 import 'package:mre_quran/features/adhkar/presentation/collection_card.dart';
 import 'package:mre_quran/features/adhkar/presentation/dhikr_card.dart';
@@ -20,6 +21,17 @@ import 'package:mre_quran/features/adhkar/presentation/duas_page.dart';
 
 import '../../helpers/adhkar_app.dart';
 import '../../helpers/adhkar_fixtures.dart';
+
+/// The Friday reminder, on from the start, as the app's file makes it.
+const _kahfOn = WeeklyReminder(
+  id: 'friday_kahf',
+  weekday: DateTime.friday,
+  minutes: 9 * 60,
+  titles: {'ar': 'سورة الكهف', 'en': 'Surat Al-Kahf'},
+  bodies: {'ar': 'اليوم الجمعة.', 'en': 'It is Friday.'},
+  surah: 18,
+  enabledByDefault: true,
+);
 
 void main() {
   group('home', () {
@@ -381,6 +393,37 @@ void main() {
       // The sheet opens on the dhikr the search found.
       expect(find.text('الخطوة ٢ من ٢'), findsOneWidget);
       expect(tester.takeException(), isNull);
+    });
+  });
+
+  group('reminders that are on from the start', () {
+    testWidgets('the Friday reminder shows on; if notifications are refused '
+        'the sheet says so in red', (tester) async {
+      final scheduler = await pumpAdhkarApp(
+        tester,
+        allowNotifications: false,
+        weeklyReminders: [_kahfOn],
+      );
+      await tapVisible(tester, find.text('التذكيرات'));
+      await tester.pumpAndSettle();
+      expect(find.text('سورة الكهف'), findsOneWidget);
+      expect(scheduler.permissionRequests, 1);
+      final notice = find.textContaining('الإشعارات متوقفة');
+      expect(notice, findsOneWidget);
+      expect(
+        tester.widget<Text>(notice).style?.color,
+        AppTheme.light.colorScheme.error,
+      );
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('when notifications are allowed there is nothing to warn '
+        'about', (tester) async {
+      await pumpAdhkarApp(tester, weeklyReminders: [_kahfOn]);
+      await tapVisible(tester, find.text('التذكيرات'));
+      await tester.pumpAndSettle();
+      expect(find.text('سورة الكهف'), findsOneWidget);
+      expect(find.textContaining('الإشعارات متوقفة'), findsNothing);
     });
   });
 

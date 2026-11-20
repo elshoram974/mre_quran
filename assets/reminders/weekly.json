@@ -3,6 +3,7 @@
   "reminders": [
     {
       "id": "friday_kahf",
+      "enabled": true,
       "weekday": 5,
       "time": "09:00",
       "title": {

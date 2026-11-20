@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,6 +8,7 @@ import 'package:intl/intl.dart' show DateFormat;
 import '../../../app/router.dart';
 
 import '../../../core/l10n/l10n.dart';
+import '../../../core/notifications/reminder_scheduler_provider.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/app_notice.dart';
 import '../../../core/widgets/app_directional_icon.dart';
@@ -54,6 +57,38 @@ class _RemindersBody extends ConsumerStatefulWidget {
 
 class _RemindersBodyState extends ConsumerState<_RemindersBody> {
   _Notice? _notice;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => unawaited(_checkNotifications()),
+    );
+  }
+
+  /// Some reminders are on from the start. If any is, and the phone does not
+  /// let the app notify, say so here, where the person came for them, rather
+  /// than let a switch that is on promise what cannot happen. Asking is the
+  /// person's own: they opened this sheet.
+  Future<void> _checkNotifications() async {
+    final bool anyOn;
+    try {
+      final weekly = await ref.read(weeklyRemindersProvider.future);
+      final daily = await ref.read(remindersProvider.future);
+      anyOn =
+          weekly.values.any((setting) => setting.enabled) ||
+          daily.values.any((setting) => setting.enabled);
+    } on Object {
+      // Reminders that cannot be read are not on.
+      return;
+    }
+    if (!mounted || !anyOn) return;
+    final allowed = await ref
+        .read(reminderSchedulerProvider)
+        .requestPermission();
+    if (!mounted || allowed) return;
+    setState(() => _notice = _Notice.notifications);
+  }
 
   Future<void> _toggle(AdhkarCollection collection, bool enabled) async {
     final result = await ref
@@ -152,6 +187,12 @@ class _RemindersBodyState extends ConsumerState<_RemindersBody> {
         children: [
           Text(l10n.adhkarReminders, style: theme.textTheme.titleLarge),
           const SizedBox(height: 8),
+          // Red and boxed, first: reminders that are on cannot reach the
+          // person without it.
+          if (_notice == _Notice.notifications) ...[
+            AppNotice(l10n.adhkarPermissionDenied, important: true),
+            const SizedBox(height: 8),
+          ],
           for (final collection in collections) ...[
             AppSwitchTile(
               value: settings[collection.id]!.enabled,
@@ -256,15 +297,10 @@ class _RemindersBodyState extends ConsumerState<_RemindersBody> {
               context.go(AppRoute.prayerTimes.path);
             },
           ),
-          if (_notice != null)
+          if (_notice == _Notice.location)
             Padding(
               padding: const EdgeInsets.only(top: 12),
-              child: AppNotice(
-                _notice == _Notice.location
-                    ? l10n.adhkarLocationDenied
-                    : l10n.adhkarPermissionDenied,
-                error: true,
-              ),
+              child: AppNotice(l10n.adhkarLocationDenied, error: true),
             ),
         ],
       ),

@@ -187,6 +187,7 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
     unawaited(_repository.savePlace(place));
     await _apply(current.settings.copyWith(automaticLocation: true), place);
     _nameLater(place);
+    await _offerAlerts(before: current.place);
     return PrayerResult.ok;
   }
 
@@ -204,6 +205,30 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
       place,
     );
     _nameLater(place);
+    await _offerAlerts(before: current.place);
+  }
+
+  /// The first time a place is given, the alert at each prayer comes on: with
+  /// a place there is something to alert about, and an app that says nothing
+  /// at the time of prayer has not done its work. It asks for the notification
+  /// permission then, for it is the person's own tap that set the place; if it
+  /// is refused, the alerts stay off, and can be turned on later. It happens
+  /// once: a place already set, or alerts already chosen, leave it alone.
+  Future<void> _offerAlerts({required PrayerPlace? before}) async {
+    if (before != null) return;
+    final current = state.value;
+    if (current == null ||
+        current.place == null ||
+        current.settings.alerts.isNotEmpty) {
+      return;
+    }
+    if (!await _scheduler.requestPermission()) return;
+    final latest = state.value;
+    if (latest == null || latest.settings.alerts.isNotEmpty) return;
+    await _apply(
+      latest.settings.copyWith(alerts: DailyPrayer.values.toSet()),
+      latest.place,
+    );
   }
 
   /// Reads the device location for a map preview without saving it.
