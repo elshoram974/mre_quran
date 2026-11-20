@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../core/diagnostics/app_logger.dart';
 import '../../../core/notifications/reminder_payload.dart';
 import '../../../core/notifications/reminder_scheduler.dart';
 import '../../../core/notifications/reminder_scheduler_provider.dart';
@@ -246,6 +247,7 @@ class VoicesState {
     required this.voices,
     required this.statuses,
     this.listening,
+    this.previewFailed,
   });
 
   /// The catalogue.
@@ -257,6 +259,10 @@ class VoicesState {
   /// The id being previewed, if any.
   final String? listening;
 
+  /// The id whose preview could not be played, if any: said on its card until
+  /// the person tries again.
+  final String? previewFailed;
+
   /// The status of [id].
   VoiceStatus statusOf(String id) => statuses[id] ?? const VoiceAvailable();
 
@@ -265,10 +271,15 @@ class VoicesState {
     Map<String, VoiceStatus>? statuses,
     String? listening,
     bool clearListening = false,
+    String? previewFailed,
+    bool clearPreviewFailed = false,
   }) => VoicesState(
     voices: voices,
     statuses: statuses ?? this.statuses,
     listening: clearListening ? null : (listening ?? this.listening),
+    previewFailed: clearPreviewFailed
+        ? null
+        : (previewFailed ?? this.previewFailed),
   );
 }
 
@@ -295,8 +306,17 @@ class AdhanVoicesNotifier extends AsyncNotifier<VoicesState> {
     final ended = platform.previewEnded.listen(
       (_) => _update((state) => state.copyWith(clearListening: true)),
     );
+    final failed = platform.previewFailed.listen(
+      (_) => _update(
+        (state) => state.copyWith(
+          previewFailed: state.listening,
+          clearListening: true,
+        ),
+      ),
+    );
     ref.onDispose(() {
       unawaited(ended.cancel());
+      unawaited(failed.cancel());
       for (final token in tokens.values) {
         token.cancel();
       }
@@ -338,6 +358,15 @@ class AdhanVoicesNotifier extends AsyncNotifier<VoicesState> {
               ? null
               : error.failure,
         ),
+      );
+    } on Object catch (error) {
+      // Anything else (a TLS handshake that fails, a timeout, a full disk)
+      // is a download that did not finish, and the card says so: a button
+      // that does nothing is the worst answer.
+      AppLogger.debug('Adhan voice download failed: ${error.runtimeType}');
+      _setStatus(
+        voice.id,
+        const VoiceAvailable(failure: VoiceDownloadFailure.network),
       );
     } finally {
       _tokens.remove(voice.id);
@@ -396,7 +425,9 @@ class AdhanVoicesNotifier extends AsyncNotifier<VoicesState> {
               HttpVoiceFetcher.userAgent,
             );
     }
-    _update((state) => state.copyWith(listening: voice.id));
+    _update(
+      (state) => state.copyWith(listening: voice.id, clearPreviewFailed: true),
+    );
     await _platform.preview(source);
   }
 

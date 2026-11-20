@@ -238,6 +238,50 @@ void main() {
     expect(h.store.saved, isEmpty);
   });
 
+  testWidgets('a download that breaks in an unexpected way still says so', (
+    tester,
+  ) async {
+    final h = await _pump(tester);
+    // Not a VoiceDownloadException: it used to leave the card as it was, or
+    // stuck at "downloading", and the button seemed to do nothing.
+    h.store.crashWith = TimeoutException('handshake');
+    await _reveal(tester, find.text('أذان المسجد النبوي'));
+    await tester.tap(
+      _inCard('أذان المسجد النبوي', find.textContaining('تنزيل (')),
+    );
+    await tester.pumpAndSettle();
+    expect(find.textContaining('تعذّر التنزيل'), findsOneWidget);
+    expect(find.byType(LinearProgressIndicator), findsNothing);
+    // And it can be tried again.
+    h.store.crashWith = null;
+    await tester.tap(
+      _inCard('أذان المسجد النبوي', find.textContaining('تنزيل (')),
+    );
+    await tester.pumpAndSettle();
+    expect(h.store.saved, contains('madinah'));
+    expect(find.textContaining('تعذّر التنزيل'), findsNothing);
+  });
+
+  testWidgets('a preview that cannot be played says so on its card, until it '
+      'is tried again', (tester) async {
+    final h = await _pump(tester);
+    await _reveal(tester, find.text('أذان المسجد النبوي'));
+    await tester.tap(_inCard('أذان المسجد النبوي', find.text('استماع')));
+    await tester.pumpAndSettle();
+    expect(find.text('إيقاف الاستماع'), findsOneWidget);
+
+    // The platform could not play it (a stream that would not open).
+    h.platform.failed.add(null);
+    await tester.pumpAndSettle();
+    expect(find.text('إيقاف الاستماع'), findsNothing);
+    expect(find.textContaining('تعذّر تشغيل الاستماع'), findsOneWidget);
+    // The notice belongs to that card alone.
+    await tester.tap(_inCard('أذان المسجد النبوي', find.text('استماع')));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('تعذّر تشغيل الاستماع'), findsNothing);
+    expect(find.text('إيقاف الاستماع'), findsOneWidget);
+  });
+
   testWidgets('a download in progress can be cancelled', (tester) async {
     final h = await _pump(tester);
     h.store.gate = Completer<void>();

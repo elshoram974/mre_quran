@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../theme/app_surface_style.dart';
 import '../theme/app_tokens.dart';
+import 'press_scale.dart';
 
 /// An opaque raised card: a soft fill above the page, a hairline edge, and a
 /// diffuse shadow.
@@ -38,7 +39,7 @@ class AppSurfaceCard extends StatelessWidget {
     final surfaces = AppSurfaceStyle.of(context);
     final radius = BorderRadius.circular(AppTokens.radiusCard);
     final content = Padding(padding: padding, child: child);
-    return AnimatedContainer(
+    final card = AnimatedContainer(
       duration: MediaQuery.disableAnimationsOf(context)
           ? Duration.zero
           : AppTokens.motionMedium,
@@ -64,5 +65,6 @@ class AppSurfaceCard extends StatelessWidget {
             : InkWell(borderRadius: radius, onTap: onTap, child: content),
       ),
     );
+    return onTap == null ? card : PressScale(child: card);
   }
 }

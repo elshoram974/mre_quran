@@ -31,6 +31,12 @@ class _ReaderOrientationScopeState extends State<ReaderOrientationScope> {
   Widget build(BuildContext context) => widget.child;
 }
 
+/// Turns the reader sideways, to the wider of the two ways the screen can be
+/// held, where a printed page is read at a bigger size.
+Future<void> turnReaderLandscape() => SystemChrome.setPreferredOrientations(
+  const [DeviceOrientation.landscapeLeft, DeviceOrientation.landscapeRight],
+);
+
 /// A row that turns the reader between portrait and landscape.
 ///
 /// It reads what the screen is doing now rather than remembering its own last

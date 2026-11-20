@@ -938,6 +938,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adhanListen => 'Listen';
 
   @override
+  String get adhanPreviewFailed =>
+      'Could not play the preview. Check your connection, or download the voice to hear it from your phone.';
+
+  @override
   String get adhanStopListening => 'Stop listening';
 
   @override
@@ -1195,6 +1199,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get indexSajda => 'Sajdas';
+
+  @override
+  String get pinchLandscapeHint => 'For bigger text, turn your phone sideways';
+
+  @override
+  String get pinchLandscapeAction => 'Rotate';
+
+  @override
+  String get pinchTextHint => 'For bigger text, show the page as text';
+
+  @override
+  String get pinchTextAction => 'Show text';
 
   @override
   String get indexSearchHint => 'Search by name or number';

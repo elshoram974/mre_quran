@@ -1729,6 +1729,12 @@ abstract class AppLocalizations {
   /// **'Listen'**
   String get adhanListen;
 
+  /// No description provided for @adhanPreviewFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not play the preview. Check your connection, or download the voice to hear it from your phone.'**
+  String get adhanPreviewFailed;
+
   /// No description provided for @adhanStopListening.
   ///
   /// In en, this message translates to:
@@ -2166,6 +2172,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sajdas'**
   String get indexSajda;
+
+  /// No description provided for @pinchLandscapeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'For bigger text, turn your phone sideways'**
+  String get pinchLandscapeHint;
+
+  /// No description provided for @pinchLandscapeAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Rotate'**
+  String get pinchLandscapeAction;
+
+  /// No description provided for @pinchTextHint.
+  ///
+  /// In en, this message translates to:
+  /// **'For bigger text, show the page as text'**
+  String get pinchTextHint;
+
+  /// No description provided for @pinchTextAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Show text'**
+  String get pinchTextAction;
 
   /// No description provided for @indexSearchHint.
   ///

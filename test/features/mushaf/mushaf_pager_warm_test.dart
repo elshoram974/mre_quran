@@ -3,7 +3,9 @@ import 'dart:io';
 
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mre_quran/core/widgets/pinch_zoom.dart';
 import 'package:mre_quran/core/l10n/l10n.dart';
 import 'package:mre_quran/features/bookmarks/application/bookmarks_provider.dart';
 import 'package:mre_quran/features/mushaf/application/page_prefetcher.dart';
@@ -179,5 +181,67 @@ void main() {
     final view = tester.widget<SvgPageView>(find.byType(SvgPageView));
     expect(view.onAyahLongPress, isNotNull);
     expect(view.fallbackBuilder, isNotNull);
+  });
+
+  Future<void> pinchOut(WidgetTester tester) async {
+    final center = tester.getCenter(find.byType(PinchOut));
+    final first = await tester.startGesture(center - const Offset(50, 0));
+    final second = await tester.startGesture(center + const Offset(50, 0));
+    await first.moveTo(center - const Offset(90, 0));
+    await second.moveTo(center + const Offset(90, 0));
+    await tester.pump();
+    await first.up();
+    await second.up();
+    await tester.pump(const Duration(milliseconds: 400));
+  }
+
+  testWidgets('spreading two fingers on a printed page, held upright, '
+      'suggests turning the phone sideways, and does', (tester) async {
+    final orientations = <Object?>[];
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      SystemChannels.platform,
+      (call) async {
+        if (call.method == 'SystemChrome.setPreferredOrientations') {
+          orientations.add(call.arguments);
+        }
+        return null;
+      },
+    );
+    addTearDown(
+      () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        null,
+      ),
+    );
+    await _pump(tester, page: 10);
+    await pinchOut(tester);
+    expect(find.text('لتكبير الخط أكثر، أدر الهاتف بالعرض'), findsOneWidget);
+    // The page itself was not enlarged.
+    expect(find.byType(PinchZoom), findsNothing);
+
+    await tester.tap(find.text('تدوير'));
+    await tester.pump();
+    expect(orientations, [
+      ['DeviceOrientation.landscapeLeft', 'DeviceOrientation.landscapeRight'],
+    ]);
+  });
+
+  testWidgets('held sideways, the suggestion is the typeset text, and it '
+      'switches to it', (tester) async {
+    await _pump(tester, page: 10, size: const Size(844, 390));
+    await pinchOut(tester);
+    expect(find.text('للقراءة بخط أكبر، اعرض الصفحة كنص'), findsOneWidget);
+    await tester.tap(find.text('عرض النص'));
+    await tester.pumpAndSettle();
+    expect(find.byType(SvgPageView), findsNothing);
+  });
+
+  testWidgets('pinching again straight away does not stack suggestions', (
+    tester,
+  ) async {
+    await _pump(tester, page: 10);
+    await pinchOut(tester);
+    await pinchOut(tester);
+    expect(find.text('لتكبير الخط أكثر، أدر الهاتف بالعرض'), findsOneWidget);
   });
 }

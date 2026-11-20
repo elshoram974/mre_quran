@@ -50,6 +50,7 @@ The single rule file for UI/UX. `AGENTS.md` points here. The design plan is in
 
 1. Short, purposeful animations (200–300 ms). Implicit first. Respect `MediaQuery.disableAnimations`.
 2. Use the platform's own tab and sheet motion (glass pill physics on iOS, Material indicator on Android). Do not fake it.
+   A tappable card (`AppCard`, `AppSurfaceCard`, `AppTileCard`, the index rows) gives a little under the finger and springs back (`PressScale`, `AppTokens.pressScale`, 120 ms): it only listens, so the tap, ripple and scrolling are unchanged, and it stays still when animations are off. New tappable cards get it by being built from those widgets.
 3. Vibration goes through the static functions of `Haptics` (`select`, `tick`, `step`, `celebrate`) in `lib/core/haptics`; never `HapticFeedback` or a plugin directly. The Settings switch turns it off for every call.
 
 ## 7. Navigation

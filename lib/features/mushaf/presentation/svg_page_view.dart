@@ -52,16 +52,14 @@ class SvgPageView extends StatelessWidget {
     this.spread = false,
     this.digits,
     this.fallbackBuilder,
-    this.zoom = 1,
-    this.onZoomChanged,
+    this.onPinchOut,
     this.fallbackAfter = const Duration(seconds: 30),
   });
 
-  /// Magnification of the printed page.
-  final double zoom;
-
-  /// Saves the magnification chosen with two fingers.
-  final ValueChanged<double>? onZoomChanged;
+  /// Called when two fingers spread apart on the page. A printed page is
+  /// artwork and does not enlarge; the owner suggests reading it bigger
+  /// another way. Null leaves the gesture alone.
+  final VoidCallback? onPinchOut;
 
   /// Builds the page as typeset text, shown in place of the artwork when it
   /// cannot be had: offline, a failed download, or one that takes longer
@@ -141,35 +139,9 @@ class SvgPageView extends StatelessWidget {
         ),
       ),
     );
-    final onChanged = onZoomChanged;
-    if (onChanged == null) return frame;
-    return PinchZoom(
-      value: zoom,
-      min: AppSettings.minReaderFontScale,
-      max: AppSettings.maxReaderFontScale,
-      onChanged: onChanged,
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          if (zoom == 1) return frame;
-          final width = constraints.maxWidth * zoom;
-          final height = constraints.maxHeight * zoom;
-          return SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: SizedBox(
-              width: math.max(constraints.maxWidth, width),
-              child: SingleChildScrollView(
-                child: SizedBox(
-                  height: math.max(constraints.maxHeight, height),
-                  child: Center(
-                    child: SizedBox(width: width, height: height, child: frame),
-                  ),
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
+    final onPinchOut = this.onPinchOut;
+    if (onPinchOut == null) return frame;
+    return PinchOut(onPinchOut: onPinchOut, child: frame);
   }
 
   /// What a page view of [page] in a slot of [slot] asks for: the same

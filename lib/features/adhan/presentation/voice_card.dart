@@ -21,6 +21,7 @@ class VoiceCard extends ConsumerWidget {
     required this.status,
     required this.chosen,
     required this.listening,
+    this.previewFailed = false,
   });
 
   /// The recording.
@@ -34,6 +35,9 @@ class VoiceCard extends ConsumerWidget {
 
   /// Whether it is being previewed.
   final bool listening;
+
+  /// Whether its preview could not be played.
+  final bool previewFailed;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -99,6 +103,10 @@ class VoiceCard extends ConsumerWidget {
               VoiceDownloadFailure.busy => l10n.adhanDownloadBusy,
               _ => l10n.adhanDownloadNetwork,
             }, error: true),
+            const SizedBox(height: 8),
+          ],
+          if (previewFailed) ...[
+            AppNotice(l10n.adhanPreviewFailed, error: true),
             const SizedBox(height: 8),
           ],
           Wrap(

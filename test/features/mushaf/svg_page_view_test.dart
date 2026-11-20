@@ -45,8 +45,7 @@ void main() {
     Duration fallbackAfter = const Duration(seconds: 30),
     Size size = const Size(390, 844),
     bool fillWidth = false,
-    double zoom = 1,
-    ValueChanged<double>? onZoomChanged,
+    VoidCallback? onPinchOut,
   }) async {
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
@@ -73,8 +72,7 @@ void main() {
               fallbackBuilder: fallbackBuilder,
               fallbackAfter: fallbackAfter,
               fillWidth: fillWidth,
-              zoom: zoom,
-              onZoomChanged: onZoomChanged,
+              onPinchOut: onPinchOut,
             ),
           ),
         ),
@@ -99,18 +97,17 @@ void main() {
     );
   }
 
-  testWidgets('pinching a printed page changes its zoom without turning it', (
-    tester,
-  ) async {
-    final changes = <double>[];
+  testWidgets('spreading two fingers on a printed page asks for a bigger way '
+      'to read, without zooming or turning it', (tester) async {
+    var pinched = 0;
     var taps = 0;
     await pump(
       tester,
       load: (request) async => fixturePicture(request),
-      onZoomChanged: changes.add,
+      onPinchOut: () => pinched++,
       onTap: () => taps++,
     );
-    final center = tester.getCenter(find.byType(PinchZoom));
+    final center = tester.getCenter(find.byType(PinchOut));
     final first = await tester.startGesture(center - const Offset(50, 0));
     final second = await tester.startGesture(center + const Offset(50, 0));
     await first.moveTo(center - const Offset(70, 0));
@@ -119,31 +116,11 @@ void main() {
     await first.up();
     await second.up();
     await tester.pump();
-    expect(changes.single, closeTo(1.4, 0.05));
+    expect(pinched, 1);
     expect(taps, 0);
-    expect(tester.takeException(), isNull);
-  });
-
-  testWidgets('a zoomed printed page can be scrolled in both directions', (
-    tester,
-  ) async {
-    await pump(
-      tester,
-      load: (request) async => fixturePicture(request),
-      zoom: 1.5,
-      onZoomChanged: (_) {},
-    );
-    final scrolls = tester.widgetList<SingleChildScrollView>(
-      find.byType(SingleChildScrollView),
-    );
-    expect(
-      scrolls.any((scroll) => scroll.scrollDirection == Axis.horizontal),
-      isTrue,
-    );
-    expect(
-      scrolls.any((scroll) => scroll.scrollDirection == Axis.vertical),
-      isTrue,
-    );
+    // The artwork does not enlarge or scroll: it is drawn as it is.
+    expect(find.byType(SingleChildScrollView), findsNothing);
+    expect(find.byType(PinchZoom), findsNothing);
     expect(tester.takeException(), isNull);
   });
 

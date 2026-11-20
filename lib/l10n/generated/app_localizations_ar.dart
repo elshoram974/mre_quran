@@ -932,6 +932,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get adhanListen => 'استماع';
 
   @override
+  String get adhanPreviewFailed =>
+      'تعذّر تشغيل الاستماع. تحقق من الاتصال، أو نزّل الصوت لتسمعه من هاتفك.';
+
+  @override
   String get adhanStopListening => 'إيقاف الاستماع';
 
   @override
@@ -1187,6 +1191,18 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get indexSajda => 'السجدات';
+
+  @override
+  String get pinchLandscapeHint => 'لتكبير الخط أكثر، أدر الهاتف بالعرض';
+
+  @override
+  String get pinchLandscapeAction => 'تدوير';
+
+  @override
+  String get pinchTextHint => 'للقراءة بخط أكبر، اعرض الصفحة كنص';
+
+  @override
+  String get pinchTextAction => 'عرض النص';
 
   @override
   String get indexSearchHint => 'ابحث بالاسم أو الرقم';

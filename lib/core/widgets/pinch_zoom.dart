@@ -72,6 +72,52 @@ class _PinchZoomState extends State<PinchZoom> {
   );
 }
 
+/// Notices two fingers spreading apart, once for each pinch, and changes
+/// nothing on screen: for content that cannot be enlarged, such as a printed
+/// page, where [onPinchOut] suggests a better way to read it bigger. One
+/// finger is left alone, as in [PinchZoom].
+class PinchOut extends StatefulWidget {
+  /// Creates the detector around [child].
+  const PinchOut({super.key, required this.onPinchOut, required this.child});
+
+  /// Called once when the fingers have spread clearly apart.
+  final VoidCallback onPinchOut;
+
+  /// The content, drawn as it is.
+  final Widget child;
+
+  /// How far the fingers must spread, as a share of where they began.
+  static const double threshold = 1.15;
+
+  @override
+  State<PinchOut> createState() => _PinchOutState();
+}
+
+class _PinchOutState extends State<PinchOut> {
+  bool _reported = false;
+
+  void _update(ScaleUpdateDetails details) {
+    if (_reported || details.pointerCount < 2) return;
+    if (details.scale < PinchOut.threshold) return;
+    _reported = true;
+    widget.onPinchOut();
+  }
+
+  @override
+  Widget build(BuildContext context) => RawGestureDetector(
+    gestures: {
+      _TwoFingerScaleRecognizer:
+          GestureRecognizerFactoryWithHandlers<_TwoFingerScaleRecognizer>(
+            _TwoFingerScaleRecognizer.new,
+            (recognizer) => recognizer
+              ..onUpdate = _update
+              ..onEnd = (_) => _reported = false,
+          ),
+    },
+    child: widget.child,
+  );
+}
+
 /// A scale recognizer that claims the gesture the moment a second finger
 /// lands, before a page swipe or a scroll can take it.
 class _TwoFingerScaleRecognizer extends ScaleGestureRecognizer {

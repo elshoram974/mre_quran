@@ -208,8 +208,12 @@ abstract interface class AdhanPlatform {
   /// Stops the preview.
   Future<void> stopPreview();
 
-  /// Fires when a preview ends on its own, or fails.
+  /// Fires when a preview ends on its own.
   Stream<void> get previewEnded;
+
+  /// Fires when a preview cannot be played, or breaks off: a stream that
+  /// cannot be opened, a file that will not play.
+  Stream<void> get previewFailed;
 
   /// Lets the person pick an audio file from their phone. It is copied into
   /// the app, so it keeps working if the original moves. Null when they back
@@ -231,6 +235,7 @@ class ChannelAdhanPlatform implements AdhanPlatform {
 
   static const _channel = MethodChannel('net.mrecode.mre_quran/adhan');
   final StreamController<void> _ended = StreamController<void>.broadcast();
+  final StreamController<void> _failed = StreamController<void>.broadcast();
   final StreamController<String> _taps = StreamController<String>.broadcast();
   bool _listening = false;
 
@@ -243,6 +248,8 @@ class ChannelAdhanPlatform implements AdhanPlatform {
       switch (call.method) {
         case 'previewEnded':
           _ended.add(null);
+        case 'previewFailed':
+          _failed.add(null);
         case 'tapped':
           _taps.add(call.arguments! as String);
       }
@@ -319,5 +326,11 @@ class ChannelAdhanPlatform implements AdhanPlatform {
   Stream<void> get previewEnded {
     _listen();
     return _ended.stream;
+  }
+
+  @override
+  Stream<void> get previewFailed {
+    _listen();
+    return _failed.stream;
   }
 }

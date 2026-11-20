@@ -146,6 +146,7 @@ class FakeAdhanPlatform implements AdhanPlatform {
   int stops = 0;
   final List<AdhanAlarm> tests = [];
   final StreamController<void> ended = StreamController<void>.broadcast();
+  final StreamController<void> failed = StreamController<void>.broadcast();
   final StreamController<String> tapController =
       StreamController<String>.broadcast();
 
@@ -189,6 +190,9 @@ class FakeAdhanPlatform implements AdhanPlatform {
   @override
   Stream<void> get previewEnded => ended.stream;
 
+  @override
+  Stream<void> get previewFailed => failed.stream;
+
   /// What picking a file returns (null: the person backed out).
   AudioPick? pick;
   int picks = 0;
@@ -212,6 +216,10 @@ class FakeVoiceStore implements VoiceStore {
 
   final Set<String> saved;
   VoiceDownloadFailure? failWith;
+
+  /// An error of some other kind than a [VoiceDownloadException]: a TLS
+  /// handshake that fails, a timeout, a full disk.
+  Object? crashWith;
   Completer<void>? gate;
   final Directory _folder = Directory.systemTemp.createTempSync('adhan_fake');
 
@@ -237,6 +245,8 @@ class FakeVoiceStore implements VoiceStore {
     if (token?.isCancelled ?? false) {
       throw const VoiceDownloadException(VoiceDownloadFailure.cancelled);
     }
+    final crash = crashWith;
+    if (crash != null) throw crash;
     final failure = failWith;
     if (failure != null) throw VoiceDownloadException(failure);
     saved.add(voice.id);

@@ -43,6 +43,12 @@ abstract final class AppTokens {
   /// Duration of state changes on cards (highlight, completion).
   static const Duration motionMedium = Duration(milliseconds: 250);
 
+  /// How quickly a pressed card gives under the finger, and returns.
+  static const Duration motionPress = Duration(milliseconds: 120);
+
+  /// The size a pressed card gives to, as a share of its own.
+  static const double pressScale = 0.97;
+
   /// Corner radius of bottom sheets.
   static const double radiusSheet = 28;
 

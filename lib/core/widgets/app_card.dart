@@ -4,6 +4,7 @@ import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import '../theme/app_platform.dart';
 import '../theme/app_tokens.dart';
 import 'app_surface_card.dart';
+import 'press_scale.dart';
 
 /// Shared card for grouped content outside the Quran reading surface.
 ///
@@ -34,7 +35,7 @@ class AppCard extends StatelessWidget {
       return AppSurfaceCard(padding: padding, onTap: onTap, child: child);
     }
     final content = Padding(padding: padding, child: child);
-    return GlassContainer.card(
+    final card = GlassContainer.card(
       useOwnLayer: true,
       quality: GlassQuality.standard,
       padding: EdgeInsets.zero,
@@ -52,5 +53,6 @@ class AppCard extends StatelessWidget {
               ),
             ),
     );
+    return onTap == null ? card : PressScale(child: card);
   }
 }

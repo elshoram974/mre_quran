@@ -113,4 +113,75 @@ void main() {
     expect(changes, isEmpty);
     expect(swipes, 1);
   });
+
+  group('PinchOut', () {
+    late int pinchedOut;
+
+    Future<void> pumpOut(WidgetTester tester) async {
+      pinchedOut = 0;
+      swipes = 0;
+      await tester.pumpWidget(
+        Directionality(
+          textDirection: TextDirection.rtl,
+          child: GestureDetector(
+            onHorizontalDragEnd: (_) => swipes++,
+            child: PinchOut(
+              onPinchOut: () => pinchedOut++,
+              child: const ColoredBox(
+                color: Color(0xFFFFFFFF),
+                child: SizedBox.expand(),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    Future<void> pinchOut(WidgetTester tester, double from, double to) async {
+      final centre = tester.getCenter(find.byType(PinchOut));
+      final a = await tester.startGesture(centre - Offset(from / 2, 0));
+      final b = await tester.startGesture(centre + Offset(from / 2, 0));
+      for (var step = 1; step <= 8; step++) {
+        final span = from + (to - from) * step / 8;
+        await a.moveTo(centre - Offset(span / 2, 0));
+        await b.moveTo(centre + Offset(span / 2, 0));
+        await tester.pump();
+      }
+      await a.up();
+      await b.up();
+      await tester.pump();
+    }
+
+    testWidgets('spreading two fingers reports once, and draws nothing', (
+      tester,
+    ) async {
+      await pumpOut(tester);
+      await pinchOut(tester, 100, 220);
+      expect(pinchedOut, 1);
+      expect(swipes, 0);
+      // The content is not scaled.
+      expect(find.byType(Transform), findsNothing);
+    });
+
+    testWidgets('a small spread or a pinch in reports nothing', (tester) async {
+      await pumpOut(tester);
+      await pinchOut(tester, 100, 108);
+      await pinchOut(tester, 200, 80);
+      expect(pinchedOut, 0);
+    });
+
+    testWidgets('each pinch reports again', (tester) async {
+      await pumpOut(tester);
+      await pinchOut(tester, 100, 200);
+      await pinchOut(tester, 100, 200);
+      expect(pinchedOut, 2);
+    });
+
+    testWidgets('one finger still swipes the page', (tester) async {
+      await pumpOut(tester);
+      await tester.fling(find.byType(PinchOut), const Offset(-300, 0), 1500);
+      expect(swipes, 1);
+      expect(pinchedOut, 0);
+    });
+  });
 }

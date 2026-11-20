@@ -21,6 +21,7 @@ import 'ayah_actions_sheet.dart';
 import 'ayah_share_format.dart';
 import 'flip/book_flip.dart';
 import 'mushaf_page_view.dart';
+import 'reader_orientation.dart';
 import 'svg_page_view.dart';
 
 /// Window width from which two pages are shown side by side.
@@ -203,6 +204,47 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
         .save(settings.copyWith(readerFontScale: scale));
   }
 
+  DateTime? _suggestedAt;
+
+  /// Two fingers spread on a printed page, which cannot be enlarged: suggest
+  /// what does read bigger. Held upright, turning the phone sideways gives
+  /// the page its wider side; held sideways, the typeset text does.
+  void _suggestBiggerText() {
+    final now = DateTime.now();
+    final last = _suggestedAt;
+    if (last != null && now.difference(last) < const Duration(seconds: 10)) {
+      return;
+    }
+    final l10n = context.l10n;
+    final landscape =
+        MediaQuery.orientationOf(context) == Orientation.landscape;
+    final canUseText =
+        widget.text != null && ref.read(printedEditionProvider).matchesAppText;
+    if (landscape && !canUseText) return;
+    _suggestedAt = now;
+    ScaffoldMessenger.maybeOf(context)
+      ?..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            landscape ? l10n.pinchTextHint : l10n.pinchLandscapeHint,
+          ),
+          action: SnackBarAction(
+            label: landscape ? l10n.pinchTextAction : l10n.pinchLandscapeAction,
+            onPressed: landscape ? _showAsText : turnReaderLandscape,
+          ),
+        ),
+      );
+  }
+
+  void _showAsText() {
+    final settings = ref.read(settingsProvider).value;
+    if (settings == null) return;
+    ref
+        .read(settingsProvider.notifier)
+        .save(settings.copyWith(readerMode: ReaderMode.text));
+  }
+
   void _onTap() {
     ref.read(highlightedAyahProvider.notifier).clear();
     ref.read(readerImmersiveProvider.notifier).toggle();
@@ -292,8 +334,7 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
             metadata: widget.metadata,
             page: number,
             digits: digits,
-            zoom: fontScale,
-            onZoomChanged: _saveFontScale,
+            onPinchOut: _suggestBiggerText,
             fillWidth: !spread,
             spread: spread,
             selected: _highlightOn(edition, selection, null),
@@ -305,8 +346,7 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
             metadata: widget.metadata,
             page: number,
             digits: digits,
-            zoom: fontScale,
-            onZoomChanged: _saveFontScale,
+            onPinchOut: _suggestBiggerText,
             fillWidth: !spread,
             spread: spread,
             bookmarked: bookmarked,

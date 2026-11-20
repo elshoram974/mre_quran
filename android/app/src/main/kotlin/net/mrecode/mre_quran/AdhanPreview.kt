@@ -9,6 +9,7 @@ import org.json.JSONObject
 internal class AdhanPreview(
     private val context: Context,
     private val onEnded: () -> Unit,
+    private val onFailed: () -> Unit,
 ) {
     private var player: MediaPlayer? = null
 
@@ -25,13 +26,13 @@ internal class AdhanPreview(
             }
         } catch (_: Exception) {
             stop()
-            onEnded()
+            onFailed()
         }
     }
 
     private fun begin(prepared: MediaPlayer?) {
         if (prepared == null) {
-            onEnded()
+            onFailed()
             return
         }
         prepared.setOnCompletionListener { stop(); onEnded() }
@@ -49,7 +50,9 @@ internal class AdhanPreview(
         )
         next.setOnPreparedListener { it.start() }
         next.setOnCompletionListener { stop(); onEnded() }
-        next.setOnErrorListener { _, _, _ -> stop(); onEnded(); true }
+        // A stream that cannot be opened or breaks off: say so, rather than end
+        // as if it had played.
+        next.setOnErrorListener { _, _, _ -> stop(); onFailed(); true }
         next.prepareAsync()
         player = next
     }

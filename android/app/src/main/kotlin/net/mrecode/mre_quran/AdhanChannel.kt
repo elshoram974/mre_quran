@@ -20,9 +20,11 @@ internal class AdhanChannel(private val activity: Activity, messenger: BinaryMes
     private var pendingPick: MethodChannel.Result? = null
     private var pendingPayload: String? = null
     private var dartListening = false
-    private val preview = AdhanPreview(context) {
-        main.post { channel.invokeMethod("previewEnded", null) }
-    }
+    private val preview = AdhanPreview(
+        context,
+        onEnded = { main.post { channel.invokeMethod("previewEnded", null) } },
+        onFailed = { main.post { channel.invokeMethod("previewFailed", null) } },
+    )
 
     init {
         channel.setMethodCallHandler { call, result ->
