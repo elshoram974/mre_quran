@@ -11,6 +11,7 @@ import '../../../core/widgets/empty_state.dart';
 import '../../quran_index/domain/reader_destination.dart';
 import '../../quran_index/presentation/index_tiles.dart';
 import '../../settings/application/digits_provider.dart';
+import '../application/ayah_texts_provider.dart';
 import '../application/quran_text_providers.dart';
 import '../domain/ayah_search.dart';
 import '../domain/quran_search.dart';
@@ -132,7 +133,8 @@ class _Results extends ConsumerWidget {
         surahName: metadata.surah(match.ref.surah).arabicName,
         ayahNumber: digits(match.ref.ayah),
         page: digits(match.page),
-        text: text.uthmani(match.ref),
+        text: text.mushaf(match.ref),
+        fontFamily: appQuranFont(text),
         onTap: () =>
             context.pop(ReaderDestination(page: match.page, ayah: match.ref)),
       ),

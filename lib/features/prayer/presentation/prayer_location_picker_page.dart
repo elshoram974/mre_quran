@@ -52,6 +52,9 @@ class _PrayerLocationPickerPageState
   PrayerPlace? _selectedNameFor;
   Timer? _nameTimer;
 
+  /// What the places a search found are called, as they are found.
+  final Map<PrayerPlace, String> _resultNames = {};
+
   /// Whether the last search found no place at all. A search that found one
   /// and moved the map there is not a failed search.
   bool _notFound = false;
@@ -95,29 +98,17 @@ class _PrayerLocationPickerPageState
                 AppTokens.gutterCompact,
                 AppTokens.spaceSmall,
               ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: MRETextField(
-                      controller: _searchController,
-                      hintText: l10n.prayerMapSearchHint,
-                      suffixIcon: IconButton(
-                        tooltip: l10n.prayerMapSearch,
-                        onPressed: _searching ? null : _search,
-                        icon: const Icon(Icons.search),
-                      ),
-                      showClearButton: true,
-                      textInputAction: TextInputAction.search,
-                      onFieldSubmitted: (_) => _search(),
-                    ),
-                  ),
-                  const SizedBox(width: AppTokens.spaceSmall),
-                  IconButton.filledTonal(
-                    tooltip: l10n.prayerMapCurrentLocation,
-                    onPressed: _locating ? null : _useDeviceLocation,
-                    icon: const Icon(Icons.my_location_outlined),
-                  ),
-                ],
+              child: MRETextField(
+                controller: _searchController,
+                hintText: l10n.prayerMapSearchHint,
+                suffixIcon: IconButton(
+                  tooltip: l10n.prayerMapSearch,
+                  onPressed: _searching ? null : _search,
+                  icon: const Icon(Icons.search),
+                ),
+                showClearButton: true,
+                textInputAction: TextInputAction.search,
+                onFieldSubmitted: (_) => _search(),
               ),
             ),
           ),
@@ -150,19 +141,7 @@ class _PrayerLocationPickerPageState
                     onCameraIdle: _selectCameraTarget,
                   ),
                 ),
-                IgnorePointer(
-                  child: Center(
-                    // Align the pin's tip, rather than its centre, to the
-                    // camera target at the centre of the map.
-                    child: Transform.translate(
-                      offset: const Offset(0, -AppTokens.minTarget / 2),
-                      child: const Icon(
-                        Icons.location_pin,
-                        size: AppTokens.minTarget,
-                      ),
-                    ),
-                  ),
-                ),
+                const IgnorePointer(child: Center(child: _MapPin())),
                 if (_notFound || results.isNotEmpty)
                   Align(
                     alignment: AlignmentDirectional.topCenter,
@@ -177,23 +156,22 @@ class _PrayerLocationPickerPageState
                                 mainAxisSize: MainAxisSize.min,
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
-                                  for (final result in results)
-                                    TextButton(
-                                      onPressed: () =>
-                                          _selectSearchResult(result),
-                                      child: Text(
-                                        l10n.prayerPlaceLine(
-                                          formatPrayerCoordinate(
-                                            result.latitude,
-                                            formatDigits,
-                                          ),
-                                          formatPrayerCoordinate(
-                                            result.longitude,
-                                            formatDigits,
-                                          ),
+                                  for (final result in results.take(
+                                    _maxResults,
+                                  ))
+                                    _ResultTile(
+                                      name: _resultNames[result],
+                                      coordinates: l10n.prayerPlaceLine(
+                                        formatPrayerCoordinate(
+                                          result.latitude,
+                                          formatDigits,
                                         ),
-                                        textAlign: TextAlign.start,
+                                        formatPrayerCoordinate(
+                                          result.longitude,
+                                          formatDigits,
+                                        ),
                                       ),
+                                      onTap: () => _selectSearchResult(result),
                                     ),
                                 ],
                               ),
@@ -205,77 +183,84 @@ class _PrayerLocationPickerPageState
           ),
           SafeArea(
             top: false,
-            child: Padding(
-              padding: const EdgeInsetsDirectional.fromSTEB(
-                AppTokens.gutterCompact,
-                AppTokens.spaceMedium,
-                AppTokens.gutterCompact,
-                AppTokens.spaceMedium,
+            child: ConstrainedBox(
+              // Small screens and large text: the panel scrolls rather than
+              // push the map away.
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.sizeOf(context).height * 0.5,
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  AppCard(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Text(
-                          l10n.prayerMapHint,
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                        if (selected != null) ...[
-                          const SizedBox(height: AppTokens.spaceSmall),
-                          Text(
-                            // The name once it is found, else the numbers.
-                            selected.name != null ||
-                                    _selectedNameFor == selected
-                                ? l10n.prayerPlaceNamed(
-                                    selected.name ?? _selectedName!,
-                                  )
-                                : l10n.prayerPlaceLine(
-                                    formatPrayerCoordinate(
-                                      selected.latitude,
-                                      formatDigits,
-                                    ),
-                                    formatPrayerCoordinate(
-                                      selected.longitude,
-                                      formatDigits,
-                                    ),
-                                  ),
-                            style: Theme.of(context).textTheme.labelLarge,
-                          ),
-                        ],
-                      ],
+              child: SingleChildScrollView(
+                padding: const EdgeInsetsDirectional.fromSTEB(
+                  AppTokens.gutterCompact,
+                  AppTokens.spaceMedium,
+                  AppTokens.gutterCompact,
+                  AppTokens.spaceMedium,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _ChosenPlace(
+                      hint: l10n.prayerMapHint,
+                      online: l10n.prayerMapOnline,
+                      place: selected == null
+                          ? l10n.prayerMapNoPlace
+                          // The name once it is found, else the numbers.
+                          : selected.name != null ||
+                                _selectedNameFor == selected
+                          ? l10n.prayerPlaceNamed(
+                              selected.name ?? _selectedName!,
+                            )
+                          : l10n.prayerPlaceLine(
+                              formatPrayerCoordinate(
+                                selected.latitude,
+                                formatDigits,
+                              ),
+                              formatPrayerCoordinate(
+                                selected.longitude,
+                                formatDigits,
+                              ),
+                            ),
+                      chosen: selected != null,
                     ),
-                  ),
-                  if (_locationResult == PrayerResult.locationDenied) ...[
+                    if (_locationResult == PrayerResult.locationDenied) ...[
+                      const SizedBox(height: AppTokens.spaceSmall),
+                      LocationProblemNotice(
+                        fallback: l10n.prayerLocationUnavailable,
+                      ),
+                    ],
                     const SizedBox(height: AppTokens.spaceSmall),
-                    LocationProblemNotice(
-                      fallback: l10n.prayerLocationUnavailable,
+                    // A button with words: the way to the phone's own
+                    // location is not left to an icon.
+                    FilledButton.tonalIcon(
+                      onPressed: _locating || _saving
+                          ? null
+                          : _useDeviceLocation,
+                      icon: const Icon(Icons.my_location_outlined),
+                      label: Text(l10n.prayerMapCurrentLocation),
+                    ),
+                    const SizedBox(height: AppTokens.spaceSmall),
+                    FilledButton(
+                      onPressed: selected == null || _saving ? null : _save,
+                      child: _saving
+                          ? Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.5,
+                                  ),
+                                ),
+                                const SizedBox(width: AppTokens.spaceSmall),
+                                Text(l10n.prayerMapSaving),
+                              ],
+                            )
+                          : Text(l10n.prayerMapSave),
                     ),
                   ],
-                  const SizedBox(height: AppTokens.spaceSmall),
-                  FilledButton(
-                    onPressed: selected == null || _saving ? null : _save,
-                    child: _saving
-                        ? Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const SizedBox(
-                                width: 18,
-                                height: 18,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2.5,
-                                ),
-                              ),
-                              const SizedBox(width: AppTokens.spaceSmall),
-                              Text(l10n.prayerMapSaving),
-                            ],
-                          )
-                        : Text(l10n.prayerMapSave),
-                  ),
-                ],
+                ),
               ),
             ),
           ),
@@ -353,8 +338,30 @@ class _PrayerLocationPickerPageState
       _searching = false;
       _notFound = results.isEmpty;
       _searchResults = results;
+      _resultNames.clear();
     });
-    if (results.length == 1) await _selectSearchResult(results.single);
+    if (results.length == 1) {
+      await _selectSearchResult(results.single);
+    } else {
+      _nameResults(results);
+    }
+  }
+
+  /// Looks up what each place found is called, so the list reads as names
+  /// rather than numbers; a name that is not found leaves the numbers.
+  void _nameResults(List<PrayerPlace> results) {
+    final locale = Localizations.localeOf(context);
+    final source = ref.read(placeNameSourceProvider);
+    for (final place in results.take(_maxResults)) {
+      unawaited(
+        source.nameOf(place, locale).then((name) {
+          if (!mounted || name == null || !_searchResults.contains(place)) {
+            return;
+          }
+          setState(() => _resultNames[place] = name);
+        }),
+      );
+    }
   }
 
   Future<void> _selectSearchResult(PrayerPlace place) async {
@@ -408,9 +415,146 @@ class _PrayerLocationPickerPageState
 
   static const LatLng _world = LatLng(20, 0);
 
+  /// The most places a search lists.
+  static const int _maxResults = 5;
+
   /// Zoom that shows the whole world, before a place is chosen.
   static const double _worldZoom = 1.5;
 
   /// Zoom that shows a neighbourhood around a chosen place.
   static const double _placeZoom = 14;
+}
+
+/// The pin over the middle of the map. Its tip, not its centre, is the place:
+/// a dot under the tip shows exactly where.
+class _MapPin extends StatelessWidget {
+  const _MapPin();
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final color = scheme.error;
+    const dot = 8.0;
+    return Stack(
+      alignment: AlignmentDirectional.center,
+      clipBehavior: Clip.none,
+      children: [
+        DecoratedBox(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: color.withValues(alpha: 0.35),
+          ),
+          child: const SizedBox.square(dimension: dot),
+        ),
+        Transform.translate(
+          // The pin's tip, rather than its centre, on the camera target at
+          // the centre of the map.
+          offset: const Offset(0, -AppTokens.minTarget / 2),
+          child: Icon(
+            Icons.location_pin,
+            size: AppTokens.minTarget,
+            color: color,
+            shadows: [
+              Shadow(
+                blurRadius: 4,
+                color: scheme.shadow.withValues(alpha: 0.35),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// One place a search found: its name when it is known, always its numbers.
+class _ResultTile extends StatelessWidget {
+  const _ResultTile({
+    required this.name,
+    required this.coordinates,
+    required this.onTap,
+  });
+
+  final String? name;
+  final String coordinates;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return ListTile(
+      dense: name == null,
+      leading: const Icon(Icons.place_outlined),
+      title: Text(name ?? coordinates),
+      subtitle: name == null ? null : Text(coordinates),
+      subtitleTextStyle: theme.textTheme.bodySmall?.copyWith(
+        color: theme.colorScheme.onSurfaceVariant,
+      ),
+      onTap: onTap,
+    );
+  }
+}
+
+/// What to do on the map, the place now chosen, and what the map needs.
+class _ChosenPlace extends StatelessWidget {
+  const _ChosenPlace({
+    required this.hint,
+    required this.online,
+    required this.place,
+    required this.chosen,
+  });
+
+  final String hint;
+  final String online;
+  final String place;
+  final bool chosen;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.touch_app_outlined, size: 20, color: scheme.primary),
+              const SizedBox(width: AppTokens.spaceSmall),
+              Expanded(child: Text(hint, style: theme.textTheme.titleSmall)),
+            ],
+          ),
+          const SizedBox(height: AppTokens.spaceSmall),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                chosen ? Icons.location_on : Icons.location_off_outlined,
+                size: 20,
+                color: chosen ? scheme.primary : scheme.onSurfaceVariant,
+              ),
+              const SizedBox(width: AppTokens.spaceSmall),
+              Expanded(
+                child: Text(
+                  place,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    fontWeight: chosen ? FontWeight.w700 : null,
+                    color: chosen ? null : scheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppTokens.spaceSmall),
+          Text(
+            online,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: scheme.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

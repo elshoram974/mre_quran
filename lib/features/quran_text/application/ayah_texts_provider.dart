@@ -10,7 +10,15 @@ import '../../mushaf/domain/mushaf_edition.dart';
 import '../../quran_index/application/quran_metadata_provider.dart';
 import '../data/riwaya_text_parser.dart';
 import '../domain/ayah_texts.dart';
+import '../domain/quran_text.dart';
 import 'quran_text_providers.dart';
+
+/// The font that draws the app's own Quran text: the Mushaf's script when the
+/// text holds it, else the app's Quran font. Whatever shows Hafs ayahs uses
+/// it, so every ayah in the app is in one hand.
+String appQuranFont(QuranText text) => text.hasMushafScript
+    ? AppTokens.mushafFontFamily
+    : AppTokens.quranFontFamily;
 
 /// The text of [MushafEdition]'s ayahs, to copy and share from its pages;
 /// null for an edition without a text. A reading's bundled text is checked
@@ -21,12 +29,7 @@ final editionTextsProvider = FutureProvider.family<AyahTexts?, MushafEdition>((
 ) async {
   if (edition.matchesAppText) {
     final text = await ref.watch(quranTextProvider.future);
-    return HafsAyahTexts(
-      text,
-      fontFamily: text.hasMushafScript
-          ? AppTokens.mushafFontFamily
-          : AppTokens.quranFontFamily,
-    );
+    return HafsAyahTexts(text, fontFamily: appQuranFont(text));
   }
   final info = edition.text;
   if (info == null) return null;

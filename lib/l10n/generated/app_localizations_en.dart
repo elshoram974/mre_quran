@@ -641,7 +641,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get prayerMapHint =>
-      'Move the map until the tip of the pin points to your place. The map and search use the internet; the location button requests permission.';
+      'Move the map until the tip of the pin points at your place';
+
+  @override
+  String get prayerMapOnline => 'The map and search need the internet.';
+
+  @override
+  String get prayerMapNoPlace => 'No place chosen yet';
 
   @override
   String get prayerMapCurrentLocation => 'Use my current location';

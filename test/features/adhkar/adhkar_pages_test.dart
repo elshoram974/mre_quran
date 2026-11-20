@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mre_quran/core/theme/app_tokens.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mre_quran/core/haptics/haptics.dart';
 import 'package:mre_quran/core/theme/app_theme.dart';
@@ -353,16 +354,19 @@ void main() {
         tester.element(find.byType(DhikrCard)),
       ).read(quranTextProvider).value!;
       final ayah = tester.widget<Text>(
-        find.textContaining(quran.uthmani(const AyahRef(2, 255))),
+        find.textContaining(quran.mushaf(const AyahRef(2, 255))),
       );
       expect(ayah.textAlign, TextAlign.justify);
       expect(ayah.data, startsWith('﴿'));
+      // The Quran in the Quran's own font, not the font of the duas.
+      expect(ayah.style?.fontFamily, AppTokens.mushafFontFamily);
+      expect(formula.style?.fontFamily, AppTokens.mushafFontFamily);
       expect(
         tester.getTopLeft(find.text(Recitation.istiadha)).dy,
         lessThan(
           tester
               .getTopLeft(
-                find.textContaining(quran.uthmani(const AyahRef(2, 255))),
+                find.textContaining(quran.mushaf(const AyahRef(2, 255))),
               )
               .dy,
         ),

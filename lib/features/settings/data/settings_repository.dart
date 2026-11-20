@@ -22,7 +22,7 @@ class LocalSettingsRepository implements SettingsRepository {
   static const _hapticsKey = 'settings.haptics';
   static const _arabicDigitsKey = 'settings.arabic_digits';
   static const _crashReportsKey = 'settings.crash_reports';
-  static const _startupKey = 'settings.startup';
+  static const _startupKey = 'settings.startup_behavior';
   static const _readerFontScaleKey = 'settings.reader_font_scale';
   static const _realisticTurnKey = 'settings.realistic_page_turn';
   static const _readerModeKey = 'settings.reader_mode';
@@ -91,7 +91,7 @@ class LocalSettingsRepository implements SettingsRepository {
       crashReportsEnabled: crashReports ?? true,
       startupBehavior: StartupBehavior.values.firstWhere(
         (item) => item.name == startup,
-        orElse: () => StartupBehavior.lastTab,
+        orElse: () => StartupBehavior.reader,
       ),
       readerFontScale: (fontScale ?? 1)
           .clamp(AppSettings.minReaderFontScale, AppSettings.maxReaderFontScale)

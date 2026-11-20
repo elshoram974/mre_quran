@@ -632,8 +632,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get prayerMapTitle => 'اختر موقعك';
 
   @override
-  String get prayerMapHint =>
-      'حرّك الخريطة حتى يشير رأس العلامة إلى مكانك. تستخدم الخريطة والبحث الإنترنت؛ وزر موقعي يطلب إذن الموقع.';
+  String get prayerMapHint => 'حرّك الخريطة حتى يشير رأس العلامة إلى مكانك';
+
+  @override
+  String get prayerMapOnline => 'الخريطة والبحث يحتاجان إلى الإنترنت.';
+
+  @override
+  String get prayerMapNoPlace => 'لم تختر مكانًا بعد';
 
   @override
   String get prayerMapCurrentLocation => 'استخدم موقعي الحالي';

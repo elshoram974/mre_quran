@@ -87,6 +87,18 @@ void main() {
       },
     );
 
+    test('opens on the Mushaf until the person chooses otherwise', () async {
+      final repository = LocalSettingsRepository(SharedPreferencesAsync());
+      expect((await repository.load()).startupBehavior, StartupBehavior.reader);
+      await repository.save(
+        const AppSettings(startupBehavior: StartupBehavior.lastTab),
+      );
+      expect(
+        (await repository.load()).startupBehavior,
+        StartupBehavior.lastTab,
+      );
+    });
+
     test(
       'keeps the widgets\' language, and follows the app by default',
       () async {

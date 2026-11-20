@@ -432,3 +432,19 @@
   pictures (1 to `maxPictures`, never more than the ayahs), and the letters are shared between them as evenly as
   whole ayahs allow. The *Automatic* chip hands the choice back.
 - The surah banner leaves more room above and below the name, so its caption never touches the plaque's line.
+
+## D-047: The app opens on the Mushaf, important notices are red, and every ayah is in the Quran's font
+
+- **Decision:** `StartupBehavior.reader` is the default: the app opens on the Mushaf until the person chooses
+  *last tab* in Settings. The stored key is `settings.startup_behavior`, so a choice saved before this default
+  existed does not keep an old default alive.
+- **Important notices** (`AppNotice(important: true)`) are red, on a tinted box with the action inside it: a
+  setting the alerts depend on (exact alarms, for the prayer alerts and the adhan) must be seen as the page opens.
+  Plain hints stay muted; errors stay red without the box.
+- **Every ayah in the app is drawn in the Quran's own font** (`appQuranFont`): the Mushaf script
+  (`QuranText.mushaf`, KFGQPC Hafs) with its font, in the reader, the share card, the tafsir, the search and
+  bookmark results and the Quran dhikr of the adhkar. The Tanzil Uthmani text stays for copying and sharing as
+  text, and the plain words of the duas stay in the app's Quran font (Amiri).
+- **The map page** shows what to do, the place chosen (named when its name is found) and what the map needs, with
+  a labelled *Use my current location* button; the pin is red with its tip marked; a search that finds several
+  places lists them by name.

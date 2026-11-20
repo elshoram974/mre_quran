@@ -203,14 +203,14 @@ class _DhikrWords extends ConsumerWidget {
             label: Text(context.l10n.retry),
           ),
           // The words are Arabic whatever the interface language is.
-          data: (text) {
+          data: (words) {
             final style = TextStyle(
-              fontFamily: AppTokens.quranFontFamily,
+              fontFamily: words.fontFamily,
               fontSize: 24,
               height: 2,
               color: scheme.onSurface.withValues(alpha: done ? 0.7 : 1),
             );
-            final laidOut = layoutAdhkarText(text);
+            final laidOut = layoutAdhkarText(words.text);
             return Directionality(
               textDirection: TextDirection.rtl,
               child: dhikr.quran == null

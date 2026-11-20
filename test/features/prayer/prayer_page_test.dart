@@ -298,6 +298,16 @@ void main() {
       await _reveal(tester, find.textContaining('قد يؤخّر أندرويد'));
       expect(find.textContaining('قد يؤخّر أندرويد'), findsOneWidget);
 
+      // The note is red and boxed: the alerts depend on it.
+      final note = find.textContaining('قد يؤخّر أندرويد التنبيه');
+      expect(
+        tester.widget<Text>(note).style?.color,
+        AppTheme.light.colorScheme.error,
+      );
+      expect(
+        find.ancestor(of: note, matching: find.byType(DecoratedBox)),
+        findsWidgets,
+      );
       await tester.tap(find.text('السماح بالتوقيت الدقيق'));
       await tester.pumpAndSettle();
       expect(scheduler.exactRequests, 1);

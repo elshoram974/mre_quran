@@ -1228,8 +1228,20 @@ abstract class AppLocalizations {
   /// No description provided for @prayerMapHint.
   ///
   /// In en, this message translates to:
-  /// **'Move the map until the tip of the pin points to your place. The map and search use the internet; the location button requests permission.'**
+  /// **'Move the map until the tip of the pin points at your place'**
   String get prayerMapHint;
+
+  /// No description provided for @prayerMapOnline.
+  ///
+  /// In en, this message translates to:
+  /// **'The map and search need the internet.'**
+  String get prayerMapOnline;
+
+  /// No description provided for @prayerMapNoPlace.
+  ///
+  /// In en, this message translates to:
+  /// **'No place chosen yet'**
+  String get prayerMapNoPlace;
 
   /// No description provided for @prayerMapCurrentLocation.
   ///

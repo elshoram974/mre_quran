@@ -12,6 +12,7 @@ class AyahResultTile extends StatelessWidget {
     required this.ayahNumber,
     required this.page,
     required this.text,
+    required this.fontFamily,
     required this.onTap,
   });
 
@@ -24,8 +25,11 @@ class AyahResultTile extends StatelessWidget {
   /// Page number, already formatted for display.
   final String page;
 
-  /// Display text of the ayah.
+  /// Display text of the ayah, as [fontFamily] draws it.
   final String text;
+
+  /// The font that draws [text]: the Quran's own.
+  final String fontFamily;
 
   /// Called when the tile is tapped.
   final VoidCallback onTap;
@@ -72,7 +76,7 @@ class AyahResultTile extends StatelessWidget {
                 // Quranic marks (small high letters, sukun, pause signs)
                 // need the Quran font; a UI font draws them detached.
                 style: TextStyle(
-                  fontFamily: AppTokens.quranFontFamily,
+                  fontFamily: fontFamily,
                   fontSize: 20,
                   height: 1.9,
                   color: scheme.onSurface,

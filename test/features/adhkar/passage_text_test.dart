@@ -34,14 +34,21 @@ void main() {
     text = await container.read(quranTextProvider.future);
   });
 
+  test('the ayahs are in the Mushaf script, not the plain Uthmani text', () {
+    final result = composePassage(_passage([(2, 255, 255)]), text);
+    expect(text.hasMushafScript, isTrue);
+    expect(result, contains(text.mushaf(const AyahRef(2, 255))));
+    expect(result, isNot(contains(text.uthmani(const AyahRef(2, 255)))));
+  });
+
   test('a mid-surah ayah is wrapped and has no basmala', () {
     final result = composePassage(_passage([(2, 255, 255)]), text);
     // An ayah from inside a surah: the isti'adha, then the ayah.
     expect(result.startsWith(Recitation.istiadha), isTrue);
     expect(result.endsWith('﴾'), isTrue);
     expect(result, contains('\n﴿'));
-    expect(result, isNot(contains(text.basmala)));
-    expect(result, contains(text.uthmani(const AyahRef(2, 255))));
+    expect(result, isNot(contains(text.mushafBasmala)));
+    expect(result, contains(text.mushaf(const AyahRef(2, 255))));
   });
 
   test('an ayah from inside a surah always gets the isti\'adha, once', () {
@@ -58,20 +65,20 @@ void main() {
   test('a surah from its beginning gets the basmala, not the isti\'adha, '
       'unless asked', () {
     final plain = composePassage(_passage([(112, 1, 4)]), text);
-    expect(plain.startsWith(text.basmala), isTrue);
+    expect(plain.startsWith(text.mushafBasmala), isTrue);
     expect(plain, isNot(contains(Recitation.istiadha)));
     final asked = composePassage(_passage([(112, 1, 4)], istiadha: true), text);
     expect(asked.startsWith(Recitation.istiadha), isTrue);
-    expect(asked, contains(text.basmala));
+    expect(asked, contains(text.mushafBasmala));
   });
 
   test('the end of a surah is an ayah: it gets the isti\'adha', () {
     final result = composePassage(_passage([(18, 1, 10)]), text);
     // Al-Kahf 1 opens its surah: basmala.
-    expect(result.startsWith(text.basmala), isTrue);
+    expect(result.startsWith(text.mushafBasmala), isTrue);
     final ayat = composePassage(_passage([(18, 101, 110)]), text);
     expect(ayat.startsWith(Recitation.istiadha), isTrue);
-    expect(ayat, isNot(contains(text.basmala)));
+    expect(ayat, isNot(contains(text.mushafBasmala)));
   });
 
   test('a surah opening gets its basmala, each time', () {
@@ -79,10 +86,10 @@ void main() {
       _passage([(112, 1, 4), (113, 1, 5), (114, 1, 6)], istiadha: true),
       text,
     );
-    expect(text.basmala.allMatches(result), hasLength(3));
+    expect(text.mushafBasmala.allMatches(result), hasLength(3));
     expect(result.startsWith(Recitation.istiadha), isTrue);
     expect(
-      result.indexOf(text.basmala),
+      result.indexOf(text.mushafBasmala),
       greaterThan(Recitation.istiadha.length),
     );
   });
@@ -90,8 +97,8 @@ void main() {
   test('a range of ayahs is joined inside one pair of brackets', () {
     final result = composePassage(_passage([(2, 285, 286)]), text);
     expect('﴿'.allMatches(result), hasLength(1));
-    expect(result, contains(text.uthmani(const AyahRef(2, 285))));
-    expect(result, contains(text.uthmani(const AyahRef(2, 286))));
+    expect(result, contains(text.mushaf(const AyahRef(2, 285))));
+    expect(result, contains(text.mushaf(const AyahRef(2, 286))));
   });
 
   test('Al-Fatiha and At-Tawba get no extra basmala', () {
@@ -99,11 +106,11 @@ void main() {
     expect(text.hasBasmala(9), isFalse);
     expect(
       composePassage(_passage([(9, 1, 1)]), text),
-      isNot(contains(text.basmala)),
+      isNot(contains(text.mushafBasmala)),
     );
     // Al-Fatiha's basmala is its own first ayah, so it is there once.
     final fatiha = composePassage(_passage([(1, 1, 7)]), text);
-    expect(text.basmala.allMatches(fatiha), hasLength(1));
+    expect(text.mushafBasmala.allMatches(fatiha), hasLength(1));
   });
 
   test('describes spans by surah name and ayah numbers', () {

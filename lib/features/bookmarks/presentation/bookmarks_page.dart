@@ -9,6 +9,7 @@ import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../mushaf/application/highlighted_ayah_provider.dart';
 import '../../mushaf/application/reading_position_provider.dart';
+import '../../quran_text/application/ayah_texts_provider.dart';
 import '../../quran_text/application/quran_text_providers.dart';
 import '../../quran_text/presentation/ayah_result_tile.dart';
 import '../../settings/application/digits_provider.dart';
@@ -86,7 +87,8 @@ class BookmarksPage extends ConsumerWidget {
               surahName: metadata.surah(ref0.surah).arabicName,
               ayahNumber: digits(ref0.ayah),
               page: digits(page),
-              text: quran.uthmani(ref0),
+              text: quran.mushaf(ref0),
+              fontFamily: appQuranFont(quran),
               onTap: () async {
                 ref.read(highlightedAyahProvider.notifier).show(ref0);
                 await ref.read(readingPositionProvider.notifier).setPage(page);

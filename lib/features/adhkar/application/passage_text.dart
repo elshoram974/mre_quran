@@ -1,12 +1,15 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/theme/app_tokens.dart';
 import '../../quran_index/domain/quran_metadata.dart';
+import '../../quran_text/application/ayah_texts_provider.dart';
 import '../../quran_text/application/quran_text_providers.dart';
 import '../../quran_text/domain/quran_text.dart';
 import '../domain/dhikr.dart';
 import '../domain/quran_passage.dart';
 
-/// The words of a Quran dhikr, read from the verified Quran text.
+/// The words of a Quran dhikr, read from the verified Quran text, in the script
+/// the reader shows ([QuranText.mushaf]).
 ///
 /// Nothing is typed here. The recitation is, in order: the isti'adha when the
 /// passage starts one (always when it begins inside a surah, as an ayah is
@@ -24,11 +27,11 @@ String composePassage(QuranPassage passage, QuranText text) {
   ];
   for (final span in passage.spans) {
     if (span.opensSurah && text.hasBasmala(span.surah)) {
-      parts.add(text.basmala);
+      parts.add(text.mushafBasmala);
     }
     final ayahs = [
       for (var ayah = span.from; ayah <= span.to; ayah++)
-        text.uthmani(AyahRef(span.surah, ayah)),
+        text.mushaf(AyahRef(span.surah, ayah)),
     ];
     parts.add('﴿${ayahs.join(' ')}﴾');
   }
@@ -46,15 +49,25 @@ String describePassage(
         '${digits(span.from)}${span.to == span.from ? '' : '–${digits(span.to)}'}',
 ].join('، ');
 
+/// The words of a dhikr and the font that draws them.
+typedef DhikrWords = ({String text, String fontFamily});
+
 /// The words to show for a dhikr: its own text, or the passage it recites once
-/// the Quran text has loaded.
-final dhikrTextProvider = Provider.family<AsyncValue<String>, Dhikr>((
+/// the Quran text has loaded, which is drawn in the Quran's own font.
+final dhikrTextProvider = Provider.family<AsyncValue<DhikrWords>, Dhikr>((
   ref,
   dhikr,
 ) {
   final passage = dhikr.quran;
-  if (passage == null) return AsyncData(dhikr.text);
+  if (passage == null) {
+    return AsyncData((text: dhikr.text, fontFamily: AppTokens.quranFontFamily));
+  }
   return ref
       .watch(quranTextProvider)
-      .whenData((text) => composePassage(passage, text));
+      .whenData(
+        (text) => (
+          text: composePassage(passage, text),
+          fontFamily: appQuranFont(text),
+        ),
+      );
 });

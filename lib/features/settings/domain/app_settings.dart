@@ -16,7 +16,7 @@ class AppSettings {
     this.hapticsEnabled = true,
     this.useArabicDigits = true,
     this.crashReportsEnabled = true,
-    this.startupBehavior = StartupBehavior.lastTab,
+    this.startupBehavior = StartupBehavior.reader,
     this.readerFontScale = 1,
     this.realisticPageTurn = false,
     this.readerMode = ReaderMode.printed,
@@ -182,11 +182,12 @@ enum AppThemePreference {
 
 /// Which tab the app opens on.
 enum StartupBehavior {
+  /// Always open the Mushaf tab. What the app does until the person chooses
+  /// otherwise.
+  reader,
+
   /// Reopen the tab the reader left from.
   lastTab,
-
-  /// Always open the Mushaf tab.
-  reader,
 }
 
 /// How the Mushaf pages are shown.

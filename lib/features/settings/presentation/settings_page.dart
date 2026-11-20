@@ -152,14 +152,14 @@ class _SettingsContent extends ConsumerWidget {
           value: settings.startupBehavior,
           options: [
             AppSelectOption(
-              value: StartupBehavior.lastTab,
-              label: l10n.startupLastTab,
-              icon: Icons.history,
-            ),
-            AppSelectOption(
               value: StartupBehavior.reader,
               label: l10n.startupMushaf,
               icon: Icons.menu_book_outlined,
+            ),
+            AppSelectOption(
+              value: StartupBehavior.lastTab,
+              label: l10n.startupLastTab,
+              icon: Icons.history,
             ),
           ],
           onChanged: (value) =>

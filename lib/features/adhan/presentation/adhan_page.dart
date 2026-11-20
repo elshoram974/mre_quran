@@ -221,10 +221,11 @@ class _AlertSection extends ConsumerWidget {
         ),
         if (settings.playAdhan && !exact) ...[
           const SizedBox(height: 8),
-          AppNotice(l10n.prayerExactNote),
-          Align(
-            alignment: AlignmentDirectional.centerStart,
-            child: TextButton(
+          // Red and boxed: without it the adhan can come late.
+          AppNotice(
+            l10n.prayerExactNote,
+            important: true,
+            action: FilledButton(
               onPressed: () async {
                 final allowed = await ref
                     .read(reminderSchedulerProvider)

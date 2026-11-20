@@ -294,18 +294,17 @@ class _Content extends ConsumerWidget {
               if (settings.alerts.isNotEmpty && !exact)
                 Padding(
                   padding: const EdgeInsetsDirectional.fromSTEB(16, 0, 16, 8),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      AppNotice(l10n.prayerExactNote),
-                      TextButton(
-                        onPressed: () async {
-                          await notifier.allowExactAlarms();
-                          ref.invalidate(exactAlarmsAllowedProvider);
-                        },
-                        child: Text(l10n.prayerExactAllow),
-                      ),
-                    ],
+                  // Red and boxed: without it the alerts can come late.
+                  child: AppNotice(
+                    l10n.prayerExactNote,
+                    important: true,
+                    action: FilledButton(
+                      onPressed: () async {
+                        await notifier.allowExactAlarms();
+                        ref.invalidate(exactAlarmsAllowedProvider);
+                      },
+                      child: Text(l10n.prayerExactAllow),
+                    ),
                   ),
                 ),
               // The reminder before a prayer comes with its alert.
