@@ -25,8 +25,8 @@ class HomeWidgetPreview extends StatelessWidget {
   /// The default size of [widget] in logical pixels, as the launcher gives it.
   static Size sizeOf(HomeWidget widget) => switch (widget) {
     HomeWidget.prayerCard => const Size(215, 150),
-    HomeWidget.nextPrayer => const Size(150, 64),
-    HomeWidget.prayerSchedule => const Size(150, 156),
+    HomeWidget.nextPrayer => const Size(150, 60),
+    HomeWidget.prayerSchedule => const Size(148, 190),
     HomeWidget.tasbih => const Size(172, 72),
     HomeWidget.dhikr => const Size(172, 72),
   };
@@ -103,7 +103,9 @@ TextStyle _style(double size, Color color, {bool bold = false}) => TextStyle(
   decoration: TextDecoration.none,
 );
 
-/// The coming prayer at the start, its time and the time left at the end.
+/// The coming prayer at the start, its time and the time left at the end. At
+/// its default size (one launcher row) it has no room for its label or the
+/// date, as the widget has none.
 class _NextPrayer extends StatelessWidget {
   const _NextPrayer(this.data);
 
@@ -112,50 +114,32 @@ class _NextPrayer extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsetsDirectional.symmetric(horizontal: 16, vertical: 6),
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _Line(
-                    data.nextLabel,
-                    _style(11, WidgetPalette.accent, bold: true),
-                  ),
-                  _Line(
-                    data.next.name,
-                    _style(17, WidgetPalette.text, bold: true),
-                  ),
-                ],
-              ),
-            ),
-            Flexible(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  _Line(
-                    data.next.time,
-                    _style(17, WidgetPalette.text, bold: true),
-                    alignment: AlignmentDirectional.centerEnd,
-                  ),
-                  _Line(
-                    data.remaining,
-                    _style(11, WidgetPalette.accent),
-                    alignment: AlignmentDirectional.centerEnd,
-                  ),
-                ],
-              ),
-            ),
-          ],
+        Expanded(
+          child: _Line(
+            data.next.name,
+            _style(17, WidgetPalette.text, bold: true),
+          ),
         ),
-        // The date is a line of its own under the row, as in the widget.
-        SizedBox(
-          width: double.infinity,
-          child: _Line(data.date, _style(9, WidgetPalette.muted)),
+        Flexible(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              _Line(
+                data.next.time,
+                _style(17, WidgetPalette.text, bold: true),
+                alignment: AlignmentDirectional.centerEnd,
+              ),
+              _Line(
+                data.remaining,
+                _style(11, WidgetPalette.accent),
+                alignment: AlignmentDirectional.centerEnd,
+              ),
+            ],
+          ),
         ),
       ],
     ),
@@ -170,11 +154,11 @@ class _Schedule extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.all(10).copyWith(top: 9, bottom: 9),
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
     child: Column(
       children: [
         Padding(
-          padding: const EdgeInsetsDirectional.fromSTEB(8, 0, 8, 2),
+          padding: const EdgeInsetsDirectional.fromSTEB(10, 0, 10, 4),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -200,7 +184,10 @@ class _Schedule extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Padding(
-                padding: const EdgeInsetsDirectional.symmetric(horizontal: 8),
+                padding: EdgeInsetsDirectional.symmetric(
+                  horizontal: 10,
+                  vertical: row.id == data.next.id ? 3 : 1,
+                ),
                 child: LayoutBuilder(
                   builder: (context, box) {
                     final color = row.id == 'sunrise'
@@ -226,13 +213,13 @@ class _Schedule extends StatelessWidget {
                                     row.name,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: _style(11, color),
+                                    style: _style(12, color),
                                   ),
                                 ),
                                 Flexible(
                                   child: _Line(
                                     row.time,
-                                    _style(11, color, bold: true),
+                                    _style(12, color, bold: true),
                                     alignment: AlignmentDirectional.centerEnd,
                                   ),
                                 ),
@@ -390,7 +377,7 @@ class _Tasbih extends StatelessWidget {
               ),
               _Line(
                 data.tasbihCount,
-                _style(26, WidgetPalette.text, bold: true),
+                _style(30, WidgetPalette.text, bold: true),
               ),
             ],
           ),
@@ -447,7 +434,9 @@ class _Dhikr extends StatelessWidget {
           child: const SizedBox(
             height: 5,
             width: double.infinity,
+            // Stretched: an empty box would otherwise have no height.
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Expanded(
                   flex: 1,

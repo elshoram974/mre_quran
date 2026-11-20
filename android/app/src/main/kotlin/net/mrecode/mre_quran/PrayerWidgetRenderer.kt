@@ -23,6 +23,9 @@ internal object PrayerWidgetRenderer {
     private const val REQUEST_CODE = 401
     private const val MINUTE = 60_000L
 
+    /** The extra height, in dp, the timetable needs now that its rows and body have more room. */
+    private const val EXTRA = 24
+
     private val rowIds = intArrayOf(
         R.id.schedule_row_0, R.id.schedule_row_1, R.id.schedule_row_2,
         R.id.schedule_row_3, R.id.schedule_row_4, R.id.schedule_row_5,
@@ -263,28 +266,29 @@ internal object PrayerWidgetRenderer {
         val showCountdown = options["showCountdown"] != false
         val fontScale = context.resources.configuration.fontScale.coerceAtLeast(1f)
         val availableHeight = height / fontScale
-        val minimumDayHeight = (if (largerText) 120 else 96) + (if (showCountdown) 14 else 0)
+        val minimumDayHeight = (if (largerText) 120 else 96) + (if (showCountdown) 14 else 0) + EXTRA
         val upcoming = options["upcomingOnly"] == true || (height > 0 && availableHeight < minimumDayHeight)
-        // The body's padding grew by 8dp; the date needs that much more room.
-        val showDate = options["showDate"] != false && availableHeight >= maxOf(158, minimumDayHeight + 46)
+        // The rows and the body have more room around them than they had; the
+        // timetable needs EXTRA dp more height at every step.
+        val showDate = options["showDate"] != false && availableHeight >= maxOf(150 + EXTRA, minimumDayHeight + 38)
         val upcomingCount = if (availableHeight in 1f..69f && (showCountdown || largerText)) 2 else 3
-        val views = scheduleViews(context, model, now, upcoming, upcomingCount, showDate, options)
-        HomeWidgets.applyBackground(context, views, R.id.schedule_root)
         // Leave room for both calendar lines and the next prayer's extra line
         // before enlarging the whole timetable on a wide launcher grid.
         val baseHeight = when {
-            largerText && showDate -> 185f
-            showDate -> 165f
-            else -> 150f
+            largerText && showDate -> 185f + EXTRA
+            showDate -> 165f + EXTRA
+            else -> 150f + EXTRA
         }
         val scale = WidgetScale.of(width, height, 140f, baseHeight)
+        val views = scheduleViews(context, model, now, upcoming, upcomingCount, showDate, options, scale)
+        HomeWidgets.applyBackground(context, views, R.id.schedule_root)
         // The room around the rows grows with the widget, as the text does.
-        WidgetScale.padding(context, views, R.id.schedule_body, 10f, if (showDate) 9f else 4f, scale)
+        WidgetScale.padding(context, views, R.id.schedule_body, 12f, if (showDate) 10f else 4f, scale)
         WidgetScale.text(views, R.id.schedule_date, 11f, scale)
         WidgetScale.text(views, R.id.schedule_hijri, 10f, scale)
         val rowSize = when {
             largerText -> 14f
-            !upcoming && (availableHeight <= 120 || (showDate && availableHeight <= 160)) -> 11f
+            !upcoming && (availableHeight <= 120 + EXTRA || (showDate && availableHeight <= 160 + EXTRA)) -> 11f
             else -> 12f
         }
         for (index in rowIds.indices) {
@@ -304,6 +308,7 @@ internal object PrayerWidgetRenderer {
         upcomingCount: Int,
         showDate: Boolean,
         options: Map<String, Boolean>,
+        scale: Float,
     ): RemoteViews {
         val views = RemoteViews(context.packageName, R.layout.prayer_schedule_widget)
         val day = model?.dayAt(now)
@@ -345,10 +350,13 @@ internal object PrayerWidgetRenderer {
                     views.setViewVisibility(secondsIds[index], View.GONE)
                 }
                 views.setInt(rowId, "setBackgroundResource", if (coming) R.drawable.widget_row_next else 0)
-                // The highlight keeps its text off its rounded bottom edge.
-                val side = (8 * context.resources.displayMetrics.density).roundToInt()
-                val bottom = if (coming) (3 * context.resources.displayMetrics.density).roundToInt() else 0
-                views.setViewPadding(rowId, side, 0, side, bottom)
+                // Every row keeps its text off its edges, and the highlight, which
+                // draws a band, a little more: all of it grows with the widget, as
+                // the text does.
+                val density = context.resources.displayMetrics.density
+                val side = (10 * scale * density).roundToInt()
+                val vertical = ((if (coming) 3 else 1) * scale * density).roundToInt()
+                views.setViewPadding(rowId, side, vertical, side, vertical)
             }
         }
         direction(views, R.id.schedule_root, model)

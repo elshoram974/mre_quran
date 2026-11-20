@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mre_quran/core/l10n/l10n.dart';
+import 'package:mre_quran/core/theme/app_palette.dart';
 import 'package:mre_quran/core/theme/app_theme.dart';
 import 'package:mre_quran/core/widgets/app_tile_card.dart';
 import 'package:mre_quran/features/home_widgets/application/home_widgets_providers.dart';
@@ -117,6 +118,21 @@ void main() {
     // The sample day the picker shows, in the app's language.
     expect(find.text('الصلاة القادمة'), findsWidgets);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('the dhikr preview draws its progress bar', (tester) async {
+    await _pump(tester);
+    await tester.scrollUntilVisible(
+      _name('ذكر مقترح'),
+      180,
+      scrollable: find.byType(Scrollable).first,
+    );
+    final bar = find.byWidgetPredicate(
+      (widget) => widget is ColoredBox && widget.color == WidgetPalette.accent,
+      skipOffstage: false,
+    );
+    expect(bar, findsOneWidget);
+    expect(tester.getSize(bar).height, greaterThan(0));
   });
 
   testWidgets('the widgets can be given a language of their own', (
