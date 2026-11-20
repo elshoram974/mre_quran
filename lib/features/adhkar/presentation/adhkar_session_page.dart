@@ -17,6 +17,7 @@ import '../application/adhkar_providers.dart';
 import '../application/dhikr_counter.dart';
 import '../domain/adhkar_collection.dart';
 import 'adhkar_complete_card.dart';
+import 'adhkar_pinch.dart';
 import 'adhkar_progress_strip.dart';
 import 'dhikr_card.dart';
 
@@ -186,50 +187,52 @@ class _SessionState extends ConsumerState<_Session> {
           ),
         ),
         Expanded(
-          child: ListView(
-            padding: EdgeInsetsDirectional.fromSTEB(
-              padding.start,
-              4,
-              padding.end,
-              padding.bottom,
+          child: AdhkarPinch(
+            child: ListView(
+              padding: EdgeInsetsDirectional.fromSTEB(
+                padding.start,
+                4,
+                padding.end,
+                padding.bottom,
+              ),
+              children: [
+                for (var i = 0; i < collection.entries.length; i++)
+                  Padding(
+                    key: _keys[i],
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: DhikrCard(
+                      collection: collection,
+                      dhikr: collection.entries[i],
+                      number: i + 1,
+                      onCount: () => _count(i),
+                      onUndo: () => ref
+                          .read(adhkarProgressProvider.notifier)
+                          .decrement(collection, collection.entries[i]),
+                      onReset: () => ref
+                          .read(adhkarProgressProvider.notifier)
+                          .resetDhikr(collection, collection.entries[i]),
+                    ),
+                  ),
+                if (progress.complete)
+                  AdhkarCompleteCard(
+                    key: _completeKey,
+                    title: collection.title(
+                      Localizations.localeOf(context).languageCode,
+                    ),
+                    onRestart: () => ref
+                        .read(adhkarProgressProvider.notifier)
+                        .reset(collection),
+                    nextTitle: next?.title(
+                      Localizations.localeOf(context).languageCode,
+                    ),
+                    onNext: next == null
+                        ? null
+                        : () => context.pushReplacement(
+                            AppRoute.adhkarSessionPath(next.id),
+                          ),
+                  ),
+              ],
             ),
-            children: [
-              for (var i = 0; i < collection.entries.length; i++)
-                Padding(
-                  key: _keys[i],
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: DhikrCard(
-                    collection: collection,
-                    dhikr: collection.entries[i],
-                    number: i + 1,
-                    onCount: () => _count(i),
-                    onUndo: () => ref
-                        .read(adhkarProgressProvider.notifier)
-                        .decrement(collection, collection.entries[i]),
-                    onReset: () => ref
-                        .read(adhkarProgressProvider.notifier)
-                        .resetDhikr(collection, collection.entries[i]),
-                  ),
-                ),
-              if (progress.complete)
-                AdhkarCompleteCard(
-                  key: _completeKey,
-                  title: collection.title(
-                    Localizations.localeOf(context).languageCode,
-                  ),
-                  onRestart: () => ref
-                      .read(adhkarProgressProvider.notifier)
-                      .reset(collection),
-                  nextTitle: next?.title(
-                    Localizations.localeOf(context).languageCode,
-                  ),
-                  onNext: next == null
-                      ? null
-                      : () => context.pushReplacement(
-                          AppRoute.adhkarSessionPath(next.id),
-                        ),
-                ),
-            ],
           ),
         ),
       ],

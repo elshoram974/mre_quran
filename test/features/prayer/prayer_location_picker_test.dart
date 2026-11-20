@@ -9,6 +9,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:mre_quran/core/l10n/l10n.dart';
 import 'package:mre_quran/core/notifications/reminder_scheduler_provider.dart';
 import 'package:mre_quran/core/theme/app_theme.dart';
+import 'package:mre_quran/core/widgets/pinch_zoom.dart';
 import 'package:mre_quran/core/time/ticking_clock.dart';
 import 'package:mre_quran/features/adhan/application/adhan_providers.dart';
 import 'package:mre_quran/features/prayer/application/place_search_provider.dart';
@@ -299,6 +300,8 @@ void main() {
     );
     expect(find.text('لم تختر مكانًا بعد'), findsOneWidget);
     expect(find.text('الخريطة والبحث يحتاجان إلى الإنترنت.'), findsOneWidget);
+    // The map has its own zoom: no text-size pinch is laid over it.
+    expect(find.byType(PinchZoom), findsNothing);
     // A button with words, not only an icon.
     expect(find.text('استخدم موقعي الحالي'), findsOneWidget);
     expect(saveButton(tester).onPressed, isNull);

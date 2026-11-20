@@ -30,6 +30,7 @@ class LocalSettingsRepository implements SettingsRepository {
   static const _surahFrameKey = 'settings.surah_frame';
   static const _widgetSecondsKey = 'settings.widget_seconds';
   static const _widgetLocaleKey = 'settings.widget_locale';
+  static const _adhkarFontScaleKey = 'settings.adhkar_font_scale';
 
   @override
   Future<AppSettings> load() async {
@@ -53,6 +54,7 @@ class LocalSettingsRepository implements SettingsRepository {
         _preferences.getString(_surahFrameKey),
         _preferences.getBool(_widgetSecondsKey),
         _preferences.getString(_widgetLocaleKey),
+        _preferences.getDouble(_adhkarFontScaleKey),
       ).wait,
     ).wait;
     final (
@@ -74,6 +76,7 @@ class LocalSettingsRepository implements SettingsRepository {
       surahFrame,
       widgetSeconds,
       widgetLocale,
+      adhkarFontScale,
     ) = display;
     return AppSettings(
       theme: AppThemePreference.values.firstWhere(
@@ -94,6 +97,9 @@ class LocalSettingsRepository implements SettingsRepository {
         orElse: () => StartupBehavior.reader,
       ),
       readerFontScale: (fontScale ?? 1)
+          .clamp(AppSettings.minReaderFontScale, AppSettings.maxReaderFontScale)
+          .toDouble(),
+      adhkarFontScale: (adhkarFontScale ?? 1)
           .clamp(AppSettings.minReaderFontScale, AppSettings.maxReaderFontScale)
           .toDouble(),
       realisticPageTurn: realisticTurn ?? false,
@@ -132,6 +138,7 @@ class LocalSettingsRepository implements SettingsRepository {
       _preferences.setBool(_crashReportsKey, settings.crashReportsEnabled),
       _preferences.setString(_startupKey, settings.startupBehavior.name),
       _preferences.setDouble(_readerFontScaleKey, settings.readerFontScale),
+      _preferences.setDouble(_adhkarFontScaleKey, settings.adhkarFontScale),
       _preferences.setBool(_realisticTurnKey, settings.realisticPageTurn),
       _preferences.setString(_readerModeKey, settings.readerMode.name),
       _preferences.setString(

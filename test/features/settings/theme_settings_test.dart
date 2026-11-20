@@ -70,7 +70,7 @@ void main() {
             .load();
         try {
           await Future<void>.delayed(Duration.zero);
-          expect(platform.started, hasLength(16));
+          expect(platform.started, hasLength(17));
           expect(
             platform.started,
             containsAll([
@@ -78,6 +78,7 @@ void main() {
               'settings.surah_frame',
               'settings.widget_seconds',
               'settings.widget_locale',
+              'settings.adhkar_font_scale',
             ]),
           );
         } finally {

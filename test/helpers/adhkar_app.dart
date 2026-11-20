@@ -38,6 +38,7 @@ Future<FakeReminderScheduler> pumpAdhkarApp(
   AdhkarCatalog? catalog,
   MemoryFavoritesRepository? favorites,
   FakeLocationSource? location,
+  double adhkarFontScale = 1,
 }) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
@@ -93,7 +94,10 @@ Future<FakeReminderScheduler> pumpAdhkarApp(
         ),
         quranTextSourceProvider.overrideWithValue(FakeQuranTextSource()),
         settingsRepositoryProvider.overrideWithValue(
-          MemorySettingsRepository(),
+          MemorySettingsRepository()
+            ..settings = MemorySettingsRepository().settings.copyWith(
+              adhkarFontScale: adhkarFontScale,
+            ),
         ),
         clockProvider.overrideWithValue(() => DateTime(2026, 10, 8, 9)),
       ],

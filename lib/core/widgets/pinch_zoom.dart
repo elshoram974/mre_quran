@@ -1,14 +1,16 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/widgets.dart';
 
-/// Lets two fingers change a size setting, such as the reader's text size.
+/// Lets two fingers change the size of the text a screen reads, such as the
+/// reader's text size.
 ///
-/// While the fingers move, [child] is only scaled on screen, which costs no
-/// layout; when they lift, [onChanged] gets the new value once, and the
-/// owner lays the content out at its new size. One finger is left alone, so
-/// swipes, scrolling, taps, and long presses under it work as before.
+/// It enlarges nothing itself: [child] is drawn as it is. While the fingers
+/// move, [onChanging] gets the size they have reached, in steps of [step], so
+/// the owner sets its text at that size at once; when they lift, [onChanged]
+/// gets the final size, once, to keep. One finger is left alone, so swipes,
+/// scrolling, taps, and long presses under it work as before.
 class PinchZoom extends StatefulWidget {
-  /// Creates the detector around [child], whose size setting is now [value].
+  /// Creates the detector around [child], whose text size is now [value].
   const PinchZoom({
     super.key,
     required this.value,
@@ -16,42 +18,64 @@ class PinchZoom extends StatefulWidget {
     required this.max,
     required this.onChanged,
     required this.child,
+    this.onChanging,
   });
 
-  /// The current value of the setting.
+  /// The size kept now: where a pinch begins from.
   final double value;
 
-  /// Smallest value a pinch can reach.
+  /// Smallest size a pinch can reach.
   final double min;
 
-  /// Largest value a pinch can reach.
+  /// Largest size a pinch can reach.
   final double max;
 
-  /// Called once with the new value when the fingers lift.
+  /// Called with each size the fingers reach while they move. Null shows the
+  /// new size only when they lift.
+  final ValueChanged<double>? onChanging;
+
+  /// Called once with the final size when the fingers lift, if it changed.
   final ValueChanged<double> onChanged;
 
-  /// The content that grows and shrinks.
+  /// The content whose text is resized by the owner.
   final Widget child;
+
+  /// How far apart the sizes handed to [onChanging] are: fine enough to look
+  /// smooth, coarse enough to set the text out only so many times.
+  static const double step = 0.02;
 
   @override
   State<PinchZoom> createState() => _PinchZoomState();
 }
 
 class _PinchZoomState extends State<PinchZoom> {
-  /// The value under the fingers; null when no pinch is under way.
-  double? _live;
+  /// The size the pinch began from; null when none is under way. Kept apart
+  /// from [PinchZoom.value], which the owner may move while the fingers do.
+  double? _base;
+
+  /// The size last reached; null before the fingers have moved.
+  double? _reached;
 
   void _update(ScaleUpdateDetails details) {
     if (details.pointerCount < 2) return;
-    final next = (widget.value * details.scale).clamp(widget.min, widget.max);
-    if (next != _live) setState(() => _live = next);
+    final base = _base ??= widget.value;
+    final raw = (base * details.scale).clamp(widget.min, widget.max);
+    final next = ((raw / PinchZoom.step).round() * PinchZoom.step).clamp(
+      widget.min,
+      widget.max,
+    );
+    if (next == _reached) return;
+    _reached = next;
+    widget.onChanging?.call(next);
   }
 
   void _end(ScaleEndDetails details) {
-    final reached = _live;
-    if (reached == null) return;
-    setState(() => _live = null);
-    if (reached != widget.value) widget.onChanged(reached);
+    final base = _base;
+    final reached = _reached;
+    _base = null;
+    _reached = null;
+    if (base == null || reached == null || reached == base) return;
+    widget.onChanged(reached);
   }
 
   @override
@@ -65,10 +89,7 @@ class _PinchZoomState extends State<PinchZoom> {
               ..onEnd = _end,
           ),
     },
-    child: Transform.scale(
-      scale: (_live ?? widget.value) / widget.value,
-      child: widget.child,
-    ),
+    child: widget.child,
   );
 }
 

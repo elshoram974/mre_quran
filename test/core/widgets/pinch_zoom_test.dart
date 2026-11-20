@@ -4,10 +4,12 @@ import 'package:mre_quran/core/widgets/pinch_zoom.dart';
 
 void main() {
   late List<double> changes;
+  late List<double> live;
   late int swipes;
 
   Future<void> pump(WidgetTester tester, {double value = 1}) async {
     changes = [];
+    live = [];
     swipes = 0;
     await tester.pumpWidget(
       Directionality(
@@ -19,6 +21,7 @@ void main() {
             value: value,
             min: 0.8,
             max: 1.6,
+            onChanging: live.add,
             onChanged: changes.add,
             child: const ColoredBox(
               color: Color(0xFFFFFFFF),
@@ -46,14 +49,34 @@ void main() {
     await tester.pump();
   }
 
-  testWidgets('spreading two fingers enlarges, once, on release', (
-    tester,
-  ) async {
+  testWidgets('spreading two fingers enlarges the text as they move, and '
+      'keeps the size once, on release', (tester) async {
     await pump(tester);
     await pinch(tester, 100, 130);
+    // The size follows the fingers, in steps, and ends where they ended.
+    expect(live.length, greaterThan(1));
+    expect(live, orderedEquals([...live]..sort()));
+    expect(live.last, closeTo(1.3, PinchZoom.step));
     expect(changes, hasLength(1));
-    expect(changes.single, closeTo(1.3, 0.01));
+    expect(changes.single, live.last);
     expect(swipes, 0, reason: 'the pinch is not a page swipe');
+  });
+
+  testWidgets('the content is drawn as it is, never magnified', (tester) async {
+    await pump(tester);
+    await pinch(tester, 100, 200);
+    expect(find.byType(Transform), findsNothing);
+  });
+
+  testWidgets('sizes come in steps, not at every pixel', (tester) async {
+    await pump(tester);
+    await pinch(tester, 100, 130);
+    for (final size in live) {
+      expect(
+        (size / PinchZoom.step) - (size / PinchZoom.step).round(),
+        closeTo(0, 1e-9),
+      );
+    }
   });
 
   testWidgets('pinching in shrinks, and both ends are clamped', (tester) async {
@@ -65,43 +88,43 @@ void main() {
     expect(changes.single, 1.6);
   });
 
-  testWidgets('a reader pinch does not also resize the surrounding app', (
+  testWidgets('a pinch that ends where it began keeps nothing', (tester) async {
+    await pump(tester);
+    await pinch(tester, 100, 100);
+    expect(changes, isEmpty);
+  });
+
+  testWidgets('the size the owner shows while pinching does not compound', (
     tester,
   ) async {
-    final appChanges = <double>[];
-    final readerChanges = <double>[];
+    // The owner moves [value] as the fingers do, as a reader showing the
+    // size at once would; the pinch still counts from where it began.
+    var shown = 1.0;
+    late StateSetter update;
+    final kept = <double>[];
     await tester.pumpWidget(
       Directionality(
         textDirection: TextDirection.rtl,
-        child: PinchZoom(
-          value: 1,
-          min: 0.8,
-          max: 1.6,
-          onChanged: appChanges.add,
-          child: PinchZoom(
-            value: 1,
-            min: 0.8,
-            max: 1.6,
-            onChanged: readerChanges.add,
-            child: const ColoredBox(
-              color: Color(0xFFFFFFFF),
-              child: SizedBox.expand(),
-            ),
-          ),
+        child: StatefulBuilder(
+          builder: (context, setState) {
+            update = setState;
+            return PinchZoom(
+              value: shown,
+              min: 0.8,
+              max: 1.6,
+              onChanging: (value) => update(() => shown = value),
+              onChanged: kept.add,
+              child: const ColoredBox(
+                color: Color(0xFFFFFFFF),
+                child: SizedBox.expand(),
+              ),
+            );
+          },
         ),
       ),
     );
-    final centre = tester.getCenter(find.byType(PinchZoom).last);
-    final first = await tester.startGesture(centre - const Offset(50, 0));
-    final second = await tester.startGesture(centre + const Offset(50, 0));
-    await first.moveTo(centre - const Offset(70, 0));
-    await second.moveTo(centre + const Offset(70, 0));
-    await tester.pump();
-    await first.up();
-    await second.up();
-    await tester.pump();
-    expect(readerChanges.single, closeTo(1.4, 0.05));
-    expect(appChanges, isEmpty);
+    await pinch(tester, 100, 130);
+    expect(kept.single, closeTo(1.3, PinchZoom.step));
   });
 
   testWidgets('one finger still swipes the page and changes nothing', (
@@ -111,6 +134,7 @@ void main() {
     await tester.drag(find.byType(PinchZoom), const Offset(-200, 0));
     await tester.pump();
     expect(changes, isEmpty);
+    expect(live, isEmpty);
     expect(swipes, 1);
   });
 

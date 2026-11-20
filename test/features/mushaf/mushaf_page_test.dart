@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mre_quran/core/l10n/l10n.dart';
+import 'package:mre_quran/core/theme/app_tokens.dart';
 import 'package:mre_quran/features/mushaf/application/reader_immersive_provider.dart';
 import 'package:mre_quran/features/mushaf/application/reading_position_provider.dart';
 import 'package:mre_quran/features/mushaf/presentation/flip/book_flip.dart';
@@ -247,6 +248,40 @@ void main() {
     await tester.tap(find.byTooltip('إزالة علامة الصفحة'));
     await tester.pumpAndSettle();
     expect(find.byTooltip('إضافة علامة للصفحة'), findsOneWidget);
+  });
+
+  testWidgets('two fingers resize the Quran text as they move, and keep the '
+      'size', (tester) async {
+    final (container, _) = await _pump(tester);
+    double size() => tester
+        .widgetList<RichText>(
+          find.byWidgetPredicate(
+            (widget) =>
+                widget is RichText &&
+                widget.text.style?.fontFamily == AppTokens.mushafFontFamily,
+          ),
+        )
+        .map((text) => text.text.style!.fontSize!)
+        .reduce((a, b) => a > b ? a : b);
+    final before = size();
+    final centre = tester.getCenter(find.byType(MushafPager));
+    final a = await tester.startGesture(centre - const Offset(50, 0));
+    final b = await tester.startGesture(centre + const Offset(50, 0));
+    for (var step = 1; step <= 5; step++) {
+      final span = 50.0 + 20 * step;
+      await a.moveTo(centre - Offset(span, 0));
+      await b.moveTo(centre + Offset(span, 0));
+      await tester.pump();
+    }
+    // The text is already bigger while the fingers are still down.
+    expect(size(), greaterThan(before * 1.2));
+    await a.up();
+    await b.up();
+    await tester.pumpAndSettle();
+    final kept = container.read(settingsProvider).value!.readerFontScale;
+    expect(kept, closeTo(1.6, 0.03));
+    expect(size(), closeTo(before * kept, before * 0.03));
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('swiping turns the page right to left and saves it', (

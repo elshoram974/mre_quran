@@ -18,6 +18,7 @@ class AppSettings {
     this.crashReportsEnabled = true,
     this.startupBehavior = StartupBehavior.reader,
     this.readerFontScale = 1,
+    this.adhkarFontScale = 1,
     this.realisticPageTurn = false,
     this.readerMode = ReaderMode.printed,
     this.readerPageLayout = ReaderPageLayout.auto,
@@ -75,6 +76,10 @@ class AppSettings {
   /// [minReaderFontScale] and [maxReaderFontScale].
   final double readerFontScale;
 
+  /// Size of the words of the adhkar relative to the default, between the
+  /// same bounds as [readerFontScale].
+  final double adhkarFontScale;
+
   /// Whether Mushaf pages bend and turn like paper instead of sliding.
   final bool realisticPageTurn;
 
@@ -103,6 +108,7 @@ class AppSettings {
     bool? crashReportsEnabled,
     StartupBehavior? startupBehavior,
     double? readerFontScale,
+    double? adhkarFontScale,
     bool? realisticPageTurn,
     ReaderMode? readerMode,
     ReaderPageLayout? readerPageLayout,
@@ -120,6 +126,7 @@ class AppSettings {
     crashReportsEnabled: crashReportsEnabled ?? this.crashReportsEnabled,
     startupBehavior: startupBehavior ?? this.startupBehavior,
     readerFontScale: readerFontScale ?? this.readerFontScale,
+    adhkarFontScale: adhkarFontScale ?? this.adhkarFontScale,
     realisticPageTurn: realisticPageTurn ?? this.realisticPageTurn,
     readerMode: readerMode ?? this.readerMode,
     readerPageLayout: readerPageLayout ?? this.readerPageLayout,

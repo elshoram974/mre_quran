@@ -7,7 +7,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/haptics/haptics.dart';
 import '../core/l10n/l10n.dart';
 import '../core/theme/app_theme.dart';
-import '../core/widgets/pinch_zoom.dart';
 import '../features/adhan/application/adhan_providers.dart';
 import '../features/adhan/presentation/adhan_suggestion_scope.dart';
 import '../features/startup/application/startup_providers.dart';
@@ -98,14 +97,12 @@ class QuranApp extends ConsumerWidget {
         themeMode: settings.materialThemeMode,
         routerConfig: ref.watch(routerProvider),
         // The native launch screen stays until the first screen is ready.
-        builder: (context, child) => _PinchTextScale(
-          child: _SystemBars(
-            child: LaunchGate(
-              child: AdhanSuggestionScope(
-                child: AppShortcutsScope(
-                  child: AdhkarWidgetSyncScope(
-                    child: PrayerWidgetSyncScope(child: child!),
-                  ),
+        builder: (context, child) => _SystemBars(
+          child: LaunchGate(
+            child: AdhanSuggestionScope(
+              child: AppShortcutsScope(
+                child: AdhkarWidgetSyncScope(
+                  child: PrayerWidgetSyncScope(child: child!),
                 ),
               ),
             ),
@@ -114,55 +111,6 @@ class QuranApp extends ConsumerWidget {
       ),
     );
   }
-}
-
-/// Two fingers resize app text without taking one-finger scrolls and taps.
-class _PinchTextScale extends StatefulWidget {
-  const _PinchTextScale({required this.child});
-
-  final Widget child;
-
-  @override
-  State<_PinchTextScale> createState() => _PinchTextScaleState();
-}
-
-class _PinchTextScaleState extends State<_PinchTextScale> {
-  double _scale = 1;
-
-  @override
-  Widget build(BuildContext context) {
-    final media = MediaQuery.of(context);
-    return PinchZoom(
-      value: _scale,
-      min: 0.8,
-      max: 1.6,
-      onChanged: (value) => setState(() => _scale = value),
-      child: MediaQuery(
-        data: media.copyWith(textScaler: _ScaledText(media.textScaler, _scale)),
-        child: widget.child,
-      ),
-    );
-  }
-}
-
-class _ScaledText extends TextScaler {
-  const _ScaledText(this.base, this.factor);
-
-  final TextScaler base;
-  final double factor;
-
-  @override
-  double get textScaleFactor => base.scale(1) * factor;
-
-  @override
-  double scale(double fontSize) => base.scale(fontSize) * factor;
-
-  @override
-  bool operator ==(Object other) =>
-      other is _ScaledText && other.base == base && other.factor == factor;
-
-  @override
-  int get hashCode => Object.hash(base, factor);
 }
 
 /// The app draws edge to edge (required from Android 15): the status and

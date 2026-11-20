@@ -9,6 +9,7 @@ import '../../../core/widgets/app_surface_card.dart';
 import '../../../core/widgets/app_tag.dart';
 import '../../quran_text/application/quran_text_providers.dart';
 import '../../settings/application/digits_provider.dart';
+import '../application/adhkar_font_scale_provider.dart';
 import '../application/adhkar_providers.dart';
 import '../application/passage_text.dart';
 import '../domain/adhkar_collection.dart';
@@ -206,7 +207,8 @@ class _DhikrWords extends ConsumerWidget {
           data: (words) {
             final style = TextStyle(
               fontFamily: words.fontFamily,
-              fontSize: 24,
+              // The size the person pinched the adhkar to.
+              fontSize: 24 * ref.watch(adhkarFontScaleProvider),
               height: 2,
               color: scheme.onSurface.withValues(alpha: done ? 0.7 : 1),
             );

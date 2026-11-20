@@ -98,6 +98,12 @@ class _MushafPageViewState extends State<MushafPageView> {
   final GlobalKey _selectedParagraph = GlobalKey();
   TextSelection? _selectedText;
 
+  /// The text size the fingers of a pinch have reached, until it is kept.
+  double? _pinched;
+
+  /// The text size drawn: the pinch's while it is under way, else the kept one.
+  double get _fontScale => _pinched ?? widget.fontScale;
+
   QuranText get text => widget.text;
 
   String _n(int value) => widget.digits(value);
@@ -111,6 +117,8 @@ class _MushafPageViewState extends State<MushafPageView> {
   @override
   void didUpdateWidget(MushafPageView oldWidget) {
     super.didUpdateWidget(oldWidget);
+    // The size the pinch reached has been kept: it is the page's own now.
+    if (widget.fontScale != oldWidget.fontScale) _pinched = null;
     if (widget.selected != oldWidget.selected &&
         (widget.selected?.isSingle ?? false)) {
       _scheduleSelectedScroll();
@@ -333,7 +341,7 @@ class _MushafPageViewState extends State<MushafPageView> {
         final fitted = _fittedSize(segments, constraints.biggest, _fontFamily);
         final quran = TextStyle(
           fontFamily: _fontFamily,
-          fontSize: fitted * widget.fontScale,
+          fontSize: fitted * _fontScale,
           height: MushafPageView._lineHeight,
           color: colors.ink,
         );
@@ -396,6 +404,7 @@ class _MushafPageViewState extends State<MushafPageView> {
             value: widget.fontScale,
             min: AppSettings.minReaderFontScale,
             max: AppSettings.maxReaderFontScale,
+            onChanging: (scale) => setState(() => _pinched = scale),
             onChanged: resize,
             child: page,
           );

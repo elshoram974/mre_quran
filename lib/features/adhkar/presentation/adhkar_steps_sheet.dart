@@ -16,6 +16,7 @@ import '../../settings/application/digits_provider.dart';
 import '../application/adhkar_providers.dart';
 import '../application/dhikr_counter.dart';
 import '../domain/adhkar_collection.dart';
+import 'adhkar_pinch.dart';
 import 'adhkar_complete_card.dart';
 import 'adhkar_progress_strip.dart';
 import 'dhikr_card.dart';
@@ -332,23 +333,25 @@ class _StepsBodyState extends ConsumerState<_StepsBody> {
             // The words scroll in the room that is left; the counter below
             // stays where the thumb is, however long the dhikr.
             Expanded(
-              child: PageView.builder(
-                controller: pages,
-                itemCount: collection.entries.length,
-                onPageChanged: _onPage,
-                itemBuilder: (context, page) => SingleChildScrollView(
-                  // Only the step on screen moves the sheet.
-                  controller: page == index ? widget.scroll : null,
-                  primary: false,
-                  child: DhikrCard(
-                    key: ValueKey('${collection.id}:$page'),
-                    collection: collection,
-                    dhikr: collection.entries[page],
-                    number: page + 1,
-                    showCounter: false,
-                    onCount: () => _count(collection, page),
-                    onUndo: () => _undo(collection, page),
-                    onReset: () => _reset(collection, page),
+              child: AdhkarPinch(
+                child: PageView.builder(
+                  controller: pages,
+                  itemCount: collection.entries.length,
+                  onPageChanged: _onPage,
+                  itemBuilder: (context, page) => SingleChildScrollView(
+                    // Only the step on screen moves the sheet.
+                    controller: page == index ? widget.scroll : null,
+                    primary: false,
+                    child: DhikrCard(
+                      key: ValueKey('${collection.id}:$page'),
+                      collection: collection,
+                      dhikr: collection.entries[page],
+                      number: page + 1,
+                      showCounter: false,
+                      onCount: () => _count(collection, page),
+                      onUndo: () => _undo(collection, page),
+                      onReset: () => _reset(collection, page),
+                    ),
                   ),
                 ),
               ),

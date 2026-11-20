@@ -448,3 +448,14 @@
 - **The map page** shows what to do, the place chosen (named when its name is found) and what the map needs, with
   a labelled *Use my current location* button; the pin is red with its tip marked; a search that finds several
   places lists them by name.
+
+## D-048: Pinching resizes the text of the adhkar and of the typeset Mushaf, and nothing else
+
+- **Decision:** Two fingers change a text size only where there is text to read: the words of the adhkar
+  (`AdhkarPinch`, kept as `AppSettings.adhkarFontScale`) and the typeset Mushaf's text
+  (`AppSettings.readerFontScale`). The app-wide text scaler is gone, so a pinch changes nothing on the settings, the
+  prayer page, the bookmarks, or the map (which keeps its own zoom). A printed page cannot be enlarged: a pinch there
+  only suggests turning the phone (`PinchOut`).
+- **How:** `PinchZoom` magnifies nothing. While the fingers move it hands the size they have reached, in steps of
+  0.02, to its owner, which sets its text at that size at once; on release it hands the final size to keep, once. A
+  pinch counts from the size it began at, so an owner that shows the size as it changes does not compound it.

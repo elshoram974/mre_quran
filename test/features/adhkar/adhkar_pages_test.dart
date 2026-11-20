@@ -12,6 +12,7 @@ import 'package:mre_quran/features/adhkar/domain/quran_passage.dart';
 import 'package:mre_quran/features/adhkar/presentation/adhkar_group_page.dart';
 import 'package:mre_quran/features/adhkar/presentation/collection_card.dart';
 import 'package:mre_quran/features/adhkar/presentation/dhikr_card.dart';
+import 'package:mre_quran/features/settings/application/settings_provider.dart';
 import 'package:mre_quran/features/adhkar/presentation/favorite_button.dart';
 import 'package:mre_quran/features/adhkar/presentation/group_card.dart';
 import 'package:mre_quran/features/adhkar/presentation/adhkar_search_page.dart';
@@ -169,6 +170,87 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.textContaining('الخطوة ١ من'), findsOneWidget);
       expect(tester.takeException(), isNull);
+    });
+  });
+
+  group('text size', () {
+    /// Two fingers spread [from] to [to] apart, around the middle of [target].
+    Future<void> pinch(
+      WidgetTester tester,
+      Finder target,
+      double from,
+      double to,
+    ) async {
+      final centre = tester.getCenter(target);
+      final a = await tester.startGesture(centre - Offset(from / 2, 0));
+      final b = await tester.startGesture(centre + Offset(from / 2, 0));
+      for (var step = 1; step <= 5; step++) {
+        final span = from + (to - from) * step / 5;
+        await a.moveTo(centre - Offset(span / 2, 0));
+        await b.moveTo(centre + Offset(span / 2, 0));
+        await tester.pump();
+      }
+      await a.up();
+      await b.up();
+      await tester.pumpAndSettle();
+    }
+
+    /// The words of the dhikr on screen: the Quran font at its reading size.
+    Finder words() => find.descendant(
+      of: find.byType(DhikrCard),
+      matching: find.byWidgetPredicate(
+        (widget) =>
+            widget is Text &&
+            widget.style?.fontFamily == AppTokens.quranFontFamily &&
+            (widget.style?.fontSize ?? 0) >= 24,
+      ),
+    );
+
+    for (final entry in ['steps', 'list']) {
+      testWidgets('two fingers resize the words as they move, in the $entry, '
+          'and keep the size', (tester) async {
+        await pumpAdhkarApp(tester, catalog: fixtureCatalogWithPrayer());
+        await tapVisible(tester, find.text('ابدأ'));
+        await tester.pumpAndSettle();
+        if (entry == 'list') {
+          await tester.tap(find.text('عرض كقائمة'));
+          await tester.pumpAndSettle();
+        }
+        final container = ProviderScope.containerOf(
+          tester.element(find.byType(DhikrCard).first),
+        );
+        final before = tester.widget<Text>(words().first).style!.fontSize!;
+        expect(before, 24);
+        await pinch(tester, find.byType(DhikrCard).first, 100, 140);
+        final after = tester.widget<Text>(words().first).style!.fontSize!;
+        expect(after, closeTo(24 * 1.4, 24 * 0.03));
+        // Kept for the next time the adhkar are read.
+        expect(
+          container.read(settingsProvider).value!.adhkarFontScale,
+          closeTo(1.4, 0.03),
+        );
+        // Only the words changed: the rest of the app's text is as it was.
+        expect(
+          MediaQuery.textScalerOf(tester.element(find.byType(DhikrCard).first))
+              .scale(10),
+          10,
+        );
+        expect(tester.takeException(), isNull);
+      });
+    }
+
+    testWidgets('the size kept is the size the words open at', (tester) async {
+      await pumpAdhkarApp(
+        tester,
+        catalog: fixtureCatalogWithPrayer(),
+        adhkarFontScale: 1.5,
+      );
+      await tapVisible(tester, find.text('ابدأ'));
+      await tester.pumpAndSettle();
+      expect(
+        tester.widget<Text>(words().first).style!.fontSize,
+        closeTo(36, 0.01),
+      );
     });
   });
 
