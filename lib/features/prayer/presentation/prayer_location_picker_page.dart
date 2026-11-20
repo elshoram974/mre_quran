@@ -16,6 +16,7 @@ import '../application/place_search_provider.dart';
 import '../application/prayer_provider.dart';
 import '../domain/prayer_times.dart';
 import 'prayer_labels.dart';
+import 'location_problem_notice.dart';
 
 /// Lets a person choose the coordinates used for prayer times without asking
 /// for device-location permission.
@@ -42,6 +43,15 @@ class _PrayerLocationPickerPageState
   bool _searching = false;
   bool _locating = false;
 
+  /// Whether the chosen place is being saved: the alerts are planned again for
+  /// it, which takes a moment, and the page says so rather than seem stuck.
+  bool _saving = false;
+
+  /// What the chosen place is called, found in the background as it is chosen.
+  String? _selectedName;
+  PrayerPlace? _selectedNameFor;
+  Timer? _nameTimer;
+
   /// Whether the last search found no place at all. A search that found one
   /// and moved the map there is not a failed search.
   bool _notFound = false;
@@ -49,6 +59,7 @@ class _PrayerLocationPickerPageState
 
   @override
   void dispose() {
+    _nameTimer?.cancel();
     _searchController.dispose();
     super.dispose();
   }
@@ -110,7 +121,8 @@ class _PrayerLocationPickerPageState
               ),
             ),
           ),
-          if (_searching || _locating) const LinearProgressIndicator(),
+          if (_searching || _locating || _saving)
+            const LinearProgressIndicator(),
           Expanded(
             child: Stack(
               children: [
@@ -215,16 +227,22 @@ class _PrayerLocationPickerPageState
                         if (selected != null) ...[
                           const SizedBox(height: AppTokens.spaceSmall),
                           Text(
-                            l10n.prayerPlaceLine(
-                              formatPrayerCoordinate(
-                                selected.latitude,
-                                formatDigits,
-                              ),
-                              formatPrayerCoordinate(
-                                selected.longitude,
-                                formatDigits,
-                              ),
-                            ),
+                            // The name once it is found, else the numbers.
+                            selected.name != null ||
+                                    _selectedNameFor == selected
+                                ? l10n.prayerPlaceNamed(
+                                    selected.name ?? _selectedName!,
+                                  )
+                                : l10n.prayerPlaceLine(
+                                    formatPrayerCoordinate(
+                                      selected.latitude,
+                                      formatDigits,
+                                    ),
+                                    formatPrayerCoordinate(
+                                      selected.longitude,
+                                      formatDigits,
+                                    ),
+                                  ),
                             style: Theme.of(context).textTheme.labelLarge,
                           ),
                         ],
@@ -233,12 +251,29 @@ class _PrayerLocationPickerPageState
                   ),
                   if (_locationResult == PrayerResult.locationDenied) ...[
                     const SizedBox(height: AppTokens.spaceSmall),
-                    AppNotice(l10n.prayerLocationUnavailable, error: true),
+                    LocationProblemNotice(
+                      fallback: l10n.prayerLocationUnavailable,
+                    ),
                   ],
                   const SizedBox(height: AppTokens.spaceSmall),
                   FilledButton(
-                    onPressed: selected == null ? null : _save,
-                    child: Text(l10n.prayerMapSave),
+                    onPressed: selected == null || _saving ? null : _save,
+                    child: _saving
+                        ? Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.5,
+                                ),
+                              ),
+                              const SizedBox(width: AppTokens.spaceSmall),
+                              Text(l10n.prayerMapSaving),
+                            ],
+                          )
+                        : Text(l10n.prayerMapSave),
                   ),
                 ],
               ),
@@ -265,10 +300,29 @@ class _PrayerLocationPickerPageState
         _cameraTarget = target;
         _locationResult = PrayerResult.ok;
       });
+      _nameSelected(place);
       await _animateTo(target);
     } else {
       setState(() => _locationResult = PrayerResult.locationDenied);
     }
+  }
+
+  /// Looks up what [place] is called, a moment after the map stops moving, so
+  /// panning does not ask for a name at every step.
+  void _nameSelected(PrayerPlace place) {
+    _nameTimer?.cancel();
+    if (place.name != null) return;
+    _nameTimer = Timer(const Duration(milliseconds: 500), () async {
+      final locale = Localizations.localeOf(context);
+      final name = await ref
+          .read(placeNameSourceProvider)
+          .nameOf(place, locale);
+      if (!mounted || _selected != place || name == null) return;
+      setState(() {
+        _selectedName = name;
+        _selectedNameFor = place;
+      });
+    });
   }
 
   Future<void> _restoreSavedPlace(PrayerPlace place) async {
@@ -278,6 +332,7 @@ class _PrayerLocationPickerPageState
       _selected = place;
       _cameraTarget = target;
     });
+    _nameSelected(place);
     await _animateTo(target);
   }
 
@@ -310,6 +365,7 @@ class _PrayerLocationPickerPageState
       _cameraTarget = target;
       _searchResults = const [];
     });
+    _nameSelected(place);
     await _animateTo(target);
   }
 
@@ -327,15 +383,26 @@ class _PrayerLocationPickerPageState
   void _selectCameraTarget() {
     final target = _cameraTarget;
     if (target == null || !_mapInteractionStarted) return;
-    setState(() => _selected = PrayerPlace(target.latitude, target.longitude));
+    final place = PrayerPlace(target.latitude, target.longitude);
+    setState(() => _selected = place);
+    _nameSelected(place);
   }
 
   Future<void> _save() async {
     final selected = _selected;
-    if (selected == null) return;
-    await ref
-        .read(prayerProvider.notifier)
-        .setPlace(selected, automaticLocation: selected == _deviceFix);
+    if (selected == null || _saving) return;
+    setState(() => _saving = true);
+    // Keep the name found for it, so the prayer page can say it at once.
+    final named = selected.name == null && _selectedNameFor == selected
+        ? selected.withName(_selectedName)
+        : selected;
+    try {
+      await ref
+          .read(prayerProvider.notifier)
+          .setPlace(named, automaticLocation: selected == _deviceFix);
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
     if (mounted) context.pop();
   }
 

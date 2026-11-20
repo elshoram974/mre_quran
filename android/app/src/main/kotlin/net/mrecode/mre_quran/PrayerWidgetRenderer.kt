@@ -249,7 +249,8 @@ internal object PrayerWidgetRenderer {
         val availableHeight = height / fontScale
         val minimumDayHeight = (if (largerText) 120 else 96) + (if (showCountdown) 14 else 0)
         val upcoming = options["upcomingOnly"] == true || (height > 0 && availableHeight < minimumDayHeight)
-        val showDate = options["showDate"] != false && availableHeight >= maxOf(150, minimumDayHeight + 38)
+        // The body's padding grew by 8dp; the date needs that much more room.
+        val showDate = options["showDate"] != false && availableHeight >= maxOf(158, minimumDayHeight + 46)
         val upcomingCount = if (availableHeight in 1f..69f && (showCountdown || largerText)) 2 else 3
         val views = scheduleViews(context, model, now, upcoming, upcomingCount, showDate, options)
         HomeWidgets.applyBackground(context, views, R.id.schedule_root)

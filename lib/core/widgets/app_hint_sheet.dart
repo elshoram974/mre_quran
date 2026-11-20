@@ -12,6 +12,10 @@ import 'app_sheet.dart';
 /// "later", and a "don't remind me again" box, left clear. Returns whether
 /// the person took the action. With [once] the hint never comes again,
 /// whatever they choose, and the box is not offered.
+///
+/// A second way out can be offered beside the main one: [secondaryAction] is
+/// its label and [onSecondary] runs when it is chosen. [dismissLabel] words
+/// the button that just closes the hint ("Later" unless given).
 Future<bool> showAppHint(
   BuildContext context,
   WidgetRef ref, {
@@ -21,10 +25,13 @@ Future<bool> showAppHint(
   required String body,
   required String action,
   bool once = false,
+  String? secondaryAction,
+  VoidCallback? onSecondary,
+  String? dismissLabel,
 }) async {
   final notifier = ref.read(hintsProvider.notifier);
   if (!await notifier.take(hint) || !context.mounted) return false;
-  final answer = await AppSheet.show<({bool acted, bool never})>(
+  final answer = await AppSheet.show<_HintAnswer>(
     context: context,
     builder: (_) => _HintBody(
       icon: icon,
@@ -32,11 +39,16 @@ Future<bool> showAppHint(
       body: body,
       action: action,
       offerNever: !once,
+      secondaryAction: secondaryAction,
+      dismissLabel: dismissLabel,
     ),
   );
   if (once || (answer?.never ?? false)) await notifier.dismiss(hint);
+  if (answer?.secondary ?? false) onSecondary?.call();
   return answer?.acted ?? false;
 }
+
+typedef _HintAnswer = ({bool acted, bool never, bool secondary});
 
 class _HintBody extends StatefulWidget {
   const _HintBody({
@@ -45,6 +57,8 @@ class _HintBody extends StatefulWidget {
     required this.body,
     required this.action,
     required this.offerNever,
+    this.secondaryAction,
+    this.dismissLabel,
   });
 
   final IconData icon;
@@ -52,6 +66,8 @@ class _HintBody extends StatefulWidget {
   final String body;
   final String action;
   final bool offerNever;
+  final String? secondaryAction;
+  final String? dismissLabel;
 
   @override
   State<_HintBody> createState() => _HintBodyState();
@@ -64,8 +80,9 @@ class _HintBodyState extends State<_HintBody> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final theme = Theme.of(context);
-    void close(bool acted) =>
-        Navigator.of(context).pop((acted: acted, never: _never));
+    void close(bool acted, {bool secondary = false}) =>
+        Navigator.of(context)
+            .pop((acted: acted, never: _never, secondary: secondary));
     return Padding(
       padding: EdgeInsetsDirectional.fromSTEB(
         AppTokens.gutterCompact + 4,
@@ -100,9 +117,16 @@ class _HintBodyState extends State<_HintBody> {
             onPressed: () => close(true),
             child: Text(widget.action),
           ),
+          if (widget.secondaryAction case final secondary?) ...[
+            const SizedBox(height: AppTokens.spaceSmall),
+            OutlinedButton(
+              onPressed: () => close(false, secondary: true),
+              child: Text(secondary),
+            ),
+          ],
           TextButton(
             onPressed: () => close(false),
-            child: Text(l10n.hintLater),
+            child: Text(widget.dismissLabel ?? l10n.hintLater),
           ),
         ],
       ),

@@ -19,6 +19,7 @@ import '../../settings/application/settings_provider.dart';
 import '../data/location_source.dart';
 import '../data/prayer_repository.dart';
 import '../domain/prayer_alerts.dart';
+import 'place_search_provider.dart';
 import '../domain/prayer_times.dart';
 
 /// Provides the prayer store.
@@ -30,6 +31,22 @@ final prayerRepositoryProvider = Provider<PrayerRepository>(
 final locationSourceProvider = Provider<LocationSource>(
   (ref) => const GeolocatorLocationSource(),
 );
+
+/// Why the location could not be read the last time it was asked for, so the
+/// screens can say what to do. Cleared when a read works.
+final locationProblemProvider =
+    NotifierProvider<LocationProblemNotifier, LocationProblem>(
+      LocationProblemNotifier.new,
+    );
+
+/// Owns [locationProblemProvider].
+class LocationProblemNotifier extends Notifier<LocationProblem> {
+  @override
+  LocationProblem build() => LocationProblem.none;
+
+  /// Notes [problem].
+  void set(LocationProblem problem) => state = problem;
+}
 
 /// The id of the adhkar list the after-prayer reminder opens.
 const String afterPrayerCollectionId = 'after_prayer';
@@ -119,12 +136,45 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
     if (settings.needsSchedule) {
       final fresh = settings.automaticLocation ? await _location.quiet() : null;
       if (fresh != null) {
-        place = fresh;
-        unawaited(_repository.savePlace(fresh));
+        // The same spot keeps its name; a new one is named afresh.
+        place = place == fresh ? place : fresh;
+        unawaited(_repository.savePlace(place!));
       }
       unawaited(_schedule(settings, place));
     }
+    if (place != null) _nameLater(place);
     return PrayerState(settings: settings, place: place);
+  }
+
+  /// Asks for the location, and notes why when it cannot be had.
+  Future<PrayerPlace?> _requestPlace() async {
+    final place = await _location.request();
+    ref
+        .read(locationProblemProvider.notifier)
+        .set(place == null ? await _location.problem() : LocationProblem.none);
+    return place;
+  }
+
+  /// Finds [place]'s name in the background and keeps it with the place, so
+  /// the screens can say "Cairo, Egypt" rather than numbers. Nothing waits
+  /// for it; without a name the numbers still show.
+  void _nameLater(PrayerPlace place) {
+    if (place.name != null) return;
+    unawaited(_name(place));
+  }
+
+  Future<void> _name(PrayerPlace place) async {
+    final code = ref.read(settingsProvider).value?.localeCode ?? 'ar';
+    final name = await ref
+        .read(placeNameSourceProvider)
+        .nameOf(place, Locale(code));
+    final current = state.value;
+    // Still the place asked about, and not named meanwhile.
+    if (name == null || current == null || current.place != place) return;
+    if (current.place?.name != null) return;
+    final named = place.withName(name);
+    state = AsyncData(PrayerState(settings: current.settings, place: named));
+    unawaited(_repository.savePlace(named));
   }
 
   /// Reads the approximate location, asking for permission if needed. Call it
@@ -132,10 +182,11 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
   Future<PrayerResult> locate() async {
     final current = state.value;
     if (current == null) return PrayerResult.locationDenied;
-    final place = await _location.request();
+    final place = await _requestPlace();
     if (place == null) return PrayerResult.locationDenied;
     unawaited(_repository.savePlace(place));
     await _apply(current.settings.copyWith(automaticLocation: true), place);
+    _nameLater(place);
     return PrayerResult.ok;
   }
 
@@ -152,10 +203,11 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
       current.settings.copyWith(automaticLocation: automaticLocation),
       place,
     );
+    _nameLater(place);
   }
 
   /// Reads the device location for a map preview without saving it.
-  Future<PrayerPlace?> previewDeviceLocation() => _location.request();
+  Future<PrayerPlace?> previewDeviceLocation() => _requestPlace();
 
   /// Turns the alert at the time of [prayer] on or off.
   Future<PrayerResult> setAlert(DailyPrayer prayer, bool on) => setAlerts({
@@ -236,7 +288,7 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
         return PrayerResult.notificationsDenied;
       }
       if (place == null) {
-        place = await _location.request();
+        place = await _requestPlace();
         if (place == null) return PrayerResult.locationDenied;
         unawaited(_repository.savePlace(place));
       }

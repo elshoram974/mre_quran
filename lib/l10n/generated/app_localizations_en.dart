@@ -328,12 +328,19 @@ class AppLocalizationsEn extends AppLocalizations {
       'A suggested adhkar list and your progress; tap to open it.';
 
   @override
-  String get hintOfflineTitle => 'Note: the Mushaf needs the internet';
+  String get hintOfflineTitle =>
+      'The Mushaf needs the internet, just the first time';
 
   @override
   String hintOfflineBody(String size) {
-    return 'The Mushaf\'s pages are downloaded when you open them. Pages you have opened once stay on your device and work offline; the others will not show without a connection. Download the whole Mushaf ($size MB) so it works anytime, anywhere.';
+    return 'Every page you open is saved on your phone, and opens later without the internet. You can also download the whole Mushaf once ($size MB), or read it as text, which never needs the internet.';
   }
+
+  @override
+  String get hintOfflineText => 'Read as text, no internet needed';
+
+  @override
+  String get hintGotIt => 'OK, got it';
 
   @override
   String hintOfflineAction(String name) {
@@ -630,6 +637,32 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get prayerMapSelect => 'Tap the map to choose a place';
+
+  @override
+  String prayerPlaceNamed(String name) {
+    return 'Location: $name';
+  }
+
+  @override
+  String get prayerMapSaving => 'Saving…';
+
+  @override
+  String get locationOffMessage =>
+      'Location is switched off on your phone. Turn it on, then come back here.';
+
+  @override
+  String get locationOffAction => 'Turn on location';
+
+  @override
+  String get locationDeniedMessage =>
+      'The app needs your OK to know where you are. Press the button again and choose “Allow”.';
+
+  @override
+  String get locationBlockedMessage =>
+      'Location is blocked for this app. Open settings and allow it.';
+
+  @override
+  String get locationBlockedAction => 'Open settings';
 
   @override
   String prayerPlaceLine(String latitude, String longitude) {
@@ -1557,8 +1590,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'Couldn\'t load this page. Check your internet connection.';
 
   @override
+  String get printedPageDownload => 'Download the whole reading';
+
+  @override
   String get printedPageOffline =>
-      'You are offline and this page is not on the device yet. Download the Mushaf from \"Offline Mushaf\" to read without internet.';
+      'There is no internet right now, and this page is not saved on your phone yet. Pages you opened before work without the internet. Connect and try again, or download the whole reading.';
 
   @override
   String printedPageLabel(String number) {

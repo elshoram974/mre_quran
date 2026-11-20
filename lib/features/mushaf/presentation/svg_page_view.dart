@@ -317,7 +317,7 @@ class _SvgBody extends ConsumerWidget {
           TextButton.icon(
             onPressed: () => context.go(AppRoute.settings.path),
             icon: const Icon(Icons.download_for_offline_outlined),
-            label: Text(l10n.offlineMushaf),
+            label: Text(l10n.printedPageDownload),
           ),
         ],
       ),

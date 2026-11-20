@@ -22,8 +22,9 @@ enum DailyPrayer {
 /// A place rounded to four decimal degrees, about eleven metres of latitude.
 @immutable
 class PrayerPlace {
-  /// Creates a place, rounding to four decimals.
-  PrayerPlace(double latitude, double longitude)
+  /// Creates a place, rounding to four decimals. [name] is what the place is
+  /// called ("Cairo, Egypt"), when it is known.
+  PrayerPlace(double latitude, double longitude, {this.name})
     : latitude = (latitude * 10000).roundToDouble() / 10000,
       longitude = (longitude * 10000).roundToDouble() / 10000;
 
@@ -41,7 +42,12 @@ class PrayerPlace {
         lng > 180) {
       return null;
     }
-    return PrayerPlace(lat.toDouble(), lng.toDouble());
+    final name = json['name'];
+    return PrayerPlace(
+      lat.toDouble(),
+      lng.toDouble(),
+      name: name is String && name.trim().isNotEmpty ? name.trim() : null,
+    );
   }
 
   /// Degrees north.
@@ -50,8 +56,21 @@ class PrayerPlace {
   /// Degrees east.
   final double longitude;
 
+  /// What the place is called, such as "Cairo, Egypt"; null when not known
+  /// (offline, or the phone has no geocoder). It is not part of what makes two
+  /// places the same: the same point with and without a name is one place.
+  final String? name;
+
+  /// The same place, called [name].
+  PrayerPlace withName(String? name) =>
+      PrayerPlace(latitude, longitude, name: name);
+
   /// Compact form for storage.
-  Map<String, Object?> toJson() => {'lat': latitude, 'lng': longitude};
+  Map<String, Object?> toJson() => {
+    'lat': latitude,
+    'lng': longitude,
+    if (name != null) 'name': name,
+  };
 
   @override
   bool operator ==(Object other) =>

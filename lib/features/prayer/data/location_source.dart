@@ -3,8 +3,30 @@ import 'package:geolocator/geolocator.dart';
 import '../../../core/diagnostics/app_logger.dart';
 import '../domain/prayer_times.dart';
 
+/// What stands in the way of reading the location.
+enum LocationProblem {
+  /// Nothing: it can be read.
+  none,
+
+  /// Location is switched off on the phone.
+  serviceOff,
+
+  /// The person has not allowed it, and can be asked again.
+  denied,
+
+  /// It is blocked for good: only the phone's settings can allow it.
+  blocked,
+}
+
 /// Finds where the device is, only roughly, to work out prayer times.
 abstract interface class LocationSource {
+  /// Why [request] cannot find the place now. [LocationProblem.none] when
+  /// nothing stands in the way. Never asks for anything.
+  Future<LocationProblem> problem();
+
+  /// Opens the phone's settings, where [problem] is put right.
+  Future<void> openSettings(LocationProblem problem);
+
   /// Asks for permission if it is needed, then returns a rounded place.
   /// Returns null when the person says no, or location is off. Call it only
   /// from an action the person took.
@@ -35,6 +57,36 @@ class GeolocatorLocationSource implements LocationSource {
     } on Object catch (error) {
       AppLogger.debug('Location request failed: ${error.runtimeType}');
       return null;
+    }
+  }
+
+  @override
+  Future<LocationProblem> problem() async {
+    try {
+      if (!await Geolocator.isLocationServiceEnabled()) {
+        return LocationProblem.serviceOff;
+      }
+      return switch (await Geolocator.checkPermission()) {
+        LocationPermission.denied => LocationProblem.denied,
+        LocationPermission.deniedForever => LocationProblem.blocked,
+        _ => LocationProblem.none,
+      };
+    } on Object catch (error) {
+      AppLogger.debug('Location check failed: ${error.runtimeType}');
+      return LocationProblem.none;
+    }
+  }
+
+  @override
+  Future<void> openSettings(LocationProblem problem) async {
+    try {
+      if (problem == LocationProblem.serviceOff) {
+        await Geolocator.openLocationSettings();
+      } else {
+        await Geolocator.openAppSettings();
+      }
+    } on Object catch (error) {
+      AppLogger.debug('Settings did not open: ${error.runtimeType}');
     }
   }
 

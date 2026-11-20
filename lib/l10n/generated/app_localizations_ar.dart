@@ -323,12 +323,18 @@ class AppLocalizationsAr extends AppLocalizations {
       'قائمة أذكار مقترحة وتقدمك فيها؛ اضغط لفتحها.';
 
   @override
-  String get hintOfflineTitle => 'انتبه: المصحف يحتاج الإنترنت';
+  String get hintOfflineTitle => 'المصحف يحتاج الإنترنت أول مرة فقط';
 
   @override
   String hintOfflineBody(String size) {
-    return 'صفحات المصحف تُحمَّل من الإنترنت عند فتحها. الصفحات التي فتحتها مرة تبقى على جهازك وتعمل دون إنترنت، أما غيرها فلن يظهر بلا اتصال. نزّل المصحف كاملًا ($size م.ب) ليعمل في أي وقت ومكان.';
+    return 'كل صفحة تفتحها تُحفظ على هاتفك، وتفتح بعد ذلك دون إنترنت. يمكنك أيضًا تنزيل المصحف كله مرة واحدة ($size م.ب)، أو قراءته كنص لا يحتاج إنترنت أبدًا.';
   }
+
+  @override
+  String get hintOfflineText => 'اقرأ كنصّ بدون إنترنت';
+
+  @override
+  String get hintGotIt => 'حسنًا، فهمت';
 
   @override
   String hintOfflineAction(String name) {
@@ -623,6 +629,31 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get prayerMapSelect => 'اضغط على الخريطة لتحديد موقع';
+
+  @override
+  String prayerPlaceNamed(String name) {
+    return 'الموقع: $name';
+  }
+
+  @override
+  String get prayerMapSaving => 'جارٍ الحفظ…';
+
+  @override
+  String get locationOffMessage => 'الموقع مقفول على هاتفك. شغّله ثم ارجع هنا.';
+
+  @override
+  String get locationOffAction => 'تشغيل الموقع';
+
+  @override
+  String get locationDeniedMessage =>
+      'لازم تسمح للتطبيق بمعرفة مكانك. اضغط الزر مرة أخرى واختر «السماح».';
+
+  @override
+  String get locationBlockedMessage =>
+      'إذن الموقع مقفول للتطبيق. افتح الإعدادات واسمح به.';
+
+  @override
+  String get locationBlockedAction => 'فتح الإعدادات';
 
   @override
   String prayerPlaceLine(String latitude, String longitude) {
@@ -1554,8 +1585,11 @@ class AppLocalizationsAr extends AppLocalizations {
       'تعذّر تحميل الصفحة. تأكد من الاتصال بالإنترنت.';
 
   @override
+  String get printedPageDownload => 'نزّل الرواية كلها';
+
+  @override
   String get printedPageOffline =>
-      'لا يوجد اتصال بالإنترنت، وهذه الصفحة ليست على الجهاز بعد. حمّل المصحف من «المصحف دون اتصال» ليعمل بلا إنترنت.';
+      'لا يوجد إنترنت الآن، وهذه الصفحة لم تُحفظ على هاتفك بعد. الصفحات التي فتحتها من قبل تعمل بلا إنترنت. اتصل بالإنترنت وحاول مرة أخرى، أو نزّل الرواية كلها.';
 
   @override
   String printedPageLabel(String number) {

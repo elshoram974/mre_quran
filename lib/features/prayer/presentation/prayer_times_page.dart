@@ -26,6 +26,7 @@ import '../../settings/application/digits_provider.dart';
 import '../application/prayer_provider.dart';
 import '../domain/prayer_alerts.dart';
 import '../domain/prayer_times.dart';
+import 'location_problem_notice.dart';
 import 'prayer_labels.dart';
 import 'prayer_no_place.dart';
 import '../../home_widgets/presentation/widget_hint.dart';
@@ -383,10 +384,20 @@ class _Content extends ConsumerWidget {
           children: [
             Expanded(
               child: Text(
-                l10n.prayerPlaceLine(
-                  formatPrayerCoordinate(place.latitude, formatDisplayDigits),
-                  formatPrayerCoordinate(place.longitude, formatDisplayDigits),
-                ),
+                // What the place is called, once it is known; the numbers
+                // only until then.
+                place.name != null
+                    ? l10n.prayerPlaceNamed(place.name!)
+                    : l10n.prayerPlaceLine(
+                        formatPrayerCoordinate(
+                          place.latitude,
+                          formatDisplayDigits,
+                        ),
+                        formatPrayerCoordinate(
+                          place.longitude,
+                          formatDisplayDigits,
+                        ),
+                      ),
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
@@ -409,12 +420,9 @@ class _Content extends ConsumerWidget {
         if (result != PrayerResult.ok)
           Padding(
             padding: const EdgeInsets.only(top: 8),
-            child: AppNotice(
-              result == PrayerResult.locationDenied
-                  ? l10n.adhkarLocationDenied
-                  : l10n.adhkarPermissionDenied,
-              error: true,
-            ),
+            child: result == PrayerResult.locationDenied
+                ? LocationProblemNotice(fallback: l10n.adhkarLocationDenied)
+                : AppNotice(l10n.adhkarPermissionDenied, error: true),
           ),
       ],
     );

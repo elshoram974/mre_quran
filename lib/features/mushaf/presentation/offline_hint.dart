@@ -65,6 +65,10 @@ class _OfflineMushafHintState extends ConsumerState<OfflineMushafHint> {
         title: l10n.hintOfflineTitle,
         body: l10n.hintOfflineBody(digits(megabytes)),
         action: l10n.hintOfflineAction(edition.name(l10n.localeName)),
+        // Hafs has its text in the app, which needs no internet at all.
+        secondaryAction: edition.matchesAppText ? l10n.hintOfflineText : null,
+        onSecondary: _showAsText,
+        dismissLabel: l10n.hintGotIt,
       );
       if (!download || !mounted) return;
       final messenger = ScaffoldMessenger.maybeOf(context);
@@ -80,6 +84,15 @@ class _OfflineMushafHintState extends ConsumerState<OfflineMushafHint> {
     } finally {
       _checking = false;
     }
+  }
+
+  /// Switches the reader to typeset text, which is in the app.
+  void _showAsText() {
+    final settings = ref.read(settingsProvider).value;
+    if (settings == null) return;
+    ref
+        .read(settingsProvider.notifier)
+        .save(settings.copyWith(readerMode: ReaderMode.text));
   }
 
   @override

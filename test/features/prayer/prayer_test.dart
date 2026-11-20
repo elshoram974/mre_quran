@@ -1,9 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geocoding/geocoding.dart' show Placemark;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mre_quran/core/notifications/reminder_scheduler.dart';
 import 'package:mre_quran/core/notifications/reminder_scheduler_provider.dart';
 import 'package:mre_quran/core/time/ticking_clock.dart';
+import 'package:mre_quran/features/prayer/application/place_search_provider.dart';
 import 'package:mre_quran/features/prayer/application/prayer_provider.dart';
+import 'package:mre_quran/features/prayer/data/location_source.dart';
+import 'package:mre_quran/features/prayer/data/place_name_source.dart';
 import 'package:mre_quran/features/prayer/domain/prayer_alerts.dart';
 import 'package:mre_quran/features/prayer/domain/prayer_times.dart';
 import 'package:mre_quran/features/prayer/presentation/prayer_labels.dart';
@@ -281,15 +285,63 @@ void main() {
     });
   });
 
+  group('a place and its name', () {
+    test('the name is kept in storage, and the same point is one place', () {
+      final named = PrayerPlace(30.0444, 31.2357, name: 'Cairo, Egypt');
+      expect(PrayerPlace.tryFromJson(named.toJson())?.name, 'Cairo, Egypt');
+      expect(named, PrayerPlace(30.0444, 31.2357));
+      expect(named.hashCode, PrayerPlace(30.0444, 31.2357).hashCode);
+      // A place saved before names existed has none.
+      expect(PrayerPlace.tryFromJson({'lat': 30.0, 'lng': 31.0})?.name, isNull);
+      expect(
+        PrayerPlace.tryFromJson({'lat': 30.0, 'lng': 31.0, 'name': '  '})?.name,
+        isNull,
+      );
+      expect(named.withName(null).name, isNull);
+    });
+
+    test('a name is the city and the country, without repeating one', () {
+      String? label({
+        String? city,
+        String? district,
+        String? region,
+        String? country,
+      }) => PlatformPlaceNameSource.labelOf(
+        Placemark(
+          locality: city,
+          subAdministrativeArea: district,
+          administrativeArea: region,
+          country: country,
+        ),
+      );
+      expect(label(city: 'Cairo', country: 'Egypt'), 'Cairo, Egypt');
+      expect(
+        label(district: 'Giza', region: 'Cairo', country: 'Egypt'),
+        'Giza, Egypt',
+      );
+      expect(
+        label(region: 'Cairo Governorate', country: 'Egypt'),
+        'Cairo Governorate, Egypt',
+      );
+      expect(label(city: 'Singapore', country: 'Singapore'), 'Singapore');
+      expect(label(country: 'Egypt'), 'Egypt');
+      expect(label(city: '  ', country: ''), isNull);
+    });
+  });
+
   group('PrayerNotifier', () {
     ProviderContainer container({
       required FakeReminderScheduler scheduler,
       required FakeLocationSource location,
       MemoryPrayerRepository? repository,
       MemorySettingsRepository? settings,
+      FakePlaceNameSource? names,
     }) {
       final c = ProviderContainer(
         overrides: [
+          placeNameSourceProvider.overrideWithValue(
+            names ?? FakePlaceNameSource(),
+          ),
           reminderSchedulerProvider.overrideWithValue(scheduler),
           locationSourceProvider.overrideWithValue(location),
           prayerRepositoryProvider.overrideWithValue(
@@ -358,6 +410,79 @@ void main() {
         expect(c.read(prayerProvider).value!.method, PrayerMethod.ummAlQura);
       },
     );
+
+    test(
+      'a located place is named in the background and keeps its name',
+      () async {
+        final repo = MemoryPrayerRepository();
+        final names = FakePlaceNameSource('Riyadh, Saudi Arabia');
+        final c = container(
+          scheduler: FakeReminderScheduler(),
+          location: FakeLocationSource(
+            requestResult: PrayerPlace(24.71, 46.68),
+          ),
+          repository: repo,
+          names: names,
+        );
+        await c.read(prayerProvider.future);
+        await c.read(prayerProvider.notifier).locate();
+        // Nothing waited for the name; it arrives behind.
+        await Future<void>.delayed(Duration.zero);
+        expect(
+          c.read(prayerProvider).value!.place?.name,
+          'Riyadh, Saudi Arabia',
+        );
+        expect(repo.place?.name, 'Riyadh, Saudi Arabia');
+        expect(c.read(prayerProvider).value!.method, PrayerMethod.ummAlQura);
+      },
+    );
+
+    test('a map place that is already named is not asked for again', () async {
+      final names = FakePlaceNameSource('Somewhere');
+      final c = container(
+        scheduler: FakeReminderScheduler(),
+        location: FakeLocationSource(),
+        names: names,
+      );
+      await c.read(prayerProvider.future);
+      await c
+          .read(prayerProvider.notifier)
+          .setPlace(PrayerPlace(21.42, 39.83, name: 'Makkah, Saudi Arabia'));
+      await Future<void>.delayed(Duration.zero);
+      expect(names.asked, isEmpty);
+      expect(c.read(prayerProvider).value!.place?.name, 'Makkah, Saudi Arabia');
+    });
+
+    test('with no name to be found, the place stays as it is', () async {
+      final c = container(
+        scheduler: FakeReminderScheduler(),
+        location: FakeLocationSource(requestResult: _cairo),
+        names: FakePlaceNameSource(),
+      );
+      await c.read(prayerProvider.future);
+      await c.read(prayerProvider.notifier).locate();
+      await Future<void>.delayed(Duration.zero);
+      expect(c.read(prayerProvider).value!.place, _cairo);
+      expect(c.read(prayerProvider).value!.place?.name, isNull);
+    });
+
+    test('a refused location says why, and a good one clears it', () async {
+      final location = FakeLocationSource()
+        ..blocking = LocationProblem.serviceOff;
+      final c = container(
+        scheduler: FakeReminderScheduler(),
+        location: location,
+      );
+      await c.read(prayerProvider.future);
+      await c.read(prayerProvider.notifier).locate();
+      expect(c.read(locationProblemProvider), LocationProblem.serviceOff);
+
+      location
+        ..blocking = LocationProblem.none
+        ..requestResult = _cairo;
+      await c.read(prayerProvider.notifier).locate();
+      expect(c.read(locationProblemProvider), LocationProblem.none);
+    });
 
     test('a refused location leaves everything as it was', () async {
       final c = container(

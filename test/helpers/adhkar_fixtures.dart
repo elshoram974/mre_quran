@@ -1,9 +1,12 @@
+import 'package:flutter/widgets.dart' show Locale;
+
 import 'dart:async';
 
 import 'package:mre_quran/core/haptics/haptics.dart';
 import 'package:mre_quran/features/adhkar/data/adhkar_progress_repository.dart';
 import 'package:mre_quran/features/adhkar/data/adhkar_source.dart';
 import 'package:mre_quran/features/adhkar/data/favorites_repository.dart';
+import 'package:mre_quran/features/prayer/data/place_name_source.dart';
 import 'package:mre_quran/features/prayer/data/location_source.dart';
 import 'package:mre_quran/features/prayer/data/prayer_repository.dart';
 import 'package:mre_quran/core/notifications/reminder_scheduler.dart';
@@ -304,6 +307,19 @@ class FakeLocationSource implements LocationSource {
   int requests = 0;
   int quietReads = 0;
 
+  /// What [problem] answers.
+  LocationProblem blocking = LocationProblem.none;
+
+  /// The problems whose settings were opened.
+  final List<LocationProblem> openedSettings = [];
+
+  @override
+  Future<LocationProblem> problem() async => blocking;
+
+  @override
+  Future<void> openSettings(LocationProblem problem) async =>
+      openedSettings.add(problem);
+
   @override
   Future<PrayerPlace?> request() async {
     requests++;
@@ -314,6 +330,20 @@ class FakeLocationSource implements LocationSource {
   Future<PrayerPlace?> quiet() async {
     quietReads++;
     return quietResult;
+  }
+}
+
+/// Names places from a fixed answer, and counts the asks.
+class FakePlaceNameSource implements PlaceNameSource {
+  FakePlaceNameSource([this.name]);
+
+  String? name;
+  final List<PrayerPlace> asked = [];
+
+  @override
+  Future<String?> nameOf(PrayerPlace place, Locale locale) async {
+    asked.add(place);
+    return name;
   }
 }
 

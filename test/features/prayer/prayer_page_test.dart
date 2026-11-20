@@ -9,6 +9,7 @@ import 'package:mre_quran/core/notifications/reminder_scheduler_provider.dart';
 import 'package:mre_quran/core/theme/app_theme.dart';
 import 'package:mre_quran/core/time/ticking_clock.dart';
 import 'package:mre_quran/features/prayer/application/prayer_provider.dart';
+import 'package:mre_quran/features/prayer/data/location_source.dart';
 import 'package:mre_quran/features/prayer/domain/prayer_times.dart';
 import 'package:mre_quran/features/prayer/presentation/prayer_times_card.dart';
 import 'package:mre_quran/features/prayer/presentation/prayer_times_page.dart';
@@ -106,6 +107,64 @@ Future<_Harness> _pump(
 }
 
 void main() {
+  group('the place and what stops it', () {
+    testWidgets('a named place shows its name, not its numbers', (
+      tester,
+    ) async {
+      final named = PrayerPlace(30.04, 31.24, name: 'القاهرة، مصر');
+      await _pump(tester, place: named);
+      await _reveal(tester, find.text('الموقع: القاهرة، مصر'));
+      expect(find.textContaining('الإحداثيات'), findsNothing);
+    });
+
+    testWidgets('a place with no name yet shows its numbers', (tester) async {
+      await _pump(tester, place: _cairo);
+      await _reveal(tester, find.textContaining('الإحداثيات'));
+    });
+
+    testWidgets(
+      'location switched off says so, with a button to the settings',
+      (tester) async {
+        final location = FakeLocationSource()
+          ..blocking = LocationProblem.serviceOff;
+        await _pump(tester, location: location);
+        await tester.tap(find.text('استخدم موقعي'));
+        await tester.pumpAndSettle();
+        expect(find.textContaining('الموقع مقفول على هاتفك'), findsOneWidget);
+        await tester.tap(find.text('تشغيل الموقع'));
+        await tester.pumpAndSettle();
+        expect(location.openedSettings, [LocationProblem.serviceOff]);
+      },
+    );
+
+    testWidgets('an allowance blocked for good has a button too', (
+      tester,
+    ) async {
+      final location = FakeLocationSource()..blocking = LocationProblem.blocked;
+      await _pump(tester, location: location);
+      await tester.tap(find.text('استخدم موقعي'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('إذن الموقع مقفول'), findsOneWidget);
+      await tester.tap(find.text('فتح الإعدادات'));
+      await tester.pumpAndSettle();
+      expect(location.openedSettings, [LocationProblem.blocked]);
+    });
+
+    testWidgets(
+      'a plain refusal says to press again, with no settings button',
+      (tester) async {
+        final location = FakeLocationSource()
+          ..blocking = LocationProblem.denied;
+        await _pump(tester, location: location);
+        await tester.tap(find.text('استخدم موقعي'));
+        await tester.pumpAndSettle();
+        expect(find.textContaining('اضغط الزر مرة أخرى'), findsOneWidget);
+        expect(find.text('فتح الإعدادات'), findsNothing);
+        expect(find.text('تشغيل الموقع'), findsNothing);
+      },
+    );
+  });
+
   group('without a place', () {
     testWidgets('asks to use the location, then shows the day', (tester) async {
       final harness = await _pump(tester);

@@ -489,8 +489,10 @@ void main() {
       load: (_) async => throw const SocketException('offline'),
     );
     await tester.pump(const Duration(milliseconds: 400));
-    expect(find.textContaining('لا يوجد اتصال بالإنترنت'), findsOneWidget);
+    expect(find.textContaining('لا يوجد إنترنت الآن'), findsOneWidget);
     expect(find.text('إعادة المحاولة'), findsOneWidget);
-    expect(find.text('المصحف دون اتصال'), findsOneWidget);
+    // It says what is saved, and the button says what to do.
+    expect(find.textContaining('الصفحات التي فتحتها من قبل'), findsOneWidget);
+    expect(find.text('نزّل الرواية كلها'), findsOneWidget);
   });
 }

@@ -683,14 +683,26 @@ abstract class AppLocalizations {
   /// No description provided for @hintOfflineTitle.
   ///
   /// In en, this message translates to:
-  /// **'Note: the Mushaf needs the internet'**
+  /// **'The Mushaf needs the internet, just the first time'**
   String get hintOfflineTitle;
 
   /// No description provided for @hintOfflineBody.
   ///
   /// In en, this message translates to:
-  /// **'The Mushaf\'s pages are downloaded when you open them. Pages you have opened once stay on your device and work offline; the others will not show without a connection. Download the whole Mushaf ({size} MB) so it works anytime, anywhere.'**
+  /// **'Every page you open is saved on your phone, and opens later without the internet. You can also download the whole Mushaf once ({size} MB), or read it as text, which never needs the internet.'**
   String hintOfflineBody(String size);
+
+  /// No description provided for @hintOfflineText.
+  ///
+  /// In en, this message translates to:
+  /// **'Read as text, no internet needed'**
+  String get hintOfflineText;
+
+  /// No description provided for @hintGotIt.
+  ///
+  /// In en, this message translates to:
+  /// **'OK, got it'**
+  String get hintGotIt;
 
   /// No description provided for @hintOfflineAction.
   ///
@@ -1212,6 +1224,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tap the map to choose a place'**
   String get prayerMapSelect;
+
+  /// No description provided for @prayerPlaceNamed.
+  ///
+  /// In en, this message translates to:
+  /// **'Location: {name}'**
+  String prayerPlaceNamed(String name);
+
+  /// No description provided for @prayerMapSaving.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving…'**
+  String get prayerMapSaving;
+
+  /// No description provided for @locationOffMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Location is switched off on your phone. Turn it on, then come back here.'**
+  String get locationOffMessage;
+
+  /// No description provided for @locationOffAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on location'**
+  String get locationOffAction;
+
+  /// No description provided for @locationDeniedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'The app needs your OK to know where you are. Press the button again and choose “Allow”.'**
+  String get locationDeniedMessage;
+
+  /// No description provided for @locationBlockedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Location is blocked for this app. Open settings and allow it.'**
+  String get locationBlockedMessage;
+
+  /// No description provided for @locationBlockedAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Open settings'**
+  String get locationBlockedAction;
 
   /// No description provided for @prayerPlaceLine.
   ///
@@ -2749,10 +2803,16 @@ abstract class AppLocalizations {
   /// **'Couldn\'t load this page. Check your internet connection.'**
   String get printedPageError;
 
+  /// No description provided for @printedPageDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Download the whole reading'**
+  String get printedPageDownload;
+
   /// No description provided for @printedPageOffline.
   ///
   /// In en, this message translates to:
-  /// **'You are offline and this page is not on the device yet. Download the Mushaf from \"Offline Mushaf\" to read without internet.'**
+  /// **'There is no internet right now, and this page is not saved on your phone yet. Pages you opened before work without the internet. Connect and try again, or download the whole reading.'**
   String get printedPageOffline;
 
   /// No description provided for @printedPageLabel.
