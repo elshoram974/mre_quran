@@ -411,3 +411,14 @@
 - **Padding follows the size**, like the text: every prayer widget scales its padding with `WidgetScale`.
 - **Not decided yet:** the native text that is not sent from the app (the widget's name, the empty-state line)
   still follows the phone's language.
+
+## D-045: Weekly reminders come from a JSON file, and the widgets page is a list of sections
+
+- **Decision:** Reminders that repeat on a weekday are listed in `assets/reminders/weekly.json` (schema 1: `id`,
+  `weekday` 1–7 from Monday, `time`, Arabic and English title and body, an optional `surah` to open). Adding one
+  needs no code: `WeeklyRemindersNotifier` schedules each with `DateTimeComponents.dayOfWeekAndTime`, remembers
+  whether the person turned it on and at what time, and a tap opens the surah. The first entry is Friday's
+  Surat Al-Kahf (`friday_kahf`, 09:00). An entry that does not parse is skipped, never fatal.
+- **The widgets page** keeps the settings for every widget (colours, language) at the top, then one section per
+  widget that opens to its preview and the settings that belong to it alone (today only the prayer schedule's).
+  Each header says what the widget is and has its own *Add* button.

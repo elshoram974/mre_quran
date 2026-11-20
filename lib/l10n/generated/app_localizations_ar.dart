@@ -306,6 +306,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get widgetPreviewAdhkarTitle => 'أذكار الصباح';
 
   @override
+  String get widgetsGeneral => 'إعدادات عامة لكل الويدجتس';
+
+  @override
+  String get widgetsEach => 'كل ويدجت وإعداداته';
+
+  @override
   String get widgetLanguage => 'لغة الويدجتس';
 
   @override

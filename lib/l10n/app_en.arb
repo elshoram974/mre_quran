@@ -92,6 +92,8 @@
   "widgetScheduleLargeTextHint": "Fewer prayers may be shown when space is limited.",
   "widgetScheduleSaveFailed": "Could not save widget settings. Try again.",
   "widgetPreviewAdhkarTitle": "Morning adhkar",
+  "widgetsGeneral": "Settings for all widgets",
+  "widgetsEach": "Each widget and its settings",
   "widgetLanguage": "Widgets language",
   "widgetLanguageSameAsApp": "Same as the app",
   "widgetLanguageHint": "Changes the widgets' words, dates and clock, and updates them on the home screen at once.",

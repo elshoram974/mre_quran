@@ -311,6 +311,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get widgetPreviewAdhkarTitle => 'Morning adhkar';
 
   @override
+  String get widgetsGeneral => 'Settings for all widgets';
+
+  @override
+  String get widgetsEach => 'Each widget and its settings';
+
+  @override
   String get widgetLanguage => 'Widgets language';
 
   @override

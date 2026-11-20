@@ -650,6 +650,18 @@ abstract class AppLocalizations {
   /// **'Morning adhkar'**
   String get widgetPreviewAdhkarTitle;
 
+  /// No description provided for @widgetsGeneral.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings for all widgets'**
+  String get widgetsGeneral;
+
+  /// No description provided for @widgetsEach.
+  ///
+  /// In en, this message translates to:
+  /// **'Each widget and its settings'**
+  String get widgetsEach;
+
   /// No description provided for @widgetLanguage.
   ///
   /// In en, this message translates to:

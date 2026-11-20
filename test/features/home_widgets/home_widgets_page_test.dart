@@ -19,6 +19,20 @@ import '../../helpers/memory_settings_repository.dart';
 Finder _name(String title) =>
     find.descendant(of: find.byType(AppTileCard), matching: find.text(title));
 
+/// Opens a widget's section, as a person taps it: its preview and the settings
+/// that belong to it alone.
+Future<void> _openSection(WidgetTester tester, String title) async {
+  await tester.scrollUntilVisible(
+    _name(title),
+    180,
+    scrollable: find.byType(Scrollable).first,
+  );
+  await tester.ensureVisible(_name(title));
+  await tester.pumpAndSettle();
+  await tester.tap(_name(title));
+  await tester.pumpAndSettle();
+}
+
 Future<FakeHomeWidgets> _pump(
   WidgetTester tester, {
   bool pinnable = true,
@@ -113,6 +127,7 @@ void main() {
     tester,
   ) async {
     await _pump(tester);
+    await _openSection(tester, 'بطاقة الصلاة');
     expect(find.byType(HomeWidgetPreview, skipOffstage: false), findsWidgets);
     expect(find.byType(Image), findsNothing);
     // The sample day the picker shows, in the app's language.
@@ -122,11 +137,7 @@ void main() {
 
   testWidgets('the dhikr preview draws its progress bar', (tester) async {
     await _pump(tester);
-    await tester.scrollUntilVisible(
-      _name('ذكر مقترح'),
-      180,
-      scrollable: find.byType(Scrollable).first,
-    );
+    await _openSection(tester, 'ذكر مقترح');
     final bar = find.byWidgetPredicate(
       (widget) => widget is ColoredBox && widget.color == WidgetPalette.accent,
       skipOffstage: false,
@@ -139,14 +150,15 @@ void main() {
     tester,
   ) async {
     await _pump(tester);
-    expect(find.text('Next prayer'), findsNothing);
+    // The choice is among the settings for all widgets, at the top.
     await tester.tap(find.text('مثل لغة التطبيق'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('English').last);
     await tester.pumpAndSettle();
-    // The previews now speak English, while the page stays Arabic.
+    await _openSection(tester, 'بطاقة الصلاة');
+    // The preview now speaks English, while the page stays Arabic.
     expect(find.text('Next prayer'), findsWidgets);
-    expect(find.text('لغة الويدجتس'), findsOneWidget);
+    expect(find.text('لغة الويدجتس', skipOffstage: false), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -185,6 +197,7 @@ void main() {
     tester,
   ) async {
     final widgets = await _pump(tester, locale: 'en');
+    await _openSection(tester, 'Today\'s prayer times');
     final sunrise = find.text('Show sunrise');
     await tester.scrollUntilVisible(
       sunrise,
@@ -217,6 +230,7 @@ void main() {
     tester,
   ) async {
     final widgets = await _pump(tester, locale: 'en');
+    await _openSection(tester, 'Today\'s prayer times');
     final countdown = find.text('Time until the next prayer');
     final seconds = find.text('Seconds on the prayer widgets');
     await tester.scrollUntilVisible(
@@ -240,6 +254,7 @@ void main() {
     tester,
   ) async {
     final widgets = await _pump(tester, locale: 'en');
+    await _openSection(tester, 'Today\'s prayer times');
     widgets.failScheduleSave = true;
     final sunrise = find.text('Show sunrise');
     await tester.scrollUntilVisible(
