@@ -45,7 +45,7 @@ Future<void> openReminder(
     return;
   }
   if (payload == ReminderPayload.prayerTimes) {
-    await router.push<void>(AppRoute.prayerTimes.path);
+    router.go(AppRoute.prayerTimes.path);
     return;
   }
   final id = ReminderPayload.collectionId(payload);

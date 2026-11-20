@@ -42,7 +42,7 @@ enum AppShortcut {
   Future<void> open(GoRouter router) async {
     switch (this) {
       case AppShortcut.prayerTimes:
-        await router.push<void>(AppRoute.prayerTimes.path);
+        router.go(AppRoute.prayerTimes.path);
       case AppShortcut.qibla:
         await router.push<void>(AppRoute.qibla.path);
       case AppShortcut.adhkar:

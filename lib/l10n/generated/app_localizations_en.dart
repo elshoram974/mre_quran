@@ -16,6 +16,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reader => 'Mushaf';
 
   @override
+  String get prayerTab => 'Adhan';
+
+  @override
   String get bookmarks => 'Bookmarks';
 
   @override

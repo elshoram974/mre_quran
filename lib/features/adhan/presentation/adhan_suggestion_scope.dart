@@ -108,7 +108,7 @@ class _AdhanSuggestionScopeState extends ConsumerState<AdhanSuggestionScope> {
         body: l10n.adhanSuggestionBody,
         action: l10n.adhanSuggestionAction,
       );
-      if (accepted && mounted) await router.push(AppRoute.prayerTimes.path);
+      if (accepted && mounted) router.go(AppRoute.prayerTimes.path);
     } on Object {
       // A failed settings read should never interrupt startup.
     } finally {

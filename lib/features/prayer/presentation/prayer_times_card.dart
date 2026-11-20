@@ -31,7 +31,7 @@ class PrayerTimesCard extends ConsumerWidget {
       icon: Icons.access_time_rounded,
       title: l10n.prayerTimesTitle,
       subtitle: subtitle,
-      onTap: () => context.push(AppRoute.prayerTimes.path),
+      onTap: () => context.go(AppRoute.prayerTimes.path),
     );
   }
 }

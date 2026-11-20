@@ -16,7 +16,6 @@ import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_hero_card.dart';
 import '../../../core/widgets/app_icon_badge.dart';
 import '../../../core/widgets/app_tile_card.dart';
-import '../../../core/widgets/app_page_scaffold.dart';
 import '../../../core/widgets/app_notice.dart';
 import '../../../core/widgets/app_select_field.dart';
 import '../../../core/widgets/app_shimmer.dart';
@@ -142,45 +141,43 @@ class _PrayerTimesPageState extends ConsumerState<PrayerTimesPage> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final state = ref.watch(prayerProvider);
-    return AppPageScaffold(
-      title: l10n.prayerTimesTitle,
-      body: Builder(
-        builder: (context) {
-          final padding = pagePadding(context);
-          return state.when(
-            loading: () => Padding(
-              padding: padding,
-              child: const AppShimmer(
-                child: Column(
-                  children: [
-                    SkeletonBox(height: 120, radius: AppTokens.radiusCard),
-                    SizedBox(height: 12),
-                    SkeletonBox(height: 280, radius: AppTokens.radiusCard),
-                  ],
-                ),
+    // A tab: the shell draws the bar and the navigation around it.
+    return Builder(
+      builder: (context) {
+        final padding = pagePadding(context);
+        return state.when(
+          loading: () => Padding(
+            padding: padding,
+            child: const AppShimmer(
+              child: Column(
+                children: [
+                  SkeletonBox(height: 120, radius: AppTokens.radiusCard),
+                  SizedBox(height: 12),
+                  SkeletonBox(height: 280, radius: AppTokens.radiusCard),
+                ],
               ),
             ),
-            error: (_, _) => EmptyState(
-              icon: Icons.error_outline,
-              title: l10n.adhkarLoadError,
-              message: '',
-              actionLabel: l10n.retry,
-              onAction: () => ref.invalidate(prayerProvider),
-            ),
-            data: (data) => ContentContainer(
-              child: data.place == null
-                  ? PrayerNoPlace(
-                      denied: _result == PrayerResult.locationDenied,
-                      onLocate: () =>
-                          _run(ref.read(prayerProvider.notifier).locate),
-                      onChooseMap: () =>
-                          context.push(AppRoute.prayerLocationPicker.path),
-                    )
-                  : _Content(state: data, result: _result, onRun: _run),
-            ),
-          );
-        },
-      ),
+          ),
+          error: (_, _) => EmptyState(
+            icon: Icons.error_outline,
+            title: l10n.adhkarLoadError,
+            message: '',
+            actionLabel: l10n.retry,
+            onAction: () => ref.invalidate(prayerProvider),
+          ),
+          data: (data) => ContentContainer(
+            child: data.place == null
+                ? PrayerNoPlace(
+                    denied: _result == PrayerResult.locationDenied,
+                    onLocate: () =>
+                        _run(ref.read(prayerProvider.notifier).locate),
+                    onChooseMap: () =>
+                        context.push(AppRoute.prayerLocationPicker.path),
+                  )
+                : _Content(state: data, result: _result, onRun: _run),
+          ),
+        );
+      },
     );
   }
 }

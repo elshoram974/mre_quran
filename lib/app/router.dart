@@ -55,6 +55,14 @@ final routerProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(
             routes: [
               GoRoute(
+                path: AppRoute.prayerTimes.path,
+                builder: (context, state) => const PrayerTimesPage(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
                 path: AppRoute.bookmarks.path,
                 builder: (context, state) => const BookmarksPage(),
               ),
@@ -98,11 +106,6 @@ final routerProvider = Provider<GoRouter>((ref) {
           state,
           AdhkarGroupPage(groupId: state.pathParameters['id']!),
         ),
-      ),
-      GoRoute(
-        path: AppRoute.prayerTimes.path,
-        pageBuilder: (context, state) =>
-            _page(context, state, const PrayerTimesPage()),
       ),
       GoRoute(
         path: AppRoute.prayerLocationPicker.path,
@@ -297,5 +300,11 @@ enum AppRoute {
   static String adhkarGroupPath(String id) => '/adhkar-group/$id';
 
   /// Top-level tabs in navigation order. Must match the shell branches.
-  static const List<AppRoute> tabs = [reader, duas, bookmarks, settings];
+  static const List<AppRoute> tabs = [
+    reader,
+    duas,
+    prayerTimes,
+    bookmarks,
+    settings,
+  ];
 }

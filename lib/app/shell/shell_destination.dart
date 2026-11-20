@@ -32,6 +32,11 @@ class ShellDestination {
         Icons.volunteer_activism_rounded,
       ),
       ShellDestination(
+        l10n.prayerTab,
+        Icons.mosque_outlined,
+        Icons.mosque_rounded,
+      ),
+      ShellDestination(
         l10n.bookmarks,
         Icons.bookmarks_outlined,
         Icons.bookmarks_rounded,

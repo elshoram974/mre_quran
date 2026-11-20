@@ -253,7 +253,7 @@ class _RemindersBodyState extends ConsumerState<_RemindersBody> {
             trailing: const AppForwardChevron(),
             onTap: () {
               Navigator.of(context).pop();
-              context.push(AppRoute.prayerTimes.path);
+              context.go(AppRoute.prayerTimes.path);
             },
           ),
           if (_notice != null)

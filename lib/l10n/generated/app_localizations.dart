@@ -110,6 +110,12 @@ abstract class AppLocalizations {
   /// **'Mushaf'**
   String get reader;
 
+  /// No description provided for @prayerTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Adhan'**
+  String get prayerTab;
+
   /// No description provided for @bookmarks.
   ///
   /// In en, this message translates to:
