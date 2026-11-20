@@ -10,9 +10,12 @@ import '../../../core/widgets/app_select_field.dart';
 import '../../../core/widgets/app_page_scaffold.dart';
 import '../../../core/widgets/app_tile_card.dart';
 import '../../../l10n/generated/app_localizations.dart';
+import '../../settings/application/settings_provider.dart';
 import '../application/home_widgets_providers.dart';
+import '../application/widget_preview_provider.dart';
 import '../domain/home_widget.dart';
 import 'prayer_schedule_options_section.dart';
+import 'widget_previews.dart';
 
 /// The app's home-screen widgets, each with what it shows. Where the
 /// launcher takes the request (Android 8 and later), each has an "Add"
@@ -26,6 +29,8 @@ class HomeWidgetsPage extends ConsumerWidget {
     final l10n = context.l10n;
     final canPin = ref.watch(canPinWidgetsProvider).value ?? false;
     final appearance = ref.watch(widgetAppearanceProvider).value;
+    final settings = ref.watch(settingsProvider).value;
+    final preview = ref.watch(widgetPreviewDataProvider).value;
     final messenger = ScaffoldMessenger.maybeOf(context);
 
     Future<void> add(HomeWidget widget) async {
@@ -93,6 +98,35 @@ class HomeWidgetsPage extends ConsumerWidget {
                       },
                     ),
                   ],
+                  if (settings != null) ...[
+                    const SizedBox(height: AppTokens.spaceMedium),
+                    AppSelectField<String>(
+                      label: l10n.widgetLanguage,
+                      value: settings.widgetLocaleCode,
+                      options: [
+                        AppSelectOption(
+                          value: 'app',
+                          label: l10n.widgetLanguageSameAsApp,
+                        ),
+                        AppSelectOption(
+                          value: 'ar',
+                          label: l10n.languageArabic,
+                        ),
+                        AppSelectOption(
+                          value: 'en',
+                          label: l10n.languageEnglish,
+                        ),
+                      ],
+                      onChanged: (value) => ref
+                          .read(settingsProvider.notifier)
+                          .save(settings.copyWith(widgetLocaleCode: value)),
+                    ),
+                    const SizedBox(height: AppTokens.spaceSmall),
+                    Text(
+                      l10n.widgetLanguageHint,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
                   if (!canPin) ...[
                     const SizedBox(height: AppTokens.spaceMedium),
                     AppNotice(
@@ -119,23 +153,23 @@ class HomeWidgetsPage extends ConsumerWidget {
               if (context.isCupertino && widget == HomeWidget.tasbih)
                 l10n.widgetIosTasbihHint,
             ].join('\n');
-            final folder = Localizations.localeOf(context).languageCode == 'ar'
-                ? 'drawable-ar-nodpi'
-                : 'drawable-nodpi';
-            final filename = switch (widget) {
-              HomeWidget.prayerCard => 'prayer_card',
-              HomeWidget.nextPrayer => 'prayer',
-              HomeWidget.prayerSchedule => 'prayer_schedule',
-              HomeWidget.tasbih => 'tasbih',
-              HomeWidget.dhikr => 'adhkar',
-            };
             return Column(
               children: [
+                // The widget as it looks on the home screen, drawn here in the
+                // language the widgets speak, at the size it has by default.
                 ExcludeSemantics(
-                  child: Image.asset(
-                    'android/app/src/main/res/$folder/${filename}_widget_preview.png',
-                    height: AppTokens.widgetPreviewHeight,
-                    fit: BoxFit.contain,
+                  child: Center(
+                    child: preview == null
+                        ? SizedBox(
+                            height: HomeWidgetPreview.sizeOf(widget).height,
+                          )
+                        : FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: HomeWidgetPreview(
+                              widget: widget,
+                              data: preview,
+                            ),
+                          ),
                   ),
                 ),
                 const SizedBox(height: AppTokens.spaceSmall),

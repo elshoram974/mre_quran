@@ -99,6 +99,8 @@ internal object PrayerWidgetRenderer {
             WidgetScale.text(views, R.id.prayer_widget_time, 16f, scale)
             WidgetScale.text(views, R.id.prayer_widget_remaining, 11f, scale)
             WidgetScale.text(views, R.id.prayer_widget_seconds, 11f, scale)
+            // The room around the text grows with the widget, as the text does.
+            WidgetScale.padding(context, views, R.id.prayer_widget_body, 16f, 6f, scale)
             manager.updateAppWidget(id, views)
         }
         val scheduleOptions = HomeWidgets.prayerScheduleOptions(context)
@@ -109,13 +111,18 @@ internal object PrayerWidgetRenderer {
         }
         for (id in cards) {
             val (width, height) = WidgetScale.size(context, manager, id)
-            val views = cardViews(context, model, now)
+            // Two launcher rows: the coming prayer and the next three.
+            val compact = height in 1..149
+            val views = cardViews(context, model, now, compact)
             HomeWidgets.applyBackground(context, views, R.id.card_root)
             if (width in 1..199 && model?.nextAfter(now) != null) {
                 views.setViewVisibility(R.id.card_label, View.GONE)
             }
-            // Base: three cells by two.
-            val scale = WidgetScale.of(width, height, 210f, 150f)
+
+            // Base: three cells by two (compact: 110dp tall; else 150dp).
+            val scale = WidgetScale.of(width, height, 210f, if (compact) 110f else 150f)
+            // The room around the content grows with the widget, as the text does.
+            WidgetScale.padding(context, views, R.id.card_body, 14f, 8f, scale)
             WidgetScale.text(views, R.id.card_label, 11f, scale)
             WidgetScale.text(views, R.id.card_name, 26f, scale)
             WidgetScale.text(views, R.id.card_time, 16f, scale)
@@ -166,7 +173,7 @@ internal object PrayerWidgetRenderer {
         return views
     }
 
-    private fun cardViews(context: Context, model: WidgetModel?, now: Long): RemoteViews {
+    private fun cardViews(context: Context, model: WidgetModel?, now: Long, compact: Boolean): RemoteViews {
         val views = RemoteViews(context.packageName, R.layout.prayer_card_widget)
         val next = model?.nextAfter(now)
         val day = model?.dayAt(now)
@@ -189,11 +196,20 @@ internal object PrayerWidgetRenderer {
             // After the day's last prayer the coming one is tomorrow's Fajr,
             // shown in Fajr's place with tomorrow's time.
             val tomorrow = day.rows.none { it.isPrayer && it.at > now }
+            // Compact: one row of cells, the coming prayer and the two after it
+            // (round to tomorrow's), and no date lines. Otherwise the whole day.
+            val first = if (tomorrow) 0 else day.rows.indexOfFirst { it.isPrayer && it.id == next.id }.coerceAtLeast(0)
+            val shown = if (compact) List(3) { day.rows[(first + it) % day.rows.size] } else day.rows
+            views.setViewVisibility(R.id.card_row_2, if (compact) View.GONE else View.VISIBLE)
+            if (compact) {
+                views.setViewVisibility(R.id.card_date, View.GONE)
+                views.setViewVisibility(R.id.card_hijri, View.GONE)
+            }
             cellIds.forEachIndexed { index, cellId ->
-                val row = day.rows.getOrNull(index)
+                val row = shown.getOrNull(index)
                 views.setViewVisibility(cellId, if (row == null) View.GONE else View.VISIBLE)
                 if (row == null) return@forEachIndexed
-                val coming = row.isPrayer && row.id == next.id && (tomorrow || row.at == next.at)
+                val coming = if (compact) index == 0 else row.isPrayer && row.id == next.id && (tomorrow || row.at == next.at)
                 views.setTextViewText(cellNameIds[index], row.name)
                 views.setTextViewText(cellTimeIds[index], if (coming) next.time else row.time)
                 views.setInt(cellId, "setBackgroundResource", if (coming) R.drawable.widget_card_cell_next else 0)
@@ -254,7 +270,6 @@ internal object PrayerWidgetRenderer {
         val upcomingCount = if (availableHeight in 1f..69f && (showCountdown || largerText)) 2 else 3
         val views = scheduleViews(context, model, now, upcoming, upcomingCount, showDate, options)
         HomeWidgets.applyBackground(context, views, R.id.schedule_root)
-        if (!showDate) WidgetScale.padding(context, views, R.id.schedule_body, 10f, 4f, 1f)
         // Leave room for both calendar lines and the next prayer's extra line
         // before enlarging the whole timetable on a wide launcher grid.
         val baseHeight = when {
@@ -263,6 +278,8 @@ internal object PrayerWidgetRenderer {
             else -> 150f
         }
         val scale = WidgetScale.of(width, height, 140f, baseHeight)
+        // The room around the rows grows with the widget, as the text does.
+        WidgetScale.padding(context, views, R.id.schedule_body, 10f, if (showDate) 9f else 4f, scale)
         WidgetScale.text(views, R.id.schedule_date, 11f, scale)
         WidgetScale.text(views, R.id.schedule_hijri, 10f, scale)
         val rowSize = when {

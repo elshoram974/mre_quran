@@ -644,6 +644,30 @@ abstract class AppLocalizations {
   /// **'Could not save widget settings. Try again.'**
   String get widgetScheduleSaveFailed;
 
+  /// No description provided for @widgetPreviewAdhkarTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Morning adhkar'**
+  String get widgetPreviewAdhkarTitle;
+
+  /// No description provided for @widgetLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Widgets language'**
+  String get widgetLanguage;
+
+  /// No description provided for @widgetLanguageSameAsApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Same as the app'**
+  String get widgetLanguageSameAsApp;
+
+  /// No description provided for @widgetLanguageHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Changes the widgets\' words, dates and clock, and updates them on the home screen at once.'**
+  String get widgetLanguageHint;
+
   /// No description provided for @widgetTasbih.
   ///
   /// In en, this message translates to:

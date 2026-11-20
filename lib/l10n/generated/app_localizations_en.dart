@@ -308,6 +308,19 @@ class AppLocalizationsEn extends AppLocalizations {
       'Could not save widget settings. Try again.';
 
   @override
+  String get widgetPreviewAdhkarTitle => 'Morning adhkar';
+
+  @override
+  String get widgetLanguage => 'Widgets language';
+
+  @override
+  String get widgetLanguageSameAsApp => 'Same as the app';
+
+  @override
+  String get widgetLanguageHint =>
+      'Changes the widgets\' words, dates and clock, and updates them on the home screen at once.';
+
+  @override
   String get widgetTasbih => 'Tasbih';
 
   @override

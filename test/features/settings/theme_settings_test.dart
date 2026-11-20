@@ -70,19 +70,41 @@ void main() {
             .load();
         try {
           await Future<void>.delayed(Duration.zero);
-          expect(platform.started, hasLength(15));
+          expect(platform.started, hasLength(16));
           expect(
             platform.started,
             containsAll([
               'settings.haptics',
               'settings.surah_frame',
               'settings.widget_seconds',
+              'settings.widget_locale',
             ]),
           );
         } finally {
           platform.gate.complete();
         }
         expect((await loading).hapticsEnabled, isTrue);
+      },
+    );
+
+    test(
+      'keeps the widgets\' language, and follows the app by default',
+      () async {
+        final repository = LocalSettingsRepository(SharedPreferencesAsync());
+        var loaded = await repository.load();
+        expect(loaded.widgetLocaleCode, 'app');
+        expect(loaded.widgetLanguage, loaded.localeCode);
+        await repository.save(
+          const AppSettings(localeCode: 'ar', widgetLocaleCode: 'en'),
+        );
+        loaded = await repository.load();
+        expect(loaded.widgetLocaleCode, 'en');
+        expect(loaded.widgetLanguage, 'en');
+        await repository.save(const AppSettings(localeCode: 'en'));
+        expect((await repository.load()).widgetLanguage, 'en');
+        // Anything else is the app's own.
+        await repository.save(const AppSettings(widgetLocaleCode: 'fr'));
+        expect((await repository.load()).widgetLocaleCode, 'app');
       },
     );
 

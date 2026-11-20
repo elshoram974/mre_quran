@@ -80,9 +80,6 @@ abstract final class AppTokens {
   /// Standard gap between adjacent sections.
   static const double spaceMedium = 12;
 
-  /// Maximum height of a home-screen widget preview in the gallery.
-  static const double widgetPreviewHeight = 160;
-
   /// Height of the floating glass app bar, excluding the status bar.
   static const double appBarHeight = 44;
 

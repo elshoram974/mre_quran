@@ -7,11 +7,16 @@ import 'package:mre_quran/core/widgets/app_tile_card.dart';
 import 'package:mre_quran/features/home_widgets/application/home_widgets_providers.dart';
 import 'package:mre_quran/features/home_widgets/domain/home_widget.dart';
 import 'package:mre_quran/features/home_widgets/presentation/home_widgets_page.dart';
+import 'package:mre_quran/features/home_widgets/presentation/widget_previews.dart';
 import 'package:mre_quran/features/settings/application/settings_provider.dart';
 import 'package:mre_quran/l10n/generated/app_localizations.dart';
 
 import '../../helpers/fake_home_widgets.dart';
 import '../../helpers/memory_settings_repository.dart';
+
+/// A widget's name on its card: the preview above it can say the same word.
+Finder _name(String title) =>
+    find.descendant(of: find.byType(AppTileCard), matching: find.text(title));
 
 Future<FakeHomeWidgets> _pump(
   WidgetTester tester, {
@@ -64,12 +69,12 @@ void main() {
       'ذكر مقترح',
     ]) {
       await tester.scrollUntilVisible(
-        find.text(title),
+        _name(title),
         180,
         scrollable: find.byType(Scrollable).first,
       );
       final card = find.ancestor(
-        of: find.text(title),
+        of: _name(title),
         matching: find.byType(AppTileCard),
       );
       final add = find.descendant(of: card, matching: find.text('إضافة'));
@@ -103,16 +108,30 @@ void main() {
     });
   }
 
-  testWidgets('shows localized preview assets', (tester) async {
+  testWidgets('each widget has a preview drawn in the app, not a picture', (
+    tester,
+  ) async {
     await _pump(tester);
-    expect(
-      find.image(
-        const AssetImage(
-          'android/app/src/main/res/drawable-ar-nodpi/prayer_card_widget_preview.png',
-        ),
-      ),
-      findsOneWidget,
-    );
+    expect(find.byType(HomeWidgetPreview, skipOffstage: false), findsWidgets);
+    expect(find.byType(Image), findsNothing);
+    // The sample day the picker shows, in the app's language.
+    expect(find.text('الصلاة القادمة'), findsWidgets);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('the widgets can be given a language of their own', (
+    tester,
+  ) async {
+    await _pump(tester);
+    expect(find.text('Next prayer'), findsNothing);
+    await tester.tap(find.text('مثل لغة التطبيق'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('English').last);
+    await tester.pumpAndSettle();
+    // The previews now speak English, while the page stays Arabic.
+    expect(find.text('Next prayer'), findsWidgets);
+    expect(find.text('لغة الويدجتس'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('where the launcher takes no requests, it says how', (
@@ -226,7 +245,7 @@ void main() {
   testWidgets('on iOS it gives the steps', (tester) async {
     await _pump(tester, pinnable: false, platform: TargetPlatform.iOS);
     expect(find.textContaining('ابحث عن «مصحفي»'), findsOneWidget);
-    expect(find.text('بطاقة الصلاة'), findsOneWidget);
+    expect(_name('بطاقة الصلاة'), findsOneWidget);
   });
 
   testWidgets('English LTR in dark mode', (tester) async {
@@ -250,12 +269,12 @@ void main() {
         textScale: 2,
       );
       await tester.scrollUntilVisible(
-        find.text(title),
+        _name(title),
         200,
         scrollable: find.byType(Scrollable).first,
       );
       final card = find.ancestor(
-        of: find.text(title),
+        of: _name(title),
         matching: find.byType(AppTileCard),
       );
       final button = find.descendant(of: card, matching: find.text(add));
@@ -276,7 +295,7 @@ void main() {
     testWidgets('fits when $name', (tester) async {
       await _pump(tester, size: size, textScale: scale);
       await tester.scrollUntilVisible(
-        find.text('ذكر مقترح'),
+        _name('ذكر مقترح'),
         200,
         scrollable: find.byType(Scrollable).first,
       );

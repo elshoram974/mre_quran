@@ -396,3 +396,18 @@
   emulators; the trace says where it stopped the next time it happens.
 - **Privacy:** step names, milliseconds, the OS version and the intent's extra names only; reported only when
   crash reports are on, and never from debug builds.
+
+## D-044: Widget previews are drawn in the app, and the widgets have a language of their own
+
+- **Decision:** The widgets page draws each widget's preview with Flutter (`HomeWidgetPreview`), from the
+  colours of the Android resources (`WidgetPalette`) and the arrangement of their layouts, at the widget's
+  default size, with today's real times when a place is saved (the sample day otherwise). The pictures in
+  `res/drawable-*nodpi` stay only as the launcher picker's own `previewImage` (redrawn by
+  `tool/capture_widget_previews.sh`); Flutter no longer bundles them. The widgets speak the language chosen for
+  them (`AppSettings.widgetLocaleCode`: the app's own, Arabic or English): their words, dates, clock and
+  direction, set when the app sends them their data (`PrayerWidgetSyncScope`).
+- **The prayer card is two launcher rows tall** (it was three, which left it empty in the middle). Under 150dp
+  it shows the coming prayer and the next three prayers in one row; from 150dp, the whole day.
+- **Padding follows the size**, like the text: every prayer widget scales its padding with `WidgetScale`.
+- **Not decided yet:** the native text that is not sent from the app (the widget's name, the empty-state line)
+  still follows the phone's language.

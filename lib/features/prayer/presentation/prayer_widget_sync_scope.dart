@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/date_symbol_data_local.dart' show initializeDateFormatting;
 import 'package:intl/intl.dart' show DateFormat;
 
-import '../../../core/l10n/l10n.dart';
 import '../../../core/time/ticking_clock.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../settings/application/digits_provider.dart';
@@ -49,6 +49,10 @@ class _PrayerWidgetSyncScopeState extends ConsumerState<PrayerWidgetSyncScope> {
         settingsProvider.select((value) => value.value?.widgetSeconds),
         (_, _) => _scheduleSync(),
       ),
+      ref.listenManual(
+        settingsProvider.select((value) => value.value?.widgetLanguage),
+        (_, _) => _scheduleSync(),
+      ),
     ]);
   }
 
@@ -91,22 +95,28 @@ class _PrayerWidgetSyncScopeState extends ConsumerState<PrayerWidgetSyncScope> {
     super.dispose();
   }
 
-  Future<void> _sync(NextPrayer? next) {
+  Future<void> _sync(NextPrayer? next) async {
     final settings = ref.read(settingsProvider).value;
     final prayer = ref.read(prayerProvider);
     // Still loading: the widgets keep the times they have. Clearing them here
     // would blank a correct widget every time the app opens.
-    if (settings == null || !prayer.hasValue) return Future.value();
+    if (settings == null || !prayer.hasValue) return;
     final day = ref.read(prayerDayProvider);
     if (next == null || day == null) {
       // Loaded, and there is no place to compute times for.
       return PrayerWidgetSync.update(null);
     }
-    final l10n = context.l10n;
+    // The widgets speak their own language when one was chosen for them: the
+    // words, the dates and the clock, and the way the text reads.
+    final language = settings.widgetLanguage;
+    await initializeDateFormatting(language);
+    if (!mounted) return;
+    final l10n = lookupAppLocalizations(Locale(language));
     // From the settings just read: the shared formatter provider can still hold
     // the previous choice while this runs for a settings change.
     String digits(String value) =>
         formatDisplayDigits(value, arabic: settings.useArabicDigits);
+    String clock(DateTime at) => digits(DateFormat.jm(language).format(at));
     final state = prayer.value;
     final place = state?.place;
     final method = state?.method;
@@ -115,10 +125,10 @@ class _PrayerWidgetSyncScopeState extends ConsumerState<PrayerWidgetSyncScope> {
         prayer: next.prayer,
         label: l10n.prayerNext,
         title: prayerName(l10n, next.prayer),
-        time: formatPrayerTime(context, next.at, digits),
+        time: clock(next.at),
         at: next.at,
         useArabicDigits: settings.useArabicDigits,
-        rtl: Directionality.of(context) == TextDirection.rtl,
+        rtl: language == 'ar',
         seconds: settings.widgetSeconds,
         labels: PrayerWidgetLabels(
           next: l10n.prayerNext,
@@ -129,12 +139,12 @@ class _PrayerWidgetSyncScopeState extends ConsumerState<PrayerWidgetSyncScope> {
         ),
         days: place == null || method == null
             ? const []
-            : _days(l10n, place, method, digits),
+            : _days(l10n, language, clock, place, method, digits),
         times: [
           for (final prayer in DailyPrayer.values)
             PrayerWidgetTime(
               name: prayerName(l10n, prayer),
-              time: formatPrayerTime(context, day.of(prayer), digits),
+              time: clock(day.of(prayer)),
             ),
         ],
       ),
@@ -144,19 +154,20 @@ class _PrayerWidgetSyncScopeState extends ConsumerState<PrayerWidgetSyncScope> {
   /// A week of times, so the widgets keep up without the app.
   List<PrayerWidgetDay> _days(
     AppLocalizations l10n,
+    String language,
+    String Function(DateTime) clock,
     PrayerPlace place,
     PrayerMethod method,
     String Function(String) digits,
   ) {
     final today = ref.read(clockProvider)();
-    final dateFormat = DateFormat.yMMMEd(
-      Localizations.localeOf(context).toString(),
-    );
+    final dateFormat = DateFormat.yMMMEd(language);
     return [
       for (var offset = 0; offset < _daysAhead; offset++)
         _day(
           l10n,
           dateFormat,
+          clock,
           place,
           method,
           digits,
@@ -168,18 +179,15 @@ class _PrayerWidgetSyncScopeState extends ConsumerState<PrayerWidgetSyncScope> {
   PrayerWidgetDay _day(
     AppLocalizations l10n,
     DateFormat dateFormat,
+    String Function(DateTime) clock,
     PrayerPlace place,
     PrayerMethod method,
     String Function(String) digits,
     DateTime date,
   ) {
     final times = PrayerDay.compute(place, method, date);
-    PrayerWidgetRow row(String id, String name, DateTime at) => PrayerWidgetRow(
-      id: id,
-      name: name,
-      time: formatPrayerTime(context, at, digits),
-      at: at,
-    );
+    PrayerWidgetRow row(String id, String name, DateTime at) =>
+        PrayerWidgetRow(id: id, name: name, time: clock(at), at: at);
     return PrayerWidgetDay(
       start: date,
       end: DateTime(date.year, date.month, date.day + 1),

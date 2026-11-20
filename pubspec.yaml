@@ -99,9 +99,6 @@ flutter:
     - path: assets/adhan/ios/adhan_fajr.caf
       platforms: [ios]
     - assets/adhkar/LICENSE.seen-arabic.txt
-    # Preview pictures generated from the app's Android widget layouts.
-    - android/app/src/main/res/drawable-nodpi/
-    - android/app/src/main/res/drawable-ar-nodpi/
   fonts:
     - family: AmiriQuran
       fonts:

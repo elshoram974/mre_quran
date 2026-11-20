@@ -391,3 +391,51 @@ class _Tone {
   final Color onContainer;
   final Color inverse;
 }
+
+/// The colours of the home-screen widgets, the same as the Android resources
+/// that draw them (`values/widget_colors.xml`, `values/widget_card_colors.xml`),
+/// so the previews in the app look like the widgets. The widgets keep one
+/// design in light and dark: it reads on any wallpaper.
+abstract final class WidgetPalette {
+  /// Gradient of the timetable, next-prayer, tasbih and dhikr widgets.
+  static const Color greenStart = Color(0xFF17372F);
+
+  /// See [greenStart].
+  static const Color greenEnd = Color(0xFF2C5A4B);
+
+  /// Main text on the green widgets.
+  static const Color text = Color(0xFFF4EBD8);
+
+  /// Quieter text on the green widgets.
+  static const Color muted = Color(0xFFC9C1AE);
+
+  /// Gold, for labels and the time left.
+  static const Color accent = Color(0xFFE9C46A);
+
+  /// The coming prayer's row on the timetable.
+  static const Color rowNext = Color(0x33E9C46A);
+
+  /// The tasbih's reset button.
+  static const Color pill = Color(0x33FFFFFF);
+
+  /// Gradient of the prayer card: the app icon's navy.
+  static const Color cardStart = Color(0xFF161B26);
+
+  /// See [cardStart].
+  static const Color cardEnd = Color(0xFF232B3D);
+
+  /// Main text on the prayer card.
+  static const Color cardText = Color(0xFFF4EBD8);
+
+  /// Quieter text on the prayer card.
+  static const Color cardMuted = Color(0xFFA9A08E);
+
+  /// Gold on the prayer card.
+  static const Color cardGold = Color(0xFFE3C27A);
+
+  /// The card's rule and outline.
+  static const Color cardLine = Color(0x40E3C27A);
+
+  /// The card's coming-prayer cell.
+  static const Color cardCellNext = Color(0x2EE3C27A);
+}

@@ -41,8 +41,9 @@ void main() {
   /// one entry per update, null for "clear".
   Future<List<Object?>> sent(
     WidgetTester tester,
-    PrayerNotifier Function() prayer,
-  ) async {
+    PrayerNotifier Function() prayer, {
+    AppSettings settings = const AppSettings(),
+  }) async {
     final updates = <Object?>[];
     tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
       const MethodChannel('net.mrecode.mre_quran/prayer_widget'),
@@ -61,7 +62,7 @@ void main() {
       ProviderScope(
         overrides: [
           settingsRepositoryProvider.overrideWithValue(
-            MemorySettingsRepository()..settings = const AppSettings(),
+            MemorySettingsRepository()..settings = settings,
           ),
           prayerProvider.overrideWith(prayer),
         ],
@@ -108,6 +109,41 @@ void main() {
     ]);
     expect((today['dateLabel'] as String), isNotEmpty);
     expect((today['hijriLabel'] as String), isNotEmpty);
+  });
+
+  testWidgets('the widgets speak the app\'s language unless told another', (
+    tester,
+  ) async {
+    final same = await sent(tester, _WithPlace.new);
+    final arabic = same.whereType<Map<Object?, Object?>>().last;
+    expect(arabic['rtl'], isTrue);
+    expect(
+      (arabic['labels'] as Map<Object?, Object?>)['next'],
+      'الصلاة القادمة',
+    );
+  });
+
+  testWidgets('a language chosen for the widgets is used for all of their '
+      'words, dates, clock and direction', (tester) async {
+    final updates = await sent(
+      tester,
+      _WithPlace.new,
+      settings: const AppSettings(localeCode: 'ar', widgetLocaleCode: 'en'),
+    );
+    final payload = updates.whereType<Map<Object?, Object?>>().last;
+    expect(payload['rtl'], isFalse);
+    expect((payload['labels'] as Map<Object?, Object?>)['next'], 'Next prayer');
+    final times = payload['times'] as List<Object?>;
+    final names = [
+      for (final time in times) (time as Map<Object?, Object?>)['name'],
+    ];
+    expect(names, containsAll(['Fajr', 'Dhuhr', 'Asr']));
+    // The clock is English: AM or PM, not the Arabic ص and م.
+    final first = (times.first as Map<Object?, Object?>)['time'] as String;
+    expect(first, matches(RegExp(r'[AP]M$')));
+    final day =
+        (payload['days'] as List<Object?>).first as Map<Object?, Object?>;
+    expect(day['dateLabel'] as String, matches(RegExp(r'[A-Za-z]')));
   });
 
   testWidgets('waits for Material localizations before syncing prayer times', (

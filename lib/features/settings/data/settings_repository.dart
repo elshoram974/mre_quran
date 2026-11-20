@@ -29,6 +29,7 @@ class LocalSettingsRepository implements SettingsRepository {
   static const _readerPageLayoutKey = 'settings.reader_page_layout';
   static const _surahFrameKey = 'settings.surah_frame';
   static const _widgetSecondsKey = 'settings.widget_seconds';
+  static const _widgetLocaleKey = 'settings.widget_locale';
 
   @override
   Future<AppSettings> load() async {
@@ -51,6 +52,7 @@ class LocalSettingsRepository implements SettingsRepository {
         _preferences.getString(_mushafEditionKey),
         _preferences.getString(_surahFrameKey),
         _preferences.getBool(_widgetSecondsKey),
+        _preferences.getString(_widgetLocaleKey),
       ).wait,
     ).wait;
     final (
@@ -71,6 +73,7 @@ class LocalSettingsRepository implements SettingsRepository {
       edition,
       surahFrame,
       widgetSeconds,
+      widgetLocale,
     ) = display;
     return AppSettings(
       theme: AppThemePreference.values.firstWhere(
@@ -108,6 +111,9 @@ class LocalSettingsRepository implements SettingsRepository {
         orElse: () => SurahFrameStyle.cartouche,
       ),
       widgetSeconds: widgetSeconds ?? false,
+      widgetLocaleCode: widgetLocale == 'ar' || widgetLocale == 'en'
+          ? widgetLocale!
+          : 'app',
     );
   }
 
@@ -121,6 +127,7 @@ class LocalSettingsRepository implements SettingsRepository {
       _preferences.setBool(_reduceMotionKey, settings.reduceMotion),
       _preferences.setBool(_hapticsKey, settings.hapticsEnabled),
       _preferences.setBool(_widgetSecondsKey, settings.widgetSeconds),
+      _preferences.setString(_widgetLocaleKey, settings.widgetLocaleCode),
       _preferences.setBool(_arabicDigitsKey, settings.useArabicDigits),
       _preferences.setBool(_crashReportsKey, settings.crashReportsEnabled),
       _preferences.setString(_startupKey, settings.startupBehavior.name),

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The prayer card, four cells by two: the coming prayer large at the top,
+<!-- The prayer card, three cells by two (a launcher grid: 180dp by 110dp): the coming prayer large at the top,
      its time and how long is left (to the second when the person chose
      it), and the day's prayers and sunrise along the bottom with the coming one
      framed in gold. The text here is the sample shown in the widget picker,
@@ -22,13 +22,14 @@
         android:src="@drawable/widget_card_star" />
 
     <LinearLayout
+        android:id="@+id/card_body"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:paddingStart="16dp"
+        android:paddingStart="14dp"
         android:paddingTop="8dp"
-        android:paddingEnd="16dp"
-        android:paddingBottom="6dp">
+        android:paddingEnd="14dp"
+        android:paddingBottom="8dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -145,18 +146,17 @@
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:layout_marginTop="4dp"
-            android:layout_marginBottom="4dp"
+            android:layout_marginTop="3dp"
+            android:layout_marginBottom="3dp"
             android:background="@color/widget_card_line" />
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="68dp"
+            android:layout_height="wrap_content"
             android:orientation="vertical">
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
+                android:layout_height="34dp"
                 android:orientation="horizontal">
                 <LinearLayout
                     android:id="@+id/card_cell_0"
@@ -244,9 +244,9 @@
                 </LinearLayout>
             </LinearLayout>
             <LinearLayout
+                android:id="@+id/card_row_2"
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
+                android:layout_height="34dp"
                 android:orientation="horizontal">
                 <LinearLayout
                     android:id="@+id/card_cell_3"

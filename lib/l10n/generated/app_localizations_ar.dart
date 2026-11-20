@@ -206,7 +206,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get widgetsPreviewHint =>
-      'الصور تعرض التصميم الافتراضي. اختياراتك تُطبّق على الويدجت في الشاشة الرئيسية.';
+      'المعاينات تعرض التصميم الافتراضي. اختياراتك تُطبّق على الويدجت في الشاشة الرئيسية.';
 
   @override
   String get widgetAppearance => 'ألوان الويدجت';
@@ -301,6 +301,19 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get widgetScheduleSaveFailed =>
       'تعذر حفظ إعدادات الويدجت. حاول مرة أخرى.';
+
+  @override
+  String get widgetPreviewAdhkarTitle => 'أذكار الصباح';
+
+  @override
+  String get widgetLanguage => 'لغة الويدجتس';
+
+  @override
+  String get widgetLanguageSameAsApp => 'مثل لغة التطبيق';
+
+  @override
+  String get widgetLanguageHint =>
+      'تؤثر على كلام الويدجتس وتواريخها وساعتها، وتُحدَّث على الشاشة الرئيسية فورًا.';
 
   @override
   String get widgetTasbih => 'المسبحة';

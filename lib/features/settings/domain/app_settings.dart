@@ -24,7 +24,18 @@ class AppSettings {
     this.mushafEdition = MushafEditions.hafs,
     this.surahFrame = SurahFrameStyle.cartouche,
     this.widgetSeconds = false,
+    this.widgetLocaleCode = 'app',
   });
+
+  /// The language the home-screen widgets speak: `ar`, `en`, or `app` for
+  /// the app's own.
+  final String widgetLocaleCode;
+
+  /// The language code the widgets use: their own choice, else the app's.
+  String get widgetLanguage =>
+      widgetLocaleCode == 'ar' || widgetLocaleCode == 'en'
+      ? widgetLocaleCode
+      : localeCode;
 
   /// Whether the home-screen prayer widgets count the time left down to the
   /// second. Off by default: a widget that redraws every second uses some
@@ -98,6 +109,7 @@ class AppSettings {
     MushafEdition? mushafEdition,
     SurahFrameStyle? surahFrame,
     bool? widgetSeconds,
+    String? widgetLocaleCode,
   }) => AppSettings(
     theme: theme ?? this.theme,
     accent: accent ?? this.accent,
@@ -114,6 +126,7 @@ class AppSettings {
     mushafEdition: mushafEdition ?? this.mushafEdition,
     surahFrame: surahFrame ?? this.surahFrame,
     widgetSeconds: widgetSeconds ?? this.widgetSeconds,
+    widgetLocaleCode: widgetLocaleCode ?? this.widgetLocaleCode,
   );
 }
 
