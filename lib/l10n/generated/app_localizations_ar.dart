@@ -1861,4 +1861,104 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get printedFallbackNotice =>
       'صفحة المصحف المطبوع غير متاحة الآن، فيُعرض النص.';
+
+  @override
+  String get printedSwitchedToText =>
+      'لا يوجد إنترنت، وهذه الصفحة ليست على هاتفك، فصار المصحف يُعرض نصًّا مكتوبًا. يعود المصحف المطبوع وحده حين يعود الإنترنت.';
+
+  @override
+  String get printedBackOnline => 'عاد الإنترنت، وعاد المصحف المطبوع.';
+
+  @override
+  String get readerTextUntilOnline =>
+      'اختير النص المكتوب تلقائيًا لعدم وجود إنترنت، ويعود المصحف المطبوع حين يعود الإنترنت. لتقرأ المطبوع دون إنترنت نزّله من «المصحف دون اتصال».';
+
+  @override
+  String get adhanExactNote =>
+      'بدون «المنبّهات الدقيقة» لا يعمل الأذان، ويصل بدلًا منه إشعار عادي قد يتأخر بضع دقائق.';
+
+  @override
+  String get adhanBatteryNote =>
+      'قد يمنع توفير البطارية الأذان أو يؤخّره. افتح إعدادات التطبيق، ثم «البطارية»، واختر «غير مقيّد» (وفي بعض الهواتف: «بلا قيود»، أو فعّل «التشغيل التلقائي»).';
+
+  @override
+  String get adhanBatteryAction => 'فتح إعدادات التطبيق';
+
+  @override
+  String get prayerSoonCountdownSwitch => 'عدّ تنازلي حتى الأذان';
+
+  @override
+  String get prayerSoonCountdownHint =>
+      'يبقى التذكير ظاهرًا ويعدّ الوقت الباقي بالثواني حتى الأذان، ثم يختفي وحده. وزر «إزالة» فيه يُخفيه فورًا.';
+
+  @override
+  String prayerSoonCountdownBody(String time) {
+    return 'الأذان الساعة $time';
+  }
+
+  @override
+  String get prayerSoonDismiss => 'إزالة';
+
+  @override
+  String get fastingChannelName => 'صيام السنة';
+
+  @override
+  String get fastingReminderTitle => 'صيام سنة غدًا';
+
+  @override
+  String get fastingMonday => 'غدًا الاثنين، ومن السنة صيامه.';
+
+  @override
+  String get fastingThursday => 'غدًا الخميس، ومن السنة صيامه.';
+
+  @override
+  String fastingWhiteDay(String day) {
+    return 'غدًا اليوم $day من الشهر الهجري، وهو من الأيام البيض التي يُسنّ صيامها.';
+  }
+
+  @override
+  String get fastingArafah => 'غدًا يوم عرفة، ويُسنّ صيامه لغير الحاج.';
+
+  @override
+  String get fastingTasua =>
+      'غدًا تاسوعاء، التاسع من محرم، ويُسنّ صيامه مع عاشوراء.';
+
+  @override
+  String get fastingAshura => 'غدًا عاشوراء، العاشر من محرم، ويُسنّ صيامه.';
+
+  @override
+  String get fastingShawwal =>
+      'يُسنّ صيام ستة أيام من شوال بعد العيد، ويمكنك البدء من الغد.';
+
+  @override
+  String get fastingSection => 'صيام السنة';
+
+  @override
+  String get fastingSectionHint =>
+      'تذكير مساء اليوم السابق. التواريخ الهجرية حسب تقويم أم القرى، وقد تختلف يومًا عن رؤية الهلال في بلدك، لذلك لا يأتي تذكير في يوم قد يكون عيدًا عندك.';
+
+  @override
+  String get fastingMondayThursday => 'الاثنين والخميس';
+
+  @override
+  String get fastingWhiteDays => 'الأيام البيض';
+
+  @override
+  String fastingWhiteDaysHint(String first, String second, String third) {
+    return '$first و$second و$third من كل شهر هجري';
+  }
+
+  @override
+  String get fastingArafahSwitch => 'يوم عرفة';
+
+  @override
+  String get fastingAshuraSwitch => 'تاسوعاء وعاشوراء';
+
+  @override
+  String get fastingShawwalSwitch => 'ست من شوال';
+
+  @override
+  String fastingNext(String date) {
+    return 'القادم: $date';
+  }
 }

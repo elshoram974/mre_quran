@@ -1,11 +1,16 @@
 package net.mrecode.mre_quran
 
 import android.app.Activity
+import android.app.ActivityManager
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.os.PowerManager
+import android.provider.Settings
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodChannel
 import org.json.JSONArray
@@ -55,6 +60,8 @@ internal class AdhanChannel(private val activity: Activity, messenger: BinaryMes
                     AdhanScheduler.cancelAll(context)
                     result.success(null)
                 }
+                "batteryUnrestricted" -> result.success(batteryUnrestricted())
+                "openAppSettings" -> result.success(openAppSettings())
                 "test" -> {
                     val alarm = JSONObject(arguments!!["alarm"] as Map<*, *>)
                     val config = JSONObject(arguments["config"] as Map<*, *>)
@@ -86,6 +93,29 @@ internal class AdhanChannel(private val activity: Activity, messenger: BinaryMes
                 else -> result.notImplemented()
             }
         }
+    }
+
+    /**
+     * Whether battery saving leaves the app alone: not optimised, and not
+     * restricted in the background. Phones that save battery hard hold back
+     * or drop the alarms of an app that is not, so the adhan may not come.
+     */
+    private fun batteryUnrestricted(): Boolean {
+        val power = context.getSystemService(PowerManager::class.java)
+        val unoptimised = power.isIgnoringBatteryOptimizations(context.packageName)
+        val restricted = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P &&
+            context.getSystemService(ActivityManager::class.java).isBackgroundRestricted
+        return unoptimised && !restricted
+    }
+
+    /** Opens the app's own page in the system settings, where Battery is. */
+    private fun openAppSettings(): Boolean = try {
+        activity.startActivity(
+            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", context.packageName, null)),
+        )
+        true
+    } catch (_: ActivityNotFoundException) {
+        false
     }
 
     /** Takes the answer of the file picker. Returns whether it was ours. */

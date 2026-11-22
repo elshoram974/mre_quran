@@ -15,7 +15,9 @@ import '../application/reading_position_provider.dart';
 import '../../../core/l10n/l10n.dart';
 import '../application/ayah_selection_provider.dart';
 import '../application/highlighted_ayah_provider.dart';
+import '../application/mushaf_packs.dart';
 import '../application/page_prefetcher.dart';
+import '../application/printed_fallback.dart';
 import '../application/svg_page_providers.dart';
 import '../../startup/application/startup_providers.dart';
 import '../../quran_text/application/ayah_texts_provider.dart';
@@ -132,6 +134,51 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
 
   int get _pageCount => widget.metadata.pageCount;
 
+  int? _retried;
+
+  /// While the Mushaf shows as text because it was offline, tries the
+  /// printed pages again once per page the reader turns to.
+  void _retryPrinted(int page) {
+    if (page == _retried) return;
+    _retried = page;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) ref.read(printedFallbackProvider.notifier).retry(page);
+    });
+  }
+
+  /// A printed page could not be had offline. Only a page the reader sees
+  /// counts: one built out of sight for a turn does not switch the Mushaf.
+  void _printedOffline(int number) {
+    if (!mounted) return;
+    final page = ref.read(readingPositionProvider).value;
+    if (page == null) return;
+    final spread = resolveMushafSpread(
+      ref.read(settingsProvider).value?.readerPageLayout ??
+          ReaderPageLayout.auto,
+      MediaQuery.sizeOf(context),
+    );
+    // In a spread an odd page and the even one after it face each other.
+    final shown = spread
+        ? (number - 1) ~/ 2 == (page - 1) ~/ 2
+        : number == page;
+    if (shown) ref.read(printedFallbackProvider.notifier).offline();
+  }
+
+  /// Says why the Mushaf changed how it shows, when it changed by itself,
+  /// while the reader is the tab on screen.
+  void _announce(PrintedFallbackEvent? event) {
+    if (event == null || !TickerMode.valuesOf(context).enabled) return;
+    final l10n = context.l10n;
+    ScaffoldMessenger.maybeOf(context)
+      ?..hideCurrentSnackBar()
+      ..showSnackBar(
+        AppSnackBar(switch (event.change) {
+          PrintedFallbackChange.toText => l10n.printedSwitchedToText,
+          PrintedFallbackChange.toPrinted => l10n.printedBackOnline,
+        }),
+      );
+  }
+
   /// What a long press on an ayah of a page of [edition] does: open its
   /// actions, or, while ayahs are being chosen, take the choice to it.
   ValueChanged<AyahRef> _actionsOf(MushafEdition edition) => (ayah) {
@@ -235,13 +282,8 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
       );
   }
 
-  void _showAsText() {
-    final settings = ref.read(settingsProvider).value;
-    if (settings == null) return;
-    ref
-        .read(settingsProvider.notifier)
-        .save(settings.copyWith(readerMode: ReaderMode.text));
-  }
+  void _showAsText() =>
+      ref.read(settingsProvider.notifier).chooseReaderMode(ReaderMode.text);
 
   void _onTap() {
     ref.read(highlightedAyahProvider.notifier).clear();
@@ -282,6 +324,18 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
       _prefetch(page);
     }
     final edition = ref.watch(printedEditionProvider);
+    // A Mushaf the system finished downloading while the app was closed is
+    // unpacked once the first page is drawn, so it reads offline at once.
+    if (settled) ref.listen(waitingPackProvider(edition), (_, _) {});
+    ref.listen(printedFallbackProvider, (_, event) => _announce(event));
+    final textUntilOnline = ref.watch(
+      settingsProvider.select((s) => s.value?.textUntilOnline ?? false),
+    );
+    if (mode == ReaderMode.text && textUntilOnline) {
+      _retryPrinted(page);
+    } else {
+      _retried = null;
+    }
     final ownText = edition.matchesAppText;
     // Its text is read ahead, so a long press finds it ready.
     final hasText = ref.watch(editionTextsProvider(edition)).value != null;
@@ -353,6 +407,8 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
             onAyahLongPress: _actionsOf(MushafEditions.hafs),
             onAyahTap: tapOf(MushafEditions.hafs),
             onTap: _onTap,
+            // Offline, the whole Mushaf turns to text, and says so.
+            onOffline: () => _printedOffline(number),
             // Without its artwork the page still reads, as text, once the
             // text is read.
             fallbackBuilder: widget.text == null

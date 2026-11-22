@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
@@ -25,6 +24,7 @@ import '../../settings/domain/app_settings.dart';
 import '../../startup/application/startup_providers.dart';
 import '../../startup/presentation/reader_painted_mark.dart';
 import '../application/svg_page_providers.dart';
+import '../data/svg_page_store.dart';
 import '../domain/svg_page.dart';
 import 'mushaf_page_frame.dart';
 import 'surah_banner.dart';
@@ -52,9 +52,14 @@ class SvgPageView extends StatelessWidget {
     this.spread = false,
     this.digits,
     this.fallbackBuilder,
+    this.onOffline,
     this.onPinchOut,
     this.fallbackAfter = const Duration(seconds: 30),
   });
+
+  /// Called when the artwork cannot be had because the internet is not
+  /// there (see [isUnreachable]), after the frame that shows it.
+  final VoidCallback? onOffline;
 
   /// Called when two fingers spread apart on the page. A printed page is
   /// artwork and does not enlarge; the owner suggests reading it bigger
@@ -133,6 +138,7 @@ class SvgPageView extends StatelessWidget {
             selected: selected,
             fillWidth: fillWidth,
             fallbackBuilder: fallbackBuilder,
+            onOffline: onOffline,
             slow: slow,
             onRetry: restart,
           ),
@@ -242,6 +248,7 @@ class _SvgBody extends ConsumerWidget {
     required this.selected,
     required this.fillWidth,
     required this.fallbackBuilder,
+    required this.onOffline,
     required this.slow,
     required this.onRetry,
   });
@@ -257,6 +264,7 @@ class _SvgBody extends ConsumerWidget {
   final AyahRange? selected;
   final bool fillWidth;
   final WidgetBuilder? fallbackBuilder;
+  final VoidCallback? onOffline;
   final bool slow;
   final VoidCallback onRetry;
 
@@ -272,6 +280,11 @@ class _SvgBody extends ConsumerWidget {
     void retry() {
       ref.invalidate(svgPageProvider(request));
       onRetry();
+    }
+
+    final failure = artwork.error;
+    if (failure != null && isUnreachable(failure) && onOffline != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => onOffline?.call());
     }
 
     final Widget child = switch (artwork) {
@@ -308,7 +321,7 @@ class _SvgBody extends ConsumerWidget {
           EmptyState(
             icon: Icons.cloud_off_outlined,
             title: l10n.readerLoadError,
-            message: error is SocketException || error is HttpException
+            message: isUnreachable(error)
                 ? l10n.printedPageOffline
                 : l10n.printedPageError,
             actionLabel: l10n.retry,

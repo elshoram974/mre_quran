@@ -161,7 +161,7 @@ class _PrayerWidgetSyncScopeState extends ConsumerState<PrayerWidgetSyncScope> {
     String Function(String) digits,
   ) {
     final today = ref.read(clockProvider)();
-    final dateFormat = DateFormat.yMMMEd(language);
+    final dateFormat = DateFormat.MMMEd(language);
     return [
       for (var offset = 0; offset < _daysAhead; offset++)
         _day(

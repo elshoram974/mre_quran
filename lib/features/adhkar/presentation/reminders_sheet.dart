@@ -17,6 +17,8 @@ import '../../../core/widgets/app_sheet.dart';
 import '../../../core/widgets/app_switch_tile.dart';
 import '../../../core/widgets/app_time_picker.dart';
 import '../application/adhkar_providers.dart';
+import '../../fasting/application/fasting_reminders_provider.dart';
+import '../../fasting/presentation/fasting_reminders_section.dart';
 import '../../prayer/application/prayer_provider.dart';
 import '../application/reminders_provider.dart';
 import '../application/weekly_reminders_provider.dart';
@@ -75,9 +77,11 @@ class _RemindersBodyState extends ConsumerState<_RemindersBody> {
     try {
       final weekly = await ref.read(weeklyRemindersProvider.future);
       final daily = await ref.read(remindersProvider.future);
+      final fasting = await ref.read(fastingRemindersProvider.future);
       anyOn =
           weekly.values.any((setting) => setting.enabled) ||
-          daily.values.any((setting) => setting.enabled);
+          daily.values.any((setting) => setting.enabled) ||
+          fasting.fasts.isNotEmpty;
     } on Object {
       // Reminders that cannot be read are not on.
       return;
@@ -261,6 +265,13 @@ class _RemindersBodyState extends ConsumerState<_RemindersBody> {
                   ),
               ],
           ],
+          const Divider(height: 32),
+          FastingRemindersSection(
+            formatTime: (minutes) =>
+                formatReminderTime(context, minutes, formatDisplayDigits),
+            onPermissionDenied: () =>
+                setState(() => _notice = _Notice.notifications),
+          ),
           const Divider(height: 32),
           Text(l10n.adhkarPrayerSection, style: theme.textTheme.titleMedium),
           const SizedBox(height: 4),

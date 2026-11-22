@@ -3264,6 +3264,174 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The printed page is not available right now, so the text is shown.'**
   String get printedFallbackNotice;
+
+  /// No description provided for @printedSwitchedToText.
+  ///
+  /// In en, this message translates to:
+  /// **'There is no internet, and this page is not on your phone, so the Mushaf is now shown as text. The printed Mushaf comes back by itself when the internet does.'**
+  String get printedSwitchedToText;
+
+  /// No description provided for @printedBackOnline.
+  ///
+  /// In en, this message translates to:
+  /// **'The internet is back, and so is the printed Mushaf.'**
+  String get printedBackOnline;
+
+  /// No description provided for @readerTextUntilOnline.
+  ///
+  /// In en, this message translates to:
+  /// **'Text was chosen by itself because there was no internet. The printed Mushaf comes back when the internet does. To read it printed without the internet, download it under Offline Mushaf.'**
+  String get readerTextUntilOnline;
+
+  /// No description provided for @adhanExactNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Without exact alarms the adhan does not play: only a plain notification comes, and it may be a few minutes late.'**
+  String get adhanExactNote;
+
+  /// No description provided for @adhanBatteryNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Battery saving can stop the adhan or hold it back. Open the app\'s settings, then Battery, and choose Unrestricted (on some phones: No restrictions, or turn on Auto-start).'**
+  String get adhanBatteryNote;
+
+  /// No description provided for @adhanBatteryAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Open the app\'s settings'**
+  String get adhanBatteryAction;
+
+  /// No description provided for @prayerSoonCountdownSwitch.
+  ///
+  /// In en, this message translates to:
+  /// **'Count down to the adhan'**
+  String get prayerSoonCountdownSwitch;
+
+  /// No description provided for @prayerSoonCountdownHint.
+  ///
+  /// In en, this message translates to:
+  /// **'The reminder stays and counts the time left to the second until the adhan, then goes by itself. Its Remove button takes it away at once.'**
+  String get prayerSoonCountdownHint;
+
+  /// No description provided for @prayerSoonCountdownBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The adhan is at {time}'**
+  String prayerSoonCountdownBody(String time);
+
+  /// No description provided for @prayerSoonDismiss.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get prayerSoonDismiss;
+
+  /// No description provided for @fastingChannelName.
+  ///
+  /// In en, this message translates to:
+  /// **'Sunnah fasts'**
+  String get fastingChannelName;
+
+  /// No description provided for @fastingReminderTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A sunnah fast tomorrow'**
+  String get fastingReminderTitle;
+
+  /// No description provided for @fastingMonday.
+  ///
+  /// In en, this message translates to:
+  /// **'Tomorrow is Monday, and fasting it is sunnah.'**
+  String get fastingMonday;
+
+  /// No description provided for @fastingThursday.
+  ///
+  /// In en, this message translates to:
+  /// **'Tomorrow is Thursday, and fasting it is sunnah.'**
+  String get fastingThursday;
+
+  /// No description provided for @fastingWhiteDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Tomorrow, day {day} of the Hijri month, is one of the white days, and fasting them is sunnah.'**
+  String fastingWhiteDay(String day);
+
+  /// No description provided for @fastingArafah.
+  ///
+  /// In en, this message translates to:
+  /// **'Tomorrow is the Day of Arafah, and fasting it is sunnah for those not on Hajj.'**
+  String get fastingArafah;
+
+  /// No description provided for @fastingTasua.
+  ///
+  /// In en, this message translates to:
+  /// **'Tomorrow is Tasu\'a, the ninth of Muharram, and fasting it with Ashura is sunnah.'**
+  String get fastingTasua;
+
+  /// No description provided for @fastingAshura.
+  ///
+  /// In en, this message translates to:
+  /// **'Tomorrow is Ashura, the tenth of Muharram, and fasting it is sunnah.'**
+  String get fastingAshura;
+
+  /// No description provided for @fastingShawwal.
+  ///
+  /// In en, this message translates to:
+  /// **'Fasting six days of Shawwal after the Eid is sunnah, and you can begin tomorrow.'**
+  String get fastingShawwal;
+
+  /// No description provided for @fastingSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Sunnah fasts'**
+  String get fastingSection;
+
+  /// No description provided for @fastingSectionHint.
+  ///
+  /// In en, this message translates to:
+  /// **'A reminder the evening before. Hijri dates follow the Umm al-Qura calendar and may be a day off the moon sighting where you are, so no reminder falls on a day that could be the Eid there.'**
+  String get fastingSectionHint;
+
+  /// No description provided for @fastingMondayThursday.
+  ///
+  /// In en, this message translates to:
+  /// **'Mondays and Thursdays'**
+  String get fastingMondayThursday;
+
+  /// No description provided for @fastingWhiteDays.
+  ///
+  /// In en, this message translates to:
+  /// **'The white days'**
+  String get fastingWhiteDays;
+
+  /// No description provided for @fastingWhiteDaysHint.
+  ///
+  /// In en, this message translates to:
+  /// **'The {first}th, {second}th and {third}th of each Hijri month'**
+  String fastingWhiteDaysHint(String first, String second, String third);
+
+  /// No description provided for @fastingArafahSwitch.
+  ///
+  /// In en, this message translates to:
+  /// **'The Day of Arafah'**
+  String get fastingArafahSwitch;
+
+  /// No description provided for @fastingAshuraSwitch.
+  ///
+  /// In en, this message translates to:
+  /// **'Tasu\'a and Ashura'**
+  String get fastingAshuraSwitch;
+
+  /// No description provided for @fastingShawwalSwitch.
+  ///
+  /// In en, this message translates to:
+  /// **'Six days of Shawwal'**
+  String get fastingShawwalSwitch;
+
+  /// No description provided for @fastingNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next: {date}'**
+  String fastingNext(String date);
 }
 
 class _AppLocalizationsDelegate

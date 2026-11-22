@@ -8,6 +8,7 @@ import '../../../core/layout/adaptive_layout.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_group_card.dart';
+import '../../../core/widgets/app_notice.dart';
 import '../../../core/widgets/app_page_scaffold.dart';
 import '../../../core/widgets/app_section_header.dart';
 import '../../../core/widgets/app_select_field.dart';
@@ -141,9 +142,16 @@ class ViewSettingsPage extends ConsumerWidget {
                   icon: Icons.menu_book_outlined,
                 ),
               ],
-              onChanged: (value) =>
-                  notifier.save(settings.copyWith(readerMode: value)),
+              onChanged: notifier.chooseReaderMode,
             ),
+            if (settings.textUntilOnline &&
+                settings.readerMode == ReaderMode.text) ...[
+              const SizedBox(height: 8),
+              AppNotice(
+                l10n.readerTextUntilOnline,
+                icon: Icons.cloud_off_outlined,
+              ),
+            ],
             const SizedBox(height: settingsGap),
             const ReaderPageLayoutField(),
             const SizedBox(height: settingsGap),

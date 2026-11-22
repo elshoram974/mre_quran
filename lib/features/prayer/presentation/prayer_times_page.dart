@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:material_ui/material_ui.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -28,6 +29,7 @@ import '../domain/prayer_times.dart';
 import 'location_problem_notice.dart';
 import 'prayer_labels.dart';
 import 'prayer_no_place.dart';
+import '../../adhan/presentation/adhan_battery_notice.dart';
 import '../../home_widgets/presentation/widget_hint.dart';
 
 /// Whether exact alarms are allowed (always true off Android).
@@ -304,6 +306,13 @@ class _Content extends ConsumerWidget {
                     ),
                   ),
                 ),
+              // The adhan plays at the prayers that alert: battery saving
+              // must not hold it back.
+              if (settings.alerts.isNotEmpty)
+                const Padding(
+                  padding: EdgeInsetsDirectional.fromSTEB(16, 0, 16, 8),
+                  child: AdhanBatteryNotice(),
+                ),
               // The reminder before a prayer comes with its alert.
               if (settings.alerts.isNotEmpty) ...[
                 AppSwitchTile(
@@ -331,6 +340,16 @@ class _Content extends ConsumerWidget {
                       ],
                       onChanged: notifier.setBeforeMinutes,
                     ),
+                  ),
+                // Android counts down in the notification itself.
+                if (settings.beforeReminder &&
+                    defaultTargetPlatform == TargetPlatform.android)
+                  AppSwitchTile(
+                    value: settings.beforeCountdown,
+                    onChanged: notifier.setBeforeCountdown,
+                    title: l10n.prayerSoonCountdownSwitch,
+                    subtitle: l10n.prayerSoonCountdownHint,
+                    icon: Icons.timer_outlined,
                   ),
               ],
               AppSwitchTile(

@@ -12,6 +12,7 @@ import '../features/adhan/presentation/adhan_suggestion_scope.dart';
 import '../features/startup/application/startup_providers.dart';
 import '../features/startup/presentation/launch_gate.dart';
 import '../features/adhkar/presentation/adhkar_widget_sync_scope.dart';
+import '../features/fasting/application/fasting_reminders_provider.dart';
 import '../features/prayer/application/prayer_provider.dart';
 import '../features/prayer/presentation/prayer_widget_sync_scope.dart';
 import '../features/adhkar/application/reminders_provider.dart';
@@ -48,6 +49,7 @@ class QuranApp extends ConsumerWidget {
       ..listen(remindersProvider, (_, _) {})
       ..listen(weeklyRemindersProvider, (_, _) {})
       ..listen(prayerProvider, (_, _) {})
+      ..listen(fastingRemindersProvider, (_, _) {})
       ..listen(reminderTapsProvider, (_, next) {
         final tap = next.value;
         if (tap != null) {

@@ -36,6 +36,7 @@ Future<_Harness> _pump(
   WidgetTester tester, {
   bool supported = true,
   bool exact = true,
+  bool unrestricted = true,
   String locale = 'ar',
   Size size = const Size(390, 844),
   double textScale = 1,
@@ -50,7 +51,9 @@ Future<_Harness> _pump(
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
   final harness = _Harness(
-    FakeAdhanPlatform(supported: supported)..recordings = recordings,
+    FakeAdhanPlatform(supported: supported)
+      ..recordings = recordings
+      ..unrestricted = unrestricted,
     MemoryAdhanRepository(),
     FakeVoiceStore(saved: saved),
     FakeReminderScheduler()..exactAllowed = exact,
@@ -352,11 +355,41 @@ void main() {
     tester,
   ) async {
     final h = await _pump(tester, exact: false);
-    expect(find.textContaining('يؤخّر أندرويد'), findsOneWidget);
+    // The adhan does not play at all without them, and the page says so.
+    expect(find.textContaining('لا يعمل الأذان'), findsOneWidget);
     await _reveal(tester, find.text('السماح بالتوقيت الدقيق'));
     await tester.tap(find.text('السماح بالتوقيت الدقيق'));
     await tester.pumpAndSettle();
     expect(h.scheduler.exactRequests, 1);
+  });
+
+  testWidgets('battery saving that can stop the adhan is said in red, with '
+      'the way to the app\'s settings', (tester) async {
+    final h = await _pump(tester, unrestricted: false);
+    expect(find.textContaining('توفير البطارية'), findsOneWidget);
+    await _reveal(tester, find.text('فتح إعدادات التطبيق'));
+    await tester.tap(find.text('فتح إعدادات التطبيق'));
+    await tester.pumpAndSettle();
+    expect(h.platform.settingsOpened, 1);
+
+    // Made unrestricted there: back in the app, the notice is gone.
+    h.platform.unrestricted = true;
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    await tester.pumpAndSettle();
+    expect(find.textContaining('توفير البطارية'), findsNothing);
+  });
+
+  testWidgets('no battery notice when the app is unrestricted, or the adhan '
+      'is off', (tester) async {
+    await _pump(tester);
+    expect(find.textContaining('توفير البطارية'), findsNothing);
+    final h = await _pump(tester, unrestricted: false);
+    expect(find.textContaining('توفير البطارية'), findsOneWidget);
+    await tester.tap(find.text('تشغيل الأذان وقت الصلاة'));
+    await tester.pumpAndSettle();
+    expect(h.adhan.settings.playAdhan, isFalse);
+    expect(find.textContaining('توفير البطارية'), findsNothing);
   });
 
   testWidgets(
@@ -374,15 +407,28 @@ void main() {
     ('expanded', const Size(1100, 800), 1.0),
   ]) {
     testWidgets('fits when $name', (tester) async {
-      await _pump(tester, size: size, textScale: scale);
+      // With both red notices, the longest the alert section gets.
+      await _pump(
+        tester,
+        size: size,
+        textScale: scale,
+        exact: false,
+        unrestricted: false,
+      );
       await _reveal(tester, find.text('أذان المسجد الحرام'));
       expect(tester.takeException(), isNull);
     });
   }
 
   testWidgets('English LTR in dark mode', (tester) async {
-    await _pump(tester, locale: 'en', theme: AppTheme.dark);
+    await _pump(
+      tester,
+      locale: 'en',
+      theme: AppTheme.dark,
+      unrestricted: false,
+    );
     expect(find.text('Play the adhan at prayer time'), findsOneWidget);
+    expect(find.textContaining('Battery saving can stop'), findsOneWidget);
     await _reveal(tester, find.text('Default adhan'));
     expect(_inCard('Default adhan', find.text('In use')), findsOne);
     await _reveal(tester, find.text('Grand Mosque'));

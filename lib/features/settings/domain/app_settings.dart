@@ -21,6 +21,7 @@ class AppSettings {
     this.adhkarFontScale = 1,
     this.realisticPageTurn = false,
     this.readerMode = ReaderMode.printed,
+    this.textUntilOnline = false,
     this.readerPageLayout = ReaderPageLayout.auto,
     this.mushafEdition = MushafEditions.hafs,
     this.surahFrame = SurahFrameStyle.cartouche,
@@ -86,6 +87,12 @@ class AppSettings {
   /// Whether the Mushaf shows typeset text or printed page images.
   final ReaderMode readerMode;
 
+  /// Whether [readerMode] is text only because the app chose it: a printed
+  /// page could not be had without the internet. The printed Mushaf comes
+  /// back by itself once pages can be downloaded again. Cleared whenever
+  /// the person chooses the mode.
+  final bool textUntilOnline;
+
   /// How the printed Mushaf uses the available reading area.
   final ReaderPageLayout readerPageLayout;
 
@@ -111,6 +118,7 @@ class AppSettings {
     double? adhkarFontScale,
     bool? realisticPageTurn,
     ReaderMode? readerMode,
+    bool? textUntilOnline,
     ReaderPageLayout? readerPageLayout,
     MushafEdition? mushafEdition,
     SurahFrameStyle? surahFrame,
@@ -129,6 +137,7 @@ class AppSettings {
     adhkarFontScale: adhkarFontScale ?? this.adhkarFontScale,
     realisticPageTurn: realisticPageTurn ?? this.realisticPageTurn,
     readerMode: readerMode ?? this.readerMode,
+    textUntilOnline: textUntilOnline ?? this.textUntilOnline,
     readerPageLayout: readerPageLayout ?? this.readerPageLayout,
     mushafEdition: mushafEdition ?? this.mushafEdition,
     surahFrame: surahFrame ?? this.surahFrame,

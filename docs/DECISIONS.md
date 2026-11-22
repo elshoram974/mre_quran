@@ -509,3 +509,39 @@
   "turn on location" dialog over whatever the person is doing (reading, or looking at the prayer times). D-020's
   "no location permission at launch" now covers that dialog too. The explicit paths (*Use my location*, the map's
   button) already check first and say what to do in the app's own words.
+
+## D-053: A downloaded Mushaf is unpacked without the settings, and offline the reader turns to text for real
+
+- **Unpacking:** The system downloader finishes the offline Mushaf even when the app is closed, and its notice then
+  says it works offline. Nothing unpacked the archives until the *Offline Mushaf* page was opened, so the reader
+  went to the network for pages already on the phone and said there was no internet. Now the reader unpacks a
+  waiting download once its first page is drawn (`waitingPackProvider`), the store unpacks it before it would
+  download a page (`SvgPageStore._ensure`), and the pack shows as being made ready, never as missing, while it is.
+- **Offline:** When a printed page of Hafs cannot be had because the server cannot be reached (`isUnreachable`), the
+  whole reader switches to the typeset text, saved in the settings with `AppSettings.textUntilOnline`, and a snack
+  bar says why. The settings say it too. The reader keeps trying a page that is not on the phone (on a page turn,
+  when the app comes back, every 30 seconds) and returns to the printed Mushaf, with a snack bar, as soon as one
+  downloads, or at once when every page is on the phone. The person choosing a mode
+  (`SettingsNotifier.chooseReaderMode`) ends it. A page out of sight never switches the reader. Another reading has
+  no text of its own, so it stays printed and says why on the page. A slow page (30 seconds) still shows its text
+  in place, as before; a server that answers with an error is not "offline".
+- **Was:** Text stood in for the one page while the settings still said *Printed Mushaf*.
+
+## D-054: The adhan is an alarm clock, a late one still shows, and battery saving is named
+
+- **Decision:** With exact alarms allowed, each adhan is armed with `AlarmManager.setAlarmClock` (D-030's one alarm at a
+  time is unchanged). The system keeps an alarm clock to the minute through Doze, app standby buckets and battery
+  saving, lets it start the adhan's service from the background, and shows the next one with the alarm icon; a tap
+  on it opens the prayer times.
+- **Late delivery:** The receiver used to drop an alarm the system handed over after its minute, silently, and the
+  plain at-time notification is not scheduled when the adhan takes the prayer. Now an alarm up to 3 minutes late
+  still plays; up to an hour late, the prayer's notice shows without sound; later than that (a clock moved on) it is
+  dropped.
+- **Battery:** While the adhan is on and the phone optimises or restricts the app's battery use, the Adhan page and the
+  prayer alerts show a red notice with a button to the app's system settings, where *Battery* is set to
+  *Unrestricted* (some phones: *No restrictions*, *Auto-start*). It is checked again when the app comes back. No
+  permission is declared for it; `REQUEST_IGNORE_BATTERY_OPTIMIZATIONS` (a one-tap system dialog) is restricted by
+  Google Play and is not used.
+- **Exact alarms:** The Adhan page now says that without them the adhan does not play at all, only a plain
+  notification, rather than that it may come a few minutes late.
+

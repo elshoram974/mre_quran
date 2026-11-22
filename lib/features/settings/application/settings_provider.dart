@@ -55,4 +55,12 @@ class SettingsNotifier extends AsyncNotifier<AppSettings> {
       if (previous != null) state = AsyncData(previous);
     }
   }
+
+  /// Shows the Mushaf as [mode], as the person chose: the app no longer
+  /// switches it back by itself (see [AppSettings.textUntilOnline]).
+  Future<void> chooseReaderMode(ReaderMode mode) async {
+    final current = state.value;
+    if (current == null) return;
+    await save(current.copyWith(readerMode: mode, textUntilOnline: false));
+  }
 }

@@ -17,6 +17,7 @@ import '../domain/adhan_settings.dart';
 import '../domain/adhan_voice.dart';
 import '../../home_widgets/presentation/widget_hint.dart';
 import '../../prayer/application/prayer_provider.dart';
+import 'adhan_battery_notice.dart';
 import 'custom_voice_card.dart';
 import 'voice_card.dart';
 
@@ -221,9 +222,9 @@ class _AlertSection extends ConsumerWidget {
         ),
         if (settings.playAdhan && !exact) ...[
           const SizedBox(height: 8),
-          // Red and boxed: without it the adhan can come late.
+          // Red and boxed: without it the adhan does not play at all.
           AppNotice(
-            l10n.prayerExactNote,
+            l10n.adhanExactNote,
             important: true,
             action: FilledButton(
               onPressed: () async {
@@ -240,6 +241,8 @@ class _AlertSection extends ConsumerWidget {
             ),
           ),
         ],
+        // Red and boxed too: battery saving can hold the adhan back.
+        const AdhanBatteryNotice(),
         const SizedBox(height: 12),
         AppTileCard(
           icon: Icons.notifications_active_outlined,

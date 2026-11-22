@@ -198,6 +198,14 @@ abstract interface class AdhanPlatform {
   /// Removes every scheduled adhan.
   Future<void> cancelAll();
 
+  /// Whether battery saving leaves the app alone, so nothing holds the
+  /// adhan back. True where it cannot be told.
+  Future<bool> batteryUnrestricted();
+
+  /// Opens the app's page in the system settings, where its battery use is
+  /// chosen.
+  Future<void> openAppSettings();
+
   /// Starts the alert now, as at prayer time, so the person can see and hear
   /// it.
   Future<void> test(AdhanAlarm alarm, AdhanAlertConfig config);
@@ -290,6 +298,13 @@ class ChannelAdhanPlatform implements AdhanPlatform {
 
   @override
   Future<void> cancelAll() => _call<void>('cancelAll');
+
+  @override
+  Future<bool> batteryUnrestricted() async =>
+      await _call<bool>('batteryUnrestricted') ?? true;
+
+  @override
+  Future<void> openAppSettings() => _call<void>('openAppSettings');
 
   @override
   Future<void> test(AdhanAlarm alarm, AdhanAlertConfig config) =>

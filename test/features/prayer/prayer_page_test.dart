@@ -9,6 +9,7 @@ import 'package:mre_quran/core/notifications/reminder_scheduler_provider.dart';
 import 'package:mre_quran/core/theme/app_theme.dart';
 import 'package:mre_quran/core/time/ticking_clock.dart';
 import 'package:mre_quran/features/prayer/application/prayer_provider.dart';
+import 'package:mre_quran/features/prayer/domain/prayer_alerts.dart';
 import 'package:mre_quran/features/prayer/data/location_source.dart';
 import 'package:mre_quran/features/prayer/domain/prayer_times.dart';
 import 'package:mre_quran/features/prayer/presentation/prayer_times_card.dart';
@@ -295,6 +296,20 @@ void main() {
       // The reminder before them can be moved.
       await _reveal(tester, find.text('تذكير قبل الصلاة'));
       expect(find.text('١٥ دقيقة'), findsOneWidget);
+      // It counts down to the adhan, until the person turns that off.
+      await _reveal(tester, find.text('عدّ تنازلي حتى الأذان'));
+      // The first reminder still to come.
+      final reminder = harness.scheduler.once.keys
+          .where(
+            (id) =>
+                id >= PrayerAlertPlan.firstBeforeId &&
+                id < PrayerAlertPlan.firstBeforeId + 1000,
+          )
+          .reduce((a, b) => a < b ? a : b);
+      expect(harness.scheduler.once[reminder]!.countdownTo, isNotNull);
+      await tester.tap(find.text('عدّ تنازلي حتى الأذان'));
+      await tester.pumpAndSettle();
+      expect(harness.scheduler.once[reminder]!.countdownTo, isNull);
       // Back up to the day's times, which the page scrolled past.
       await tester.drag(find.byType(Scrollable).first, const Offset(0, 1500));
       await tester.pumpAndSettle();

@@ -13,6 +13,7 @@ import 'package:mre_quran/core/widgets/empty_state.dart';
 import 'package:mre_quran/core/widgets/pinch_zoom.dart';
 import 'package:mre_quran/features/mushaf/application/svg_page_providers.dart';
 import 'package:mre_quran/features/mushaf/data/svg_page_compiler.dart';
+import 'package:mre_quran/features/mushaf/data/svg_page_store.dart';
 import 'package:mre_quran/features/mushaf/data/svg_page_parser.dart';
 import 'package:mre_quran/features/mushaf/domain/svg_page.dart';
 import 'package:mre_quran/features/mushaf/presentation/reader_page_labels.dart';
@@ -46,6 +47,7 @@ void main() {
     Size size = const Size(390, 844),
     bool fillWidth = false,
     VoidCallback? onPinchOut,
+    VoidCallback? onOffline,
   }) async {
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
@@ -73,6 +75,7 @@ void main() {
               fallbackAfter: fallbackAfter,
               fillWidth: fillWidth,
               onPinchOut: onPinchOut,
+              onOffline: onOffline,
             ),
           ),
         ),
@@ -325,6 +328,37 @@ void main() {
     expect(find.text('typeset page'), findsNothing);
   });
 
+  testWidgets('a page that cannot be had offline says so to its owner; one '
+      'the server refused does not', (tester) async {
+    var offline = 0;
+    await pump(
+      tester,
+      load: (page) async => throw PageDownloadException(
+        Uri.parse('https://example.test/003.svg'),
+        'SocketException',
+        unreachable: true,
+      ),
+      fallbackBuilder: (_) => const Text('typeset page'),
+      onOffline: () => offline++,
+    );
+    expect(offline, greaterThan(0));
+
+    offline = 0;
+    await pump(
+      tester,
+      page: 4,
+      load: (page) async => throw PageDownloadException(
+        Uri.parse('https://example.test/004.svg'),
+        'HTTP 404',
+      ),
+      fallbackBuilder: (_) => const Text('typeset page'),
+      onOffline: () => offline++,
+    );
+    expect(offline, 0);
+    // The text still stands in for that one page.
+    expect(find.text('typeset page'), findsOneWidget);
+  });
+
   testWidgets('a slow page gives way to the text after the wait', (
     tester,
   ) async {
@@ -494,5 +528,19 @@ void main() {
     // It says what is saved, and the button says what to do.
     expect(find.textContaining('الصفحات التي فتحتها من قبل'), findsOneWidget);
     expect(find.text('نزّل الرواية كلها'), findsOneWidget);
+  });
+
+  testWidgets('the store\'s own "could not reach the server" reads as '
+      'offline too', (tester) async {
+    await pump(
+      tester,
+      load: (_) async => throw PageDownloadException(
+        Uri.parse('https://example.test/003.svg'),
+        'SocketException',
+        unreachable: true,
+      ),
+    );
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(find.textContaining('لا يوجد إنترنت الآن'), findsOneWidget);
   });
 }

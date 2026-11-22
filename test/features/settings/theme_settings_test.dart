@@ -70,7 +70,7 @@ void main() {
             .load();
         try {
           await Future<void>.delayed(Duration.zero);
-          expect(platform.started, hasLength(17));
+          expect(platform.started, hasLength(18));
           expect(
             platform.started,
             containsAll([
@@ -79,12 +79,27 @@ void main() {
               'settings.widget_seconds',
               'settings.widget_locale',
               'settings.adhkar_font_scale',
+              'settings.text_until_online',
             ]),
           );
         } finally {
           platform.gate.complete();
         }
         expect((await loading).hapticsEnabled, isTrue);
+      },
+    );
+
+    test(
+      'keeps whether the app chose the text because it was offline',
+      () async {
+        final repository = LocalSettingsRepository(SharedPreferencesAsync());
+        expect((await repository.load()).textUntilOnline, isFalse);
+        await repository.save(
+          const AppSettings(readerMode: ReaderMode.text, textUntilOnline: true),
+        );
+        final loaded = await repository.load();
+        expect(loaded.readerMode, ReaderMode.text);
+        expect(loaded.textUntilOnline, isTrue);
       },
     );
 

@@ -9,7 +9,7 @@ import java.time.DateTimeException
 import java.time.LocalDateTime
 import java.time.ZoneId
 
-/** Prevents the notification fallback from ringing for yesterday's prayers on reboot. */
+/** Prevents the notification fallback from ringing for yesterday's prayers (or fasts) on reboot. */
 class ReminderBootReceiver : ScheduledNotificationBootReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         // flutter_local_notifications 22 stores zoned one-shot and daily alerts
@@ -31,7 +31,7 @@ class ReminderBootReceiver : ScheduledNotificationBootReceiver() {
     }
 
     private fun expiredPrayer(record: JSONObject, now: Long): Boolean {
-        if (record.optString("channelId") !in setOf("prayer_time", "prayer_soon", "adhkar_reminders")) return false
+        if (record.optString("channelId") !in setOf("prayer_time", "prayer_soon", "adhkar_reminders", "fasting_reminders")) return false
         if (!record.isNull("matchDateTimeComponents") || !record.isNull("repeatInterval") ||
             !record.isNull("scheduledNotificationRepeatFrequency") || !record.isNull("repeatIntervalMilliseconds")) return false
         return try {

@@ -1,3 +1,3 @@
 <resources>
-    <dimen name="schedule_countdown_tuck">-2dp</dimen>
+    <dimen name="schedule_countdown_gap">2dp</dimen>
 </resources>

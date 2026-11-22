@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -193,6 +194,36 @@ void main() {
     },
   );
 
+  test('tells an unreachable server from one that answered', () async {
+    final uri = Uri.parse('https://example.test/001.svg');
+    expect(isUnreachable(const SocketException('offline')), isTrue);
+    expect(isUnreachable(TimeoutException('slow')), isTrue);
+    expect(
+      isUnreachable(PageDownloadException(uri, 'x', unreachable: true)),
+      isTrue,
+    );
+    expect(isUnreachable(PageDownloadException(uri, 'HTTP 404')), isFalse);
+    expect(
+      isUnreachable(PageDownloadException(uri, 'checksum mismatch')),
+      isFalse,
+    );
+    expect(isUnreachable(StateError('other')), isFalse);
+  });
+
+  test(
+    'finds the nearest page not on the device, going on and round',
+    () async {
+      expect(await store.nearestMissing(2), 2);
+      await store.fetch(2);
+      expect(await store.nearestMissing(2), 3);
+      await store.fetch(3);
+      // Past the last page it starts again from the first.
+      expect(await store.nearestMissing(2), 1);
+      await store.fetch(1);
+      expect(await store.nearestMissing(2), isNull);
+    },
+  );
+
   test('a damaged file on the device is dropped and fetched again', () async {
     await store.fetch(1);
     stored('001.svg.gz').writeAsBytesSync([1, 2, 3]);
@@ -252,6 +283,19 @@ void main() {
         expect((await store.page(page)).page, page);
       }
       expect(server.requests, isEmpty);
+    });
+
+    test('a page of a Mushaf still in its archives is unpacked, not '
+        'downloaded', () async {
+      // The system finished the download while the app was closed; nothing
+      // unpacked it. The reader asks for a page offline.
+      arrived('svg');
+      arrived('json');
+      server.offline = true;
+      expect((await store.page(2)).page, 2);
+      expect(server.requests, isEmpty);
+      expect(await store.hasArchives(), isFalse);
+      expect(await store.filesOnDevice(), 6);
     });
 
     test('two unpackings at once do not trip over each other', () async {

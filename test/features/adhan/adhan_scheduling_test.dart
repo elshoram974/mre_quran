@@ -274,15 +274,30 @@ void main() {
     final first = h.scheduler.once[PrayerAlertPlan.firstBeforeId]!;
     final fajr = h.platform.alarms.first;
     expect(first.title, 'اقتربت صلاة الفجر');
-    expect(first.body, 'باقي ١٥ دقيقة على الأذان');
     expect(fajr.at.difference(first.at), const Duration(minutes: 15));
     expect(first.exact, isTrue);
+    // On Android it counts down to the adhan, says when the adhan is, and
+    // has a button to take it away.
+    expect(first.countdownTo, fajr.at);
+    expect(first.dismissLabel, 'إزالة');
+    expect(first.body, startsWith('الأذان الساعة '));
 
     final notifier = h.container.read(prayerProvider.notifier);
     await notifier.setBeforeMinutes(5);
     final moved = h.scheduler.once[PrayerAlertPlan.firstBeforeId]!;
     expect(fajr.at.difference(moved.at), const Duration(minutes: 5));
-    expect(moved.body, 'باقي ٥ دقائق على الأذان');
+    expect(moved.countdownTo, fajr.at);
+
+    // Without the countdown, the words say how long is left.
+    await notifier.setBeforeCountdown(false);
+    final plain = h.scheduler.once[PrayerAlertPlan.firstBeforeId]!;
+    expect(plain.countdownTo, isNull);
+    expect(plain.dismissLabel, isNull);
+    expect(plain.body, 'باقي ٥ دقائق على الأذان');
+    expect(
+      h.container.read(prayerProvider).value!.settings.beforeCountdown,
+      isFalse,
+    );
 
     await notifier.setBeforeReminder(false);
     expect(_beforeNotifications(h), isEmpty);
@@ -353,6 +368,16 @@ void main() {
   group('on iOS', () {
     setUp(() => debugDefaultTargetPlatformOverride = TargetPlatform.iOS);
     tearDown(() => debugDefaultTargetPlatformOverride = null);
+
+    test('the reminder before a prayer says how long is left: iOS has no '
+        'countdown in a notification', () async {
+      final h = _harness(supported: false);
+      await h.turnAllOn();
+      final first = h.scheduler.once[PrayerAlertPlan.firstBeforeId]!;
+      expect(first.countdownTo, isNull);
+      expect(first.dismissLabel, isNull);
+      expect(first.body, 'باقي ١٥ دقيقة على الأذان');
+    });
 
     test('the alert rings with the adhan\'s opening, the Fajr one at Fajr, '
         'and stays within iOS\'s pending notifications', () async {

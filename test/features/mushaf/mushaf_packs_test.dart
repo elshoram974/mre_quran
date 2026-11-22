@@ -187,6 +187,54 @@ void main() {
     expect((await progress()).complete, isTrue);
   });
 
+  test('archives waiting to be unpacked show as being made ready from the '
+      'first state, never as missing', () async {
+    arrived('svg');
+    arrived('json');
+    final first = await progress();
+    expect(first.installing, isTrue);
+    expect(first.partial, isFalse);
+    await settled();
+    final last = await progress();
+    expect(last.installing, isFalse);
+    expect(last.complete, isTrue);
+  });
+
+  test('the reader\'s start-up check unpacks a Mushaf that waits, and '
+      'leaves the downloader alone when none does', () async {
+    expect(
+      await container.read(waitingPackProvider(MushafEditions.hafs).future),
+      isFalse,
+    );
+    // Nothing waits: the pack's state, which asks the downloader, is not made.
+    expect(container.exists(mushafPackProvider(MushafEditions.hafs)), isFalse);
+
+    final again = ProviderContainer(
+      overrides: [
+        packDownloaderProvider.overrideWithValue(downloader),
+        svgPageStoreProvider.overrideWith(
+          (ref, edition) => SvgPageStore(
+            root: () async => root,
+            manifest: () async => fixtureManifest(),
+            fetch: (_) async => throw StateError('no network in this test'),
+          ),
+        ),
+      ],
+    );
+    addTearDown(again.dispose);
+    arrived('svg');
+    arrived('json');
+    expect(
+      await again.read(waitingPackProvider(MushafEditions.hafs).future),
+      isTrue,
+    );
+    await settled();
+    final state = await again.read(
+      mushafPackProvider(MushafEditions.hafs).future,
+    );
+    expect(state.complete, isTrue);
+  });
+
   test('files of another download group are ignored', () async {
     final before = await progress();
     downloader.finish('something-else', 'x');

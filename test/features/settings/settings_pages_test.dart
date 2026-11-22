@@ -29,13 +29,14 @@ Future<MemorySettingsRepository> _pump(
   List<String>? visited,
   List<StoreLink> stores = const [],
   Sharer? sharer,
+  AppSettings? settings,
 }) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
   final repository = MemorySettingsRepository()
-    ..settings = AppSettings(localeCode: locale);
+    ..settings = settings ?? AppSettings(localeCode: locale);
   final router = GoRouter(
     routes: [
       GoRoute(
@@ -228,6 +229,37 @@ void main() {
       await tester.drag(sliders.first, const Offset(400, 0));
       await tester.pumpAndSettle();
       expect(repository.settings.readerFontScale, lessThan(1));
+    });
+
+    testWidgets('says when the app chose the text because it was offline, '
+        'and the person\'s own choice ends it', (tester) async {
+      final repository = await _pump(
+        tester,
+        const ViewSettingsPage(),
+        settings: const AppSettings(
+          readerMode: ReaderMode.text,
+          textUntilOnline: true,
+        ),
+      );
+      await _reveal(tester, find.text('طريقة العرض'));
+      expect(find.textContaining('اختير النص المكتوب تلقائيًا'), findsOne);
+      await tester.tap(find.text('طريقة العرض'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('المصحف المطبوع').last);
+      await tester.pumpAndSettle();
+      expect(repository.settings.readerMode, ReaderMode.printed);
+      expect(repository.settings.textUntilOnline, isFalse);
+      expect(find.textContaining('اختير النص المكتوب تلقائيًا'), findsNothing);
+    });
+
+    testWidgets('text the person chose carries no such note', (tester) async {
+      await _pump(
+        tester,
+        const ViewSettingsPage(),
+        settings: const AppSettings(readerMode: ReaderMode.text),
+      );
+      await _reveal(tester, find.text('طريقة العرض'));
+      expect(find.textContaining('اختير النص المكتوب تلقائيًا'), findsNothing);
     });
 
     testWidgets('changes the language and the digits', (tester) async {

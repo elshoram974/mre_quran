@@ -51,7 +51,7 @@ final widgetPreviewDataProvider = FutureProvider.autoDispose<WidgetPreviewData>(
       ],
       nextId: coming.name,
       nextLabel: l10n.prayerNext,
-      date: digits(DateFormat.yMMMEd(language).format(now)),
+      date: digits(DateFormat.MMMEd(language).format(now)),
       hijri: hijriLabel(l10n, HijriDate.of(now), digits),
       remaining: l10n.prayerIn(
         formatUntil(l10n, left, (value) => digits('$value')),

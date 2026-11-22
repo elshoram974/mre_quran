@@ -1,0 +1,188 @@
+import 'dart:io';
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mre_quran/features/mushaf/application/printed_fallback.dart';
+import 'package:mre_quran/features/mushaf/application/svg_page_providers.dart';
+import 'package:mre_quran/features/mushaf/data/svg_page_store.dart';
+import 'package:mre_quran/features/settings/application/settings_provider.dart';
+import 'package:mre_quran/features/settings/domain/app_settings.dart';
+
+import '../../helpers/memory_settings_repository.dart';
+import '../../helpers/svg_page_fixtures.dart';
+
+void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  late Directory root;
+  late FakePageServer server;
+  late MemorySettingsRepository settings;
+  late ProviderContainer container;
+
+  ProviderContainer make(AppSettings saved) {
+    settings = MemorySettingsRepository()..settings = saved;
+    return ProviderContainer(
+      overrides: [
+        settingsRepositoryProvider.overrideWithValue(settings),
+        svgPageStoreProvider.overrideWith(
+          (ref, edition) => SvgPageStore(
+            root: () async => root,
+            manifest: () async => fixtureManifest(),
+            fetch: server.fetch,
+          ),
+        ),
+      ],
+    );
+  }
+
+  setUp(() async {
+    root = Directory.systemTemp.createTempSync('printed_fallback');
+    server = FakePageServer();
+    container = make(const AppSettings(readerMode: ReaderMode.printed));
+    await container.read(settingsProvider.future);
+  });
+  tearDown(() {
+    container.dispose();
+    root.deleteSync(recursive: true);
+  });
+
+  PrintedFallback fallback() =>
+      container.read(printedFallbackProvider.notifier);
+  AppSettings current() => container.read(settingsProvider).value!;
+  PrintedFallbackChange? lastChange() =>
+      container.read(printedFallbackProvider)?.change;
+
+  test('offline, the printed Mushaf turns to text, saved and said', () async {
+    await fallback().offline();
+    expect(current().readerMode, ReaderMode.text);
+    expect(current().textUntilOnline, isTrue);
+    // Kept, so it is still so when the app opens again.
+    expect(settings.settings.readerMode, ReaderMode.text);
+    expect(settings.settings.textUntilOnline, isTrue);
+    expect(lastChange(), PrintedFallbackChange.toText);
+  });
+
+  test('a reading whose text is not the app\'s stays printed', () async {
+    container.dispose();
+    container = make(
+      AppSettings(
+        readerMode: ReaderMode.printed,
+        mushafEdition: MushafEditions.all.firstWhere(
+          (edition) => !edition.matchesAppText,
+        ),
+      ),
+    );
+    await container.read(settingsProvider.future);
+    await fallback().offline();
+    expect(current().readerMode, ReaderMode.printed);
+    expect(current().textUntilOnline, isFalse);
+    expect(lastChange(), isNull);
+  });
+
+  test('text the person chose is left alone', () async {
+    await container
+        .read(settingsProvider.notifier)
+        .chooseReaderMode(ReaderMode.text);
+    await fallback().offline();
+    expect(current().textUntilOnline, isFalse);
+    expect(lastChange(), isNull);
+    // Nor is it switched back to printed when pages can be had.
+    await fallback().retry(1);
+    expect(current().readerMode, ReaderMode.text);
+    expect(server.requests, isEmpty);
+  });
+
+  test('while still offline, trying again keeps the text', () async {
+    await fallback().offline();
+    server.offline = true;
+    await fallback().retry(2);
+    expect(current().readerMode, ReaderMode.text);
+    expect(current().textUntilOnline, isTrue);
+    expect(server.requests.last.pathSegments.last, '002.svg');
+  });
+
+  test('once a page downloads, the printed Mushaf is back', () async {
+    await fallback().offline();
+    await fallback().retry(2);
+    expect(current().readerMode, ReaderMode.printed);
+    expect(current().textUntilOnline, isFalse);
+    expect(settings.settings.readerMode, ReaderMode.printed);
+    expect(lastChange(), PrintedFallbackChange.toPrinted);
+    // The page the reader was on was the one tried, and it is now kept.
+    expect(
+      await container
+          .read(svgPageStoreProvider(MushafEditions.hafs))
+          .isOnDevice(2),
+      isTrue,
+    );
+  });
+
+  test('a page the reader has is passed over for one it has not', () async {
+    final store = container.read(svgPageStoreProvider(MushafEditions.hafs));
+    await store.fetch(2);
+    server.requests.clear();
+    await fallback().offline();
+    server.offline = true;
+    await fallback().retry(2);
+    // Page 2 opens offline and proves nothing: page 3 was tried.
+    expect(
+      [for (final uri in server.requests) uri.pathSegments.last],
+      ['003.svg'],
+    );
+    expect(current().readerMode, ReaderMode.text);
+  });
+
+  test(
+    'a server that answers with an error means the internet is back',
+    () async {
+      await fallback().offline();
+      server.tamper = true;
+      await fallback().retry(1);
+      expect(current().readerMode, ReaderMode.printed);
+    },
+  );
+
+  test('with every page on the device, the printed Mushaf is back at '
+      'once', () async {
+    final store = container.read(svgPageStoreProvider(MushafEditions.hafs));
+    for (final page in [1, 2, 3]) {
+      await store.fetch(page);
+    }
+    server.requests.clear();
+    await fallback().offline();
+    server.offline = true;
+    await fallback().retry(1);
+    expect(current().readerMode, ReaderMode.printed);
+    expect(server.requests, isEmpty);
+  });
+
+  test('it keeps trying by itself while the text stands in', () async {
+    PrintedFallback.retryEvery = const Duration(milliseconds: 20);
+    addTearDown(() => PrintedFallback.retryEvery = const Duration(seconds: 30));
+    container.dispose();
+    container = make(const AppSettings(readerMode: ReaderMode.printed));
+    await container.read(settingsProvider.future);
+    server.offline = true;
+    await fallback().offline();
+    // The page the reader is on, as the reader says when it turns to it.
+    await fallback().retry(1);
+    expect(current().readerMode, ReaderMode.text);
+    server.offline = false;
+    await Future<void>.delayed(const Duration(milliseconds: 120));
+    expect(current().readerMode, ReaderMode.printed);
+  });
+
+  test(
+    'when the app opens still showing text, it tries from the start',
+    () async {
+      container.dispose();
+      container = make(
+        const AppSettings(readerMode: ReaderMode.text, textUntilOnline: true),
+      );
+      await container.read(settingsProvider.future);
+      await fallback().retry(3);
+      expect(current().readerMode, ReaderMode.printed);
+      expect(current().textUntilOnline, isFalse);
+    },
+  );
+}

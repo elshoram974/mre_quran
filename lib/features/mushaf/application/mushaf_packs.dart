@@ -92,6 +92,23 @@ final mushafPackProvider =
       MushafPack.new,
     );
 
+/// Unpacks a downloaded Mushaf of an edition that still waits in its
+/// archives, and says whether one did. The system downloader finishes the
+/// download even when the app is closed; nothing then unpacks it until the
+/// app runs again. The reader asks for this once it has drawn its first
+/// page, so the Mushaf is ready offline without the settings being opened.
+final waitingPackProvider = FutureProvider.family<bool, MushafEdition>((
+  ref,
+  edition,
+) async {
+  if (!await ref.read(svgPageStoreProvider(edition)).hasArchives()) {
+    return false;
+  }
+  // The pack's own state unpacks what waits and keeps count as it goes.
+  await ref.read(mushafPackProvider(edition).future);
+  return true;
+});
+
 /// Downloads the whole printed Mushaf so it works offline, keeps count of
 /// what is on the device, and deletes it.
 ///
@@ -142,8 +159,13 @@ class MushafPack extends AsyncNotifier<PackProgress> {
       _timer?.cancel();
     });
     final progress = await _read();
-    // Archives that arrived while the app was closed are unpacked now.
-    if (await _store.hasArchives()) unawaited(_install());
+    // Archives that arrived while the app was closed are unpacked now, and
+    // the pack says so from its first state: it is not missing, only being
+    // made ready.
+    if (await _store.hasArchives()) {
+      unawaited(_install());
+      return progress.copyWith(installing: true);
+    }
     return progress;
   }
 

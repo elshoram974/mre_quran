@@ -251,14 +251,18 @@ void main() {
         alerts: {DailyPrayer.asr, DailyPrayer.isha},
         beforeReminder: false,
         beforeMinutes: 30,
+        beforeCountdown: false,
       );
       final back = PrayerSettings.fromJson(settings.toJson());
       expect(back.beforeReminder, isFalse);
       expect(back.beforeMinutes, 30);
-      // Saved before the reminder existed: it is on, 15 minutes ahead.
+      expect(back.beforeCountdown, isFalse);
+      // Saved before the reminder existed: it is on, 15 minutes ahead, and
+      // counts down.
       final old = PrayerSettings.fromJson(const <String, Object?>{'on': true});
       expect(old.beforeReminder, isTrue);
       expect(old.beforeMinutes, 15);
+      expect(old.beforeCountdown, isTrue);
       expect(back.adhkarReminder, isTrue);
       expect(back.method, PrayerMethod.karachi);
       expect(back.afterMinutes, 30);

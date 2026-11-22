@@ -13,6 +13,7 @@ import 'package:mre_quran/features/mushaf/application/reading_position_provider.
 import 'package:mre_quran/features/mushaf/application/svg_page_providers.dart';
 import 'package:mre_quran/features/mushaf/data/svg_page_store.dart';
 import 'package:mre_quran/features/mushaf/presentation/mushaf_page.dart';
+import 'package:mre_quran/features/mushaf/presentation/mushaf_page_view.dart';
 import 'package:mre_quran/features/mushaf/presentation/svg_page_view.dart';
 import 'package:mre_quran/features/quran_index/application/quran_metadata_provider.dart';
 import 'package:mre_quran/features/quran_text/application/quran_text_providers.dart';
@@ -31,6 +32,9 @@ import '../../helpers/svg_page_fixtures.dart';
 /// The spread asked for with each page the reader last pumped asked for.
 final Map<int, int> _stretches = {};
 
+/// The settings store of the reader last pumped.
+late MemorySettingsRepository _settings;
+
 /// The printed reader on [page], recording which pages it asks for.
 Future<Set<int>> _pump(
   WidgetTester tester, {
@@ -40,6 +44,7 @@ Future<Set<int>> _pump(
   MushafEdition edition = MushafEditions.hafs,
   bool textLate = false,
   bool untilDrawn = true,
+  Set<int> offline = const {},
 }) async {
   _stretches.clear();
   tester.view.physicalSize = size;
@@ -67,7 +72,7 @@ Future<Set<int>> _pump(
           MemoryReadingPositionRepository()..page = page,
         ),
         settingsRepositoryProvider.overrideWithValue(
-          MemorySettingsRepository()
+          _settings = MemorySettingsRepository()
             ..settings = AppSettings(
               readerMode: ReaderMode.printed,
               readerPageLayout: layout,
@@ -77,6 +82,13 @@ Future<Set<int>> _pump(
         svgPageProvider.overrideWith((ref, request) async {
           asked.add(request.page);
           _stretches[request.page] = request.stretch;
+          if (offline.contains(request.page)) {
+            throw PageDownloadException(
+              Uri.parse('https://example.test/${request.page}.svg'),
+              'SocketException',
+              unreachable: true,
+            );
+          }
           return fixturePicture(request);
         }),
         // Downloads are not this test's business.
@@ -149,7 +161,42 @@ void main() {
     expect(asked, {7, 8, 9, 10, 11, 12, 13, 14, 15, 16});
   });
 
+  testWidgets('offline, a page not on the phone turns the whole Mushaf to '
+      'text, saved in the settings and said', (tester) async {
+    await _pump(tester, page: 10, offline: {10});
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(_settings.settings.readerMode, ReaderMode.text);
+    expect(_settings.settings.textUntilOnline, isTrue);
+    expect(find.byType(SvgPageView), findsNothing);
+    expect(find.byType(MushafPageView), findsOneWidget);
+    expect(find.textContaining('فصار المصحف يُعرض نصًّا'), findsOneWidget);
+  });
+
+  testWidgets('a page out of sight that fails does not switch the Mushaf', (
+    tester,
+  ) async {
+    // Page 11 is only made ready ahead; the reader is on page 10.
+    await _pump(tester, page: 10, offline: {11});
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(_settings.settings.readerMode, ReaderMode.printed);
+    expect(find.byType(SvgPageView), findsOneWidget);
+  });
+
   group('a reading other than the app\'s own text', () {
+    testWidgets('offline, stays printed and says why on the page', (
+      tester,
+    ) async {
+      await _pump(
+        tester,
+        page: 10,
+        edition: MushafEditions.warsh,
+        offline: {10},
+      );
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(_settings.settings.readerMode, ReaderMode.printed);
+      expect(find.textContaining('لا يوجد إنترنت الآن'), findsOneWidget);
+    });
+
     testWidgets('has no Hafs text standing in and no bookmarks', (
       tester,
     ) async {

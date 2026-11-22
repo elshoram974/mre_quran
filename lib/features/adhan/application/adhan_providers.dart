@@ -76,6 +76,12 @@ final adhanSupportedProvider = FutureProvider<bool>(
   (ref) => ref.watch(adhanPlatformProvider).isSupported(),
 );
 
+/// Whether battery saving leaves the app alone, so nothing holds the adhan
+/// back. Read again whenever it is asked for afresh.
+final adhanBatteryUnrestrictedProvider = FutureProvider.autoDispose<bool>(
+  (ref) => ref.watch(adhanPlatformProvider).batteryUnrestricted(),
+);
+
 /// The announcement recordings, one for each prayer and the Friday prayer,
 /// as `res/raw/announce_<name>`.
 const List<String> adhanAnnouncements = [

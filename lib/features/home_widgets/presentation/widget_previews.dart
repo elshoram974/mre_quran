@@ -200,12 +200,15 @@ class _Schedule extends StatelessWidget {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            if (row.id == data.next.id)
+                            if (row.id == data.next.id) ...[
                               Text(
                                 data.remaining,
                                 maxLines: 1,
                                 style: _style(10, WidgetPalette.accent),
                               ),
+                              // The widget's gap under its countdown.
+                              const SizedBox(height: 2),
+                            ],
                             Row(
                               children: [
                                 Expanded(

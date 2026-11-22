@@ -37,6 +37,28 @@ void main() {
       expect(repository.settings.localeCode, 'en');
     });
 
+    test('the person choosing the reader\'s mode ends the text the app '
+        'chose offline', () async {
+      final repository = MemorySettingsRepository()
+        ..settings = const AppSettings(
+          readerMode: ReaderMode.text,
+          textUntilOnline: true,
+        );
+      final container = ProviderContainer(
+        overrides: [
+          settingsRepositoryProvider.overrideWithValue(repository),
+          crashReporterProvider.overrideWithValue(FakeCrashReporter()),
+        ],
+      );
+      addTearDown(container.dispose);
+      await container.read(settingsProvider.future);
+      await container
+          .read(settingsProvider.notifier)
+          .chooseReaderMode(ReaderMode.text);
+      expect(repository.settings.readerMode, ReaderMode.text);
+      expect(repository.settings.textUntilOnline, isFalse);
+    });
+
     test('applies at once and rolls back when saving fails', () async {
       final repository = MemorySettingsRepository();
       final container = ProviderContainer(

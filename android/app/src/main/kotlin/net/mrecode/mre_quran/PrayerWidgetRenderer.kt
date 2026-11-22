@@ -26,6 +26,9 @@ internal object PrayerWidgetRenderer {
     /** The extra height, in dp, the timetable needs now that its rows and body have more room. */
     private const val EXTRA = 24
 
+    /** The height, in dp, the coming prayer's countdown line takes. */
+    private const val COUNTDOWN = 20
+
     private val rowIds = intArrayOf(
         R.id.schedule_row_0, R.id.schedule_row_1, R.id.schedule_row_2,
         R.id.schedule_row_3, R.id.schedule_row_4, R.id.schedule_row_5,
@@ -266,7 +269,8 @@ internal object PrayerWidgetRenderer {
         val showCountdown = options["showCountdown"] != false
         val fontScale = context.resources.configuration.fontScale.coerceAtLeast(1f)
         val availableHeight = height / fontScale
-        val minimumDayHeight = (if (largerText) 120 else 96) + (if (showCountdown) 14 else 0) + EXTRA
+        // The countdown's line, with its font's padding and the gap under it.
+        val minimumDayHeight = (if (largerText) 120 else 96) + (if (showCountdown) COUNTDOWN else 0) + EXTRA
         val upcoming = options["upcomingOnly"] == true || (height > 0 && availableHeight < minimumDayHeight)
         // The rows and the body have more room around them than they had; the
         // timetable needs EXTRA dp more height at every step.
@@ -278,7 +282,7 @@ internal object PrayerWidgetRenderer {
             largerText && showDate -> 185f + EXTRA
             showDate -> 165f + EXTRA
             else -> 150f + EXTRA
-        }
+        } + if (showCountdown) COUNTDOWN - 14 else 0
         val scale = WidgetScale.of(width, height, 140f, baseHeight)
         val views = scheduleViews(context, model, now, upcoming, upcomingCount, showDate, options, scale)
         HomeWidgets.applyBackground(context, views, R.id.schedule_root)

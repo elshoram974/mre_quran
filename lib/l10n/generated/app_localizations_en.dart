@@ -1871,4 +1871,108 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get printedFallbackNotice =>
       'The printed page is not available right now, so the text is shown.';
+
+  @override
+  String get printedSwitchedToText =>
+      'There is no internet, and this page is not on your phone, so the Mushaf is now shown as text. The printed Mushaf comes back by itself when the internet does.';
+
+  @override
+  String get printedBackOnline =>
+      'The internet is back, and so is the printed Mushaf.';
+
+  @override
+  String get readerTextUntilOnline =>
+      'Text was chosen by itself because there was no internet. The printed Mushaf comes back when the internet does. To read it printed without the internet, download it under Offline Mushaf.';
+
+  @override
+  String get adhanExactNote =>
+      'Without exact alarms the adhan does not play: only a plain notification comes, and it may be a few minutes late.';
+
+  @override
+  String get adhanBatteryNote =>
+      'Battery saving can stop the adhan or hold it back. Open the app\'s settings, then Battery, and choose Unrestricted (on some phones: No restrictions, or turn on Auto-start).';
+
+  @override
+  String get adhanBatteryAction => 'Open the app\'s settings';
+
+  @override
+  String get prayerSoonCountdownSwitch => 'Count down to the adhan';
+
+  @override
+  String get prayerSoonCountdownHint =>
+      'The reminder stays and counts the time left to the second until the adhan, then goes by itself. Its Remove button takes it away at once.';
+
+  @override
+  String prayerSoonCountdownBody(String time) {
+    return 'The adhan is at $time';
+  }
+
+  @override
+  String get prayerSoonDismiss => 'Remove';
+
+  @override
+  String get fastingChannelName => 'Sunnah fasts';
+
+  @override
+  String get fastingReminderTitle => 'A sunnah fast tomorrow';
+
+  @override
+  String get fastingMonday => 'Tomorrow is Monday, and fasting it is sunnah.';
+
+  @override
+  String get fastingThursday =>
+      'Tomorrow is Thursday, and fasting it is sunnah.';
+
+  @override
+  String fastingWhiteDay(String day) {
+    return 'Tomorrow, day $day of the Hijri month, is one of the white days, and fasting them is sunnah.';
+  }
+
+  @override
+  String get fastingArafah =>
+      'Tomorrow is the Day of Arafah, and fasting it is sunnah for those not on Hajj.';
+
+  @override
+  String get fastingTasua =>
+      'Tomorrow is Tasu\'a, the ninth of Muharram, and fasting it with Ashura is sunnah.';
+
+  @override
+  String get fastingAshura =>
+      'Tomorrow is Ashura, the tenth of Muharram, and fasting it is sunnah.';
+
+  @override
+  String get fastingShawwal =>
+      'Fasting six days of Shawwal after the Eid is sunnah, and you can begin tomorrow.';
+
+  @override
+  String get fastingSection => 'Sunnah fasts';
+
+  @override
+  String get fastingSectionHint =>
+      'A reminder the evening before. Hijri dates follow the Umm al-Qura calendar and may be a day off the moon sighting where you are, so no reminder falls on a day that could be the Eid there.';
+
+  @override
+  String get fastingMondayThursday => 'Mondays and Thursdays';
+
+  @override
+  String get fastingWhiteDays => 'The white days';
+
+  @override
+  String fastingWhiteDaysHint(String first, String second, String third) {
+    return 'The ${first}th, ${second}th and ${third}th of each Hijri month';
+  }
+
+  @override
+  String get fastingArafahSwitch => 'The Day of Arafah';
+
+  @override
+  String get fastingAshuraSwitch => 'Tasu\'a and Ashura';
+
+  @override
+  String get fastingShawwalSwitch => 'Six days of Shawwal';
+
+  @override
+  String fastingNext(String date) {
+    return 'Next: $date';
+  }
 }

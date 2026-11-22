@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Only the next prayer has a countdown, centered above its name and time,
-     inside its highlight. No star behind the text: nothing crosses the date. -->
+     inside its highlight, with a gap under it and its font's own padding: a
+     phone's font may draw taller than its line, and the two lines must never
+     touch. No star behind the text: nothing crosses the date. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/schedule_root"
     android:layout_width="match_parent"
@@ -72,10 +74,10 @@
 
             <TextView
                 android:id="@+id/schedule_remaining_0"
-                android:layout_marginBottom="@dimen/schedule_countdown_tuck"
+                android:layout_marginBottom="@dimen/schedule_countdown_gap"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:includeFontPadding="false"
+                android:includeFontPadding="true"
                 android:singleLine="true"
                 android:ellipsize="end"
                 android:gravity="center"
@@ -85,10 +87,10 @@
                 android:visibility="gone" />
             <Chronometer
                 android:id="@+id/schedule_seconds_0"
-                android:layout_marginBottom="@dimen/schedule_countdown_tuck"
+                android:layout_marginBottom="@dimen/schedule_countdown_gap"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:includeFontPadding="false"
+                android:includeFontPadding="true"
                 android:singleLine="true"
                 android:gravity="center"
                 android:textColor="@color/widget_accent"
@@ -141,10 +143,10 @@
 
             <TextView
                 android:id="@+id/schedule_remaining_1"
-                android:layout_marginBottom="@dimen/schedule_countdown_tuck"
+                android:layout_marginBottom="@dimen/schedule_countdown_gap"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:includeFontPadding="false"
+                android:includeFontPadding="true"
                 android:singleLine="true"
                 android:ellipsize="end"
                 android:gravity="center"
@@ -154,10 +156,10 @@
                 android:visibility="gone" />
             <Chronometer
                 android:id="@+id/schedule_seconds_1"
-                android:layout_marginBottom="@dimen/schedule_countdown_tuck"
+                android:layout_marginBottom="@dimen/schedule_countdown_gap"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:includeFontPadding="false"
+                android:includeFontPadding="true"
                 android:singleLine="true"
                 android:gravity="center"
                 android:textColor="@color/widget_accent"
@@ -211,10 +213,10 @@
 
             <TextView
                 android:id="@+id/schedule_remaining_2"
-                android:layout_marginBottom="@dimen/schedule_countdown_tuck"
+                android:layout_marginBottom="@dimen/schedule_countdown_gap"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:includeFontPadding="false"
+                android:includeFontPadding="true"
                 android:singleLine="true"
                 android:ellipsize="end"
                 android:gravity="center"
@@ -224,10 +226,10 @@
                 android:visibility="visible" />
             <Chronometer
                 android:id="@+id/schedule_seconds_2"
-                android:layout_marginBottom="@dimen/schedule_countdown_tuck"
+                android:layout_marginBottom="@dimen/schedule_countdown_gap"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:includeFontPadding="false"
+                android:includeFontPadding="true"
                 android:singleLine="true"
                 android:gravity="center"
                 android:textColor="@color/widget_accent"
@@ -280,10 +282,10 @@
 
             <TextView
                 android:id="@+id/schedule_remaining_3"
-                android:layout_marginBottom="@dimen/schedule_countdown_tuck"
+                android:layout_marginBottom="@dimen/schedule_countdown_gap"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:includeFontPadding="false"
+                android:includeFontPadding="true"
                 android:singleLine="true"
                 android:ellipsize="end"
                 android:gravity="center"
@@ -293,10 +295,10 @@
                 android:visibility="gone" />
             <Chronometer
                 android:id="@+id/schedule_seconds_3"
-                android:layout_marginBottom="@dimen/schedule_countdown_tuck"
+                android:layout_marginBottom="@dimen/schedule_countdown_gap"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:includeFontPadding="false"
+                android:includeFontPadding="true"
                 android:singleLine="true"
                 android:gravity="center"
                 android:textColor="@color/widget_accent"
@@ -349,10 +351,10 @@
 
             <TextView
                 android:id="@+id/schedule_remaining_4"
-                android:layout_marginBottom="@dimen/schedule_countdown_tuck"
+                android:layout_marginBottom="@dimen/schedule_countdown_gap"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:includeFontPadding="false"
+                android:includeFontPadding="true"
                 android:singleLine="true"
                 android:ellipsize="end"
                 android:gravity="center"
@@ -362,10 +364,10 @@
                 android:visibility="gone" />
             <Chronometer
                 android:id="@+id/schedule_seconds_4"
-                android:layout_marginBottom="@dimen/schedule_countdown_tuck"
+                android:layout_marginBottom="@dimen/schedule_countdown_gap"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:includeFontPadding="false"
+                android:includeFontPadding="true"
                 android:singleLine="true"
                 android:gravity="center"
                 android:textColor="@color/widget_accent"
@@ -418,10 +420,10 @@
 
             <TextView
                 android:id="@+id/schedule_remaining_5"
-                android:layout_marginBottom="@dimen/schedule_countdown_tuck"
+                android:layout_marginBottom="@dimen/schedule_countdown_gap"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:includeFontPadding="false"
+                android:includeFontPadding="true"
                 android:singleLine="true"
                 android:ellipsize="end"
                 android:gravity="center"
@@ -431,10 +433,10 @@
                 android:visibility="gone" />
             <Chronometer
                 android:id="@+id/schedule_seconds_5"
-                android:layout_marginBottom="@dimen/schedule_countdown_tuck"
+                android:layout_marginBottom="@dimen/schedule_countdown_gap"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:includeFontPadding="false"
+                android:includeFontPadding="true"
                 android:singleLine="true"
                 android:gravity="center"
                 android:textColor="@color/widget_accent"

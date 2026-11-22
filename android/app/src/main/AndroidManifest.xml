@@ -84,6 +84,11 @@
         <receiver
             android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver"
             android:exported="false" />
+        <!-- Handles the "Remove" button of the countdown before a prayer: it
+             takes the notification away without opening the app. -->
+        <receiver
+            android:name="com.dexterous.flutterlocalnotifications.ActionBroadcastReceiver"
+            android:exported="false" />
         <receiver
             android:name=".ReminderBootReceiver"
             android:exported="false">

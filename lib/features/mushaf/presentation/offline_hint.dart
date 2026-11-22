@@ -21,6 +21,10 @@ import 'offline_packs_section.dart';
 /// device while the whole Mushaf is not downloaded; and offers to download
 /// the reading being read. "Don't remind me again" turns it off. It draws
 /// nothing itself.
+///
+/// It waits for that page to come down: offline, the reader turns the
+/// Mushaf to text and says why (see `PrintedFallback`), and an offer to
+/// download would only add to it.
 class OfflineMushafHint extends ConsumerStatefulWidget {
   /// Creates the watcher.
   const OfflineMushafHint({super.key});
@@ -51,7 +55,11 @@ class _OfflineMushafHintState extends ConsumerState<OfflineMushafHint> {
       final edition = ref.read(printedEditionProvider);
       final pack = await ref.read(mushafPackProvider(edition).future);
       if (pack.complete || pack.active || pack.installing) return;
-      if (await ref.read(svgPageStoreProvider(edition)).isOnDevice(page)) {
+      final store = ref.read(svgPageStoreProvider(edition));
+      if (await store.isOnDevice(page)) return;
+      // The same download the page itself is waiting on.
+      await store.fetch(page);
+      if (ref.read(settingsProvider).value?.readerMode == ReaderMode.text) {
         return;
       }
       final manifest = await ref.read(svgManifestProvider(edition).future);
@@ -89,13 +97,8 @@ class _OfflineMushafHintState extends ConsumerState<OfflineMushafHint> {
   }
 
   /// Switches the reader to typeset text, which is in the app.
-  void _showAsText() {
-    final settings = ref.read(settingsProvider).value;
-    if (settings == null) return;
-    ref
-        .read(settingsProvider.notifier)
-        .save(settings.copyWith(readerMode: ReaderMode.text));
-  }
+  void _showAsText() =>
+      ref.read(settingsProvider.notifier).chooseReaderMode(ReaderMode.text);
 
   @override
   Widget build(BuildContext context) {

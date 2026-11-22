@@ -14,6 +14,7 @@ class PrayerSettings {
     this.alerts = const {},
     this.beforeReminder = true,
     this.beforeMinutes = 15,
+    this.beforeCountdown = true,
     this.automaticLocation = true,
   });
 
@@ -31,6 +32,7 @@ class PrayerSettings {
       beforeMinutes: before is int && beforeChoices.contains(before)
           ? before
           : 15,
+      beforeCountdown: json['beforeCountdown'] != false,
       // Older settings did not record how the place was chosen. Preserve the
       // saved place until the person explicitly chooses device location again.
       automaticLocation: json['automaticLocation'] == true,
@@ -68,6 +70,10 @@ class PrayerSettings {
   /// Minutes before the prayer time for that reminder.
   final int beforeMinutes;
 
+  /// Whether that reminder counts down to the adhan, to the second, and
+  /// stays until it, with a button to take it away (Android).
+  final bool beforeCountdown;
+
   /// Whether a previously granted device location may refresh the place.
   final bool automaticLocation;
 
@@ -83,6 +89,7 @@ class PrayerSettings {
     Set<DailyPrayer>? alerts,
     bool? beforeReminder,
     int? beforeMinutes,
+    bool? beforeCountdown,
     bool? automaticLocation,
   }) => PrayerSettings(
     adhkarReminder: adhkarReminder ?? this.adhkarReminder,
@@ -91,6 +98,7 @@ class PrayerSettings {
     alerts: alerts ?? this.alerts,
     beforeReminder: beforeReminder ?? this.beforeReminder,
     beforeMinutes: beforeMinutes ?? this.beforeMinutes,
+    beforeCountdown: beforeCountdown ?? this.beforeCountdown,
     automaticLocation: automaticLocation ?? this.automaticLocation,
   );
 
@@ -102,6 +110,7 @@ class PrayerSettings {
     'alerts': [for (final prayer in alerts) prayer.name],
     'beforeOn': beforeReminder,
     'before': beforeMinutes,
+    'beforeCountdown': beforeCountdown,
     'automaticLocation': automaticLocation,
   };
 }

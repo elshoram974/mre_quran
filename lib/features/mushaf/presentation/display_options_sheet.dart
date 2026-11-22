@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/l10n/l10n.dart';
+import '../../../core/widgets/app_notice.dart';
 import '../../../core/widgets/app_segmented_control.dart';
 import '../../../core/widgets/app_sheet.dart';
 import '../../../core/widgets/app_switch_tile.dart';
@@ -44,8 +45,7 @@ class _DisplayOptions extends ConsumerWidget {
           const SizedBox(height: 8),
           AppSegmentedControl<ReaderMode>(
             value: settings.readerMode,
-            onChanged: (value) =>
-                notifier.save(settings.copyWith(readerMode: value)),
+            onChanged: notifier.chooseReaderMode,
             segments: {
               ReaderMode.text: l10n.readerModeText,
               ReaderMode.printed: l10n.readerModePrinted,
@@ -56,6 +56,14 @@ class _DisplayOptions extends ConsumerWidget {
             l10n.readerModeDescription,
             style: Theme.of(context).textTheme.bodySmall,
           ),
+          if (settings.textUntilOnline &&
+              settings.readerMode == ReaderMode.text) ...[
+            const SizedBox(height: 8),
+            AppNotice(
+              l10n.readerTextUntilOnline,
+              icon: Icons.cloud_off_outlined,
+            ),
+          ],
           AnimatedSize(
             duration: MediaQuery.disableAnimationsOf(context)
                 ? Duration.zero

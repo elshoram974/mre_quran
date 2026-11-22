@@ -17,12 +17,18 @@ import org.json.JSONObject
  * armed. So a month of adhans holds one system alarm, far from the limit a
  * phone sets an app, and the adhan goes on for that month even if the app
  * is not opened.
+ *
+ * Each is armed as an alarm clock, as a wake-up alarm is: the system keeps
+ * it to the minute through Doze, app standby and battery saving, lets it
+ * start the adhan's service from the background, and shows the next one
+ * with the clock's alarm icon.
  */
 internal object AdhanScheduler {
     const val ALARM_ACTION = "net.mrecode.mre_quran.ADHAN_ALARM"
     const val EXTRA_ID = "id"
 
     private const val TEST_ID = 7009999
+    private const val SHOW_ID = 7009997
     private const val TEST_DELAY_MILLIS = 3_000L
     private const val PREFERENCES = "adhan_alarms"
     private const val STORED = "stored"
@@ -119,8 +125,21 @@ internal object AdhanScheduler {
         val intent = pending(context, id)
         // Without the permission the time is approximate and the system may
         // not let the service start; the receiver then falls back to a notice.
-        if (exact) manager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, intent)
+        if (exact) manager.setAlarmClock(AlarmManager.AlarmClockInfo(at, show(context)), intent)
         else manager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, intent)
+    }
+
+    /** What tapping the next alarm in the system's clock opens: the prayer times. */
+    private fun show(context: Context): PendingIntent {
+        val payload = read(context)?.optJSONObject("config")?.optString("payload").orEmpty()
+        return PendingIntent.getActivity(
+            context,
+            SHOW_ID,
+            Intent(context, MainActivity::class.java)
+                .putExtra(AdhanService.EXTRA_PAYLOAD, payload)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
     }
 
     private fun pending(context: Context, id: Int): PendingIntent = PendingIntent.getBroadcast(

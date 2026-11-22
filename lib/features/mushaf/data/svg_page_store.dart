@@ -18,8 +18,13 @@ typedef Fetch = Future<Uint8List> Function(Uri uri);
 
 /// Raised when a page file could not be downloaded or failed its checksum.
 class PageDownloadException implements Exception {
-  /// Creates the exception for [uri].
-  const PageDownloadException(this.uri, this.reason);
+  /// Creates the exception for [uri]. [unreachable] says the server could
+  /// not be reached at all (see [isUnreachable]).
+  const PageDownloadException(
+    this.uri,
+    this.reason, {
+    this.unreachable = false,
+  });
 
   /// What was requested.
   final Uri uri;
@@ -27,9 +32,26 @@ class PageDownloadException implements Exception {
   /// Why it failed.
   final String reason;
 
+  /// Whether the server could not be reached: no connection, or one that
+  /// dropped or timed out.
+  final bool unreachable;
+
   @override
   String toString() => 'PageDownloadException($uri): $reason';
 }
+
+/// Whether [error], raised while getting a page, means the page server could
+/// not be reached: no internet, or a connection that dropped or timed out.
+/// The server answering with an error, or a file failing its checksum, is
+/// not: the internet is there.
+bool isUnreachable(Object error) => switch (error) {
+  PageDownloadException(:final unreachable) => unreachable,
+  SocketException() ||
+  TimeoutException() ||
+  HttpException() ||
+  TlsException() => true,
+  _ => false,
+};
 
 /// Keeps the printed Mushaf's page files on the device.
 ///
@@ -129,6 +151,14 @@ class SvgPageStore {
       final name = SvgManifest.fileName(page, extension);
       final packed = File('$folder/$name$_packed');
       if (await packed.exists()) continue;
+      // The whole Mushaf may be on the device still in its archives: the
+      // system finished the download while the app was closed, or the
+      // unpacking was cut short. It is unpacked first, so a page that came
+      // with it never goes to the network.
+      if (await hasArchives()) {
+        await install();
+        if (await packed.exists()) continue;
+      }
       final expected = extension == 'svg' ? entry.svgSha256 : entry.jsonSha256;
       final uri = manifest.url(page, extension);
       final bytes = await _fetch(uri);
@@ -137,6 +167,19 @@ class SvgPageStore {
       }
       await _writePacked(packed, bytes);
     }
+  }
+
+  /// The page nearest [page], going on through the Mushaf and then from its
+  /// start, whose files are not all on the device; null when every page is.
+  Future<int?> nearestMissing(int page) async {
+    final count = (await _manifest()).pageCount;
+    if (await filesOnDevice() >= await packFileCount()) return null;
+    final start = page.clamp(1, count);
+    for (var step = 0; step < count; step++) {
+      final candidate = (start - 1 + step) % count + 1;
+      if (!await isOnDevice(candidate)) return candidate;
+    }
+    return null;
   }
 
   /// Folder, under [directory], the pack's archives are downloaded into.
@@ -368,8 +411,15 @@ class SvgPageStore {
         builder.add(chunk);
       }
       return builder.takeBytes();
-    } on SocketException catch (error) {
-      throw PageDownloadException(uri, error.message);
+    } on PageDownloadException {
+      rethrow;
+    } on Exception catch (error) {
+      if (!isUnreachable(error)) rethrow;
+      throw PageDownloadException(
+        uri,
+        '${error.runtimeType}',
+        unreachable: true,
+      );
     } finally {
       client.close();
     }

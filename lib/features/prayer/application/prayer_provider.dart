@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/date_symbol_data_local.dart' show initializeDateFormatting;
+import 'package:intl/intl.dart' show DateFormat;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/diagnostics/app_logger.dart';
@@ -274,6 +276,12 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
     change: (settings) => settings.copyWith(beforeReminder: on),
   );
 
+  /// Makes the reminder before each prayer count down to its adhan, or not.
+  Future<void> setBeforeCountdown(bool on) => _change(
+    needsPermission: false,
+    change: (settings) => settings.copyWith(beforeCountdown: on),
+  );
+
   /// Changes how long before the prayer its reminder comes.
   Future<void> setBeforeMinutes(int minutes) => _change(
     needsPermission: false,
@@ -438,19 +446,33 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
           await ref.read(iosAdhanSoundsProvider).install();
       final minutes = settings.beforeMinutes;
       final number = ref.read(digitsFormatterProvider);
+      final digits = ref.read(displayDigitsFormatterProvider);
+      // The schedule may be made before the app's screens have loaded the
+      // language's dates.
+      await initializeDateFormatting(language);
+      String clock(DateTime at) => digits(DateFormat.jm(language).format(at));
       for (final alert in notices) {
         final prayer = _alertName(l10n, alert);
         switch (alert.kind) {
           case PrayerAlertKind.beforePrayer:
+            final adhan = alert.at.add(Duration(minutes: minutes));
+            // The countdown shows the time left itself; the words say when.
+            final countdown =
+                settings.beforeCountdown &&
+                defaultTargetPlatform == TargetPlatform.android;
             await _scheduler.scheduleOnce(
               id: alert.id,
               at: alert.at,
               title: l10n.prayerSoonTitle(prayer),
-              body: l10n.prayerSoonBody(minutes, number(minutes)),
+              body: countdown
+                  ? l10n.prayerSoonCountdownBody(clock(adhan))
+                  : l10n.prayerSoonBody(minutes, number(minutes)),
               channel: ReminderChannel.prayerSoon,
               channelName: l10n.prayerSoonChannelName,
               payload: ReminderPayload.prayerTimes,
               exact: true,
+              countdownTo: countdown ? adhan : null,
+              dismissLabel: countdown ? l10n.prayerSoonDismiss : null,
             );
           case PrayerAlertKind.atTime:
             await _scheduler.scheduleOnce(

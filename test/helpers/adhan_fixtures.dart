@@ -175,6 +175,18 @@ class FakeAdhanPlatform implements AdhanPlatform {
     alarms = [];
   }
 
+  /// Whether battery saving leaves the fake app alone.
+  bool unrestricted = true;
+
+  /// How many times the app's settings were opened.
+  int settingsOpened = 0;
+
+  @override
+  Future<bool> batteryUnrestricted() async => unrestricted;
+
+  @override
+  Future<void> openAppSettings() async => settingsOpened++;
+
   @override
   Future<void> test(AdhanAlarm alarm, AdhanAlertConfig config) async {
     tests.add(alarm);
