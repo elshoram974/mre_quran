@@ -41,6 +41,10 @@
 - **Release builds:** they are obfuscated (`--obfuscate --split-debug-info=build/symbols`); upload the
   Dart symbols after each build or the Dart stack traces stay unreadable:
   `firebase crashlytics:symbols:upload --app=<Firebase app ID> build/symbols`.
+  `tool/build_android_release.sh` builds and uploads in one step.
+- **Breadcrumbs:** every `AppLogger.debug` line also goes to Crashlytics' log (`AppLogger.attach`), so a report
+  carries the steps before it; the lines name kinds of failures and steps, never what the person read or where
+  they are. An error the app recovered from is reported, not fatal, with its stack (`AppLogger.recovered`).
 
 ## D-006: Do not bundle QCF assets yet
 
@@ -602,4 +606,19 @@
   the text until the printed reading can be had again, and says so naming the reading; when the server failed, the
   text is the person's own choice and stays. Its *Download the whole reading* button opens the Offline Mushaf page
   itself.
+
+## D-060: A failed printed page is retried by hand, afresh; offline, other readings are offered
+
+- **Retry:** Riverpod's own retry is off for the printed pages (`retry: (_, _) => null`): it downloaded a failed page
+  again and again offline, and kept showing the failure while it did. The page's *Retry* button builds the page
+  view afresh (`_SlowGate` keys it by a generation), so nothing the failed view held is used again, and the page
+  shows as loading, not as failed, until it is had or fails anew. A provider no longer uses its `ref` after a wait
+  without checking `ref.mounted`.
+- **A blank page:** a person tapping *Retry* got a grey page: building the view threw "called
+  ProviderSubscription.read on a subscription that was closed", and every rebuild of that view threw it again. It
+  could not be made to happen in a test. Should it happen again, the view is built afresh (twice at most in five
+  seconds, then an error with *Retry*) and the error is reported whole, not fatal.
+- **Elsewhere:** under a page that cannot be had offline, the readings that have that page on the phone are offered,
+  each opening it (`PrintedFallback.openReading`); when none has it, the nearest page this reading has. Turned to
+  text offline (Hafs), the message names a reading that has the page and its short *Show it* opens it.
 

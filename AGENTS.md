@@ -7,7 +7,9 @@
 - Run `dart format --output=none --set-exit-if-changed lib test`.
 - Run `flutter analyze` and `flutter test` before committing.
 - Measure performance with the commands in `docs/PERFORMANCE.md` after changing start-up, the shell, sheets, or the index.
-- Use `flutter build appbundle --release --obfuscate --split-debug-info=build/symbols` for Android release candidates.
+- Build Android release candidates with `tool/build_android_release.sh`: it runs
+  `flutter build appbundle --release --obfuscate --split-debug-info=build/symbols` and uploads the Dart
+  symbols to Crashlytics, without which its crash reports cannot be read.
 
 ## Architecture
 
