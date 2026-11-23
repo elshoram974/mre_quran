@@ -92,6 +92,8 @@ Future<void> _start() async {
   Haptics.enabled = settings.hapticsEnabled;
   unawaited(Haptics.syncWidgetSetting(settings.hapticsEnabled));
   final crashReporter = _crashReporter(firebase);
+  // Breadcrumbs and recovered errors go with the next report.
+  AppLogger.attach(crashReporter);
   if (storedSettings != null) {
     unawaited(
       _optionalStartup(

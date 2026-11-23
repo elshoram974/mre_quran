@@ -3462,6 +3462,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The printed page is slow to come, so its text is shown until it does.'**
   String get printedSlowNotice;
+
+  /// No description provided for @printedSavedIn.
+  ///
+  /// In en, this message translates to:
+  /// **'This page is saved in {reading}: show it'**
+  String printedSavedIn(String reading);
+
+  /// No description provided for @printedNearestSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to the nearest saved page ({page})'**
+  String printedNearestSaved(String page);
+
+  /// No description provided for @printedShownIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Now showing {reading}, whose copy of this page is on your phone.'**
+  String printedShownIn(String reading);
+
+  /// No description provided for @printedPageSavedIn.
+  ///
+  /// In en, this message translates to:
+  /// **'This page is saved in {reading}.'**
+  String printedPageSavedIn(String reading);
+
+  /// No description provided for @printedShowSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Show it'**
+  String get printedShowSaved;
 }
 
 class _AppLocalizationsDelegate

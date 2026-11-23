@@ -721,5 +721,14 @@
   "@printedTextInstead": {"placeholders": {"reading": {"type": "String"}}},
   "printedBackSaved": "Every page of the printed Mushaf is on your phone now, so it is back, internet or not.",
   "printedReadText": "Read the typeset text (Hafs)",
-  "printedSlowNotice": "The printed page is slow to come, so its text is shown until it does."
+  "printedSlowNotice": "The printed page is slow to come, so its text is shown until it does.",
+  "printedSavedIn": "This page is saved in {reading}: show it",
+  "@printedSavedIn": {"placeholders": {"reading": {"type": "String"}}},
+  "printedNearestSaved": "Go to the nearest saved page ({page})",
+  "@printedNearestSaved": {"placeholders": {"page": {"type": "String"}}},
+  "printedShownIn": "Now showing {reading}, whose copy of this page is on your phone.",
+  "@printedShownIn": {"placeholders": {"reading": {"type": "String"}}},
+  "printedPageSavedIn": "This page is saved in {reading}.",
+  "@printedPageSavedIn": {"placeholders": {"reading": {"type": "String"}}},
+  "printedShowSaved": "Show it"
 }

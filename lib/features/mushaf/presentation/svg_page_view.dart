@@ -10,6 +10,7 @@ import 'package:vector_graphics/vector_graphics_compat.dart'
     show RenderingStrategy;
 
 import '../../../app/router.dart';
+import '../../../core/diagnostics/app_logger.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/theme/quran_colors.dart';
@@ -54,6 +55,7 @@ class SvgPageView extends StatelessWidget {
     this.fallbackBuilder,
     this.onOffline,
     this.onReadText,
+    this.offlineExtras,
     this.onPinchOut,
     this.fallbackAfter = const Duration(seconds: 30),
   });
@@ -66,6 +68,10 @@ class SvgPageView extends StatelessWidget {
   /// the Mushaf as the app's typeset text instead. Told whether the page
   /// failed for want of the internet.
   final ValueChanged<bool>? onReadText;
+
+  /// More ways to read on, shown under a page that cannot be had for want
+  /// of the internet: the readings that have it on the device, say.
+  final WidgetBuilder? offlineExtras;
 
   /// Called when two fingers spread apart on the page. A printed page is
   /// artwork and does not enlarge; the owner suggests reading it bigger
@@ -126,7 +132,7 @@ class SvgPageView extends StatelessWidget {
         after: fallbackAfter,
         // The room decides how far the lines are spread, and so which
         // picture of the page to ask for.
-        builder: (context, slow, restart) => LayoutBuilder(
+        builder: (context, slow, restart, heal) => LayoutBuilder(
           builder: (context, constraints) => _SvgBody(
             metadata: metadata,
             number: digits ?? (value) => formatDigits(value, arabic: true),
@@ -146,8 +152,10 @@ class SvgPageView extends StatelessWidget {
             fallbackBuilder: fallbackBuilder,
             onOffline: onOffline,
             onReadText: onReadText,
+            offlineExtras: offlineExtras,
             slow: slow,
             onRetry: restart,
+            onHeal: heal,
           ),
         ),
       ),
@@ -196,11 +204,19 @@ class SvgPageView extends StatelessWidget {
 
 /// Tells its builder when [after] has passed since it began (or since it was
 /// restarted): how long the page's artwork has been awaited.
+///
+/// Restarting also builds what it holds afresh, as new widgets: a retry
+/// never reuses the page view that failed, nor anything it held on to.
 class _SlowGate extends StatefulWidget {
   const _SlowGate({super.key, required this.after, required this.builder});
 
   final Duration after;
-  final Widget Function(BuildContext context, bool slow, VoidCallback restart)
+  final Widget Function(
+    BuildContext context,
+    bool slow,
+    VoidCallback restart,
+    bool Function() heal,
+  )
   builder;
 
   @override
@@ -210,6 +226,7 @@ class _SlowGate extends StatefulWidget {
 class _SlowGateState extends State<_SlowGate> {
   Timer? _timer;
   bool _slow = false;
+  int _generation = 0;
 
   @override
   void initState() {
@@ -225,7 +242,11 @@ class _SlowGateState extends State<_SlowGate> {
   }
 
   void _restart() {
-    setState(() => _slow = false);
+    if (!mounted) return;
+    setState(() {
+      _slow = false;
+      _generation++;
+    });
     _start();
   }
 
@@ -235,9 +256,33 @@ class _SlowGateState extends State<_SlowGate> {
     super.dispose();
   }
 
+  /// When the view was last built afresh to recover, and how many times in
+  /// a row: a view that fails again at once is not rebuilt for ever.
+  DateTime? _healedAt;
+  int _heals = 0;
+
+  /// Builds the view afresh after the frame, to recover from a failure of
+  /// its own; false (and nothing done) when it has just been tried twice.
+  bool _heal() {
+    final now = DateTime.now();
+    final last = _healedAt;
+    _heals = last != null && now.difference(last) < _healWindow
+        ? _heals + 1
+        : 1;
+    _healedAt = now;
+    if (_heals > _healsAllowed) return false;
+    WidgetsBinding.instance.addPostFrameCallback((_) => _restart());
+    return true;
+  }
+
+  static const Duration _healWindow = Duration(seconds: 5);
+  static const int _healsAllowed = 2;
+
   @override
-  Widget build(BuildContext context) =>
-      widget.builder(context, _slow, _restart);
+  Widget build(BuildContext context) => KeyedSubtree(
+    key: ValueKey<int>(_generation),
+    child: widget.builder(context, _slow, _restart, _heal),
+  );
 }
 
 /// The page in one of its four states: artwork, text standing in, error,
@@ -257,8 +302,10 @@ class _SvgBody extends ConsumerWidget {
     required this.fallbackBuilder,
     required this.onOffline,
     required this.onReadText,
+    required this.offlineExtras,
     required this.slow,
     required this.onRetry,
+    required this.onHeal,
   });
 
   final QuranMetadata metadata;
@@ -274,13 +321,37 @@ class _SvgBody extends ConsumerWidget {
   final WidgetBuilder? fallbackBuilder;
   final VoidCallback? onOffline;
   final ValueChanged<bool>? onReadText;
+  final WidgetBuilder? offlineExtras;
   final bool slow;
   final VoidCallback onRetry;
+  final bool Function() onHeal;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final artwork = ref.watch(svgPageProvider(request));
+    final AsyncValue<SvgPagePicture> artwork;
+    try {
+      artwork = ref.watch(svgPageProvider(request));
+    } on StateError catch (error, stack) {
+      // The view's hold on the page was closed under it (seen once, after a
+      // retry). Reading through it again would fail the same way on every
+      // rebuild, leaving a blank page; a view built afresh holds it anew.
+      AppLogger.recovered(error, stack, 'Printed page view built afresh');
+      if (onHeal()) {
+        return const _Late(
+          key: ValueKey('loading'),
+          after: _placeholderAfter,
+          child: _PageSkeleton(),
+        );
+      }
+      return EmptyState(
+        icon: Icons.error_outline,
+        title: l10n.readerLoadError,
+        message: l10n.printedPageError,
+        actionLabel: l10n.retry,
+        onAction: onRetry,
+      );
+    }
     final frame = ref.watch(
       settingsProvider.select(
         (settings) => settings.value?.surahFrame ?? SurahFrameStyle.cartouche,
@@ -291,7 +362,9 @@ class _SvgBody extends ConsumerWidget {
       onRetry();
     }
 
-    final failure = artwork.error;
+    // A page being fetched again still carries its last failure; it is
+    // loading, not failed.
+    final failure = artwork.isLoading ? null : artwork.error;
     if (failure != null && isUnreachable(failure) && onOffline != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) => onOffline?.call());
     }
@@ -313,11 +386,11 @@ class _SvgBody extends ConsumerWidget {
       ),
       // The artwork cannot be had, or is taking too long: show the page as
       // text, with a way to try again.
-      _ when fallbackBuilder != null && (slow || artwork.hasError) =>
+      _ when fallbackBuilder != null && (slow || failure != null) =>
         _TextStandIn(
           key: const ValueKey('fallback'),
           // Failed, or only slow to come: each says which.
-          notice: artwork.hasError
+          notice: failure != null
               ? l10n.printedFallbackNotice
               : l10n.printedSlowNotice,
           retryLabel: l10n.retry,
@@ -326,7 +399,7 @@ class _SvgBody extends ConsumerWidget {
         ),
       // No text can stand in (another reading): say why, and how to read
       // it without a connection next time.
-      AsyncValue(:final error?) => LayoutBuilder(
+      _ when failure != null => LayoutBuilder(
         key: const ValueKey('error'),
         // Scrolls rather than overflows on a short page or with large text.
         builder: (context, constraints) => SingleChildScrollView(
@@ -338,7 +411,7 @@ class _SvgBody extends ConsumerWidget {
                 EmptyState(
                   icon: Icons.cloud_off_outlined,
                   title: l10n.readerLoadError,
-                  message: isUnreachable(error)
+                  message: isUnreachable(failure)
                       ? l10n.printedPageOffline
                       : l10n.printedPageError,
                   actionLabel: l10n.retry,
@@ -346,10 +419,12 @@ class _SvgBody extends ConsumerWidget {
                 ),
                 if (onReadText case final read?)
                   TextButton.icon(
-                    onPressed: () => read(isUnreachable(error)),
+                    onPressed: () => read(isUnreachable(failure)),
                     icon: const Icon(Icons.text_fields),
                     label: Text(l10n.printedReadText),
                   ),
+                if (isUnreachable(failure))
+                  if (offlineExtras case final extras?) extras(context),
                 TextButton.icon(
                   onPressed: () => context.push(AppRoute.settingsOffline.path),
                   icon: const Icon(Icons.download_for_offline_outlined),

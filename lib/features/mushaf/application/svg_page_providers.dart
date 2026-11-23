@@ -44,16 +44,25 @@ typedef SvgPageRequest = ({int page, int stretch});
 /// The pages used last stay ready after their views are gone (see
 /// [RecentPages]), so turning back, or on to a page made ready ahead of the
 /// reader, shows it at once.
+///
+/// A page that fails is not tried again by itself: Riverpod's own retry
+/// would download it over and over while offline, and show the old failure
+/// while it does. The page view's retry button, and the reader's offline
+/// fallback, try it again when there is reason to.
 final svgPageProvider = FutureProvider.autoDispose
     .family<SvgPagePicture, SvgPageRequest>((ref, request) async {
       final edition = ref.watch(printedEditionProvider);
+      // Taken before the wait: the provider may be rebuilt (a retry) or gone
+      // by the time the page is ready, and its ref with it.
+      final recent = ref.read(recentPagesProvider);
       final picture = await ref
           .watch(svgPageStoreProvider(edition))
           .page(request.page, stretch: request.stretch / 1000);
-      // Only a page that was prepared is kept; a failure is tried afresh.
-      ref.read(recentPagesProvider).hold(request, ref.keepAlive().close);
+      // Only a page that was prepared, by a build still current, is kept; a
+      // failure is tried afresh.
+      if (ref.mounted) recent.hold(request, ref.keepAlive().close);
       return picture;
-    });
+    }, retry: (_, _) => null);
 
 /// Provides the list of pages kept ready.
 final recentPagesProvider = Provider<RecentPages>((ref) => RecentPages());

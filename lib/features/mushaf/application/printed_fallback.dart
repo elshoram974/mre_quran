@@ -25,6 +25,9 @@ enum PrintedFallbackChange {
   /// Every page of the reading is on the device, with or without the
   /// internet: the printed Mushaf is back.
   toPrintedSaved,
+
+  /// The person opened another reading that has the page on the device.
+  toSavedReading,
 }
 
 /// The last change, numbered so that two alike in a row are both heard.
@@ -131,6 +134,24 @@ class PrintedFallback extends Notifier<PrintedFallbackEvent?> {
           settings.copyWith(readerMode: ReaderMode.text, textUntilOnline: true),
         );
     _emit(PrintedFallbackChange.toTextChosen);
+  }
+
+  /// Shows the printed Mushaf in [edition], which has the page the reader is
+  /// on saved on the device, as the person asked from a page that could not
+  /// be had offline.
+  Future<void> openReading(MushafEdition edition) async {
+    final settings = ref.read(settingsProvider).value;
+    if (settings == null) return;
+    await ref
+        .read(settingsProvider.notifier)
+        .save(
+          settings.copyWith(
+            mushafEdition: edition,
+            readerMode: ReaderMode.printed,
+            textUntilOnline: false,
+          ),
+        );
+    _emit(PrintedFallbackChange.toSavedReading);
   }
 
   /// Tries whether the printed pages can be had again, from [page] (the

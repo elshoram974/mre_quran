@@ -1979,4 +1979,27 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get printedSlowNotice => 'الصفحة المطبوعة تتأخر، فيُعرض نصها حتى تصل.';
+
+  @override
+  String printedSavedIn(String reading) {
+    return 'هذه الصفحة محفوظة برواية $reading، اعرضها';
+  }
+
+  @override
+  String printedNearestSaved(String page) {
+    return 'اذهب إلى أقرب صفحة محفوظة (صفحة $page)';
+  }
+
+  @override
+  String printedShownIn(String reading) {
+    return 'تُعرض الآن رواية $reading، وهذه الصفحة منها محفوظة على هاتفك.';
+  }
+
+  @override
+  String printedPageSavedIn(String reading) {
+    return 'وهذه الصفحة محفوظة برواية $reading.';
+  }
+
+  @override
+  String get printedShowSaved => 'اعرضها';
 }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import '../../../core/widgets/app_snack_bar.dart';
 
 import 'package:material_ui/material_ui.dart';
@@ -16,6 +18,7 @@ import '../../../core/l10n/l10n.dart';
 import '../application/ayah_selection_provider.dart';
 import '../application/highlighted_ayah_provider.dart';
 import '../application/mushaf_packs.dart';
+import '../application/page_elsewhere.dart';
 import '../application/page_prefetcher.dart';
 import '../application/printed_fallback.dart';
 import '../application/svg_page_providers.dart';
@@ -25,6 +28,7 @@ import 'ayah_actions_sheet.dart';
 import 'ayah_share_format.dart';
 import 'flip/book_flip.dart';
 import 'mushaf_page_view.dart';
+import 'page_elsewhere_options.dart';
 import 'reader_orientation.dart';
 import 'svg_page_view.dart';
 
@@ -59,6 +63,11 @@ bool resolveMushafSpread(ReaderPageLayout layout, Size size) =>
 /// one page. The pager saves every turn and follows page changes made
 /// elsewhere (index, search, bookmarks).
 class MushafPager extends StatelessWidget {
+  /// How long the message turning the Mushaf to text waits to learn whether
+  /// another reading has the page.
+  @visibleForTesting
+  static Duration lookupWait = const Duration(milliseconds: 300);
+
   /// Creates the pager over the Quran's [metadata], opening at
   /// [initialPage].
   const MushafPager({
@@ -166,23 +175,61 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
 
   /// Says why the Mushaf changed how it shows, while the reader is the tab
   /// on screen: each case in its own words, so the reason is never wrong.
-  void _announce(PrintedFallbackEvent? event) {
+  /// Turned to text offline, it offers another reading that has the page on
+  /// the phone, if one does.
+  Future<void> _announce(PrintedFallbackEvent? event) async {
     if (event == null || !TickerMode.valuesOf(context).enabled) return;
+    final language = Localizations.localeOf(context).languageCode;
+    final edition = ref.read(printedEditionProvider);
+    final reading = edition.name(language);
+    MushafEdition? saved;
+    final page = ref.read(readingPositionProvider).value;
+    if (event.change == PrintedFallbackChange.toText && page != null) {
+      // Held while it is worked out, or it would go before it answers; and
+      // waited for only briefly, so the message is never late.
+      final lookup = ref.listenManual(
+        pageElsewhereProvider((edition: edition, page: page)).future,
+        (_, _) {},
+      );
+      try {
+        final elsewhere = await lookup.read().timeout(MushafPager.lookupWait);
+        saved = elsewhere.readings.firstOrNull;
+      } on Object {
+        // Not known in time: the message goes without the offer.
+      } finally {
+        lookup.close();
+      }
+      if (!mounted) return;
+    }
     final l10n = context.l10n;
-    final reading = ref
-        .read(printedEditionProvider)
-        .name(Localizations.localeOf(context).languageCode);
     ScaffoldMessenger.maybeOf(context)
       ?..hideCurrentSnackBar()
       ..showSnackBar(
-        AppSnackBar(switch (event.change) {
-          PrintedFallbackChange.toText => l10n.printedSwitchedToText,
-          PrintedFallbackChange.toTextChosen => l10n.printedTextInstead(
-            reading,
-          ),
-          PrintedFallbackChange.toPrinted => l10n.printedBackOnline,
-          PrintedFallbackChange.toPrintedSaved => l10n.printedBackSaved,
-        }),
+        AppSnackBar(
+          switch (event.change) {
+            PrintedFallbackChange.toText => [
+              l10n.printedSwitchedToText,
+              if (saved != null) l10n.printedPageSavedIn(saved.name(language)),
+            ].join(' '),
+            PrintedFallbackChange.toTextChosen => l10n.printedTextInstead(
+              reading,
+            ),
+            PrintedFallbackChange.toPrinted => l10n.printedBackOnline,
+            PrintedFallbackChange.toPrintedSaved => l10n.printedBackSaved,
+            PrintedFallbackChange.toSavedReading => l10n.printedShownIn(
+              reading,
+            ),
+          },
+          // A short label: the reading's name is in the message.
+          action: saved == null
+              ? null
+              : SnackBarAction(
+                  label: l10n.printedShowSaved,
+                  onPressed: () => ref
+                      .read(printedFallbackProvider.notifier)
+                      .openReading(saved!),
+                ),
+        ),
       );
   }
 
@@ -334,7 +381,10 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
     // A Mushaf the system finished downloading while the app was closed is
     // unpacked once the first page is drawn, so it reads offline at once.
     if (settled) ref.listen(waitingPackProvider(edition), (_, _) {});
-    ref.listen(printedFallbackProvider, (_, event) => _announce(event));
+    ref.listen(
+      printedFallbackProvider,
+      (_, event) => unawaited(_announce(event)),
+    );
     final textUntilOnline = ref.watch(
       settingsProvider.select((s) => s.value?.textUntilOnline ?? false),
     );
@@ -407,6 +457,8 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
                 : (offline) => ref
                       .read(printedFallbackProvider.notifier)
                       .readTextInstead(offline: offline),
+            offlineExtras: (_) =>
+                PageElsewhereOptions(edition: edition, page: number),
           ),
           ReaderMode.printed => SvgPageView(
             metadata: widget.metadata,
@@ -423,6 +475,8 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
             onTap: _onTap,
             // Offline, the whole Mushaf turns to text, and says so.
             onOffline: () => _printedOffline(number),
+            offlineExtras: (_) =>
+                PageElsewhereOptions(edition: edition, page: number),
             // Without its artwork the page still reads, as text, once the
             // text is read.
             fallbackBuilder: widget.text == null

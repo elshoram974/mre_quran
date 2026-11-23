@@ -1994,4 +1994,27 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get printedSlowNotice =>
       'The printed page is slow to come, so its text is shown until it does.';
+
+  @override
+  String printedSavedIn(String reading) {
+    return 'This page is saved in $reading: show it';
+  }
+
+  @override
+  String printedNearestSaved(String page) {
+    return 'Go to the nearest saved page ($page)';
+  }
+
+  @override
+  String printedShownIn(String reading) {
+    return 'Now showing $reading, whose copy of this page is on your phone.';
+  }
+
+  @override
+  String printedPageSavedIn(String reading) {
+    return 'This page is saved in $reading.';
+  }
+
+  @override
+  String get printedShowSaved => 'Show it';
 }

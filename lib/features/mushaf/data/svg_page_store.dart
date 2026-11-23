@@ -169,6 +169,20 @@ class SvgPageStore {
     }
   }
 
+  /// The page nearest [page], either way, whose files are on the device;
+  /// null when none is. [page] itself is not counted.
+  Future<int?> nearestOnDevice(int page) async {
+    if (await filesOnDevice() == 0) return null;
+    final count = (await _manifest()).pageCount;
+    for (var step = 1; step < count; step++) {
+      for (final candidate in [page - step, page + step]) {
+        if (candidate < 1 || candidate > count) continue;
+        if (await isOnDevice(candidate)) return candidate;
+      }
+    }
+    return null;
+  }
+
   /// Whether every page file of the Mushaf is on the device.
   Future<bool> complete() async =>
       await filesOnDevice() >= await packFileCount();

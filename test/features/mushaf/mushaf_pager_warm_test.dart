@@ -13,6 +13,7 @@ import 'package:mre_quran/features/mushaf/application/reading_position_provider.
 import 'package:mre_quran/features/mushaf/application/svg_page_providers.dart';
 import 'package:mre_quran/features/mushaf/data/svg_page_store.dart';
 import 'package:mre_quran/features/mushaf/presentation/mushaf_page.dart';
+import 'package:mre_quran/features/mushaf/presentation/mushaf_pager.dart';
 import 'package:mre_quran/features/mushaf/presentation/mushaf_page_view.dart';
 import 'package:mre_quran/features/mushaf/presentation/svg_page_view.dart';
 import 'package:mre_quran/features/quran_index/application/quran_metadata_provider.dart';
@@ -45,6 +46,7 @@ Future<Set<int>> _pump(
   bool textLate = false,
   bool untilDrawn = true,
   Set<int> offline = const {},
+  SvgPageStore Function(MushafEdition edition)? stores,
 }) async {
   _stretches.clear();
   tester.view.physicalSize = size;
@@ -91,6 +93,8 @@ Future<Set<int>> _pump(
           }
           return fixturePicture(request);
         }),
+        if (stores != null)
+          svgPageStoreProvider.overrideWith((ref, edition) => stores(edition)),
         // Downloads are not this test's business.
         pagePrefetcherProvider.overrideWithValue(
           PagePrefetcher(
@@ -170,6 +174,46 @@ void main() {
     expect(find.byType(SvgPageView), findsNothing);
     expect(find.byType(MushafPageView), findsOneWidget);
     expect(find.textContaining('فصار المصحف يُعرض نصًّا'), findsOneWidget);
+  });
+
+  testWidgets('turned to text offline, it offers a reading that has the page '
+      'on the phone, and opens it', (tester) async {
+    final saved = Directory.systemTemp.createTempSync('saved');
+    addTearDown(() => saved.deleteSync(recursive: true));
+    // Offline: nothing downloads; Warsh's page 10 was saved before.
+    final server = FakePageServer();
+    SvgPageStore storeOf(MushafEdition edition) => SvgPageStore(
+      root: () async => Directory('${saved.path}/${edition.id}'),
+      manifest: () async => fixtureManifest(pages: 604),
+      fetch: server.fetch,
+    );
+    await tester.runAsync(() => storeOf(MushafEditions.warsh).fetch(10));
+    server.offline = true;
+    // Looking at real files takes real time here; wait for it.
+    MushafPager.lookupWait = const Duration(minutes: 1);
+    addTearDown(
+      () => MushafPager.lookupWait = const Duration(milliseconds: 300),
+    );
+    await _pump(tester, page: 10, offline: {10}, stores: storeOf);
+    // The stores look at real files, one after another.
+    for (var i = 0; i < 60; i++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 10)),
+      );
+      await tester.pump();
+    }
+    expect(_settings.settings.readerMode, ReaderMode.text);
+    // The reading is named in the message; the button stays short.
+    expect(find.textContaining('محفوظة برواية ورش عن نافع'), findsOneWidget);
+    final offer = find.text('اعرضها');
+    expect(offer, findsOneWidget);
+    // Let the message finish coming in, then take its offer.
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.tap(offer);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(_settings.settings.mushafEdition, MushafEditions.warsh);
+    expect(_settings.settings.readerMode, ReaderMode.printed);
   });
 
   testWidgets('a page out of sight that fails does not switch the Mushaf', (

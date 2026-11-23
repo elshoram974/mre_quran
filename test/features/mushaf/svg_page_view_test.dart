@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:material_ui/material_ui.dart';
@@ -49,6 +50,7 @@ void main() {
     VoidCallback? onPinchOut,
     VoidCallback? onOffline,
     ValueChanged<bool>? onReadText,
+    WidgetBuilder? offlineExtras,
   }) async {
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
@@ -78,6 +80,7 @@ void main() {
               onPinchOut: onPinchOut,
               onOffline: onOffline,
               onReadText: onReadText,
+              offlineExtras: offlineExtras,
             ),
           ),
         ),
@@ -564,6 +567,59 @@ void main() {
     await tester.tap(find.text('اقرأ النص المكتوب (رواية حفص)'));
     await tester.pump();
     expect(asked, [true, false]);
+  });
+
+  testWidgets('a retry shows the page loading, not the old failure, and '
+      'builds the view afresh', (tester) async {
+    var calls = 0;
+    final second = Completer<SvgPagePicture>();
+    await pump(
+      tester,
+      load: (request) {
+        calls++;
+        if (calls == 1) {
+          return Future.error(const SocketException('offline'));
+        }
+        return second.future;
+      },
+    );
+    await tester.pump(const Duration(milliseconds: 400));
+    final before = tester.element(find.text('إعادة المحاولة'));
+    await tester.tap(find.text('إعادة المحاولة'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(calls, 2);
+    // Loading: no failure on screen while it tries.
+    expect(find.text('إعادة المحاولة'), findsNothing);
+    expect(find.textContaining('لا يوجد إنترنت الآن'), findsNothing);
+    expect(before.mounted, isFalse, reason: 'the failed view was replaced');
+    second.complete(fixturePicture((page: 3, stretch: 1000)));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(find.byType(SvgPicture), findsNWidgets(2));
+  });
+
+  testWidgets('more ways to read on show under a page that failed offline, '
+      'and not under one the server refused', (tester) async {
+    Widget extras(BuildContext context) => const Text('elsewhere');
+    await pump(
+      tester,
+      load: (_) async => throw const SocketException('offline'),
+      offlineExtras: extras,
+    );
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(find.text('elsewhere'), findsOneWidget);
+    await pump(
+      tester,
+      page: 4,
+      load: (page) async => throw PageDownloadException(
+        Uri.parse('https://example.test/004.svg'),
+        'HTTP 404',
+      ),
+      offlineExtras: extras,
+    );
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(find.text('elsewhere'), findsNothing);
   });
 
   testWidgets('the failed page fits a short, large-text screen', (

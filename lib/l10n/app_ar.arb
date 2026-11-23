@@ -609,5 +609,14 @@
   "@printedTextInstead": {"placeholders": {"reading": {"type": "String"}}},
   "printedBackSaved": "صفحات المصحف المطبوع كلها على هاتفك الآن، فعاد العرض إليه، بإنترنت أو بدونه.",
   "printedReadText": "اقرأ النص المكتوب (رواية حفص)",
-  "printedSlowNotice": "الصفحة المطبوعة تتأخر، فيُعرض نصها حتى تصل."
+  "printedSlowNotice": "الصفحة المطبوعة تتأخر، فيُعرض نصها حتى تصل.",
+  "printedSavedIn": "هذه الصفحة محفوظة برواية {reading}، اعرضها",
+  "@printedSavedIn": {"placeholders": {"reading": {"type": "String"}}},
+  "printedNearestSaved": "اذهب إلى أقرب صفحة محفوظة (صفحة {page})",
+  "@printedNearestSaved": {"placeholders": {"page": {"type": "String"}}},
+  "printedShownIn": "تُعرض الآن رواية {reading}، وهذه الصفحة منها محفوظة على هاتفك.",
+  "@printedShownIn": {"placeholders": {"reading": {"type": "String"}}},
+  "printedPageSavedIn": "وهذه الصفحة محفوظة برواية {reading}.",
+  "@printedPageSavedIn": {"placeholders": {"reading": {"type": "String"}}},
+  "printedShowSaved": "اعرضها"
 }

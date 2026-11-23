@@ -224,6 +224,16 @@ void main() {
     },
   );
 
+  test('finds the nearest page on the device, either way', () async {
+    expect(await store.nearestOnDevice(2), isNull);
+    await store.fetch(3);
+    expect(await store.nearestOnDevice(1), 3);
+    await store.fetch(1);
+    expect(await store.nearestOnDevice(2), 1);
+    // The page itself does not count.
+    expect(await store.nearestOnDevice(3), 1);
+  });
+
   test('a damaged file on the device is dropped and fetched again', () async {
     await store.fetch(1);
     stored('001.svg.gz').writeAsBytesSync([1, 2, 3]);
