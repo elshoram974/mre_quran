@@ -473,6 +473,7 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
               exact: true,
               countdownTo: countdown ? adhan : null,
               dismissLabel: countdown ? l10n.prayerSoonDismiss : null,
+              settingsLabel: l10n.notificationSettings,
             );
           case PrayerAlertKind.atTime:
             await _scheduler.scheduleOnce(
@@ -489,6 +490,7 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
                       fajr: alert.prayer == DailyPrayer.fajr,
                     )
                   : null,
+              settingsLabel: l10n.notificationSettings,
             );
           case PrayerAlertKind.afterPrayer:
             await _scheduler.scheduleOnce(
@@ -501,6 +503,7 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
               channel: ReminderChannel.adhkar,
               channelName: l10n.adhkarReminderChannel,
               payload: ReminderPayload.forCollection(afterPrayerCollectionId),
+              settingsLabel: l10n.notificationSettings,
             );
         }
       }

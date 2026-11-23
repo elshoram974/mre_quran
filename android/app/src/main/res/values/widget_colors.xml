@@ -8,4 +8,6 @@
     <color name="widget_pill">#33FFFFFF</color>
     <color name="widget_row_next">#33E9C46A</color>
     <color name="widget_star">#26E9C46A</color>
+    <!-- The hairline under the timetable's header: the accent, faint. -->
+    <color name="widget_divider">#40E9C46A</color>
 </resources>

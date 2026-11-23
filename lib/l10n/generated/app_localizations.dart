@@ -2950,7 +2950,7 @@ abstract class AppLocalizations {
   /// No description provided for @printedPageError.
   ///
   /// In en, this message translates to:
-  /// **'Couldn\'t load this page. Check your internet connection.'**
+  /// **'The page could not be loaded from the server. Try again in a moment.'**
   String get printedPageError;
 
   /// No description provided for @printedPageDownload.
@@ -3262,7 +3262,7 @@ abstract class AppLocalizations {
   /// No description provided for @printedFallbackNotice.
   ///
   /// In en, this message translates to:
-  /// **'The printed page is not available right now, so the text is shown.'**
+  /// **'The printed page could not be loaded, so its text is shown.'**
   String get printedFallbackNotice;
 
   /// No description provided for @printedSwitchedToText.
@@ -3280,7 +3280,7 @@ abstract class AppLocalizations {
   /// No description provided for @readerTextUntilOnline.
   ///
   /// In en, this message translates to:
-  /// **'Text was chosen by itself because there was no internet. The printed Mushaf comes back when the internet does. To read it printed without the internet, download it under Offline Mushaf.'**
+  /// **'Text is shown because the printed pages need the internet. The printed Mushaf comes back when the internet does. To read it printed without the internet, download it under Offline Mushaf.'**
   String get readerTextUntilOnline;
 
   /// No description provided for @adhanExactNote.
@@ -3432,6 +3432,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Next: {date}'**
   String fastingNext(String date);
+
+  /// No description provided for @notificationSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get notificationSettings;
+
+  /// No description provided for @printedTextInstead.
+  ///
+  /// In en, this message translates to:
+  /// **'The Mushaf shows as typeset text, in Hafs. The printed {reading} Mushaf comes back when the internet does.'**
+  String printedTextInstead(String reading);
+
+  /// No description provided for @printedBackSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Every page of the printed Mushaf is on your phone now, so it is back, internet or not.'**
+  String get printedBackSaved;
+
+  /// No description provided for @printedReadText.
+  ///
+  /// In en, this message translates to:
+  /// **'Read the typeset text (Hafs)'**
+  String get printedReadText;
+
+  /// No description provided for @printedSlowNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'The printed page is slow to come, so its text is shown until it does.'**
+  String get printedSlowNotice;
 }
 
 class _AppLocalizationsDelegate

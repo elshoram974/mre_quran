@@ -17,6 +17,8 @@ import 'package:mre_quran/features/adhkar/presentation/adhkar_group_page.dart';
 import 'package:mre_quran/features/adhkar/presentation/adhkar_search_page.dart';
 import 'package:mre_quran/features/adhkar/presentation/adhkar_session_page.dart';
 import 'package:mre_quran/features/adhkar/presentation/duas_page.dart';
+import 'package:mre_quran/features/fasting/application/fasting_reminders_provider.dart';
+import 'package:mre_quran/features/fasting/domain/sunnah_fasts.dart';
 import 'package:mre_quran/features/prayer/application/prayer_provider.dart';
 import 'package:mre_quran/features/prayer/domain/prayer_times.dart';
 import 'package:mre_quran/features/quran_index/application/quran_metadata_provider.dart';
@@ -27,6 +29,7 @@ import 'package:mre_quran/l10n/generated/app_localizations.dart';
 import 'adhkar_fixtures.dart';
 import 'fake_quran_metadata_source.dart';
 import 'fake_quran_text_source.dart';
+import 'memory_fasting_repository.dart';
 import 'memory_settings_repository.dart';
 
 /// Pumps the Adhkar tab with fake stores, at 09:00 on a fixed day.
@@ -42,6 +45,7 @@ Future<FakeReminderScheduler> pumpAdhkarApp(
   FakeLocationSource? location,
   double adhkarFontScale = 1,
   List<WeeklyReminder>? weeklyReminders,
+  MemoryFastingRepository? fasting,
 }) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
@@ -85,6 +89,12 @@ Future<FakeReminderScheduler> pumpAdhkarApp(
         ),
         weeklyRemindersRepositoryProvider.overrideWithValue(
           MemoryRemindersRepository(),
+        ),
+        // The fasting reminders are off unless a test is about them.
+        fastingRepositoryProvider.overrideWithValue(
+          fasting ??
+              (MemoryFastingRepository()
+                ..settings = const FastingSettings(fasts: {})),
         ),
         if (weeklyReminders != null)
           weeklyReminderCatalogProvider.overrideWith(

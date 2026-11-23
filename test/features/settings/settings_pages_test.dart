@@ -242,14 +242,20 @@ void main() {
         ),
       );
       await _reveal(tester, find.text('طريقة العرض'));
-      expect(find.textContaining('اختير النص المكتوب تلقائيًا'), findsOne);
+      expect(
+        find.textContaining('لأن الصفحات المطبوعة تحتاج الإنترنت'),
+        findsOne,
+      );
       await tester.tap(find.text('طريقة العرض'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('المصحف المطبوع').last);
       await tester.pumpAndSettle();
       expect(repository.settings.readerMode, ReaderMode.printed);
       expect(repository.settings.textUntilOnline, isFalse);
-      expect(find.textContaining('اختير النص المكتوب تلقائيًا'), findsNothing);
+      expect(
+        find.textContaining('لأن الصفحات المطبوعة تحتاج الإنترنت'),
+        findsNothing,
+      );
     });
 
     testWidgets('text the person chose carries no such note', (tester) async {
@@ -259,7 +265,10 @@ void main() {
         settings: const AppSettings(readerMode: ReaderMode.text),
       );
       await _reveal(tester, find.text('طريقة العرض'));
-      expect(find.textContaining('اختير النص المكتوب تلقائيًا'), findsNothing);
+      expect(
+        find.textContaining('لأن الصفحات المطبوعة تحتاج الإنترنت'),
+        findsNothing,
+      );
     });
 
     testWidgets('changes the language and the digits', (tester) async {

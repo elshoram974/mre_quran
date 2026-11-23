@@ -144,7 +144,16 @@ class FakeReminderScheduler implements ReminderScheduler {
 
   bool allow;
   int permissionRequests = 0;
-  final Map<int, ({int minutes, String title, String body, String payload})>
+  final Map<
+    int,
+    ({
+      int minutes,
+      String title,
+      String body,
+      String payload,
+      String? settingsLabel,
+    })
+  >
   scheduled = {};
 
   /// The weekday of each reminder scheduled for one day of the week.
@@ -174,6 +183,7 @@ class FakeReminderScheduler implements ReminderScheduler {
     required String channelName,
     required String payload,
     int? weekday,
+    String? settingsLabel,
   }) async {
     if (weekday == null) {
       weekdays.remove(id);
@@ -185,6 +195,7 @@ class FakeReminderScheduler implements ReminderScheduler {
       title: title,
       body: body,
       payload: payload,
+      settingsLabel: settingsLabel,
     );
   }
 
@@ -201,6 +212,7 @@ class FakeReminderScheduler implements ReminderScheduler {
       bool exact,
       DateTime? countdownTo,
       String? dismissLabel,
+      String? settingsLabel,
     })
   >
   once = {};
@@ -230,6 +242,7 @@ class FakeReminderScheduler implements ReminderScheduler {
     String? iosSound,
     DateTime? countdownTo,
     String? dismissLabel,
+    String? settingsLabel,
   }) async {
     sounds[id] = iosSound;
     once[id] = (
@@ -241,6 +254,7 @@ class FakeReminderScheduler implements ReminderScheduler {
       exact: exact,
       countdownTo: countdownTo,
       dismissLabel: dismissLabel,
+      settingsLabel: settingsLabel,
     );
   }
 

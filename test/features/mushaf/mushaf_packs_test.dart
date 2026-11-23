@@ -62,8 +62,21 @@ void main() {
   Future<PackProgress> progress() =>
       container.read(mushafPackProvider(MushafEditions.hafs).future);
 
-  Future<void> settled() =>
-      Future<void>.delayed(const Duration(milliseconds: 400));
+  /// Waits until the pack has taken in what happened: nothing left to
+  /// unpack, and its state no longer unpacking. Unpacking takes longer on a
+  /// busy machine, so this waits for it rather than a fixed time.
+  Future<void> settled([ProviderContainer? on]) async {
+    final target = on ?? container;
+    final pack = Directory('${root.path}/mushaf/svg/hafs-kfqc/pack');
+    // Long enough for a finished file to be noticed (settleDelay).
+    await Future<void>.delayed(const Duration(milliseconds: 100));
+    for (var waited = 0; waited < 200; waited++) {
+      final state = target.read(mushafPackProvider(MushafEditions.hafs)).value;
+      final waiting = pack.existsSync() && pack.listSync().isNotEmpty;
+      if (state != null && !state.installing && !waiting) return;
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+    }
+  }
 
   test('starts empty: no page on the device, nothing running', () async {
     final state = await progress();
@@ -228,7 +241,7 @@ void main() {
       await again.read(waitingPackProvider(MushafEditions.hafs).future),
       isTrue,
     );
-    await settled();
+    await settled(again);
     final state = await again.read(
       mushafPackProvider(MushafEditions.hafs).future,
     );

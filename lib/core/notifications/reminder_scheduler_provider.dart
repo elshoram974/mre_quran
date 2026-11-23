@@ -35,6 +35,7 @@ class _NoopReminderScheduler implements ReminderScheduler {
     required String channelName,
     required String payload,
     int? weekday,
+    String? settingsLabel,
   }) async {}
 
   @override
@@ -56,6 +57,7 @@ class _NoopReminderScheduler implements ReminderScheduler {
     String? iosSound,
     DateTime? countdownTo,
     String? dismissLabel,
+    String? settingsLabel,
   }) async {}
 
   @override

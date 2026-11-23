@@ -10,6 +10,7 @@ import 'package:mre_quran/features/quran_index/domain/quran_metadata.dart';
 import 'package:mre_quran/features/quran_text/application/quran_text_providers.dart';
 import 'package:mre_quran/features/adhkar/domain/quran_passage.dart';
 import 'package:mre_quran/features/adhkar/domain/weekly_reminder.dart';
+import 'package:mre_quran/features/fasting/domain/sunnah_fasts.dart';
 import 'package:mre_quran/features/adhkar/presentation/adhkar_group_page.dart';
 import 'package:mre_quran/features/adhkar/presentation/collection_card.dart';
 import 'package:mre_quran/features/adhkar/presentation/dhikr_card.dart';
@@ -20,6 +21,7 @@ import 'package:mre_quran/features/adhkar/presentation/adhkar_search_page.dart';
 import 'package:mre_quran/features/adhkar/presentation/duas_page.dart';
 
 import '../../helpers/adhkar_app.dart';
+import '../../helpers/memory_fasting_repository.dart';
 import '../../helpers/adhkar_fixtures.dart';
 
 /// The Friday reminder, on from the start, as the app's file makes it.
@@ -455,6 +457,86 @@ void main() {
     });
   });
 
+  group('sunnah fasts in the sheet', () {
+    testWidgets('each fast is on, says when it comes next, and can be turned '
+        'off; the time is the evening before', (tester) async {
+      final fasting = MemoryFastingRepository();
+      final scheduler = await pumpAdhkarApp(tester, fasting: fasting);
+      await tapVisible(tester, find.text('التذكيرات'));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.text('صيام السنة').first);
+      await tester.pumpAndSettle();
+      expect(find.textContaining('تقويم أم القرى'), findsOneWidget);
+      for (final title in [
+        'الاثنين والخميس',
+        'الأيام البيض',
+        'يوم عرفة',
+        'تاسوعاء وعاشوراء',
+        'ست من شوال',
+      ]) {
+        expect(find.text(title), findsOneWidget, reason: title);
+      }
+      // Each says when it comes next.
+      expect(find.textContaining('القادم: '), findsNWidgets(5));
+      // Thursday 8 October 2026, nine in the morning: Monday is next.
+      expect(
+        find.descendant(
+          of: find.ancestor(
+            of: find.text('الاثنين والخميس'),
+            matching: find.byType(ListTile),
+          ),
+          matching: find.textContaining('القادم: الاثنين'),
+        ),
+        findsOneWidget,
+      );
+      expect(scheduler.once.keys.where(FastingPlan.owns), isNotEmpty);
+
+      await tapVisible(tester, find.text('الاثنين والخميس'));
+      await tester.pumpAndSettle();
+      expect(
+        fasting.settings.fasts,
+        isNot(contains(SunnahFast.mondayThursday)),
+      );
+      await tester.ensureVisible(find.text('وقت التذكير').last);
+      await tester.pumpAndSettle();
+      // Nine in the evening, in the app's digits.
+      expect(find.textContaining('٩:٠٠'), findsWidgets);
+      expect(tester.takeException(), isNull);
+    });
+
+    for (final (name, size, scale, locale, theme) in [
+      ('compact, large text', const Size(320, 640), 2.0, 'ar', null),
+      ('English, dark', const Size(390, 844), 1.0, 'en', AppTheme.dark),
+      ('expanded', const Size(1100, 800), 1.0, 'ar', null),
+    ]) {
+      testWidgets('the section fits: $name', (tester) async {
+        await pumpAdhkarApp(
+          tester,
+          size: size,
+          textScale: scale,
+          locale: locale,
+          theme: theme,
+          fasting: MemoryFastingRepository(),
+        );
+        final entry = find.text(locale == 'ar' ? 'التذكيرات' : 'Reminders');
+        await tester.scrollUntilVisible(
+          entry,
+          200,
+          scrollable: find.byType(Scrollable).first,
+        );
+        await tapVisible(tester, entry);
+        await tester.pumpAndSettle();
+        final title = find.text(
+          locale == 'ar' ? 'ست من شوال' : 'Six days of Shawwal',
+        );
+        await tester.ensureVisible(title);
+        await tester.pumpAndSettle();
+        expect(title, findsOneWidget);
+        expect(tester.takeException(), isNull);
+      });
+    }
+  });
+
   group('after-prayer reminders in the sheet', () {
     testWidgets('on: asks for notifications and location, then shows choices', (
       tester,
@@ -468,7 +550,8 @@ void main() {
       expect(find.text('بعد كل صلاة'), findsOneWidget);
       expect(find.text('التذكير بعد الصلاة'), findsNothing);
 
-      await tester.tap(find.byType(Switch).last);
+      // The last switch, under the fasts.
+      await tapVisible(tester, find.byType(Switch).last);
       await tester.pumpAndSettle();
       expect(location.requests, 1);
       expect(scheduler.once, isNotEmpty);
@@ -484,7 +567,8 @@ void main() {
       );
       await tapVisible(tester, find.text('التذكيرات'));
       await tester.pumpAndSettle();
-      await tester.tap(find.byType(Switch).last);
+      // The last switch, under the fasts.
+      await tapVisible(tester, find.byType(Switch).last);
       await tester.pumpAndSettle();
       expect(scheduler.once, isEmpty);
       expect(find.textContaining('الموقع متوقف'), findsOneWidget);
@@ -689,6 +773,8 @@ void main() {
       await tester.pumpAndSettle();
       expect(scheduler.permissionRequests, 1);
       expect(scheduler.scheduled, hasLength(1));
+      // Its notification has a button to these settings.
+      expect(scheduler.scheduled.values.single.settingsLabel, 'الإعدادات');
       expect(find.text('وقت التذكير'), findsOneWidget);
     });
 

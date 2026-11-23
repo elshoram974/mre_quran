@@ -154,7 +154,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
+            <!-- Each row is 34dp at the base size; on a taller card the
+                 renderer gives the rows most of the room (Android 12+). -->
             <LinearLayout
+                android:id="@+id/card_row_1"
                 android:layout_width="match_parent"
                 android:layout_height="34dp"
                 android:orientation="horizontal">

@@ -157,6 +157,7 @@ Future<AdhanAlertConfig> buildAdhanConfig({
     duaRecording: settings.dua.recording,
     stopWhenFlipped: settings.stopWhenFlipped,
     stopLabel: l10n.adhanStopAction,
+    settingsLabel: l10n.notificationSettings,
     channelName: l10n.adhanChannelName,
     payload: ReminderPayload.prayerTimes,
   );

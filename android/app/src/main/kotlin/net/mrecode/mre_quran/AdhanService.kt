@@ -150,6 +150,9 @@ class AdhanService : Service() {
         private const val NOTICE_ID = 7001
         private const val GAP_MILLIS = 600L
 
+        /** What the settings button opens: the same as ReminderPayload.adhanSettings in Dart. */
+        private const val SETTINGS_PAYLOAD = "adhan:settings"
+
         /** Starts the adhan now. Throws if the system will not allow it. */
         fun start(context: Context, alarm: JSONObject, config: JSONObject) {
             val intent = Intent(context, AdhanService::class.java)
@@ -184,6 +187,15 @@ class AdhanService : Service() {
                 Intent(context, AdhanService::class.java).setAction(ACTION_STOP),
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
             )
+            // Opens the adhan's settings in the app; the adhan plays on.
+            val settings = PendingIntent.getActivity(
+                context,
+                2,
+                Intent(context, MainActivity::class.java)
+                    .putExtra(EXTRA_PAYLOAD, SETTINGS_PAYLOAD)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP),
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+            )
             val builder = NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentTitle(alarm.optString("title"))
@@ -196,6 +208,9 @@ class AdhanService : Service() {
                 .setContentIntent(open)
                 .addAction(0, config.optString("stopLabel", "Stop"), stop)
                 .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
+            config.optString("settingsLabel").takeIf { it.isNotEmpty() && it != "null" }?.let {
+                builder.addAction(0, it, settings)
+            }
             return builder.build()
         }
     }

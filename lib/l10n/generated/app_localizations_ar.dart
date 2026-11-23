@@ -1663,7 +1663,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get printedPageError =>
-      'تعذّر تحميل الصفحة. تأكد من الاتصال بالإنترنت.';
+      'تعذّر تحميل الصفحة من الخادم. حاول مرة أخرى بعد قليل.';
 
   @override
   String get printedPageDownload => 'نزّل الرواية كلها';
@@ -1860,7 +1860,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get printedFallbackNotice =>
-      'صفحة المصحف المطبوع غير متاحة الآن، فيُعرض النص.';
+      'تعذّر تحميل الصفحة المطبوعة، فيُعرض نصها.';
 
   @override
   String get printedSwitchedToText =>
@@ -1871,7 +1871,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get readerTextUntilOnline =>
-      'اختير النص المكتوب تلقائيًا لعدم وجود إنترنت، ويعود المصحف المطبوع حين يعود الإنترنت. لتقرأ المطبوع دون إنترنت نزّله من «المصحف دون اتصال».';
+      'يُعرض النص المكتوب لأن الصفحات المطبوعة تحتاج الإنترنت، ويعود المصحف المطبوع حين يعود الإنترنت. لتقرأه مطبوعًا دون إنترنت نزّله من «المصحف دون اتصال».';
 
   @override
   String get adhanExactNote =>
@@ -1961,4 +1961,22 @@ class AppLocalizationsAr extends AppLocalizations {
   String fastingNext(String date) {
     return 'القادم: $date';
   }
+
+  @override
+  String get notificationSettings => 'الإعدادات';
+
+  @override
+  String printedTextInstead(String reading) {
+    return 'يُعرض المصحف الآن نصًّا مكتوبًا برواية حفص، ويعود مصحف $reading المطبوع حين يعود الإنترنت.';
+  }
+
+  @override
+  String get printedBackSaved =>
+      'صفحات المصحف المطبوع كلها على هاتفك الآن، فعاد العرض إليه، بإنترنت أو بدونه.';
+
+  @override
+  String get printedReadText => 'اقرأ النص المكتوب (رواية حفص)';
+
+  @override
+  String get printedSlowNotice => 'الصفحة المطبوعة تتأخر، فيُعرض نصها حتى تصل.';
 }

@@ -1,3 +1,7 @@
 <resources>
     <dimen name="schedule_countdown_gap">2dp</dimen>
+    <!-- Between the date and the Hijri date, and from the Hijri date down to
+         the hairline under the timetable's header. -->
+    <dimen name="schedule_header_gap">3dp</dimen>
+    <dimen name="schedule_divider_gap">8dp</dimen>
 </resources>

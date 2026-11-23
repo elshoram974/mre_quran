@@ -545,3 +545,61 @@
 - **Exact alarms:** The Adhan page now says that without them the adhan does not play at all, only a plain
   notification, rather than that it may come a few minutes late.
 
+## D-055: The timetable widget's countdown has room of its own, and its date has no year
+
+- **Decision:** The coming prayer's countdown sits 2dp above its name and time (`schedule_countdown_gap`) with its
+  font's own padding, instead of being tucked 2dp into them. A phone's own font can draw taller than its line; with
+  the tuck, the countdown and the time ran into each other. The timetable needs 6dp more for it (`COUNTDOWN`).
+- **The date** on the widgets is weekday, day and month (`DateFormat.MMMEd`); the year made it run past the narrow
+  timetable ("…٢٠"), and the Hijri line under it carries its own year.
+- **The header** of the timetable is set apart from the times: 3dp between the date and the Hijri date, then a
+  faint gold hairline (`widget_divider`) 8dp under them, and 12dp above and below the content. The sides keep their
+  room (12dp, and 10dp to the text); nothing was widened.
+- **The prayer card** on a launcher whose cells are tall used to open an empty band under the coming prayer: its
+  content is made for about 210 by 150dp. On Android 12 and later its rows of times now take 90% of the height left
+  over once the top has its room (`cardRows`), so it fills its cell as its preview shows; earlier versions cannot change a view's height and
+  keep the band. The widgets' picker previews are drawn again from the layouts.
+
+## D-056: The reminder before a prayer counts down to the adhan
+
+- **Decision:** On Android the reminder before a prayer (D-029) counts down to the adhan to the second, in the
+  notification's own chronometer, stays at the top until the adhan and then goes by itself (`timeoutAfter`), and
+  has a *Remove* button that takes it away at once without opening the app (the plugin's
+  `ActionBroadcastReceiver`, declared in the manifest). Its words say when the adhan is. It is on until the person
+  turns it off under the reminder on the prayer times page (`PrayerSettings.beforeCountdown`).
+- **iOS** has no countdown in a notification; there the reminder still says how many minutes are left.
+
+## D-057: Reminders of the sunnah fasts
+
+- **Decision:** The reminders sheet has *Sunnah fasts*: Mondays and Thursdays, the white days (13th to 15th), the Day
+  of Arafah, Tasu'a and Ashura, and six days of Shawwal, each with its own switch and the day it comes next. One
+  notification comes the evening before (9 pm, the person may move it), naming every reason the day is a fast. All
+  are on until the person turns them off, as D-049's alerts are. A tap opens the prayer times (Fajr and Maghrib).
+- **Dates:** Hijri dates are Umm al-Qura's (`HijriDate`), which can be a day off the local moon sighting. So no
+  reminder falls on a day that could locally be a day when fasting is not allowed: none in Ramadan, on the 1st or 2nd
+  of Shawwal, or from the 10th to the 14th of Dhu al-Hijjah. The six of Shawwal are reminded of for the 3rd, and the
+  white days are not reminded of in Dhu al-Hijjah. The sheet says so.
+- **Planning:** Each run plans afresh (`FastingPlan`, ids from 7003001): Android 60 days ahead; iOS 21 days and at most
+  8 notifications, within its 64 pending with the prayer alerts.
+
+## D-058: Every notification has a Settings button
+
+- **Decision:** Each reminder carries a *Settings* button (`settingsLabel`): the adhkar, weekly, after-prayer and
+  fasting reminders open the reminders sheet over the Settings tab (`ReminderPayload.remindersSettings`); the
+  reminder before a prayer and the prayer-time notice open the prayer times, where their alerts are chosen
+  (`prayerSettings`); the adhan's own notice, beside *Stop*, opens the Adhan settings (`adhanSettings`) while the
+  adhan plays on. On Android the button opens the app (`showsUserInterface`); on iOS it is a category action, named
+  once at start-up in the app's language then, so a language change shows on it from the next launch.
+
+## D-059: The reader says exactly why it changed, and another reading can be read as text
+
+- **Messages:** Switching to text offline says there is no internet and the page is not on the phone. Coming back
+  says "the internet is back" only when a page was downloaded; when every page of the reading is on the phone (a
+  reading downloaded whole, or a download unpacked meanwhile) it says that instead, internet or not. A page that
+  is only slow says it is slow; one the server failed says it could not be loaded, and, without text to stand in,
+  to try again in a moment rather than to check the connection.
+- **Another reading:** Its page that cannot be had offers *Read the typeset text (Hafs)*. Offline, the reader shows
+  the text until the printed reading can be had again, and says so naming the reading; when the server failed, the
+  text is the person's own choice and stays. Its *Download the whole reading* button opens the Offline Mushaf page
+  itself.
+

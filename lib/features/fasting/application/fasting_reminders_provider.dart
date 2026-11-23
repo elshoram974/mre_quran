@@ -126,6 +126,7 @@ class FastingRemindersNotifier extends AsyncNotifier<FastingSettings> {
           channelName: l10n.fastingChannelName,
           // The times of Fajr and Maghrib: when the fast begins and ends.
           payload: ReminderPayload.prayerTimes,
+          settingsLabel: l10n.notificationSettings,
         );
       }
     } on Object catch (error) {

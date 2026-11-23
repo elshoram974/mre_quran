@@ -1672,7 +1672,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get printedPageError =>
-      'Couldn\'t load this page. Check your internet connection.';
+      'The page could not be loaded from the server. Try again in a moment.';
 
   @override
   String get printedPageDownload => 'Download the whole reading';
@@ -1870,7 +1870,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get printedFallbackNotice =>
-      'The printed page is not available right now, so the text is shown.';
+      'The printed page could not be loaded, so its text is shown.';
 
   @override
   String get printedSwitchedToText =>
@@ -1882,7 +1882,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get readerTextUntilOnline =>
-      'Text was chosen by itself because there was no internet. The printed Mushaf comes back when the internet does. To read it printed without the internet, download it under Offline Mushaf.';
+      'Text is shown because the printed pages need the internet. The printed Mushaf comes back when the internet does. To read it printed without the internet, download it under Offline Mushaf.';
 
   @override
   String get adhanExactNote =>
@@ -1975,4 +1975,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String fastingNext(String date) {
     return 'Next: $date';
   }
+
+  @override
+  String get notificationSettings => 'Settings';
+
+  @override
+  String printedTextInstead(String reading) {
+    return 'The Mushaf shows as typeset text, in Hafs. The printed $reading Mushaf comes back when the internet does.';
+  }
+
+  @override
+  String get printedBackSaved =>
+      'Every page of the printed Mushaf is on your phone now, so it is back, internet or not.';
+
+  @override
+  String get printedReadText => 'Read the typeset text (Hafs)';
+
+  @override
+  String get printedSlowNotice =>
+      'The printed page is slow to come, so its text is shown until it does.';
 }

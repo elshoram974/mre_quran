@@ -195,6 +195,16 @@ void main() {
       await tester.pump(const Duration(milliseconds: 400));
       expect(_settings.settings.readerMode, ReaderMode.printed);
       expect(find.textContaining('لا يوجد إنترنت الآن'), findsOneWidget);
+
+      // The person may read the app's text in its place, until the
+      // internet is back.
+      await tester.tap(find.text('اقرأ النص المكتوب (رواية حفص)'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(_settings.settings.readerMode, ReaderMode.text);
+      expect(_settings.settings.textUntilOnline, isTrue);
+      expect(find.byType(MushafPageView), findsOneWidget);
+      expect(find.textContaining('برواية حفص، ويعود مصحف'), findsOneWidget);
     });
 
     testWidgets('has no Hafs text standing in and no bookmarks', (

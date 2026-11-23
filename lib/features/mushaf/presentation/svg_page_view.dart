@@ -53,6 +53,7 @@ class SvgPageView extends StatelessWidget {
     this.digits,
     this.fallbackBuilder,
     this.onOffline,
+    this.onReadText,
     this.onPinchOut,
     this.fallbackAfter = const Duration(seconds: 30),
   });
@@ -60,6 +61,11 @@ class SvgPageView extends StatelessWidget {
   /// Called when the artwork cannot be had because the internet is not
   /// there (see [isUnreachable]), after the frame that shows it.
   final VoidCallback? onOffline;
+
+  /// Offered, where no text stands in, on a page that cannot be had: reads
+  /// the Mushaf as the app's typeset text instead. Told whether the page
+  /// failed for want of the internet.
+  final ValueChanged<bool>? onReadText;
 
   /// Called when two fingers spread apart on the page. A printed page is
   /// artwork and does not enlarge; the owner suggests reading it bigger
@@ -139,6 +145,7 @@ class SvgPageView extends StatelessWidget {
             fillWidth: fillWidth,
             fallbackBuilder: fallbackBuilder,
             onOffline: onOffline,
+            onReadText: onReadText,
             slow: slow,
             onRetry: restart,
           ),
@@ -249,6 +256,7 @@ class _SvgBody extends ConsumerWidget {
     required this.fillWidth,
     required this.fallbackBuilder,
     required this.onOffline,
+    required this.onReadText,
     required this.slow,
     required this.onRetry,
   });
@@ -265,6 +273,7 @@ class _SvgBody extends ConsumerWidget {
   final bool fillWidth;
   final WidgetBuilder? fallbackBuilder;
   final VoidCallback? onOffline;
+  final ValueChanged<bool>? onReadText;
   final bool slow;
   final VoidCallback onRetry;
 
@@ -307,32 +316,49 @@ class _SvgBody extends ConsumerWidget {
       _ when fallbackBuilder != null && (slow || artwork.hasError) =>
         _TextStandIn(
           key: const ValueKey('fallback'),
-          notice: l10n.printedFallbackNotice,
+          // Failed, or only slow to come: each says which.
+          notice: artwork.hasError
+              ? l10n.printedFallbackNotice
+              : l10n.printedSlowNotice,
           retryLabel: l10n.retry,
           onRetry: retry,
           child: fallbackBuilder!(context),
         ),
       // No text can stand in (another reading): say why, and how to read
       // it without a connection next time.
-      AsyncValue(:final error?) => Column(
+      AsyncValue(:final error?) => LayoutBuilder(
         key: const ValueKey('error'),
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          EmptyState(
-            icon: Icons.cloud_off_outlined,
-            title: l10n.readerLoadError,
-            message: isUnreachable(error)
-                ? l10n.printedPageOffline
-                : l10n.printedPageError,
-            actionLabel: l10n.retry,
-            onAction: retry,
+        // Scrolls rather than overflows on a short page or with large text.
+        builder: (context, constraints) => SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                EmptyState(
+                  icon: Icons.cloud_off_outlined,
+                  title: l10n.readerLoadError,
+                  message: isUnreachable(error)
+                      ? l10n.printedPageOffline
+                      : l10n.printedPageError,
+                  actionLabel: l10n.retry,
+                  onAction: retry,
+                ),
+                if (onReadText case final read?)
+                  TextButton.icon(
+                    onPressed: () => read(isUnreachable(error)),
+                    icon: const Icon(Icons.text_fields),
+                    label: Text(l10n.printedReadText),
+                  ),
+                TextButton.icon(
+                  onPressed: () => context.push(AppRoute.settingsOffline.path),
+                  icon: const Icon(Icons.download_for_offline_outlined),
+                  label: Text(l10n.printedPageDownload),
+                ),
+              ],
+            ),
           ),
-          TextButton.icon(
-            onPressed: () => context.go(AppRoute.settings.path),
-            icon: const Icon(Icons.download_for_offline_outlined),
-            label: Text(l10n.printedPageDownload),
-          ),
-        ],
+        ),
       ),
       // A page on the device is ready in a moment; the placeholder only
       // comes if it is not, so a quick turn never flashes one.

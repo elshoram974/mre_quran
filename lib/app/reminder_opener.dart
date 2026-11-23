@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../core/notifications/reminder_payload.dart';
 import '../features/adhkar/presentation/adhkar_steps_sheet.dart';
+import '../features/adhkar/presentation/reminders_sheet.dart';
 import '../features/mushaf/application/reading_position_provider.dart';
 import '../features/quran_index/application/quran_metadata_provider.dart';
 import 'router.dart';
@@ -22,8 +23,9 @@ final reminderSurahOpenerProvider = Provider<Future<void> Function(int surah)>(
 );
 
 /// Opens what a tapped notification points at: the prayer times, a surah in
-/// the Mushaf, or the adhkar list it names as steps over the Adhkar tab. A
-/// payload that is not ours does nothing. [openSurah] is what puts the Mushaf
+/// the Mushaf, or the adhkar list it names as steps over the Adhkar tab; or,
+/// from its settings button, the reminders over the Settings tab, the prayer
+/// times, or the adhan's settings. A payload that is not ours does nothing. [openSurah] is what puts the Mushaf
 /// at a surah (see [reminderSurahOpenerProvider]).
 Future<void> openReminder(
   GoRouter router,
@@ -44,8 +46,18 @@ Future<void> openReminder(
     await router.push<void>(AppRoute.adhan.path);
     return;
   }
-  if (payload == ReminderPayload.prayerTimes) {
+  // A prayer alert's settings live with the prayer times.
+  if (payload == ReminderPayload.prayerTimes ||
+      payload == ReminderPayload.prayerSettings) {
     router.go(AppRoute.prayerTimes.path);
+    return;
+  }
+  if (payload == ReminderPayload.remindersSettings) {
+    router.go(AppRoute.settings.path);
+    // Let the tab come up, then open the reminders over it.
+    await WidgetsBinding.instance.endOfFrame;
+    final context = router.routerDelegate.navigatorKey.currentContext;
+    if (context != null && context.mounted) await RemindersSheet.show(context);
     return;
   }
   final id = ReminderPayload.collectionId(payload);

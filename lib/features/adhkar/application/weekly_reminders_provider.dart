@@ -144,6 +144,7 @@ class WeeklyRemindersNotifier
         payload: reminder.surah == null
             ? ReminderPayload.adhkarHome
             : ReminderPayload.forSurah(reminder.surah!),
+        settingsLabel: l10n.notificationSettings,
       );
     } on Object catch (error) {
       AppLogger.debug('Weekly reminder schedule failed: ${error.runtimeType}');

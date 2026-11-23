@@ -8,8 +8,20 @@ abstract final class ReminderPayload {
   /// Opens the adhkar home when a widget has no suggested list yet.
   static const String adhkarHome = 'adhkar-home';
 
-  /// Payload from the home-screen prayer widget that opens Adhan settings.
+  /// Payload from the home-screen prayer widget, and the adhan's settings
+  /// button, that opens Adhan settings.
   static const String adhanSettings = 'adhan:settings';
+
+  /// What a reminder's settings button opens: the reminders sheet.
+  static const String remindersSettings = 'settings:reminders';
+
+  /// What a prayer alert's settings button opens: the prayer times, where
+  /// the alerts and the reminder before them are chosen.
+  static const String prayerSettings = 'settings:prayer';
+
+  /// Whether [id] is that of a settings button.
+  static bool isSettings(String id) =>
+      id == remindersSettings || id == prayerSettings;
 
   /// Payload that opens the adhkar collection [collectionId].
   static String forCollection(String collectionId) => '$_prefix$collectionId';

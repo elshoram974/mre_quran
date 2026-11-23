@@ -169,11 +169,15 @@ class SvgPageStore {
     }
   }
 
+  /// Whether every page file of the Mushaf is on the device.
+  Future<bool> complete() async =>
+      await filesOnDevice() >= await packFileCount();
+
   /// The page nearest [page], going on through the Mushaf and then from its
   /// start, whose files are not all on the device; null when every page is.
   Future<int?> nearestMissing(int page) async {
     final count = (await _manifest()).pageCount;
-    if (await filesOnDevice() >= await packFileCount()) return null;
+    if (await complete()) return null;
     final start = page.clamp(1, count);
     for (var step = 0; step < count; step++) {
       final candidate = (start - 1 + step) % count + 1;

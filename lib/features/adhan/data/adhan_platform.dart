@@ -56,6 +56,7 @@ class AdhanAlertConfig {
     this.duaRecording = 'dua_after_adhan_shaarawy',
     required this.stopWhenFlipped,
     required this.stopLabel,
+    this.settingsLabel,
     required this.channelName,
     required this.payload,
   });
@@ -81,6 +82,10 @@ class AdhanAlertConfig {
   /// The text of the notice's stop button.
   final String stopLabel;
 
+  /// The text of the notice's button that opens the adhan's settings; none
+  /// when null.
+  final String? settingsLabel;
+
   /// The name of the notification channel.
   final String channelName;
 
@@ -95,6 +100,7 @@ class AdhanAlertConfig {
     'duaRecording': duaRecording,
     'stopWhenFlipped': stopWhenFlipped,
     'stopLabel': stopLabel,
+    'settingsLabel': settingsLabel,
     'channelName': channelName,
     'payload': payload,
   };

@@ -415,6 +415,9 @@ abstract final class WidgetPalette {
   /// The coming prayer's row on the timetable.
   static const Color rowNext = Color(0x33E9C46A);
 
+  /// The hairline under the timetable's header.
+  static const Color divider = Color(0x40E9C46A);
+
   /// The tasbih's reset button.
   static const Color pill = Color(0x33FFFFFF);
 

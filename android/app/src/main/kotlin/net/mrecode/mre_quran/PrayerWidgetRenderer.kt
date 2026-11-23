@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.SystemClock
+import android.util.TypedValue
 import android.view.View
 import android.widget.RemoteViews
 import kotlin.math.roundToInt
@@ -28,6 +29,36 @@ internal object PrayerWidgetRenderer {
 
     /** The height, in dp, the coming prayer's countdown line takes. */
     private const val COUNTDOWN = 20
+
+    /**
+     * The height, in dp, the header's room takes beyond its two lines: the gap
+     * between them, the hairline under them and its gap, and the body's extra
+     * room above and below.
+     */
+    private const val HEADER = 18
+
+    /** The height, in dp, of a row of the card's cells, as the layout has it. */
+    private const val CARD_ROW = 34f
+
+    /**
+     * The share of a taller card's spare height its rows take; the rest stays
+     * between the coming prayer and the day, where the star shows.
+     */
+    private const val CARD_ROW_SHARE = 0.9f
+
+    /** Room, in dp, the card's top keeps before its rows take any. */
+    private const val CARD_HEADROOM = 12f
+
+    /**
+     * The height, in dp, of the card above its rows at its base size: its
+     * room above and below, the coming prayer, the day's line and the rule.
+     * The compact card has no day's line.
+     */
+    private const val CARD_TOP = 92f
+    private const val CARD_TOP_COMPACT = 78f
+
+    /** The room, in dp, between a row's edge and its text. */
+    private const val ROW_SIDE = 10
 
     private val rowIds = intArrayOf(
         R.id.schedule_row_0, R.id.schedule_row_1, R.id.schedule_row_2,
@@ -117,32 +148,62 @@ internal object PrayerWidgetRenderer {
         }
         for (id in cards) {
             val (width, height) = WidgetScale.size(context, manager, id)
-            // Two launcher rows: the coming prayer and the next three.
-            val compact = height in 1..149
-            val views = cardViews(context, model, now, compact)
-            HomeWidgets.applyBackground(context, views, R.id.card_root)
-            if (width in 1..199 && model?.nextAfter(now) != null) {
-                views.setViewVisibility(R.id.card_label, View.GONE)
-            }
-
-            // Base: three cells by two (compact: 110dp tall; else 150dp).
-            val scale = WidgetScale.of(width, height, 210f, if (compact) 110f else 150f)
-            // The room around the content grows with the widget, as the text does.
-            WidgetScale.padding(context, views, R.id.card_body, 14f, 8f, scale)
-            WidgetScale.text(views, R.id.card_label, 11f, scale)
-            WidgetScale.text(views, R.id.card_name, 26f, scale)
-            WidgetScale.text(views, R.id.card_time, 16f, scale)
-            WidgetScale.text(views, R.id.card_remaining, 11f, scale)
-            WidgetScale.text(views, R.id.card_seconds, 11f, scale)
-            WidgetScale.text(views, R.id.card_date, 9f, scale)
-            WidgetScale.text(views, R.id.card_hijri, 9f, scale)
-            for (index in cellIds.indices) {
-                WidgetScale.text(views, cellNameIds[index], 10f, scale)
-                WidgetScale.text(views, cellTimeIds[index], 10f, scale)
-            }
-            manager.updateAppWidget(id, views)
+            manager.updateAppWidget(id, cardWidgetViews(context, model, now, width, height))
         }
         scheduleRefresh(context, now)
+    }
+
+    /** Renders the prayer card for the space the launcher gives it. */
+    internal fun cardWidgetViews(context: Context, model: WidgetModel?, now: Long, width: Int, height: Int): RemoteViews {
+        // Two launcher rows: the coming prayer and the next three.
+        val compact = height in 1..149
+        val views = cardViews(context, model, now, compact)
+        HomeWidgets.applyBackground(context, views, R.id.card_root)
+        if (width in 1..199 && model?.nextAfter(now) != null) {
+            views.setViewVisibility(R.id.card_label, View.GONE)
+        }
+        // Base: three cells by two (compact: 110dp tall; else 150dp).
+        val base = if (compact) 110f else 150f
+        val scale = WidgetScale.of(width, height, 210f, base)
+        // The room around the content grows with the widget, as the text does.
+        WidgetScale.padding(context, views, R.id.card_body, 14f, 8f, scale)
+        WidgetScale.text(views, R.id.card_label, 11f, scale)
+        WidgetScale.text(views, R.id.card_name, 26f, scale)
+        WidgetScale.text(views, R.id.card_time, 16f, scale)
+        WidgetScale.text(views, R.id.card_remaining, 11f, scale)
+        WidgetScale.text(views, R.id.card_seconds, 11f, scale)
+        WidgetScale.text(views, R.id.card_date, 9f, scale)
+        WidgetScale.text(views, R.id.card_hijri, 9f, scale)
+        for (index in cellIds.indices) {
+            WidgetScale.text(views, cellNameIds[index], 10f, scale)
+            WidgetScale.text(views, cellTimeIds[index], 10f, scale)
+        }
+        // With no prayer to show, the hint takes the card; its rows are empty.
+        if (model?.nextAfter(now) != null && model.dayAt(now) != null) {
+            cardRows(views, height, scale, compact)
+        }
+        return views
+    }
+
+    /**
+     * A card taller than its content (a launcher's tall cells) gives most of
+     * the room left to its rows of times, which grow and stay centred, so no
+     * empty band opens under the coming prayer. Only Android 12 and later
+     * let a widget's view change height.
+     */
+    private fun cardRows(views: RemoteViews, heightDp: Int, scale: Float, compact: Boolean) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S || heightDp <= 0) return
+        val rows = if (compact) 1 else 2
+        // The top (the coming prayer, the day and the rule, with the card's
+        // own room) grows with the text; the rows are as the layout has them.
+        val needed = (if (compact) CARD_TOP_COMPACT else CARD_TOP) * scale + rows * CARD_ROW
+        // Only height beyond that, with room to breathe, goes to the rows: a
+        // card near its base size keeps its rows as they were.
+        val spare = (heightDp - needed - CARD_HEADROOM).coerceAtLeast(0f)
+        val row = CARD_ROW + spare * CARD_ROW_SHARE / rows
+        for (id in listOf(R.id.card_row_1, R.id.card_row_2)) {
+            views.setViewLayoutHeight(id, row, TypedValue.COMPLEX_UNIT_DIP)
+        }
     }
 
     /** Opens the app on its prayer times. */
@@ -274,20 +335,21 @@ internal object PrayerWidgetRenderer {
         val upcoming = options["upcomingOnly"] == true || (height > 0 && availableHeight < minimumDayHeight)
         // The rows and the body have more room around them than they had; the
         // timetable needs EXTRA dp more height at every step.
-        val showDate = options["showDate"] != false && availableHeight >= maxOf(150 + EXTRA, minimumDayHeight + 38)
+        val showDate = options["showDate"] != false &&
+            availableHeight >= maxOf(150 + EXTRA + HEADER, minimumDayHeight + 38 + HEADER)
         val upcomingCount = if (availableHeight in 1f..69f && (showCountdown || largerText)) 2 else 3
         // Leave room for both calendar lines and the next prayer's extra line
         // before enlarging the whole timetable on a wide launcher grid.
         val baseHeight = when {
-            largerText && showDate -> 185f + EXTRA
-            showDate -> 165f + EXTRA
+            largerText && showDate -> 185f + EXTRA + HEADER
+            showDate -> 165f + EXTRA + HEADER
             else -> 150f + EXTRA
         } + if (showCountdown) COUNTDOWN - 14 else 0
         val scale = WidgetScale.of(width, height, 140f, baseHeight)
         val views = scheduleViews(context, model, now, upcoming, upcomingCount, showDate, options, scale)
         HomeWidgets.applyBackground(context, views, R.id.schedule_root)
         // The room around the rows grows with the widget, as the text does.
-        WidgetScale.padding(context, views, R.id.schedule_body, 12f, if (showDate) 10f else 4f, scale)
+        WidgetScale.padding(context, views, R.id.schedule_body, 12f, if (showDate) 12f else 4f, scale)
         WidgetScale.text(views, R.id.schedule_date, 11f, scale)
         WidgetScale.text(views, R.id.schedule_hijri, 10f, scale)
         val rowSize = when {
@@ -319,13 +381,14 @@ internal object PrayerWidgetRenderer {
         if (model == null || day == null) {
             views.setTextViewText(R.id.schedule_date, context.getString(R.string.prayer_widget_name))
             views.setTextViewText(R.id.schedule_hijri, model?.labels?.empty ?: context.getString(R.string.prayer_widget_empty))
-            views.setViewVisibility(R.id.schedule_date, View.VISIBLE)
-            views.setViewVisibility(R.id.schedule_hijri, View.VISIBLE)
+            views.setViewVisibility(R.id.schedule_header, View.VISIBLE)
+            // Nothing under the message to set it apart from.
+            views.setViewVisibility(R.id.schedule_divider, View.GONE)
             rowIds.forEach { views.setViewVisibility(it, View.GONE) }
         } else {
             val next = model.nextAfter(now)
-            views.setViewVisibility(R.id.schedule_date, if (showDate) View.VISIBLE else View.GONE)
-            views.setViewVisibility(R.id.schedule_hijri, if (showDate) View.VISIBLE else View.GONE)
+            views.setViewVisibility(R.id.schedule_header, if (showDate) View.VISIBLE else View.GONE)
+            views.setViewVisibility(R.id.schedule_divider, View.VISIBLE)
             if (showDate) {
                 views.setTextViewText(R.id.schedule_date, day.dateLabel)
                 views.setTextViewText(R.id.schedule_hijri, day.hijriLabel)
@@ -358,7 +421,7 @@ internal object PrayerWidgetRenderer {
                 // draws a band, a little more: all of it grows with the widget, as
                 // the text does.
                 val density = context.resources.displayMetrics.density
-                val side = (10 * scale * density).roundToInt()
+                val side = (ROW_SIDE * scale * density).roundToInt()
                 val vertical = ((if (coming) 3 else 1) * scale * density).roundToInt()
                 views.setViewPadding(rowId, side, vertical, side, vertical)
             }

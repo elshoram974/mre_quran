@@ -6,6 +6,7 @@ import 'package:timezone/data/latest.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
 
 import '../diagnostics/app_logger.dart';
+import 'reminder_payload.dart';
 
 /// Where a notification is grouped in the system settings. Each channel has its
 /// own sound and importance, which the person can change there.
@@ -26,6 +27,19 @@ enum ReminderChannel {
 
   /// Channel id on Android.
   final String id;
+
+  /// What the settings button of a notification of this channel opens: the
+  /// prayer times, where the prayers' alerts are chosen, or the reminders.
+  String get settings => switch (this) {
+    prayer || prayerSoon => ReminderPayload.prayerSettings,
+    adhkar || fasting => ReminderPayload.remindersSettings,
+  };
+
+  /// The iOS category of its notifications, which carries that button.
+  String get iosCategory => switch (this) {
+    prayer || prayerSoon => 'prayer',
+    adhkar || fasting => 'reminders',
+  };
 }
 
 /// Schedules local notifications on the device.
@@ -50,7 +64,9 @@ abstract interface class ReminderScheduler {
 
   /// Fires a notification every day at [minutes] after midnight, local time;
   /// with [weekday] (1 Monday to 7 Sunday, as `DateTime.weekday`), once a week
-  /// on that day. Replaces any reminder with the same [id].
+  /// on that day. Replaces any reminder with the same [id]. With
+  /// [settingsLabel], it has a button of that name that opens the reminders'
+  /// settings.
   Future<void> schedule({
     required int id,
     required int minutes,
@@ -59,6 +75,7 @@ abstract interface class ReminderScheduler {
     required String channelName,
     required String payload,
     int? weekday,
+    String? settingsLabel,
   });
 
   /// Shows a notification once, at the local time [at]. Replaces any reminder
@@ -70,6 +87,9 @@ abstract interface class ReminderScheduler {
   /// With [countdownTo], on Android, the notification counts down to that
   /// time to the second, stays until then and goes by itself, and has a
   /// button reading [dismissLabel] that takes it away at once.
+  ///
+  /// With [settingsLabel], it has a button of that name that opens the
+  /// settings of what it reminds of (see [ReminderChannel.settings]).
   Future<void> scheduleOnce({
     required int id,
     required DateTime at,
@@ -82,6 +102,7 @@ abstract interface class ReminderScheduler {
     String? iosSound,
     DateTime? countdownTo,
     String? dismissLabel,
+    String? settingsLabel,
   });
 
   /// Removes the reminder [id], if any.
@@ -103,8 +124,12 @@ class LocalReminderScheduler implements ReminderScheduler {
     this.launchPayload,
   );
 
-  /// Starts the plugin. Asks for no permission.
-  static Future<LocalReminderScheduler> create() async {
+  /// Starts the plugin. Asks for no permission. [settingsLabel] gives the
+  /// name of the notifications' settings button, which iOS takes once, at
+  /// start-up, in the app's language then.
+  static Future<LocalReminderScheduler> create({
+    Future<String?> Function()? settingsLabel,
+  }) async {
     final plugin = FlutterLocalNotificationsPlugin();
     String? pendingTap;
     late final StreamController<String> taps;
@@ -127,23 +152,43 @@ class LocalReminderScheduler implements ReminderScheduler {
     String? launchPayload;
     try {
       Future<String?> initialize() async {
+        final label = await settingsLabel?.call();
         await plugin.initialize(
-          settings: const InitializationSettings(
-            android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+          settings: InitializationSettings(
+            android: const AndroidInitializationSettings('@mipmap/ic_launcher'),
             iOS: DarwinInitializationSettings(
               requestAlertPermission: false,
               requestBadgePermission: false,
               requestSoundPermission: false,
+              notificationCategories: [
+                if (label != null)
+                  // One category for each place a settings button opens.
+                  for (final MapEntry(key: category, value: settings) in {
+                    for (final channel in ReminderChannel.values)
+                      channel.iosCategory: channel.settings,
+                  }.entries)
+                    DarwinNotificationCategory(
+                      category,
+                      actions: [
+                        DarwinNotificationAction.plain(
+                          settings,
+                          label,
+                          options: {DarwinNotificationActionOption.foreground},
+                        ),
+                      ],
+                    ),
+              ],
             ),
           ),
           onDidReceiveNotificationResponse: (response) {
-            final payload = response.payload;
+            final payload = _payloadOf(response);
             if (payload != null && payload.isNotEmpty) deliver(payload);
           },
         );
         final launch = await plugin.getNotificationAppLaunchDetails();
         if (launch != null && launch.didNotificationLaunchApp) {
-          final payload = launch.notificationResponse?.payload;
+          final response = launch.notificationResponse;
+          final payload = response == null ? null : _payloadOf(response);
           if (opened && payload != null) deliver(payload);
           return payload;
         }
@@ -162,6 +207,25 @@ class LocalReminderScheduler implements ReminderScheduler {
     }
     return LocalReminderScheduler._(plugin, taps, launchPayload);
   }
+
+  /// What a tap opens: the settings, for the settings button; else what
+  /// the notification points at.
+  static String? _payloadOf(NotificationResponse response) {
+    final action = response.actionId;
+    return action != null && ReminderPayload.isSettings(action)
+        ? action
+        : response.payload;
+  }
+
+  /// The settings button of a notification of [channel], named [label].
+  static AndroidNotificationAction _settingsButton(
+    ReminderChannel channel,
+    String label,
+  ) => AndroidNotificationAction(
+    channel.settings,
+    label,
+    showsUserInterface: true,
+  );
 
   final FlutterLocalNotificationsPlugin _plugin;
   final StreamController<String> _tapController;
@@ -203,6 +267,7 @@ class LocalReminderScheduler implements ReminderScheduler {
     required String channelName,
     required String payload,
     int? weekday,
+    String? settingsLabel,
   }) async {
     await _ensureZone();
     final now = tz.TZDateTime.now(tz.local);
@@ -230,8 +295,15 @@ class LocalReminderScheduler implements ReminderScheduler {
         android: AndroidNotificationDetails(
           ReminderChannel.adhkar.id,
           channelName,
+          actions: settingsLabel == null
+              ? null
+              : [_settingsButton(ReminderChannel.adhkar, settingsLabel)],
         ),
-        iOS: const DarwinNotificationDetails(),
+        iOS: DarwinNotificationDetails(
+          categoryIdentifier: settingsLabel == null
+              ? null
+              : ReminderChannel.adhkar.iosCategory,
+        ),
       ),
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       matchDateTimeComponents: weekday == null
@@ -284,6 +356,7 @@ class LocalReminderScheduler implements ReminderScheduler {
     String? iosSound,
     DateTime? countdownTo,
     String? dismissLabel,
+    String? settingsLabel,
   }) async {
     await _ensureZone();
     final urgent = channel == ReminderChannel.prayer;
@@ -314,19 +387,22 @@ class LocalReminderScheduler implements ReminderScheduler {
           timeoutAfter: countdown
               ? countdownTo.difference(at).inMilliseconds
               : null,
-          actions: countdown && dismissLabel != null
-              ? [
-                  AndroidNotificationAction(
-                    _dismissAction,
-                    dismissLabel,
-                    cancelNotification: true,
-                  ),
-                ]
-              : null,
+          actions: [
+            if (countdown && dismissLabel != null)
+              AndroidNotificationAction(
+                _dismissAction,
+                dismissLabel,
+                cancelNotification: true,
+              ),
+            if (settingsLabel != null) _settingsButton(channel, settingsLabel),
+          ],
         ),
         iOS: DarwinNotificationDetails(
           sound: iosSound,
           interruptionLevel: prayer ? InterruptionLevel.timeSensitive : null,
+          categoryIdentifier: settingsLabel == null
+              ? null
+              : channel.iosCategory,
         ),
       ),
       androidScheduleMode: exact && await canScheduleExact()

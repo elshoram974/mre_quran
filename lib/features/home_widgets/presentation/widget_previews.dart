@@ -154,11 +154,12 @@ class _Schedule extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+    // The widget's own room: 12 at the sides, 12 above and below.
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
     child: Column(
       children: [
         Padding(
-          padding: const EdgeInsetsDirectional.fromSTEB(10, 0, 10, 4),
+          padding: const EdgeInsetsDirectional.fromSTEB(10, 0, 10, 6),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -169,7 +170,15 @@ class _Schedule extends StatelessWidget {
                   _style(11, WidgetPalette.text, bold: true),
                 ),
               ),
+              const SizedBox(height: 3),
               _Line(data.hijri, _style(10, WidgetPalette.accent)),
+              // The hairline that sets the header apart from the times.
+              const SizedBox(height: 8),
+              const SizedBox(
+                height: 1,
+                width: double.infinity,
+                child: ColoredBox(color: WidgetPalette.divider),
+              ),
             ],
           ),
         ),

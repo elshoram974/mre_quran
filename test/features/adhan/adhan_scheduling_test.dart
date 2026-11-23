@@ -160,6 +160,11 @@ void main() {
     await h.turnAllOn();
     expect(h.platform.alarms, isEmpty);
     expect(_atTimeNotifications(h), hasLength(_atTimeWithin));
+    // Every notification has a button to its settings.
+    expect(
+      h.scheduler.once.values.every((n) => n.settingsLabel == 'الإعدادات'),
+      isTrue,
+    );
   });
 
   test(
@@ -280,6 +285,8 @@ void main() {
     // has a button to take it away.
     expect(first.countdownTo, fajr.at);
     expect(first.dismissLabel, 'إزالة');
+    // And a button to the alerts' settings.
+    expect(first.settingsLabel, 'الإعدادات');
     expect(first.body, startsWith('الأذان الساعة '));
 
     final notifier = h.container.read(prayerProvider.notifier);
@@ -344,6 +351,8 @@ void main() {
       final config = h.platform.config!;
       expect(config.announce, isFalse);
       expect(config.duaAfter, isTrue);
+      // The adhan's notice has a button to its settings.
+      expect(config.settingsLabel, 'الإعدادات');
       expect(config.fajrVoicePath, endsWith('fajr_voice.audio'));
       expect(config.voicePath, isNull, reason: 'bundled voice');
     },

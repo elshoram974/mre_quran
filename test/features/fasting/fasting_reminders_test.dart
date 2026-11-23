@@ -7,34 +7,24 @@ import 'package:mre_quran/core/notifications/reminder_scheduler_provider.dart';
 import 'package:mre_quran/core/time/ticking_clock.dart';
 import 'package:mre_quran/features/adhkar/application/reminders_provider.dart';
 import 'package:mre_quran/features/fasting/application/fasting_reminders_provider.dart';
-import 'package:mre_quran/features/fasting/data/fasting_repository.dart';
 import 'package:mre_quran/features/fasting/domain/sunnah_fasts.dart';
 import 'package:mre_quran/features/settings/application/settings_provider.dart';
 
 import '../../helpers/adhkar_fixtures.dart';
+import '../../helpers/memory_fasting_repository.dart';
 import '../../helpers/memory_settings_repository.dart';
-
-class _MemoryFastingRepository implements FastingRepository {
-  FastingSettings settings = const FastingSettings();
-
-  @override
-  Future<FastingSettings> load() async => settings;
-
-  @override
-  Future<void> save(FastingSettings value) async => settings = value;
-}
 
 void main() {
   // Sunday 3 January 2027, ten in the morning.
   final now = DateTime(2027, 1, 3, 10);
 
   late FakeReminderScheduler scheduler;
-  late _MemoryFastingRepository repository;
+  late MemoryFastingRepository repository;
   late ProviderContainer container;
 
   setUp(() {
     scheduler = FakeReminderScheduler();
-    repository = _MemoryFastingRepository();
+    repository = MemoryFastingRepository();
     container = ProviderContainer(
       overrides: [
         reminderSchedulerProvider.overrideWithValue(scheduler),
@@ -69,6 +59,7 @@ void main() {
     final first = scheduler.once[expected.first.id]!;
     expect(first.at, DateTime(2027, 1, 3, 21));
     expect(first.title, 'صيام سنة غدًا');
+    expect(first.settingsLabel, 'الإعدادات');
     expect(first.body, contains('غدًا الاثنين'));
     expect(first.channel, ReminderChannel.fasting);
     expect(first.payload, ReminderPayload.prayerTimes);
@@ -132,6 +123,7 @@ void main() {
       exact: false,
       countdownTo: null,
       dismissLabel: null,
+      settingsLabel: null,
     );
     await settled();
     await container

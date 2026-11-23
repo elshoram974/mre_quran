@@ -262,6 +262,7 @@ void main() {
         expect(scheduled.minutes, 540);
         expect(scheduled.title, 'سورة الكهف');
         expect(scheduled.payload, ReminderPayload.forSurah(18));
+        expect(scheduled.settingsLabel, isNotNull);
         expect(repository.saved['friday_kahf']!.enabled, isTrue);
       },
     );

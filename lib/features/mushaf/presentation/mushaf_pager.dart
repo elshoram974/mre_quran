@@ -164,17 +164,24 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
     if (shown) ref.read(printedFallbackProvider.notifier).offline();
   }
 
-  /// Says why the Mushaf changed how it shows, when it changed by itself,
-  /// while the reader is the tab on screen.
+  /// Says why the Mushaf changed how it shows, while the reader is the tab
+  /// on screen: each case in its own words, so the reason is never wrong.
   void _announce(PrintedFallbackEvent? event) {
     if (event == null || !TickerMode.valuesOf(context).enabled) return;
     final l10n = context.l10n;
+    final reading = ref
+        .read(printedEditionProvider)
+        .name(Localizations.localeOf(context).languageCode);
     ScaffoldMessenger.maybeOf(context)
       ?..hideCurrentSnackBar()
       ..showSnackBar(
         AppSnackBar(switch (event.change) {
           PrintedFallbackChange.toText => l10n.printedSwitchedToText,
+          PrintedFallbackChange.toTextChosen => l10n.printedTextInstead(
+            reading,
+          ),
           PrintedFallbackChange.toPrinted => l10n.printedBackOnline,
+          PrintedFallbackChange.toPrintedSaved => l10n.printedBackSaved,
         }),
       );
   }
@@ -393,6 +400,13 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
             onAyahLongPress: hasText ? _actionsOf(edition) : null,
             onAyahTap: tapOf(edition),
             onTap: _onTap,
+            // Its page cannot be had: the app's own text (Hafs) may be read
+            // in its place, if the person asks.
+            onReadText: widget.text == null
+                ? null
+                : (offline) => ref
+                      .read(printedFallbackProvider.notifier)
+                      .readTextInstead(offline: offline),
           ),
           ReaderMode.printed => SvgPageView(
             metadata: widget.metadata,

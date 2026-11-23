@@ -129,6 +129,7 @@ class RemindersNotifier extends AsyncNotifier<Map<String, ReminderSetting>> {
         body: l10n.adhkarReminderBody,
         channelName: l10n.adhkarReminderChannel,
         payload: ReminderPayload.forCollection(collection.id),
+        settingsLabel: l10n.notificationSettings,
       );
     } on Object catch (error) {
       AppLogger.debug('Reminder schedule failed: ${error.runtimeType}');

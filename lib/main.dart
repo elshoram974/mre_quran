@@ -25,6 +25,7 @@ import 'features/startup/application/startup_providers.dart';
 import 'features/startup/data/startup_trace.dart';
 import 'features/startup/data/last_tab_repository.dart';
 import 'core/notifications/reminder_scheduler_provider.dart';
+import 'l10n/generated/app_localizations.dart';
 
 /// Each launch's steps, kept natively, so one that stays on the launch
 /// screen can be reported by the next.
@@ -66,6 +67,10 @@ Future<void> _start() async {
   // for the slowest item, not the sum of all of them.
   // Shader warm-up has no bearing on whether the destination can open.
   unawaited(_optionalStartup('glass', LiquidGlassWidgets.initialize));
+  final loadSettings = _optionalStartup(
+    'settings',
+    LocalSettingsRepository(preferences).load,
+  );
   final (firebase, storedSettings, lastTab, reminderScheduler) = await (
     _optionalStartup(
       'Firebase',
@@ -73,9 +78,14 @@ Future<void> _start() async {
         options: DefaultFirebaseOptions.currentPlatform,
       ),
     ),
-    _optionalStartup('settings', LocalSettingsRepository(preferences).load),
+    loadSettings,
     _optionalStartup('last tab', LocalLastTabRepository(preferences).load),
-    LocalReminderScheduler.create(),
+    LocalReminderScheduler.create(
+      // iOS names the notifications' settings button once, at start-up.
+      settingsLabel: () async => lookupAppLocalizations(
+        Locale((await loadSettings)?.localeCode ?? 'ar'),
+      ).notificationSettings,
+    ),
   ).wait;
   _trace.mark('dart:services');
   final settings = storedSettings ?? const AppSettings();

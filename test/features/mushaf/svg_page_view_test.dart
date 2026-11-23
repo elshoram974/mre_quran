@@ -48,6 +48,7 @@ void main() {
     bool fillWidth = false,
     VoidCallback? onPinchOut,
     VoidCallback? onOffline,
+    ValueChanged<bool>? onReadText,
   }) async {
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
@@ -76,6 +77,7 @@ void main() {
               fillWidth: fillWidth,
               onPinchOut: onPinchOut,
               onOffline: onOffline,
+              onReadText: onReadText,
             ),
           ),
         ),
@@ -315,7 +317,7 @@ void main() {
     );
     expect(find.text('typeset page'), findsOneWidget);
     expect(
-      find.text('صفحة المصحف المطبوع غير متاحة الآن، فيُعرض النص.'),
+      find.text('تعذّر تحميل الصفحة المطبوعة، فيُعرض نصها.'),
       findsOneWidget,
     );
     offline = false;
@@ -375,6 +377,11 @@ void main() {
     await tester.pump(const Duration(seconds: 3));
     await tester.pump(const Duration(milliseconds: 300));
     expect(find.text('typeset page'), findsOneWidget);
+    // It says the page is only slow, not that it failed.
+    expect(
+      find.text('الصفحة المطبوعة تتأخر، فيُعرض نصها حتى تصل.'),
+      findsOneWidget,
+    );
     await tester.pump(const Duration(minutes: 5));
   });
 
@@ -528,6 +535,50 @@ void main() {
     // It says what is saved, and the button says what to do.
     expect(find.textContaining('الصفحات التي فتحتها من قبل'), findsOneWidget);
     expect(find.text('نزّل الرواية كلها'), findsOneWidget);
+  });
+
+  testWidgets('a page with no text to stand in offers the app\'s text, and '
+      'says whether it failed offline', (tester) async {
+    final asked = <bool>[];
+    await pump(
+      tester,
+      load: (_) async => throw const SocketException('offline'),
+      onReadText: asked.add,
+    );
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.tap(find.text('اقرأ النص المكتوب (رواية حفص)'));
+    await tester.pump();
+    expect(asked, [true]);
+
+    await pump(
+      tester,
+      page: 4,
+      load: (page) async => throw PageDownloadException(
+        Uri.parse('https://example.test/004.svg'),
+        'HTTP 404',
+      ),
+      onReadText: asked.add,
+    );
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(find.textContaining('من الخادم'), findsOneWidget);
+    await tester.tap(find.text('اقرأ النص المكتوب (رواية حفص)'));
+    await tester.pump();
+    expect(asked, [true, false]);
+  });
+
+  testWidgets('the failed page fits a short, large-text screen', (
+    tester,
+  ) async {
+    await pump(
+      tester,
+      size: const Size(320, 480),
+      load: (_) async => throw const SocketException('offline'),
+      onReadText: (_) {},
+    );
+    tester.platformDispatcher.textScaleFactorTestValue = 2;
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('the store\'s own "could not reach the server" reads as '

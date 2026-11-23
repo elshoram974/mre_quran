@@ -154,6 +154,68 @@ void main() {
     await fallback().retry(1);
     expect(current().readerMode, ReaderMode.printed);
     expect(server.requests, isEmpty);
+    // Said for what it is: the pages are on the phone; the internet is not
+    // back.
+    expect(lastChange(), PrintedFallbackChange.toPrintedSaved);
+  });
+
+  test(
+    'a download that finished while the app was closed is unpacked, '
+    'and the printed Mushaf is back saying the pages are on the phone',
+    () async {
+      await fallback().offline();
+      server.offline = true;
+      for (final kind in ['svg', 'json']) {
+        File('${root.path}/mushaf/svg/hafs-kfqc/pack/hafs-kfqc-$kind.zip')
+          ..createSync(recursive: true)
+          ..writeAsBytesSync(fixtureArchive(kind));
+      }
+      await fallback().retry(2);
+      expect(current().readerMode, ReaderMode.printed);
+      expect(server.requests, isEmpty);
+      expect(lastChange(), PrintedFallbackChange.toPrintedSaved);
+    },
+  );
+
+  test('once a page of a Mushaf not all on the phone downloads, it says the '
+      'internet is back', () async {
+    await fallback().offline();
+    await fallback().retry(2);
+    expect(lastChange(), PrintedFallbackChange.toPrinted);
+  });
+
+  group('another reading, whose text is not the app\'s', () {
+    setUp(() async {
+      container.dispose();
+      container = make(
+        AppSettings(
+          readerMode: ReaderMode.printed,
+          mushafEdition: MushafEditions.all.firstWhere(
+            (edition) => !edition.matchesAppText,
+          ),
+        ),
+      );
+      await container.read(settingsProvider.future);
+    });
+
+    test('offline, the person may read the text in its place; the printed '
+        'reading comes back with the internet', () async {
+      await fallback().readTextInstead(offline: true);
+      expect(current().readerMode, ReaderMode.text);
+      expect(current().textUntilOnline, isTrue);
+      expect(lastChange(), PrintedFallbackChange.toTextChosen);
+      await fallback().retry(1);
+      expect(current().readerMode, ReaderMode.printed);
+      expect(lastChange(), PrintedFallbackChange.toPrinted);
+    });
+
+    test('when the server failed, the text is the person\'s choice and '
+        'stays', () async {
+      await fallback().readTextInstead(offline: false);
+      expect(current().readerMode, ReaderMode.text);
+      expect(current().textUntilOnline, isFalse);
+      expect(lastChange(), isNull);
+    });
   });
 
   test('it keeps trying by itself while the text stands in', () async {

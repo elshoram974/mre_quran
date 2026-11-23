@@ -44,14 +44,20 @@ class WidgetPreviewCapture : Activity() {
         // Optional size helps check narrow and expanded launcher widgets.
         val scheduleWidth = intent.getIntExtra("scheduleWidthDp", 0)
         val scheduleHeight = intent.getIntExtra("scheduleHeightDp", 0)
+        val cardWidth = intent.getIntExtra("cardWidthDp", 0)
+        val cardHeight = intent.getIntExtra("cardHeightDp", 0)
         for (language in listOf("en", "ar")) for (shot in shots) {
-            val preview = if (shot.layout == R.layout.prayer_schedule_widget) {
-                shot.copy(
-                    layout = shot.layout,
+            val preview = when (shot.layout) {
+                R.layout.prayer_schedule_widget -> shot.copy(
                     widthDp = if (scheduleWidth > 0) scheduleWidth else shot.widthDp,
                     heightDp = if (scheduleHeight > 0) scheduleHeight else shot.heightDp,
                 )
-            } else shot
+                R.layout.prayer_card_widget -> shot.copy(
+                    widthDp = if (cardWidth > 0) cardWidth else shot.widthDp,
+                    heightDp = if (cardHeight > 0) cardHeight else shot.heightDp,
+                )
+                else -> shot
+            }
             jobs.add(language to preview)
         }
         next(jobs)
@@ -77,7 +83,9 @@ class WidgetPreviewCapture : Activity() {
         stage.removeAllViews()
         val liveSchedule = shot.layout == R.layout.prayer_schedule_widget &&
             intent.getBooleanExtra("scheduleLive", false)
-        val views = if (liveSchedule) {
+        val liveCard = shot.layout == R.layout.prayer_card_widget &&
+            intent.getBooleanExtra("cardLive", false)
+        val views = if (liveSchedule || liveCard) {
             val sampleTime = java.util.Calendar.getInstance().apply {
                 set(java.util.Calendar.HOUR_OF_DAY, 11)
                 set(java.util.Calendar.MINUTE, 20)
@@ -110,7 +118,8 @@ class WidgetPreviewCapture : Activity() {
                 "showCountdown" to !intent.getBooleanExtra("scheduleHideCountdown", false),
                 "largeText" to intent.getBooleanExtra("scheduleLargeText", false),
             )
-            PrayerWidgetRenderer.scheduleWidgetViews(context, model, now, shot.widthDp, shot.heightDp, options)
+            if (liveCard) PrayerWidgetRenderer.cardWidgetViews(context, model, now, shot.widthDp, shot.heightDp)
+            else PrayerWidgetRenderer.scheduleWidgetViews(context, model, now, shot.widthDp, shot.heightDp, options)
         } else RemoteViews(packageName, shot.layout)
         val view = views.apply(context, stage)
         view.layoutDirection = if (language == "ar") View.LAYOUT_DIRECTION_RTL else View.LAYOUT_DIRECTION_LTR
