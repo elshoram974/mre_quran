@@ -633,3 +633,31 @@
   each opening it (`PrintedFallback.openReading`); when none has it, the nearest page this reading has. Turned to
   text offline (Hafs), the message names a reading that has the page and its short *Show it* opens it.
 
+
+## D-061: The person can move the times, set summer time and height, and move the Hijri date
+
+- **Decision:** A page of its own, *Adjust the times* (`PrayerTuningPage`, reached from the prayer times page), holds
+  four choices, all kept with the prayer settings (`PrayerSettings`) and all applied in one place, `PrayerDay.compute`
+  (through `PrayerTuning`), so the page, the alerts, the adhan, the reminders and the home-screen widgets show the
+  same times.
+  - **Minutes for each prayer**, up to 30 either way, one step at a time. They are the `adhan` library's own
+    per-prayer adjustments, so a prayer moved by 3 minutes alerts and plays the adhan 3 minutes later. Sunrise is not a
+    prayer and is not moved by hand.
+  - **Summer time:** *follow the phone* (default), *summer* or *winter*. The times are on the phone's clock, which
+    follows its own time zone, and the app has no map of time zones, so it cannot tell by itself when that clock is
+    wrong for the place. The person says so; the page also says which the phone is on now. *Summer* adds an hour only
+    when the phone is not on summer time already, and *winter* takes it off only when it is, so a right clock is never
+    moved twice.
+  - **Height above sea level:** the phone's GPS height when the place came from the device (kept with the place,
+    read at no cost and with no new permission), or one the person types (0 to 9000 m). A typed height is dropped when
+    the place moves more than a kilometre, but not for the few metres a GPS fix wanders. The height lowers the
+    horizon, which brings sunrise earlier and sunset (and so Maghrib) later by `0.0347° × √metres`, the PrayTimes
+    calculator's correction; Fajr, Dhuhr, Asr and Isha do not depend on the horizon and are not moved. The page says what
+    it does to the day. No outside elevation service is used: it would send the person's coordinates to a third party.
+  - **Hijri date:** moved by one or two days (`PrayerSettings.hijriShift`, `HijriDate.of(shift:)`), because the
+    Umm al-Qura tables can differ from the moon sighting where the person is. It changes the date shown (widgets
+    too) and the sunnah fasts' reminders (D-057), which are planned again when it changes. It is one setting for the
+    whole app, not for the prayers only. It is the Hijri date that moves: the Gregorian one has nothing to correct.
+- **Not done:** an automatic check of the phone's summer time against the place, for want of a time-zone map;
+  the iqama and the sounds of the reminder before a prayer, which wait for recordings whose source and licence are
+  recorded (see `docs/AUDIO_SOURCES.md`).

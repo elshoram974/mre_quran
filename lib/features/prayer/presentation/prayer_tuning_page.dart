@@ -5,6 +5,7 @@ import 'package:mre_fields/mre_fields.dart';
 
 import '../../../core/l10n/l10n.dart';
 import '../../../core/layout/adaptive_layout.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/time/ticking_clock.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_group_card.dart';
@@ -168,23 +169,42 @@ class _OffsetRow extends StatelessWidget {
       ),
       _ => l10n.prayerTuningLater(l10n.minutesCount(minutes, digits(minutes))),
     };
+    final stacked =
+        MediaQuery.textScalerOf(context).scale(1) >= AppTokens.stackTextScale;
+    final icon = Icon(prayerIcon(prayer), color: theme.colorScheme.primary);
+    final name = Text(
+      prayerName(l10n, prayer),
+      style: theme.textTheme.titleMedium,
+    );
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(16, 8, 16, 8),
       child: Column(
         children: [
-          Row(
-            children: [
-              Icon(prayerIcon(prayer), color: theme.colorScheme.primary),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  prayerName(l10n, prayer),
-                  style: theme.textTheme.titleMedium,
-                ),
+          // With large text the time goes under the name, so neither is
+          // squeezed.
+          if (stacked) ...[
+            Row(
+              children: [
+                icon,
+                const SizedBox(width: 12),
+                Expanded(child: name),
+              ],
+            ),
+            if (time != null)
+              Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: Text(time!, style: theme.textTheme.titleMedium),
               ),
-              if (time != null) Text(time!, style: theme.textTheme.titleMedium),
-            ],
-          ),
+          ] else
+            Row(
+              children: [
+                icon,
+                const SizedBox(width: 12),
+                Expanded(child: name),
+                if (time != null)
+                  Text(time!, style: theme.textTheme.titleMedium),
+              ],
+            ),
           const SizedBox(height: 4),
           AppStepper(
             label: label,
