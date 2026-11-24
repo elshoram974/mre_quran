@@ -2165,4 +2165,138 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get customReminderChannel => 'تذكيراتي';
+
+  @override
+  String get myRemindersTitle => 'تذكيراتي';
+
+  @override
+  String get myRemindersHint =>
+      'تذكيرات تكتبها بنفسك: يومية أو أسبوعية أو شهرية، بوقت واحد أو أكثر.';
+
+  @override
+  String get myRemindersEmpty =>
+      'لم تضف تذكيرًا بعد. أضف أول تذكير: دواء، أو ورد، أو موعد، أو صلة رحم.';
+
+  @override
+  String get reminderAdd => 'إضافة تذكير';
+
+  @override
+  String reminderLimit(String count) {
+    return 'وصلت إلى الحد الأقصى ($count تذكيرًا). احذف تذكيرًا لتضيف غيره.';
+  }
+
+  @override
+  String get remindersAdhkarSection => 'الأذكار اليومية';
+
+  @override
+  String get reminderEveryDay => 'كل يوم';
+
+  @override
+  String reminderWeeklyOn(String days) {
+    return 'كل $days';
+  }
+
+  @override
+  String reminderMonthlyOn(String day) {
+    return 'يوم $day من كل شهر';
+  }
+
+  @override
+  String reminderSummary(String when, String times) {
+    return '$when · $times';
+  }
+
+  @override
+  String get reminderNewTitle => 'تذكير جديد';
+
+  @override
+  String get reminderEditTitle => 'تعديل التذكير';
+
+  @override
+  String get reminderTitleField => 'عنوان التذكير';
+
+  @override
+  String get reminderTitleHint => 'مثال: الدواء، ورد القرآن، صلة الرحم';
+
+  @override
+  String get reminderNoteField => 'ما يظهر تحت العنوان (اختياري)';
+
+  @override
+  String get reminderRepeatLabel => 'كم مرة يتكرر؟';
+
+  @override
+  String get reminderRepeatDaily => 'يوميًا';
+
+  @override
+  String get reminderRepeatWeekly => 'أسبوعيًا';
+
+  @override
+  String get reminderRepeatMonthly => 'شهريًا';
+
+  @override
+  String get reminderDaysLabel => 'في أي الأيام؟';
+
+  @override
+  String get reminderMonthDayLabel => 'في أي يوم من الشهر؟';
+
+  @override
+  String reminderMonthDayHint(String max) {
+    return 'الأيام حتى $max فقط، لأن كل الشهور فيها هذه الأيام.';
+  }
+
+  @override
+  String get reminderTimesLabel => 'في أي وقت؟';
+
+  @override
+  String get reminderTimesHint => 'يمكنك إضافة أكثر من وقت في اليوم الواحد.';
+
+  @override
+  String get reminderAddTime => 'إضافة وقت';
+
+  @override
+  String get reminderRemoveTime => 'حذف هذا الوقت';
+
+  @override
+  String reminderTimesLimit(String count) {
+    return 'الحد الأقصى $count أوقات في اليوم.';
+  }
+
+  @override
+  String reminderFirstAt(String when) {
+    return 'أول تذكير: $when';
+  }
+
+  @override
+  String get reminderSave => 'حفظ التذكير';
+
+  @override
+  String get reminderDelete => 'حذف التذكير';
+
+  @override
+  String reminderDeleteConfirm(String title) {
+    return 'تحذف تذكير «$title»؟';
+  }
+
+  @override
+  String get reminderDeleteYes => 'نعم، احذفه';
+
+  @override
+  String get reminderProblemTitle => 'اكتب عنوانًا للتذكير.';
+
+  @override
+  String get reminderProblemTime => 'أضف وقتًا واحدًا على الأقل.';
+
+  @override
+  String get reminderProblemDay => 'اختر يومًا واحدًا على الأقل.';
+
+  @override
+  String reminderProblemMoments(String count) {
+    return 'أوقات كثيرة في أيام كثيرة. قلّل منها (الحد $count مرة في الأسبوع أو الشهر).';
+  }
+
+  @override
+  String get reminderOff => 'متوقف';
+
+  @override
+  String get reminderKeep => 'لا، أبقِه';
 }

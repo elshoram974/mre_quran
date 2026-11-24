@@ -20,6 +20,9 @@ import 'package:mre_quran/features/adhkar/presentation/duas_page.dart';
 import 'package:mre_quran/features/fasting/application/fasting_reminders_provider.dart';
 import 'package:mre_quran/features/fasting/domain/sunnah_fasts.dart';
 import 'package:mre_quran/features/prayer/application/prayer_provider.dart';
+import 'package:mre_quran/features/reminders/application/custom_reminders_provider.dart';
+import 'package:mre_quran/features/reminders/presentation/reminder_editor_page.dart';
+import 'package:mre_quran/features/reminders/presentation/reminders_page.dart';
 import 'package:mre_quran/features/prayer/domain/prayer_times.dart';
 import 'package:mre_quran/features/quran_index/application/quran_metadata_provider.dart';
 import 'package:mre_quran/features/quran_text/application/quran_text_providers.dart';
@@ -29,6 +32,7 @@ import 'package:mre_quran/l10n/generated/app_localizations.dart';
 import 'adhkar_fixtures.dart';
 import 'fake_quran_metadata_source.dart';
 import 'fake_quran_text_source.dart';
+import 'memory_custom_reminders_repository.dart';
 import 'memory_fasting_repository.dart';
 import 'memory_settings_repository.dart';
 
@@ -46,6 +50,7 @@ Future<FakeReminderScheduler> pumpAdhkarApp(
   double adhkarFontScale = 1,
   List<WeeklyReminder>? weeklyReminders,
   MemoryFastingRepository? fasting,
+  MemoryCustomRemindersRepository? customReminders,
 }) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
@@ -74,6 +79,18 @@ Future<FakeReminderScheduler> pumpAdhkarApp(
         path: AppRoute.adhkarSearch.path,
         builder: (_, _) => const AdhkarSearchPage(),
       ),
+      GoRoute(
+        path: AppRoute.reminders.path,
+        builder: (_, _) => const RemindersPage(),
+      ),
+      GoRoute(
+        path: AppRoute.reminderEdit.path,
+        builder: (_, state) => ReminderEditorPage(
+          reminderId: state.pathParameters['id'] == 'new'
+              ? null
+              : state.pathParameters['id'],
+        ),
+      ),
     ],
   );
   addTearDown(router.dispose);
@@ -86,6 +103,9 @@ Future<FakeReminderScheduler> pumpAdhkarApp(
         ),
         remindersRepositoryProvider.overrideWithValue(
           MemoryRemindersRepository(),
+        ),
+        customRemindersRepositoryProvider.overrideWithValue(
+          customReminders ?? MemoryCustomRemindersRepository(),
         ),
         weeklyRemindersRepositoryProvider.overrideWithValue(
           MemoryRemindersRepository(),

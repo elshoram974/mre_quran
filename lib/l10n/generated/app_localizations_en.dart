@@ -2180,4 +2180,139 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get customReminderChannel => 'My reminders';
+
+  @override
+  String get myRemindersTitle => 'My reminders';
+
+  @override
+  String get myRemindersHint =>
+      'Reminders you write yourself: daily, weekly or monthly, at one time or more.';
+
+  @override
+  String get myRemindersEmpty =>
+      'You have not added a reminder yet. Add the first: a medicine, a daily reading, an appointment, a visit to family.';
+
+  @override
+  String get reminderAdd => 'Add a reminder';
+
+  @override
+  String reminderLimit(String count) {
+    return 'You have reached the limit ($count reminders). Delete one to add another.';
+  }
+
+  @override
+  String get remindersAdhkarSection => 'Daily adhkar';
+
+  @override
+  String get reminderEveryDay => 'Every day';
+
+  @override
+  String reminderWeeklyOn(String days) {
+    return 'Every $days';
+  }
+
+  @override
+  String reminderMonthlyOn(String day) {
+    return 'On day $day of every month';
+  }
+
+  @override
+  String reminderSummary(String when, String times) {
+    return '$when · $times';
+  }
+
+  @override
+  String get reminderNewTitle => 'New reminder';
+
+  @override
+  String get reminderEditTitle => 'Edit the reminder';
+
+  @override
+  String get reminderTitleField => 'Reminder title';
+
+  @override
+  String get reminderTitleHint =>
+      'For example: medicine, daily reading, visiting family';
+
+  @override
+  String get reminderNoteField => 'What shows under the title (optional)';
+
+  @override
+  String get reminderRepeatLabel => 'How often?';
+
+  @override
+  String get reminderRepeatDaily => 'Daily';
+
+  @override
+  String get reminderRepeatWeekly => 'Weekly';
+
+  @override
+  String get reminderRepeatMonthly => 'Monthly';
+
+  @override
+  String get reminderDaysLabel => 'On which days?';
+
+  @override
+  String get reminderMonthDayLabel => 'On which day of the month?';
+
+  @override
+  String reminderMonthDayHint(String max) {
+    return 'Only days up to $max, so that every month has them.';
+  }
+
+  @override
+  String get reminderTimesLabel => 'At what time?';
+
+  @override
+  String get reminderTimesHint => 'You can add more than one time in a day.';
+
+  @override
+  String get reminderAddTime => 'Add a time';
+
+  @override
+  String get reminderRemoveTime => 'Remove this time';
+
+  @override
+  String reminderTimesLimit(String count) {
+    return 'At most $count times a day.';
+  }
+
+  @override
+  String reminderFirstAt(String when) {
+    return 'First reminder: $when';
+  }
+
+  @override
+  String get reminderSave => 'Save the reminder';
+
+  @override
+  String get reminderDelete => 'Delete the reminder';
+
+  @override
+  String reminderDeleteConfirm(String title) {
+    return 'Delete the reminder “$title”?';
+  }
+
+  @override
+  String get reminderDeleteYes => 'Yes, delete it';
+
+  @override
+  String get reminderProblemTitle => 'Write a title for the reminder.';
+
+  @override
+  String get reminderProblemTime => 'Add at least one time.';
+
+  @override
+  String get reminderProblemDay => 'Choose at least one day.';
+
+  @override
+  String reminderProblemMoments(String count) {
+    return 'Too many times on too many days. Use fewer (at most $count a week or month).';
+  }
+
+  @override
+  String get reminderOff => 'Off';
+
+  @override
+  String get reminderKeep => 'No, keep it';
 }

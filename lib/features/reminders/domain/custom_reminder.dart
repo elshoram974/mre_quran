@@ -190,6 +190,45 @@ class CustomReminder {
     ],
   };
 
+  /// When it first comes after [now], or null when it has no moment yet.
+  DateTime? nextAfter(DateTime now) {
+    DateTime? first;
+    for (final slot in slots) {
+      final at = _next(slot, now);
+      if (first == null || at.isBefore(first)) first = at;
+    }
+    return first;
+  }
+
+  static DateTime _next(ReminderSlot slot, DateTime now) {
+    DateTime on(DateTime day) => DateTime(
+      day.year,
+      day.month,
+      day.day,
+      slot.minutes ~/ 60,
+      slot.minutes % 60,
+    );
+    final dayOfMonth = slot.dayOfMonth;
+    if (dayOfMonth != null) {
+      final thisMonth = on(DateTime(now.year, now.month, dayOfMonth));
+      return thisMonth.isAfter(now)
+          ? thisMonth
+          : on(DateTime(now.year, now.month + 1, dayOfMonth));
+    }
+    var day = DateTime(now.year, now.month, now.day);
+    // At most a week and a day: a daily one comes today or tomorrow, a weekly
+    // one on the next day that is its weekday.
+    for (var step = 0; step < 8; step++) {
+      final at = on(day);
+      if (at.isAfter(now) &&
+          (slot.weekday == null || at.weekday == slot.weekday)) {
+        return at;
+      }
+      day = DateTime(day.year, day.month, day.day + 1);
+    }
+    return on(day);
+  }
+
   /// A copy with the given changes.
   CustomReminder copyWith({
     String? title,

@@ -9,6 +9,7 @@ import 'package:mre_quran/app/router.dart';
 import 'package:mre_quran/core/l10n/l10n.dart';
 import 'package:mre_quran/core/notifications/reminder_payload.dart';
 import 'package:mre_quran/core/notifications/reminder_scheduler.dart';
+import 'package:mre_quran/features/reminders/presentation/reminders_page.dart';
 import 'package:mre_quran/l10n/generated/app_localizations.dart';
 import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
@@ -71,33 +72,39 @@ void main() {
             path: route.path,
             builder: (_, _) => Scaffold(body: Text(name)),
           ),
+        GoRoute(
+          path: AppRoute.reminders.path,
+          builder: (_, _) => const RemindersPage(),
+        ),
       ],
     );
 
-    testWidgets('of a reminder opens the reminders over the Settings tab', (
-      tester,
-    ) async {
-      SharedPreferencesAsyncPlatform.instance =
-          InMemorySharedPreferencesAsync.empty();
-      final routes = router();
-      addTearDown(routes.dispose);
-      await tester.pumpWidget(
-        ProviderScope(
-          child: MaterialApp.router(
-            routerConfig: routes,
-            locale: const Locale('ar'),
-            localizationsDelegates: appLocalizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
+    testWidgets(
+      'of a reminder opens the reminders page over the Settings tab',
+      (tester) async {
+        SharedPreferencesAsyncPlatform.instance =
+            InMemorySharedPreferencesAsync.empty();
+        final routes = router();
+        addTearDown(routes.dispose);
+        await tester.pumpWidget(
+          ProviderScope(
+            child: MaterialApp.router(
+              routerConfig: routes,
+              locale: const Locale('ar'),
+              localizationsDelegates: appLocalizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+            ),
           ),
-        ),
-      );
-      unawaited(openReminder(routes, ReminderPayload.remindersSettings));
-      await tester.pumpAndSettle();
-      expect(find.text('Settings tab'), findsOneWidget);
-      // The sheet's title, and its fasting section.
-      expect(find.text('التذكيرات'), findsOneWidget);
-      expect(find.text('صيام السنة'), findsOneWidget);
-    });
+        );
+        unawaited(openReminder(routes, ReminderPayload.remindersSettings));
+        await tester.pumpAndSettle();
+        // The Settings tab stays under the page.
+        expect(find.text('Settings tab', skipOffstage: false), findsOneWidget);
+        // The reminders page: its title, and the reminders made by the person.
+        expect(find.text('التذكيرات'), findsOneWidget);
+        expect(find.text('تذكيراتي'), findsOneWidget);
+      },
+    );
 
     testWidgets('of a prayer alert opens the prayer times', (tester) async {
       final routes = router();

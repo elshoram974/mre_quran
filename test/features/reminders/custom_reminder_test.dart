@@ -96,6 +96,66 @@ void main() {
     });
   });
 
+  group('when it first comes', () {
+    // Thursday 8 October 2026, ten in the morning.
+    final now = DateTime(2026, 10, 8, 10);
+
+    test('daily: today when a time is still ahead, else tomorrow', () {
+      expect(
+        _reminder(times: const [480, 1200]).nextAfter(now),
+        DateTime(2026, 10, 8, 20),
+      );
+      expect(
+        _reminder(times: const [480]).nextAfter(now),
+        DateTime(2026, 10, 9, 8),
+      );
+    });
+
+    test('weekly: the soonest of the chosen days', () {
+      final reminder = _reminder(
+        repeat: ReminderRepeat.weekly,
+        weekdays: {DateTime.monday, DateTime.saturday},
+        times: const [480],
+      );
+      // Saturday 10 October comes before Monday the 12th.
+      expect(reminder.nextAfter(now), DateTime(2026, 10, 10, 8));
+      // The same weekday as today, its time gone: a week on.
+      expect(
+        _reminder(
+          repeat: ReminderRepeat.weekly,
+          weekdays: {DateTime.thursday},
+          times: const [480],
+        ).nextAfter(now),
+        DateTime(2026, 10, 15, 8),
+      );
+    });
+
+    test('monthly: this month when the day is ahead, else next month', () {
+      expect(
+        _reminder(
+          repeat: ReminderRepeat.monthly,
+          dayOfMonth: 15,
+        ).nextAfter(now),
+        DateTime(2026, 10, 15, 8),
+      );
+      expect(
+        _reminder(repeat: ReminderRepeat.monthly, dayOfMonth: 3).nextAfter(now),
+        DateTime(2026, 11, 3, 8),
+      );
+      expect(
+        _reminder(
+          repeat: ReminderRepeat.monthly,
+          dayOfMonth: 3,
+        ).nextAfter(DateTime(2026, 12, 20)),
+        DateTime(2027, 1, 3, 8),
+      );
+    });
+
+    test('with no moment there is none', () {
+      expect(_reminder(times: const []).nextAfter(now), isNull);
+    });
+  });
+
   group('storage', () {
     test('survives being saved and read', () {
       const reminder = CustomReminder(

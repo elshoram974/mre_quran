@@ -16,7 +16,6 @@ import '../../../core/sharing/app_share_text.dart';
 import '../../../core/sharing/sharer.dart';
 import '../../../core/widgets/app_section_header.dart';
 import '../../../core/widgets/app_tile_card.dart';
-import '../../adhkar/presentation/reminders_sheet.dart';
 import 'settings_body.dart';
 
 /// The settings, as a list of the things that can be set: each opens a page of
@@ -50,7 +49,7 @@ class SettingsPage extends ConsumerWidget {
           icon: Icons.notifications_none_outlined,
           title: l10n.adhkarReminders,
           subtitle: l10n.settingsRemindersHint,
-          onTap: () => RemindersSheet.show(context),
+          onTap: () => context.push(AppRoute.reminders.path),
         ),
         const SizedBox(height: settingsGap),
         AppTileCard(

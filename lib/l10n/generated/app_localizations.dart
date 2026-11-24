@@ -3732,6 +3732,234 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'My reminders'**
   String get customReminderChannel;
+
+  /// No description provided for @myRemindersTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My reminders'**
+  String get myRemindersTitle;
+
+  /// No description provided for @myRemindersHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminders you write yourself: daily, weekly or monthly, at one time or more.'**
+  String get myRemindersHint;
+
+  /// No description provided for @myRemindersEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'You have not added a reminder yet. Add the first: a medicine, a daily reading, an appointment, a visit to family.'**
+  String get myRemindersEmpty;
+
+  /// No description provided for @reminderAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a reminder'**
+  String get reminderAdd;
+
+  /// No description provided for @reminderLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'You have reached the limit ({count} reminders). Delete one to add another.'**
+  String reminderLimit(String count);
+
+  /// No description provided for @remindersAdhkarSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily adhkar'**
+  String get remindersAdhkarSection;
+
+  /// No description provided for @reminderEveryDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Every day'**
+  String get reminderEveryDay;
+
+  /// No description provided for @reminderWeeklyOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Every {days}'**
+  String reminderWeeklyOn(String days);
+
+  /// No description provided for @reminderMonthlyOn.
+  ///
+  /// In en, this message translates to:
+  /// **'On day {day} of every month'**
+  String reminderMonthlyOn(String day);
+
+  /// No description provided for @reminderSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{when} · {times}'**
+  String reminderSummary(String when, String times);
+
+  /// No description provided for @reminderNewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New reminder'**
+  String get reminderNewTitle;
+
+  /// No description provided for @reminderEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit the reminder'**
+  String get reminderEditTitle;
+
+  /// No description provided for @reminderTitleField.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder title'**
+  String get reminderTitleField;
+
+  /// No description provided for @reminderTitleHint.
+  ///
+  /// In en, this message translates to:
+  /// **'For example: medicine, daily reading, visiting family'**
+  String get reminderTitleHint;
+
+  /// No description provided for @reminderNoteField.
+  ///
+  /// In en, this message translates to:
+  /// **'What shows under the title (optional)'**
+  String get reminderNoteField;
+
+  /// No description provided for @reminderRepeatLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'How often?'**
+  String get reminderRepeatLabel;
+
+  /// No description provided for @reminderRepeatDaily.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily'**
+  String get reminderRepeatDaily;
+
+  /// No description provided for @reminderRepeatWeekly.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly'**
+  String get reminderRepeatWeekly;
+
+  /// No description provided for @reminderRepeatMonthly.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly'**
+  String get reminderRepeatMonthly;
+
+  /// No description provided for @reminderDaysLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'On which days?'**
+  String get reminderDaysLabel;
+
+  /// No description provided for @reminderMonthDayLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'On which day of the month?'**
+  String get reminderMonthDayLabel;
+
+  /// No description provided for @reminderMonthDayHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Only days up to {max}, so that every month has them.'**
+  String reminderMonthDayHint(String max);
+
+  /// No description provided for @reminderTimesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'At what time?'**
+  String get reminderTimesLabel;
+
+  /// No description provided for @reminderTimesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'You can add more than one time in a day.'**
+  String get reminderTimesHint;
+
+  /// No description provided for @reminderAddTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a time'**
+  String get reminderAddTime;
+
+  /// No description provided for @reminderRemoveTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove this time'**
+  String get reminderRemoveTime;
+
+  /// No description provided for @reminderTimesLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'At most {count} times a day.'**
+  String reminderTimesLimit(String count);
+
+  /// No description provided for @reminderFirstAt.
+  ///
+  /// In en, this message translates to:
+  /// **'First reminder: {when}'**
+  String reminderFirstAt(String when);
+
+  /// No description provided for @reminderSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save the reminder'**
+  String get reminderSave;
+
+  /// No description provided for @reminderDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete the reminder'**
+  String get reminderDelete;
+
+  /// No description provided for @reminderDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete the reminder “{title}”?'**
+  String reminderDeleteConfirm(String title);
+
+  /// No description provided for @reminderDeleteYes.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes, delete it'**
+  String get reminderDeleteYes;
+
+  /// No description provided for @reminderProblemTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a title for the reminder.'**
+  String get reminderProblemTitle;
+
+  /// No description provided for @reminderProblemTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Add at least one time.'**
+  String get reminderProblemTime;
+
+  /// No description provided for @reminderProblemDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose at least one day.'**
+  String get reminderProblemDay;
+
+  /// No description provided for @reminderProblemMoments.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many times on too many days. Use fewer (at most {count} a week or month).'**
+  String reminderProblemMoments(String count);
+
+  /// No description provided for @reminderOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get reminderOff;
+
+  /// No description provided for @reminderKeep.
+  ///
+  /// In en, this message translates to:
+  /// **'No, keep it'**
+  String get reminderKeep;
 }
 
 class _AppLocalizationsDelegate

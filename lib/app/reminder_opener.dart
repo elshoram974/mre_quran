@@ -6,7 +6,6 @@ import 'package:go_router/go_router.dart';
 
 import '../core/notifications/reminder_payload.dart';
 import '../features/adhkar/presentation/adhkar_steps_sheet.dart';
-import '../features/adhkar/presentation/reminders_sheet.dart';
 import '../features/mushaf/application/reading_position_provider.dart';
 import '../features/quran_index/application/quran_metadata_provider.dart';
 import 'router.dart';
@@ -56,8 +55,7 @@ Future<void> openReminder(
     router.go(AppRoute.settings.path);
     // Let the tab come up, then open the reminders over it.
     await WidgetsBinding.instance.endOfFrame;
-    final context = router.routerDelegate.navigatorKey.currentContext;
-    if (context != null && context.mounted) await RemindersSheet.show(context);
+    await router.push<void>(AppRoute.reminders.path);
     return;
   }
   final id = ReminderPayload.collectionId(payload);

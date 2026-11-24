@@ -18,6 +18,8 @@ import '../features/adhan/presentation/adhan_page.dart';
 import '../features/prayer/presentation/prayer_times_page.dart';
 import '../features/prayer/presentation/prayer_location_picker_page.dart';
 import '../features/prayer/presentation/prayer_tuning_page.dart';
+import '../features/reminders/presentation/reminder_editor_page.dart';
+import '../features/reminders/presentation/reminders_page.dart';
 import '../features/prayer/presentation/qibla_page.dart';
 import '../features/quran_index/presentation/quran_index_page.dart';
 import '../features/quran_text/presentation/quran_search_page.dart';
@@ -120,6 +122,22 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoute.adhan.path,
         pageBuilder: (context, state) =>
             _page(context, state, const AdhanPage()),
+      ),
+      GoRoute(
+        path: AppRoute.reminders.path,
+        pageBuilder: (context, state) =>
+            _page(context, state, const RemindersPage()),
+      ),
+      GoRoute(
+        path: AppRoute.reminderEdit.path,
+        pageBuilder: (context, state) {
+          final id = state.pathParameters['id'];
+          return _page(
+            context,
+            state,
+            ReminderEditorPage(reminderId: id == 'new' ? null : id),
+          );
+        },
       ),
       GoRoute(
         path: AppRoute.prayerTuning.path,
@@ -314,7 +332,9 @@ enum AppRoute {
   prayerLocationPicker('/prayer-location'),
   qibla('/qibla'),
   adhan('/adhan'),
-  prayerTuning('/prayer-tuning');
+  prayerTuning('/prayer-tuning'),
+  reminders('/reminders'),
+  reminderEdit('/reminders/:id');
 
   const AppRoute(this.path);
   final String path;
@@ -323,6 +343,9 @@ enum AppRoute {
   /// order is [focusOrder] when given.
   static String adhkarSessionPath(String id, {int? focusOrder}) =>
       focusOrder == null ? '/adhkar/$id' : '/adhkar/$id?focus=$focusOrder';
+
+  /// Path of the form for the reminder [id], or for a new one when null.
+  static String reminderEditPath(String? id) => '/reminders/${id ?? 'new'}';
 
   /// Path that opens the adhkar group [id].
   static String adhkarGroupPath(String id) => '/adhkar-group/$id';

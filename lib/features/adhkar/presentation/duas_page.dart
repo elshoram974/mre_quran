@@ -19,7 +19,6 @@ import '../../prayer/presentation/prayer_times_card.dart';
 import 'collection_card.dart';
 import 'group_card.dart';
 import 'quick_access_row.dart';
-import 'reminders_sheet.dart';
 import '../../../core/time/ticking_clock.dart';
 
 /// The adhkar tab: search, the list for now, the favourites, the sections, and
@@ -230,7 +229,7 @@ class _RemindersTile extends ConsumerWidget {
       subtitle: enabled > 0
           ? l10n.adhkarRemindersSome(digits(enabled))
           : l10n.adhkarRemindersNone,
-      onTap: () => RemindersSheet.show(context),
+      onTap: () => context.push(AppRoute.reminders.path),
     );
   }
 }
