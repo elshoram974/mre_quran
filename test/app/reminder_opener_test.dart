@@ -115,10 +115,32 @@ void main() {
       expect(find.text('Prayer times'), findsOneWidget);
     });
 
+    test('the reminder before each prayer, and the iqama, have a voice of '
+        'their own; no other channel does', () {
+      final soon = ReminderChannel.values
+          .where((channel) => channel.isPrayerSoon)
+          .toList();
+      // Fajr, Dhuhr, the Friday prayer, Asr, Maghrib and Isha.
+      expect(soon, hasLength(6));
+      expect(soon.map((channel) => channel.id).toSet(), hasLength(6));
+      expect(soon.map((channel) => channel.sound).toSet(), hasLength(6));
+      for (final channel in soon) {
+        expect(channel.sound, startsWith('prayer_near_'));
+        // A channel keeps the sound it was made with: the old id is not reused.
+        expect(channel.id, isNot(ReminderChannel.legacyPrayerSoonId));
+      }
+      expect(ReminderChannel.iqama.sound, 'iqama_phrase');
+      for (final channel in ReminderChannel.values) {
+        if (!channel.isPrayerSoon && channel != ReminderChannel.iqama) {
+          expect(channel.sound, isNull, reason: channel.name);
+        }
+      }
+    });
+
     test('leads where each kind of notification is set', () {
       expect(ReminderChannel.prayer.settings, ReminderPayload.prayerSettings);
       expect(
-        ReminderChannel.prayerSoon.settings,
+        ReminderChannel.prayerSoonFajr.settings,
         ReminderPayload.prayerSettings,
       );
       expect(

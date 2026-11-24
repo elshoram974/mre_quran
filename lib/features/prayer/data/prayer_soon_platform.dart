@@ -11,6 +11,9 @@ class PrayerSoonAlarm {
     required this.adhan,
     required this.title,
     required this.body,
+    required this.channel,
+    required this.channelName,
+    required this.sound,
   });
 
   /// Identifies the reminder.
@@ -28,6 +31,16 @@ class PrayerSoonAlarm {
   /// The line under the title, saying when the adhan is.
   final String body;
 
+  /// The notification channel it comes in: one for each prayer, because its
+  /// voice says that prayer's name.
+  final String channel;
+
+  /// The channel's name, as the phone's settings show it.
+  final String channelName;
+
+  /// The sound of the channel: the name of a raw resource.
+  final String sound;
+
   /// The form the platform reads.
   Map<String, Object> toMap() => {
     'id': id,
@@ -35,6 +48,9 @@ class PrayerSoonAlarm {
     'adhan': adhan.millisecondsSinceEpoch,
     'title': title,
     'body': body,
+    'channel': channel,
+    'channelName': channelName,
+    'sound': sound,
   };
 }
 
@@ -42,7 +58,6 @@ class PrayerSoonAlarm {
 class PrayerSoonConfig {
   /// Creates the config.
   const PrayerSoonConfig({
-    required this.channelName,
     required this.dismissLabel,
     required this.settingsLabel,
     required this.payload,
@@ -50,9 +65,6 @@ class PrayerSoonConfig {
     required this.rtl,
     this.sound = true,
   });
-
-  /// The name of the notification channel.
-  final String channelName;
 
   /// The text of the button that takes the reminder away.
   final String dismissLabel;
@@ -75,7 +87,6 @@ class PrayerSoonConfig {
 
   /// The form the platform reads.
   Map<String, Object> toMap() => {
-    'channelName': channelName,
     'dismissLabel': dismissLabel,
     'settingsLabel': settingsLabel,
     'payload': payload,

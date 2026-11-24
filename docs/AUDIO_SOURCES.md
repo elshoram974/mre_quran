@@ -30,6 +30,59 @@ confirm what it says: every Fajr recording says "الصلاة خير من الن
 clip is the dua. (This caught one: Mansoor Az-Zahrani's file is named as a plain adhan but is a Fajr adhan.)
 **Listen to each once before a release.**
 
+## The iqama phrase, and the voices of the reminders before a prayer
+
+Short sounds, bundled (not downloaded), for the notice of the iqama and for the reminder before each prayer
+(`docs/DECISIONS.md` D-063). They are made by the same tool and list (`tool/audio/adhan_sources.json`, kinds
+`iqama` and `nearPrayer`), kept light (a few seconds each, 40 to 48 kb/s mono AAC; iOS 16 kHz), and are not in the voices
+catalogue. They are real recordings of people, chosen because people already use them for this; none is synthesised.
+
+| id | Bundled as | Source | Licence | Source SHA-256 | Used |
+|---|---|---|---|---|---|
+| `iqama_phrase` | `res/raw/iqama_phrase.m4a` (49,153 B, 9.1 s, SHA-256 `9bd53d3f…1e4de`); iOS `assets/adhan/ios/iqama_phrase.caf` (77,308 B) | Sheikh Majed Abbas, the iqama of Isha at the Grand Mosque in Makkah, 3 Dhu al-Qi'dah 1434 AH, [archive.org](https://archive.org/details/IqamaMakkahIsha3111434SheikhMajedAbbas) (uploaded by "the way of happiness") | **Permission pending** (the page shows none) | `f520980c…caf46b4` (746,496 B) | «قد قامت الصلاة» twice, 24.92 to 34.0 s of the source |
+
+- **Checked by machine.** Whisper `ggml-small` with word times placed «قد قامت الصلاة» twice between «حي على الفلاح»
+  and «الله أكبر»; on the cut itself it hears «قد قامة الصلاة» twice and nothing else. **Listen once before a
+  release.** The permission to ask for is W1 in `docs/AUDIO_PENDING_LICENCES.md`.
+
+### «اقتربت صلاة …»: one clip for each prayer
+
+What the owner asked for: a real voice saying «اقتربت صلاة الفجر / الظهر / الجمعة / العصر / المغرب / العشاء», as
+people already use it. Two copies on archive.org were found after about a hundred searches of archive.org, Zedge,
+SoundCloud, myinstants, Freesound, Commons and GitHub (`tool/audio/adhan_sources.json`, kind `nearPrayer`):
+
+- **Set A**, five of the six: the clips «اقتربت صلاة X» published for prayer apps by **Mohamed M. Gowaida** (Egypt;
+  SoundCloud `m_gowaida`, YouTube, a Telegram channel), copied to
+  [archive.org item `20261002_20261002_2012`](https://archive.org/details/20261002_20261002_2012) by another
+  uploader, who marked it **CC0**. The author's own SoundCloud page says "all rights reserved", though his posts invite
+  their use in prayer apps, so the CC0 mark is not his. Licence recorded: **Permission pending**. About 1.7 s each.
+- **Set B**, the Friday prayer only: [archive.org item `20260909_20260909_2244`](https://archive.org/details/20260909_20260909_2244)
+  (a zip «تنبيه قبل الصلاة», uploaded by `aymangacem.k`), no licence, author not named, a different voice from set A. The
+  Friday clip is read out of the zip by name (`zipEntry`, with its own SHA-256). About 3.3 s.
+
+| id | Bundled as | Set | Source SHA-256 | Cut |
+|---|---|---|---|---|
+| `near_fajr` (Fajr) | `res/raw/prayer_near_fajr.m4a` (9,713 B, SHA-256 `f09f39dd…8ef4b9b`) | set A | `3d1bb7c9…b83fedc` | 0.08 to 1.82 s |
+| `near_dhuhr` (Dhuhr) | `res/raw/prayer_near_dhuhr.m4a` (9,722 B, SHA-256 `b55e503c…ed3bd15`) | set A | `41e3e469…ee820de` | 0.08 to 1.8 s |
+| `near_jumuah` (Friday prayer) | `res/raw/prayer_near_jumuah.m4a` (18,253 B, SHA-256 `a6516aaa…77addbb`) | set B | `5dfa7e62…4046a5f` | 0.0 to 3.55 s |
+| `near_asr` (Asr) | `res/raw/prayer_near_asr.m4a` (9,852 B, SHA-256 `e3fc548e…228740d`) | set A | `b3075ba2…cfa6486` | 0.08 to 1.84 s |
+| `near_maghrib` (Maghrib) | `res/raw/prayer_near_maghrib.m4a` (10,231 B, SHA-256 `978acc25…3e9ccdd`) | set A | `a1377f44…f6ad3ba` | 0.08 to 1.85 s |
+| `near_isha` (Isha) | `res/raw/prayer_near_isha.m4a` (10,097 B, SHA-256 `ff8aa1d4…6597113`) | set A | `d880c0ce…9a0719c` | 0.08 to 1.92 s |
+
+- **A voice that is not proved human.** No page says that a person recorded these, and the research found some signs in
+  set A (a sound cut off near 12 kHz, digital silence between clips, the same lead-in in each file) that could mean it
+  is processed or synthesised. The owner asked for real voices only: **listen to all six before a release**, and ask
+  the author (W6 in `docs/AUDIO_PENDING_LICENCES.md`) for written permission, to confirm it is his own voice, and for
+  his Friday clip so the six share one voice.
+- **Checked by machine.** Whisper heard «اقتربت صلاة الفجر / العصر / المغرب / العشاء» exactly. Dhuhr came out as
+  «اقتردت صلاة الفهر» and the Friday prayer as «اقتربت صلاة اليمع»: the first words are clear and the last is the
+  Egyptian way of saying «الظهر» and «الجمعة», which it does not know; the file names agree. Listen to those two.
+- **Size.** Each clip is about 10 KB (the Friday one 18 KB) at 40 kb/s mono AAC, and 14 KB (28 KB) as an iOS sound at
+  16 kHz; with the iqama, the six come to about 110 KB on Android. **Android.** Each notification channel plays its own
+  sound (`ReminderChannel.sound`): the iqama's, and one for each of the six prayers; a channel keeps the sound it was
+  made with, so the old `prayer_soon` channel is removed at start-up. **iOS.** The sounds are installed in
+  `Library/Sounds` with the adhan's.
+
 ## Where the downloads are served from
 
 The voices that are not bundled are downloaded, and previewed, from the media repository

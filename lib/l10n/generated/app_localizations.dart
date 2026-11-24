@@ -1429,11 +1429,11 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 minute to the adhan} other{{number} minutes to the adhan}}'**
   String prayerSoonBody(int count, String number);
 
-  /// No description provided for @prayerSoonChannelName.
+  /// No description provided for @prayerSoonChannelNamed.
   ///
   /// In en, this message translates to:
-  /// **'Before the prayer'**
-  String get prayerSoonChannelName;
+  /// **'Before the prayer · {prayer}'**
+  String prayerSoonChannelNamed(String prayer);
 
   /// No description provided for @prayerSoonSwitch.
   ///
@@ -4128,6 +4128,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Height used in the calculation: {metres}'**
   String prayerTuningElevationUsed(String metres);
+
+  /// No description provided for @creditsAudioIqama.
+  ///
+  /// In en, this message translates to:
+  /// **'The sound of the iqama notice, the phrase «قد قامت الصلاة» twice: from the iqama of the Isha prayer by Sheikh Majed Abbas at the Grand Mosque in Makkah, from a recording on archive.org (https://archive.org/details/IqamaMakkahIsha3111434SheikhMajedAbbas). The clip was trimmed and its volume set; the recitation is unchanged. Permission is being asked for.'**
+  String get creditsAudioIqama;
+
+  /// No description provided for @creditsAudioNear.
+  ///
+  /// In en, this message translates to:
+  /// **'The sound of the reminder «اقتربت صلاة …» (the prayer is near): short clips by Mohamed M. Gowaida, from a copy on archive.org (https://archive.org/details/20261002_20261002_2012), and the Friday prayer\'s clip from another archive.org copy (https://archive.org/details/20260909_20260909_2244) whose author is not known. They were trimmed and their volume set. Permission is being asked for.'**
+  String get creditsAudioNear;
 }
 
 class _AppLocalizationsDelegate

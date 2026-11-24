@@ -95,10 +95,25 @@ flutter:
     - assets/adhkar/hisn_manifest.json
     - assets/adhan/voices.json
     - assets/reminders/weekly.json
-    # The adhan's opening as iOS notification sounds; iOS only.
+    # The adhan's opening, the iqama phrase and the voices of the reminders
+    # before the prayers as iOS notification sounds; iOS only.
     - path: assets/adhan/ios/adhan_regular.caf
       platforms: [ios]
     - path: assets/adhan/ios/adhan_fajr.caf
+      platforms: [ios]
+    - path: assets/adhan/ios/iqama_phrase.caf
+      platforms: [ios]
+    - path: assets/adhan/ios/prayer_near_fajr.caf
+      platforms: [ios]
+    - path: assets/adhan/ios/prayer_near_dhuhr.caf
+      platforms: [ios]
+    - path: assets/adhan/ios/prayer_near_jumuah.caf
+      platforms: [ios]
+    - path: assets/adhan/ios/prayer_near_asr.caf
+      platforms: [ios]
+    - path: assets/adhan/ios/prayer_near_maghrib.caf
+      platforms: [ios]
+    - path: assets/adhan/ios/prayer_near_isha.caf
       platforms: [ios]
     - assets/adhkar/LICENSE.seen-arabic.txt
   fonts:

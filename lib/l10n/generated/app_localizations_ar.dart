@@ -759,7 +759,9 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get prayerSoonChannelName => 'تذكير قبل الصلاة';
+  String prayerSoonChannelNamed(String prayer) {
+    return 'تذكير قبل الصلاة · $prayer';
+  }
 
   @override
   String get prayerSoonSwitch => 'تذكير قبل الصلاة';
@@ -2407,4 +2409,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String prayerTuningElevationUsed(String metres) {
     return 'الارتفاع المستخدم في الحساب: $metres';
   }
+
+  @override
+  String get creditsAudioIqama =>
+      'صوت تنبيه الإقامة، عبارة «قد قامت الصلاة» مرتين: من إقامة صلاة العشاء بصوت الشيخ ماجد عباس في الحرم المكي، من تسجيل على archive.org (https://archive.org/details/IqamaMakkahIsha3111434SheikhMajedAbbas). قُصّ المقطع وضُبط صوته دون تغيير القراءة. الإذن قيد الطلب.';
+
+  @override
+  String get creditsAudioNear =>
+      'صوت تذكير «اقتربت صلاة …»: مقاطع قصيرة لمحمد م. جويدة من نسخة على archive.org (https://archive.org/details/20261002_20261002_2012)، ومقطع صلاة الجمعة من نسخة أخرى على archive.org (https://archive.org/details/20260909_20260909_2244) لا يُعرف صاحبها. قُصّت وضُبط صوتها. الإذن قيد الطلب.';
 }

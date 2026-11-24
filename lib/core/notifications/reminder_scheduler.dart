@@ -17,8 +17,26 @@ enum ReminderChannel {
   /// The alert at a prayer time.
   prayer('prayer_time'),
 
-  /// The reminder a while before a prayer time.
-  prayerSoon('prayer_soon'),
+  /// The reminder a while before a prayer time, in a channel for each prayer
+  /// (and the Friday prayer), because its voice says that prayer's name:
+  /// «اقتربت صلاة الظهر». A channel keeps the sound it was made with, so each
+  /// has its own, and none has the old id `prayer_soon`.
+  prayerSoonFajr('prayer_soon_fajr', 'prayer_near_fajr'),
+
+  /// The reminder before Dhuhr.
+  prayerSoonDhuhr('prayer_soon_dhuhr', 'prayer_near_dhuhr'),
+
+  /// The reminder before the Friday prayer.
+  prayerSoonJumuah('prayer_soon_jumuah', 'prayer_near_jumuah'),
+
+  /// The reminder before Asr.
+  prayerSoonAsr('prayer_soon_asr', 'prayer_near_asr'),
+
+  /// The reminder before Maghrib.
+  prayerSoonMaghrib('prayer_soon_maghrib', 'prayer_near_maghrib'),
+
+  /// The reminder before Isha.
+  prayerSoonIsha('prayer_soon_isha', 'prayer_near_isha'),
 
   /// The reminder, the evening before, of a day it is sunnah to fast.
   fasting('fasting_reminders'),
@@ -26,25 +44,38 @@ enum ReminderChannel {
   /// The reminders the person made for themselves.
   custom('custom_reminders'),
 
-  /// The notice at the iqama, a set time after the adhan.
-  iqama('prayer_iqama');
+  /// The notice at the iqama, a set time after the adhan, with its phrase.
+  iqama('prayer_iqama', 'iqama_phrase');
 
-  const ReminderChannel(this.id);
+  const ReminderChannel(this.id, [this.sound]);
 
   /// Channel id on Android.
   final String id;
 
+  /// The name of the sound the channel plays, or null for the phone's own
+  /// notification sound: the raw resource of that name on Android, the file
+  /// `<name>.caf` in `Library/Sounds` on iOS.
+  final String? sound;
+
+  /// The id of the channel the reminder before a prayer used before it had a
+  /// voice. It is removed, so the settings show a channel for each prayer
+  /// only.
+  static const String legacyPrayerSoonId = 'prayer_soon';
+
+  /// Whether this is one of the reminders before a prayer.
+  bool get isPrayerSoon => name.startsWith('prayerSoon');
+
   /// What the settings button of a notification of this channel opens: the
   /// prayer times, where the prayers' alerts are chosen, or the reminders.
   String get settings => switch (this) {
-    prayer || prayerSoon || iqama => ReminderPayload.prayerSettings,
     adhkar || fasting || custom => ReminderPayload.remindersSettings,
+    _ => ReminderPayload.prayerSettings,
   };
 
   /// The iOS category of its notifications, which carries that button.
   String get iosCategory => switch (this) {
-    prayer || prayerSoon || iqama => 'prayer',
     adhkar || fasting || custom => 'reminders',
+    _ => 'prayer',
   };
 }
 
@@ -192,6 +223,20 @@ class LocalReminderScheduler implements ReminderScheduler {
             if (payload != null && payload.isNotEmpty) deliver(payload);
           },
         );
+        // The old channel of the reminder before a prayer has no chime and
+        // cannot be given one; the new one has. Remove it so the settings
+        // show one.
+        try {
+          await plugin
+              .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin
+              >()
+              ?.deleteNotificationChannel(
+                channelId: ReminderChannel.legacyPrayerSoonId,
+              );
+        } on Object catch (error) {
+          AppLogger.debug('Old channel not removed: ${error.runtimeType}');
+        }
         final launch = await plugin.getNotificationAppLaunchDetails();
         if (launch != null && launch.didNotificationLaunchApp) {
           final response = launch.notificationResponse;
@@ -382,7 +427,7 @@ class LocalReminderScheduler implements ReminderScheduler {
     await _ensureZone();
     final urgent =
         channel == ReminderChannel.prayer || channel == ReminderChannel.iqama;
-    final prayer = urgent || channel == ReminderChannel.prayerSoon;
+    final prayer = urgent || channel.isPrayerSoon;
     await _plugin.zonedSchedule(
       id: id,
       title: title,
@@ -395,6 +440,9 @@ class LocalReminderScheduler implements ReminderScheduler {
           importance: urgent ? Importance.high : Importance.defaultImportance,
           priority: urgent ? Priority.high : Priority.defaultPriority,
           silent: silent,
+          sound: channel.sound == null
+              ? null
+              : RawResourceAndroidNotificationSound(channel.sound),
           // A long body reads whole when the notification is opened.
           styleInformation: BigTextStyleInformation(body),
           actions: [

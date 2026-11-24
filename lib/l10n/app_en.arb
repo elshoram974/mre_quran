@@ -237,7 +237,8 @@
   "@prayerSoonTitle": {"placeholders": {"prayer": {"type": "String"}}},
   "prayerSoonBody": "{count, plural, =1{1 minute to the adhan} other{{number} minutes to the adhan}}",
   "@prayerSoonBody": {"placeholders": {"count": {"type": "int"}, "number": {"type": "String"}}},
-  "prayerSoonChannelName": "Before the prayer",
+  "prayerSoonChannelNamed": "Before the prayer · {prayer}",
+  "@prayerSoonChannelNamed": {"placeholders": {"prayer": {"type": "String"}}},
   "prayerSoonSwitch": "Reminder before the prayer",
   "prayerSoonHint": "A notification a while before the adhan, for the prayers whose alert is on.",
   "prayerSoonMinutes": "Before the adhan",
@@ -865,5 +866,7 @@
   "prayerTuningCalculated": "Calculated {time}",
   "@prayerTuningCalculated": {"placeholders": {"time": {"type": "String"}}},
   "prayerTuningElevationUsed": "Height used in the calculation: {metres}",
-  "@prayerTuningElevationUsed": {"placeholders": {"metres": {"type": "String"}}}
+  "@prayerTuningElevationUsed": {"placeholders": {"metres": {"type": "String"}}},
+  "creditsAudioIqama": "The sound of the iqama notice, the phrase «قد قامت الصلاة» twice: from the iqama of the Isha prayer by Sheikh Majed Abbas at the Grand Mosque in Makkah, from a recording on archive.org (https://archive.org/details/IqamaMakkahIsha3111434SheikhMajedAbbas). The clip was trimmed and its volume set; the recitation is unchanged. Permission is being asked for.",
+  "creditsAudioNear": "The sound of the reminder «اقتربت صلاة …» (the prayer is near): short clips by Mohamed M. Gowaida, from a copy on archive.org (https://archive.org/details/20261002_20261002_2012), and the Friday prayer's clip from another archive.org copy (https://archive.org/details/20260909_20260909_2244) whose author is not known. They were trimmed and their volume set. Permission is being asked for."
 }

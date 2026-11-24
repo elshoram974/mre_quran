@@ -552,12 +552,11 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
     await platform.schedule(
       alarms,
       PrayerSoonConfig(
-        channelName: l10n.prayerSoonChannelName,
         dismissLabel: l10n.prayerSoonDismiss,
         sound: sound,
         settingsLabel: l10n.notificationSettings,
         payload: ReminderPayload.prayerTimes,
-        settingsPayload: ReminderChannel.prayerSoon.settings,
+        settingsPayload: ReminderChannel.prayerSoonFajr.settings,
         rtl: rtl,
       ),
     );
@@ -618,10 +617,12 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
       // iOS plays no long sound by itself: its alert at prayer time rings
       // with the adhan's opening (the Fajr adhan's at Fajr) when the adhan
       // is on.
-      final iosAdhan =
+      final iosSounds =
           defaultTargetPlatform == TargetPlatform.iOS &&
-          (ref.read(adhanSettingsProvider).value?.playAdhan ?? true) &&
           await ref.read(iosAdhanSoundsProvider).install();
+      final iosAdhan =
+          iosSounds &&
+          (ref.read(adhanSettingsProvider).value?.playAdhan ?? true);
       final minutes = settings.beforeMinutes;
       final number = ref.read(digitsFormatterProvider);
       final digits = ref.read(displayDigitsFormatterProvider);
@@ -638,12 +639,16 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
           defaultTargetPlatform == TargetPlatform.android;
       PrayerSoonAlarm soonOf(PrayerAlert alert) {
         final adhan = alert.at.add(Duration(minutes: minutes));
+        final channel = _soonChannel(alert);
         return PrayerSoonAlarm(
           id: alert.id,
           at: alert.at,
           adhan: adhan,
           title: l10n.prayerSoonTitle(_alertName(l10n, alert)),
           body: l10n.prayerSoonCountdownBody(clock(adhan)),
+          channel: channel.id,
+          channelName: l10n.prayerSoonChannelNamed(_alertName(l10n, alert)),
+          sound: channel.sound!,
         );
       }
 
@@ -667,10 +672,13 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
               at: alert.at,
               title: l10n.prayerSoonTitle(prayer),
               body: l10n.prayerSoonBody(minutes, number(minutes)),
-              channel: ReminderChannel.prayerSoon,
-              channelName: l10n.prayerSoonChannelName,
+              channel: _soonChannel(alert),
+              channelName: l10n.prayerSoonChannelNamed(prayer),
               payload: ReminderPayload.prayerTimes,
               exact: true,
+              iosSound: iosSounds
+                  ? LibraryIosAdhanSounds.forChannel(_soonChannel(alert))
+                  : null,
               silent: !settings.beforeSound,
               settingsLabel: l10n.notificationSettings,
             );
@@ -684,6 +692,9 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
               channelName: l10n.iqamaChannelName,
               payload: ReminderPayload.prayerTimes,
               exact: true,
+              iosSound: iosSounds
+                  ? LibraryIosAdhanSounds.forChannel(ReminderChannel.iqama)
+                  : null,
               silent: !settings.iqamaSound,
               settingsLabel: l10n.notificationSettings,
             );
@@ -723,6 +734,18 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
       AppLogger.debug('Prayer schedule failed: ${error.runtimeType}');
     }
   }
+
+  /// The channel of the reminder before [alert]'s prayer: one for each, and
+  /// one for the Friday prayer.
+  static ReminderChannel _soonChannel(PrayerAlert alert) => _isJumuah(alert)
+      ? ReminderChannel.prayerSoonJumuah
+      : switch (alert.prayer) {
+          DailyPrayer.fajr => ReminderChannel.prayerSoonFajr,
+          DailyPrayer.dhuhr => ReminderChannel.prayerSoonDhuhr,
+          DailyPrayer.asr => ReminderChannel.prayerSoonAsr,
+          DailyPrayer.maghrib => ReminderChannel.prayerSoonMaghrib,
+          DailyPrayer.isha => ReminderChannel.prayerSoonIsha,
+        };
 
   /// Whether [alert] is Dhuhr on a Friday: the Friday prayer.
   static bool _isJumuah(PrayerAlert alert) =>

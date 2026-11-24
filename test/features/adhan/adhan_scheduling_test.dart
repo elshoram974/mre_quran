@@ -124,7 +124,7 @@ Iterable<int> _atTimeNotifications(_Harness h) => [
 
 Iterable<int> _beforeNotifications(_Harness h) => [
   for (final MapEntry(:key, :value) in h.scheduler.once.entries)
-    if (value.channel == ReminderChannel.prayerSoon) key,
+    if (value.channel.isPrayerSoon) key,
 ];
 
 /// Every prayer of every planned day.
@@ -299,6 +299,16 @@ void main() {
     expect(first.body, startsWith('باقي على الأذان · الساعة '));
     expect(fajr.at.difference(first.at), const Duration(minutes: 15));
     expect(first.adhan, fajr.at);
+    // Its channel is Fajr's, with Fajr's name and voice.
+    expect(first.channel, 'prayer_soon_fajr');
+    expect(first.sound, 'prayer_near_fajr');
+    expect(first.channelName, 'تذكير قبل الصلاة · الفجر');
+    // And the Friday prayer has a channel and a voice of its own.
+    final friday = h.soon.alarms.firstWhere(
+      (alarm) => alarm.title == 'اقتربت صلاة الجمعة',
+    );
+    expect(friday.channel, 'prayer_soon_jumuah');
+    expect(friday.sound, 'prayer_near_jumuah');
     final config = h.soon.config!;
     expect(config.dismissLabel, 'إزالة');
     // And a button to the alerts' settings.
@@ -453,9 +463,56 @@ void main() {
         settings: const AdhanSettings(playAdhan: false),
       );
       await off.turnAllOn();
-      expect(off.scheduler.sounds.values.whereType<String>(), isEmpty);
+      for (final id in _atTimeNotifications(off)) {
+        expect(off.scheduler.sounds[id], isNull, reason: '$id');
+      }
       final missing = _harness(supported: false, iosSounds: false);
       await missing.turnAllOn();
+      expect(missing.scheduler.sounds.values.whereType<String>(), isEmpty);
+    });
+
+    test('the reminder before each prayer rings with its own voice, the '
+        'Friday prayer\'s too, and the iqama with its phrase', () async {
+      final h = _harness(supported: false, iosSounds: true);
+      await h.turnAllOn();
+      await h.container.read(prayerProvider.notifier).setIqamaReminder(true);
+      expect(
+        h.scheduler.sounds[PrayerAlertPlan.firstBeforeId],
+        'prayer_near_fajr.caf',
+      );
+      // Each is in its prayer's channel, and rings with that channel's voice.
+      final before = [
+        for (final entry in h.scheduler.once.entries)
+          if (entry.value.channel.isPrayerSoon) entry,
+      ];
+      for (final entry in before) {
+        expect(
+          h.scheduler.sounds[entry.key],
+          '${entry.value.channel.sound}.caf',
+        );
+      }
+      // The week planned has every prayer, and a Friday.
+      expect(before.map((entry) => entry.value.channel).toSet(), {
+        ReminderChannel.prayerSoonFajr,
+        ReminderChannel.prayerSoonDhuhr,
+        ReminderChannel.prayerSoonJumuah,
+        ReminderChannel.prayerSoonAsr,
+        ReminderChannel.prayerSoonMaghrib,
+        ReminderChannel.prayerSoonIsha,
+      });
+      final iqamas = h.scheduler.once.entries.where(
+        (entry) => entry.value.channel == ReminderChannel.iqama,
+      );
+      expect(iqamas, isNotEmpty);
+      for (final entry in iqamas) {
+        expect(h.scheduler.sounds[entry.key], 'iqama_phrase.caf');
+      }
+      // Without the sounds in place they keep the phone's own sound.
+      final missing = _harness(supported: false, iosSounds: false);
+      await missing.turnAllOn();
+      await missing.container
+          .read(prayerProvider.notifier)
+          .setIqamaReminder(true);
       expect(missing.scheduler.sounds.values.whereType<String>(), isEmpty);
     });
   });

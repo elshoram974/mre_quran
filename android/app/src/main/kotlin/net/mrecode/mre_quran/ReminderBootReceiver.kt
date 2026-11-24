@@ -31,7 +31,7 @@ class ReminderBootReceiver : ScheduledNotificationBootReceiver() {
     }
 
     private fun expiredPrayer(record: JSONObject, now: Long): Boolean {
-        if (record.optString("channelId") !in setOf("prayer_time", "prayer_soon", "prayer_iqama", "adhkar_reminders", "fasting_reminders")) return false
+        if (record.optString("channelId") !in setOf("prayer_time", "prayer_soon", "prayer_soon_fajr", "prayer_soon_dhuhr", "prayer_soon_jumuah", "prayer_soon_asr", "prayer_soon_maghrib", "prayer_soon_isha", "prayer_iqama", "adhkar_reminders", "fasting_reminders")) return false
         if (!record.isNull("matchDateTimeComponents") || !record.isNull("repeatInterval") ||
             !record.isNull("scheduledNotificationRepeatFrequency") || !record.isNull("repeatIntervalMilliseconds")) return false
         return try {

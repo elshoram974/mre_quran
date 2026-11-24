@@ -687,9 +687,14 @@
   moved by D-061, and shows each prayer's resulting time. It is for the five prayers whether or not their alert is
   on. Its notice has a sound switch, and the reminder before a prayer has one too (`beforeSound`): off, the notice
   comes silent (`silent` on Android; no sound on iOS; the platform's own countdown notice follows it).
-- **Not done:** a recording of the phrase, and spoken or chime sounds for the reminders. No open-licence recording of
-  the iqama phrase was confirmed; the candidates, whom to ask and what to ask are in
-  `docs/AUDIO_PENDING_LICENCES.md`. Until one is approved the notices use the phone's own notification sound, and
-  nothing is bundled or hosted.
+- **Sounds:** the iqama's notice plays the phrase «قد قامت الصلاة» twice (about nine seconds, the Grand Mosque's
+  muezzin), and the reminder before each prayer a voice saying «اقتربت صلاة …» for that prayer (Fajr, Dhuhr, the
+  Friday prayer, Asr, Maghrib, Isha), each in a notification channel of its own, because a channel keeps the sound it
+  was made with. They are real recordings of people that people already use, not synthesised, bundled, and kept
+  small (a few seconds each at 40 to 48 kb/s; iOS 16 kHz), so they cost the app a few hundred kilobytes at most. Source,
+  licence and checksums are in `docs/AUDIO_SOURCES.md`; the rights are being asked for. iOS installs the sounds in
+  `Library/Sounds`. They were checked by machine only: listen to each before a release. **Not proved human:** no page
+  says a person recorded the six «اقتربت صلاة …» clips (five by one author, the Friday prayer's by another voice); if
+  they sound synthetic they are to be replaced by the author's own or by a recording (`AUDIO_PENDING_LICENCES.md`, W6).
 - **Limit:** with the iqama's notices Android is now given up to 300 notifications at once (it was 150), well below the
   alarms a phone allows an app; the plan still covers 30 days and is made again at each start.

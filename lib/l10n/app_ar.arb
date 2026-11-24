@@ -226,7 +226,8 @@
   "@prayerSoonTitle": {"placeholders": {"prayer": {"type": "String"}}},
   "prayerSoonBody": "{count, plural, =1{باقي دقيقة على الأذان} =2{باقي دقيقتان على الأذان} few{باقي {number} دقائق على الأذان} other{باقي {number} دقيقة على الأذان}}",
   "@prayerSoonBody": {"placeholders": {"count": {"type": "int"}, "number": {"type": "String"}}},
-  "prayerSoonChannelName": "تذكير قبل الصلاة",
+  "prayerSoonChannelNamed": "تذكير قبل الصلاة · {prayer}",
+  "@prayerSoonChannelNamed": {"placeholders": {"prayer": {"type": "String"}}},
   "prayerSoonSwitch": "تذكير قبل الصلاة",
   "prayerSoonHint": "إشعار قبل الأذان بوقت تختاره، للصلوات التي فعّلت تنبيهها.",
   "prayerSoonMinutes": "قبل الأذان بـ",
@@ -753,5 +754,7 @@
   "prayerTuningCalculated": "المحسوب {time}",
   "@prayerTuningCalculated": {"placeholders": {"time": {"type": "String"}}},
   "prayerTuningElevationUsed": "الارتفاع المستخدم في الحساب: {metres}",
-  "@prayerTuningElevationUsed": {"placeholders": {"metres": {"type": "String"}}}
+  "@prayerTuningElevationUsed": {"placeholders": {"metres": {"type": "String"}}},
+  "creditsAudioIqama": "صوت تنبيه الإقامة، عبارة «قد قامت الصلاة» مرتين: من إقامة صلاة العشاء بصوت الشيخ ماجد عباس في الحرم المكي، من تسجيل على archive.org (https://archive.org/details/IqamaMakkahIsha3111434SheikhMajedAbbas). قُصّ المقطع وضُبط صوته دون تغيير القراءة. الإذن قيد الطلب.",
+  "creditsAudioNear": "صوت تذكير «اقتربت صلاة …»: مقاطع قصيرة لمحمد م. جويدة من نسخة على archive.org (https://archive.org/details/20261002_20261002_2012)، ومقطع صلاة الجمعة من نسخة أخرى على archive.org (https://archive.org/details/20260909_20260909_2244) لا يُعرف صاحبها. قُصّت وضُبط صوتها. الإذن قيد الطلب."
 }

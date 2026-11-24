@@ -254,10 +254,7 @@ void main() {
       );
       // Each with its reminder before it, which the platform keeps.
       expect(harness.soon.alarms, hasLength(days));
-      expect(
-        items.where((i) => i.channel == ReminderChannel.prayerSoon),
-        isEmpty,
-      );
+      expect(items.where((i) => i.channel.isPrayerSoon), isEmpty);
       expect(items.every((item) => item.exact), isTrue);
 
       await tester.tap(find.byTooltip('التنبيه مفعّل'));

@@ -68,6 +68,8 @@ class AboutPage extends ConsumerWidget {
                     ),
                   l10n.creditsAudioDuaShaarawy,
                   l10n.creditsAudioDuaMishary,
+                  l10n.creditsAudioIqama,
+                  l10n.creditsAudioNear,
                 ],
               ),
               _Section(

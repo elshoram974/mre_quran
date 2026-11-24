@@ -3,7 +3,11 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 
-/// The opening of the adhan as an iOS notification sound. iOS lets no app
+import '../../../core/notifications/reminder_scheduler.dart'
+    show ReminderChannel;
+
+/// The opening of the adhan as an iOS notification sound, and the short
+/// sounds of the iqama and of the reminder before a prayer. iOS lets no app
 /// start a long sound by itself; a notification may play up to 30 seconds
 /// of a sound in the app's `Library/Sounds`. So the first 29.5 seconds of
 /// the bundled adhan, and of the Fajr adhan, ring with the prayer's alert
@@ -22,7 +26,18 @@ class LibraryIosAdhanSounds implements IosAdhanSounds {
   static String of({required bool fajr}) =>
       fajr ? 'adhan_fajr.caf' : 'adhan_regular.caf';
 
-  static const List<String> _names = ['adhan_regular.caf', 'adhan_fajr.caf'];
+  /// The sound of the notices of [channel] (the iqama's, or a reminder before
+  /// a prayer's); null for a channel with none.
+  static String? forChannel(ReminderChannel channel) =>
+      channel.sound == null ? null : '${channel.sound}.caf';
+
+  /// The adhan's two, and each channel's own.
+  static final List<String> _names = [
+    'adhan_regular.caf',
+    'adhan_fajr.caf',
+    for (final channel in ReminderChannel.values)
+      if (channel.sound != null) '${channel.sound}.caf',
+  ];
 
   @override
   Future<bool> install() async {
