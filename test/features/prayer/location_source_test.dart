@@ -31,18 +31,19 @@ class _LocationPlatform extends GeolocatorPlatform {
   }
 }
 
-Position _position(double latitude, DateTime at) => Position(
-  latitude: latitude,
-  longitude: 31.2357,
-  timestamp: at,
-  accuracy: 100,
-  altitude: 0,
-  altitudeAccuracy: 0,
-  heading: 0,
-  headingAccuracy: 0,
-  speed: 0,
-  speedAccuracy: 0,
-);
+Position _position(double latitude, DateTime at, {double altitude = 0}) =>
+    Position(
+      latitude: latitude,
+      longitude: 31.2357,
+      timestamp: at,
+      accuracy: 100,
+      altitude: altitude,
+      altitudeAccuracy: 0,
+      heading: 0,
+      headingAccuracy: 0,
+      speed: 0,
+      speedAccuracy: 0,
+    );
 
 void main() {
   late GeolocatorPlatform previous;
@@ -88,6 +89,15 @@ void main() {
       PrayerPlace(30.04, 31.2357),
     );
     expect(platform.currentReads, 0);
+  });
+
+  test('the height the GPS gives goes with the place; none is none', () async {
+    platform.current = _position(30.0444, DateTime.now(), altitude: 23.4);
+    final high = await const GeolocatorLocationSource().request();
+    expect(high!.altitude, 23);
+    platform.current = _position(30.0444, DateTime.now());
+    final none = await const GeolocatorLocationSource().request();
+    expect(none!.altitude, isNull);
   });
 
   test('does not fall back to a stale cached location on failure', () async {

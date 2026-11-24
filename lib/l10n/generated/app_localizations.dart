@@ -3492,6 +3492,234 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Show it'**
   String get printedShowSaved;
+
+  /// No description provided for @prayerTuningTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjust the times'**
+  String get prayerTuningTitle;
+
+  /// No description provided for @prayerTuningTileSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Move each prayer, summer time, height and the Hijri date'**
+  String get prayerTuningTileSubtitle;
+
+  /// No description provided for @prayerTuningOffsetsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Move the prayers'**
+  String get prayerTuningOffsetsTitle;
+
+  /// No description provided for @prayerTuningOffsetsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Minutes added to or taken from each prayer\'s time. The alerts, the adhan and the widgets follow them. Zero is the calculated time.'**
+  String get prayerTuningOffsetsHint;
+
+  /// No description provided for @prayerTuningAsCalculated.
+  ///
+  /// In en, this message translates to:
+  /// **'As calculated'**
+  String get prayerTuningAsCalculated;
+
+  /// No description provided for @prayerTuningEarlier.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} earlier'**
+  String prayerTuningEarlier(String minutes);
+
+  /// No description provided for @prayerTuningLater.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} later'**
+  String prayerTuningLater(String minutes);
+
+  /// No description provided for @prayerTuningEarlierButton.
+  ///
+  /// In en, this message translates to:
+  /// **'One minute earlier'**
+  String get prayerTuningEarlierButton;
+
+  /// No description provided for @prayerTuningLaterButton.
+  ///
+  /// In en, this message translates to:
+  /// **'One minute later'**
+  String get prayerTuningLaterButton;
+
+  /// No description provided for @prayerTuningResetAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Put every prayer back to the calculated time'**
+  String get prayerTuningResetAll;
+
+  /// No description provided for @prayerTuningDaylightTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Summer time'**
+  String get prayerTuningDaylightTitle;
+
+  /// No description provided for @prayerTuningDaylightHint.
+  ///
+  /// In en, this message translates to:
+  /// **'The times follow your phone\'s clock. If it is not on your place\'s time (on summer time when it is winter, or the other way round), choose the right one here.'**
+  String get prayerTuningDaylightHint;
+
+  /// No description provided for @prayerTuningDaylightAuto.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow the phone'**
+  String get prayerTuningDaylightAuto;
+
+  /// No description provided for @prayerTuningDaylightSummer.
+  ///
+  /// In en, this message translates to:
+  /// **'Summer'**
+  String get prayerTuningDaylightSummer;
+
+  /// No description provided for @prayerTuningDaylightWinter.
+  ///
+  /// In en, this message translates to:
+  /// **'Winter'**
+  String get prayerTuningDaylightWinter;
+
+  /// No description provided for @prayerTuningPhoneSummer.
+  ///
+  /// In en, this message translates to:
+  /// **'Your phone\'s clock is on summer time now.'**
+  String get prayerTuningPhoneSummer;
+
+  /// No description provided for @prayerTuningPhoneWinter.
+  ///
+  /// In en, this message translates to:
+  /// **'Your phone\'s clock is on winter (standard) time now.'**
+  String get prayerTuningPhoneWinter;
+
+  /// No description provided for @prayerTuningDaylightShifted.
+  ///
+  /// In en, this message translates to:
+  /// **'The times are shifted a whole hour from your phone\'s clock.'**
+  String get prayerTuningDaylightShifted;
+
+  /// No description provided for @prayerTuningElevationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Height above sea level'**
+  String get prayerTuningElevationTitle;
+
+  /// No description provided for @prayerTuningElevationHint.
+  ///
+  /// In en, this message translates to:
+  /// **'It moves sunrise and Maghrib only: the higher you are, the earlier the sun rises and the later it sets. If you live on a high floor, type your own height.'**
+  String get prayerTuningElevationHint;
+
+  /// No description provided for @prayerTuningElevationField.
+  ///
+  /// In en, this message translates to:
+  /// **'Height in metres'**
+  String get prayerTuningElevationField;
+
+  /// No description provided for @prayerTuningElevationDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'From the phone\'s GPS: {metres}'**
+  String prayerTuningElevationDevice(String metres);
+
+  /// No description provided for @prayerTuningElevationNone.
+  ///
+  /// In en, this message translates to:
+  /// **'The phone gave no height, so the times are worked out at sea level.'**
+  String get prayerTuningElevationNone;
+
+  /// No description provided for @prayerTuningElevationManual.
+  ///
+  /// In en, this message translates to:
+  /// **'A height you typed: {metres}'**
+  String prayerTuningElevationManual(String metres);
+
+  /// No description provided for @prayerTuningElevationUseDevice.
+  ///
+  /// In en, this message translates to:
+  /// **'Use the phone\'s reading'**
+  String get prayerTuningElevationUseDevice;
+
+  /// No description provided for @prayerTuningElevationSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get prayerTuningElevationSave;
+
+  /// No description provided for @prayerTuningElevationInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Type a number from {min} to {max}'**
+  String prayerTuningElevationInvalid(String min, String max);
+
+  /// No description provided for @prayerTuningElevationEffect.
+  ///
+  /// In en, this message translates to:
+  /// **'Sunrise is about {minutes} earlier and Maghrib about {minutes} later.'**
+  String prayerTuningElevationEffect(String minutes);
+
+  /// No description provided for @metersCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{number} m'**
+  String metersCount(String number);
+
+  /// No description provided for @prayerTuningHijriTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjust the Hijri date'**
+  String get prayerTuningHijriTitle;
+
+  /// No description provided for @prayerTuningHijriHint.
+  ///
+  /// In en, this message translates to:
+  /// **'The calculated calendar can be a day or two off the moon sighting in your country. This changes the date shown and the fasting reminders.'**
+  String get prayerTuningHijriHint;
+
+  /// No description provided for @prayerTuningHijriToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today: {date}'**
+  String prayerTuningHijriToday(String date);
+
+  /// No description provided for @prayerTuningHijriNone.
+  ///
+  /// In en, this message translates to:
+  /// **'As in the calendar'**
+  String get prayerTuningHijriNone;
+
+  /// No description provided for @prayerTuningHijriForward.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 day forward} other{{count} days forward}}'**
+  String prayerTuningHijriForward(int count);
+
+  /// No description provided for @prayerTuningHijriBack.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 day back} other{{count} days back}}'**
+  String prayerTuningHijriBack(int count);
+
+  /// No description provided for @prayerTuningHijriBackButton.
+  ///
+  /// In en, this message translates to:
+  /// **'One day back'**
+  String get prayerTuningHijriBackButton;
+
+  /// No description provided for @prayerTuningHijriForwardButton.
+  ///
+  /// In en, this message translates to:
+  /// **'One day forward'**
+  String get prayerTuningHijriForwardButton;
+
+  /// No description provided for @prayerTuningNeedsPlace.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your place first on the prayer times page: the adjustments are made to the times of your place.'**
+  String get prayerTuningNeedsPlace;
 }
 
 class _AppLocalizationsDelegate

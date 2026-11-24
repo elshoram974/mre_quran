@@ -24,6 +24,7 @@ import '../data/prayer_soon_platform.dart';
 import '../domain/prayer_alerts.dart';
 import 'place_search_provider.dart';
 import '../domain/prayer_times.dart';
+import '../domain/prayer_tuning.dart';
 
 /// Provides the prayer store.
 final prayerRepositoryProvider = Provider<PrayerRepository>(
@@ -93,6 +94,13 @@ class PrayerState {
     if (here == null) return null;
     return settings.method ?? PrayerMethod.forPlace(here);
   }
+
+  /// How the times are moved from the calculation: what the person chose,
+  /// and the height of the place. Nothing while there is no place.
+  PrayerTuning get tuning {
+    final here = place;
+    return here == null ? PrayerTuning.none : settings.tuningAt(here);
+  }
 }
 
 /// Outcome of an action that needs a permission.
@@ -119,7 +127,7 @@ final prayerDayProvider = Provider<PrayerDay?>((ref) {
   final place = state?.place;
   if (place == null || method == null) return null;
   final now = ref.watch(tickingNowProvider);
-  return PrayerDay.compute(place, method, now);
+  return PrayerDay.compute(place, method, now, tuning: state!.tuning);
 });
 
 /// The prayer that comes next, or null while there is no place.
@@ -128,8 +136,21 @@ final nextPrayerProvider = Provider<NextPrayer?>((ref) {
   final method = state?.method;
   final place = state?.place;
   if (place == null || method == null) return null;
-  return nextPrayer(place, method, ref.watch(tickingNowProvider));
+  return nextPrayer(
+    place,
+    method,
+    ref.watch(tickingNowProvider),
+    tuning: state!.tuning,
+  );
 });
+
+/// Days the person moved the Hijri date: the calendar's tables can differ by a
+/// day or two from the moon sighting where they are. Zero until it is loaded.
+final hijriShiftProvider = Provider<int>(
+  (ref) => ref.watch(
+    prayerProvider.select((value) => value.value?.settings.hijriShift ?? 0),
+  ),
+);
 
 /// Owns the prayer choices. Times are worked out on the device for the next
 /// week and scheduled again each time the app starts, so they follow the
@@ -159,9 +180,12 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
     if (settings.needsSchedule) {
       final fresh = settings.automaticLocation ? await _location.quiet() : null;
       if (fresh != null) {
-        // The same spot keeps its name; a new one is named afresh.
-        place = place == fresh ? place : fresh;
-        unawaited(_repository.savePlace(place!));
+        // The same spot keeps its name; a new one is named afresh. The height
+        // is the phone's latest either way.
+        place = place == fresh
+            ? place!.withAltitude(fresh.altitude ?? place.altitude)
+            : fresh;
+        unawaited(_repository.savePlace(place));
       }
       unawaited(_schedule(settings, place));
     }
@@ -315,6 +339,57 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
     change: (settings) => settings.copyWith(afterMinutes: minutes),
   );
 
+  /// Moves the time of [prayer] by [minutes], at most
+  /// [PrayerTuning.maxOffset] either way; zero puts it back.
+  Future<void> setOffset(DailyPrayer prayer, int minutes) => _change(
+    needsPermission: false,
+    change: (settings) => settings.copyWith(
+      offsets: {
+        for (final MapEntry(:key, :value) in settings.offsets.entries)
+          if (key != prayer) key: value,
+        if (minutes != 0)
+          prayer: minutes.clamp(
+            -PrayerTuning.maxOffset,
+            PrayerTuning.maxOffset,
+          ),
+      },
+    ),
+  );
+
+  /// Puts every prayer back to the calculated time.
+  Future<void> resetOffsets() => _change(
+    needsPermission: false,
+    change: (settings) => settings.copyWith(offsets: const {}),
+  );
+
+  /// Says whether the place is on summer time, or follows the phone's clock.
+  Future<void> setDaylight(DaylightSaving daylight) => _change(
+    needsPermission: false,
+    change: (settings) => settings.copyWith(daylight: daylight),
+  );
+
+  /// Sets the height above sea level in metres; null follows the phone's GPS.
+  Future<void> setElevation(int? metres) => _change(
+    needsPermission: false,
+    change: (settings) => metres == null
+        ? settings.copyWith(automaticElevation: true)
+        : settings.copyWith(
+            elevation: metres.clamp(0, PrayerTuning.maxElevation),
+          ),
+  );
+
+  /// Moves the Hijri date by [days], at most
+  /// [PrayerSettings.maxHijriShift] either way.
+  Future<void> setHijriShift(int days) => _change(
+    needsPermission: false,
+    change: (settings) => settings.copyWith(
+      hijriShift: days.clamp(
+        -PrayerSettings.maxHijriShift,
+        PrayerSettings.maxHijriShift,
+      ),
+    ),
+  );
+
   /// Opens the system page and replaces approximate alarms after approval.
   Future<bool> allowExactAlarms() async {
     final allowed = await _scheduler.requestExact();
@@ -351,8 +426,20 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
     return PrayerResult.ok;
   }
 
+  /// How far the person may move before a height they typed no longer fits.
+  static const double _sameHeightKm = 1;
+
   Future<void> _apply(PrayerSettings settings, PrayerPlace? place) async {
     final previous = state.value;
+    final before = previous?.place;
+    // A height typed for one place is not the height of another: it is dropped
+    // when the place moves on (not for the few metres a GPS fix wanders).
+    if (settings.elevation != null &&
+        before != null &&
+        place != null &&
+        before.distanceKm(place) > _sameHeightKm) {
+      settings = settings.copyWith(automaticElevation: true);
+    }
     state = AsyncData(PrayerState(settings: settings, place: place));
     try {
       await _repository.saveSettings(settings);

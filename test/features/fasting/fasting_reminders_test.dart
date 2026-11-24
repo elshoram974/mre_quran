@@ -8,6 +8,9 @@ import 'package:mre_quran/core/time/ticking_clock.dart';
 import 'package:mre_quran/features/adhkar/application/reminders_provider.dart';
 import 'package:mre_quran/features/fasting/application/fasting_reminders_provider.dart';
 import 'package:mre_quran/features/fasting/domain/sunnah_fasts.dart';
+import 'package:mre_quran/features/prayer/application/prayer_provider.dart';
+import 'package:mre_quran/features/prayer/domain/hijri_date.dart';
+import 'package:mre_quran/features/prayer/domain/prayer_alerts.dart';
 import 'package:mre_quran/features/settings/application/settings_provider.dart';
 
 import '../../helpers/adhkar_fixtures.dart';
@@ -64,6 +67,45 @@ void main() {
     expect(first.channel, ReminderChannel.fasting);
     expect(first.payload, ReminderPayload.prayerTimes);
   });
+
+  test(
+    'a Hijri date moved a day by the person moves the fasts with it',
+    () async {
+      final moved = ProviderContainer(
+        overrides: [
+          reminderSchedulerProvider.overrideWithValue(scheduler),
+          fastingRepositoryProvider.overrideWithValue(repository),
+          settingsRepositoryProvider.overrideWithValue(
+            MemorySettingsRepository(),
+          ),
+          clockProvider.overrideWithValue(() => now),
+          prayerRepositoryProvider.overrideWithValue(
+            MemoryPrayerRepository()
+              ..settings = const PrayerSettings(hijriShift: 1),
+          ),
+          locationSourceProvider.overrideWithValue(FakeLocationSource()),
+        ],
+      );
+      addTearDown(moved.dispose);
+      await moved.read(prayerProvider.future);
+      await moved.read(fastingRemindersProvider.future);
+      await Future<void>.delayed(Duration.zero);
+      await Future<void>.delayed(Duration.zero);
+      final expected = FastingPlan.compute(
+        now: now,
+        settings: const FastingSettings(),
+        days: FastingRemindersNotifier.androidDays,
+        hijriOf: (day) => HijriDate.of(day, shift: 1),
+      );
+      final plain = FastingPlan.compute(
+        now: now,
+        settings: const FastingSettings(),
+        days: FastingRemindersNotifier.androidDays,
+      );
+      expect(expected.map((r) => r.id), isNot(plain.map((r) => r.id)));
+      expect(planned().toSet(), {for (final r in expected) r.id});
+    },
+  );
 
   test('a fast turned off is no longer reminded of, and stays off', () async {
     await settled();

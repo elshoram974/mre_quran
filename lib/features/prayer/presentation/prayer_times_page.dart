@@ -278,6 +278,13 @@ class _Content extends ConsumerWidget {
           onTap: () => context.push(AppRoute.adhan.path),
         ),
         const SizedBox(height: 12),
+        AppTileCard(
+          icon: Icons.tune,
+          title: l10n.prayerTuningTitle,
+          subtitle: l10n.prayerTuningTileSubtitle,
+          onTap: () => context.push(AppRoute.prayerTuning.path),
+        ),
+        const SizedBox(height: 12),
         AppCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

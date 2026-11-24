@@ -131,9 +131,7 @@ class GeolocatorLocationSource implements LocationSource {
             cacheAge <= const Duration(minutes: 5)
         ? cached
         : null;
-    if (!preferFresh && usableCache != null) {
-      return PrayerPlace(usableCache.latitude, usableCache.longitude);
-    }
+    if (!preferFresh && usableCache != null) return _placeOf(usableCache);
     try {
       final position = await Geolocator.getCurrentPosition(
         locationSettings: LocationSettings(
@@ -145,15 +143,19 @@ class GeolocatorLocationSource implements LocationSource {
       );
       final age = DateTime.now().difference(position.timestamp);
       if (!age.isNegative && age <= const Duration(minutes: 5)) {
-        return PrayerPlace(position.latitude, position.longitude);
+        return _placeOf(position);
       }
-      return usableCache == null
-          ? null
-          : PrayerPlace(usableCache.latitude, usableCache.longitude);
+      return usableCache == null ? null : _placeOf(usableCache);
     } on Object {
-      return usableCache == null
-          ? null
-          : PrayerPlace(usableCache.latitude, usableCache.longitude);
+      return usableCache == null ? null : _placeOf(usableCache);
     }
   }
+
+  /// The rounded place of [position], with the height the GPS gave. A height
+  /// of exactly zero is how a phone says it has none.
+  PrayerPlace _placeOf(Position position) => PrayerPlace(
+    position.latitude,
+    position.longitude,
+    altitude: position.altitude == 0 ? null : position.altitude,
+  );
 }

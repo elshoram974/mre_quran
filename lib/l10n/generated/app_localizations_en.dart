@@ -2017,4 +2017,161 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get printedShowSaved => 'Show it';
+
+  @override
+  String get prayerTuningTitle => 'Adjust the times';
+
+  @override
+  String get prayerTuningTileSubtitle =>
+      'Move each prayer, summer time, height and the Hijri date';
+
+  @override
+  String get prayerTuningOffsetsTitle => 'Move the prayers';
+
+  @override
+  String get prayerTuningOffsetsHint =>
+      'Minutes added to or taken from each prayer\'s time. The alerts, the adhan and the widgets follow them. Zero is the calculated time.';
+
+  @override
+  String get prayerTuningAsCalculated => 'As calculated';
+
+  @override
+  String prayerTuningEarlier(String minutes) {
+    return '$minutes earlier';
+  }
+
+  @override
+  String prayerTuningLater(String minutes) {
+    return '$minutes later';
+  }
+
+  @override
+  String get prayerTuningEarlierButton => 'One minute earlier';
+
+  @override
+  String get prayerTuningLaterButton => 'One minute later';
+
+  @override
+  String get prayerTuningResetAll =>
+      'Put every prayer back to the calculated time';
+
+  @override
+  String get prayerTuningDaylightTitle => 'Summer time';
+
+  @override
+  String get prayerTuningDaylightHint =>
+      'The times follow your phone\'s clock. If it is not on your place\'s time (on summer time when it is winter, or the other way round), choose the right one here.';
+
+  @override
+  String get prayerTuningDaylightAuto => 'Follow the phone';
+
+  @override
+  String get prayerTuningDaylightSummer => 'Summer';
+
+  @override
+  String get prayerTuningDaylightWinter => 'Winter';
+
+  @override
+  String get prayerTuningPhoneSummer =>
+      'Your phone\'s clock is on summer time now.';
+
+  @override
+  String get prayerTuningPhoneWinter =>
+      'Your phone\'s clock is on winter (standard) time now.';
+
+  @override
+  String get prayerTuningDaylightShifted =>
+      'The times are shifted a whole hour from your phone\'s clock.';
+
+  @override
+  String get prayerTuningElevationTitle => 'Height above sea level';
+
+  @override
+  String get prayerTuningElevationHint =>
+      'It moves sunrise and Maghrib only: the higher you are, the earlier the sun rises and the later it sets. If you live on a high floor, type your own height.';
+
+  @override
+  String get prayerTuningElevationField => 'Height in metres';
+
+  @override
+  String prayerTuningElevationDevice(String metres) {
+    return 'From the phone\'s GPS: $metres';
+  }
+
+  @override
+  String get prayerTuningElevationNone =>
+      'The phone gave no height, so the times are worked out at sea level.';
+
+  @override
+  String prayerTuningElevationManual(String metres) {
+    return 'A height you typed: $metres';
+  }
+
+  @override
+  String get prayerTuningElevationUseDevice => 'Use the phone\'s reading';
+
+  @override
+  String get prayerTuningElevationSave => 'Save';
+
+  @override
+  String prayerTuningElevationInvalid(String min, String max) {
+    return 'Type a number from $min to $max';
+  }
+
+  @override
+  String prayerTuningElevationEffect(String minutes) {
+    return 'Sunrise is about $minutes earlier and Maghrib about $minutes later.';
+  }
+
+  @override
+  String metersCount(String number) {
+    return '$number m';
+  }
+
+  @override
+  String get prayerTuningHijriTitle => 'Adjust the Hijri date';
+
+  @override
+  String get prayerTuningHijriHint =>
+      'The calculated calendar can be a day or two off the moon sighting in your country. This changes the date shown and the fasting reminders.';
+
+  @override
+  String prayerTuningHijriToday(String date) {
+    return 'Today: $date';
+  }
+
+  @override
+  String get prayerTuningHijriNone => 'As in the calendar';
+
+  @override
+  String prayerTuningHijriForward(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days forward',
+      one: '1 day forward',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String prayerTuningHijriBack(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days back',
+      one: '1 day back',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get prayerTuningHijriBackButton => 'One day back';
+
+  @override
+  String get prayerTuningHijriForwardButton => 'One day forward';
+
+  @override
+  String get prayerTuningNeedsPlace =>
+      'Choose your place first on the prayer times page: the adjustments are made to the times of your place.';
 }

@@ -13,6 +13,7 @@ import '../application/prayer_provider.dart';
 import '../application/prayer_widget_sync.dart';
 import '../domain/hijri_date.dart';
 import '../domain/prayer_times.dart';
+import '../domain/prayer_tuning.dart';
 import 'prayer_labels.dart';
 
 /// Keeps the native widget's cached next-prayer payload in sync with Flutter.
@@ -53,6 +54,13 @@ class _PrayerWidgetSyncScopeState extends ConsumerState<PrayerWidgetSyncScope> {
         settingsProvider.select((value) => value.value?.widgetLanguage),
         (_, _) => _scheduleSync(),
       ),
+      // The week of times and dates the widgets keep follows the minutes the
+      // person moved the prayers, and the days they moved the Hijri date.
+      ref.listenManual(
+        prayerProvider.select((value) => value.value?.tuning),
+        (_, _) => _scheduleSync(),
+      ),
+      ref.listenManual(hijriShiftProvider, (_, _) => _scheduleSync()),
     ]);
   }
 
@@ -139,7 +147,15 @@ class _PrayerWidgetSyncScopeState extends ConsumerState<PrayerWidgetSyncScope> {
         ),
         days: place == null || method == null
             ? const []
-            : _days(l10n, language, clock, place, method, digits),
+            : _days(
+                l10n,
+                language,
+                clock,
+                place,
+                method,
+                digits,
+                state!.tuning,
+              ),
         times: [
           for (final prayer in DailyPrayer.values)
             PrayerWidgetTime(
@@ -159,6 +175,7 @@ class _PrayerWidgetSyncScopeState extends ConsumerState<PrayerWidgetSyncScope> {
     PrayerPlace place,
     PrayerMethod method,
     String Function(String) digits,
+    PrayerTuning tuning,
   ) {
     final today = ref.read(clockProvider)();
     final dateFormat = DateFormat.MMMEd(language);
@@ -171,6 +188,7 @@ class _PrayerWidgetSyncScopeState extends ConsumerState<PrayerWidgetSyncScope> {
           place,
           method,
           digits,
+          tuning,
           DateTime(today.year, today.month, today.day + offset),
         ),
     ];
@@ -183,16 +201,21 @@ class _PrayerWidgetSyncScopeState extends ConsumerState<PrayerWidgetSyncScope> {
     PrayerPlace place,
     PrayerMethod method,
     String Function(String) digits,
+    PrayerTuning tuning,
     DateTime date,
   ) {
-    final times = PrayerDay.compute(place, method, date);
+    final times = PrayerDay.compute(place, method, date, tuning: tuning);
     PrayerWidgetRow row(String id, String name, DateTime at) =>
         PrayerWidgetRow(id: id, name: name, time: clock(at), at: at);
     return PrayerWidgetDay(
       start: date,
       end: DateTime(date.year, date.month, date.day + 1),
       dateLabel: digits(dateFormat.format(date)),
-      hijriLabel: hijriLabel(l10n, HijriDate.of(date), digits),
+      hijriLabel: hijriLabel(
+        l10n,
+        HijriDate.of(date, shift: ref.read(hijriShiftProvider)),
+        digits,
+      ),
       rows: [
         row('fajr', l10n.prayerFajr, times.fajr),
         row('sunrise', l10n.prayerSunrise, times.sunrise),

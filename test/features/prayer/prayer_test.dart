@@ -10,6 +10,7 @@ import 'package:mre_quran/features/prayer/data/location_source.dart';
 import 'package:mre_quran/features/prayer/data/place_name_source.dart';
 import 'package:mre_quran/features/prayer/domain/prayer_alerts.dart';
 import 'package:mre_quran/features/prayer/domain/prayer_times.dart';
+import 'package:mre_quran/features/prayer/domain/prayer_tuning.dart';
 import 'package:mre_quran/features/prayer/presentation/prayer_labels.dart';
 import 'package:mre_quran/features/settings/application/settings_provider.dart';
 import 'package:mre_quran/features/settings/domain/app_settings.dart';
@@ -729,6 +730,116 @@ void main() {
         expect(scheduler.once.values.first.at, before);
       },
     );
+
+    test(
+      'minutes added to a prayer move its alert; zero puts it back',
+      () async {
+        final scheduler = FakeReminderScheduler();
+        final c = container(
+          scheduler: scheduler,
+          location: FakeLocationSource(requestResult: _cairo),
+        );
+        await c.read(prayerProvider.future);
+        final notifier = c.read(prayerProvider.notifier);
+        await notifier.setAlert(DailyPrayer.fajr, true);
+        final before = scheduler.once.values.first.at;
+
+        await notifier.setOffset(DailyPrayer.fajr, 4);
+        expect(c.read(prayerProvider).value!.settings.offsets, {
+          DailyPrayer.fajr: 4,
+        });
+        expect(
+          scheduler.once.values.first.at,
+          before.add(const Duration(minutes: 4)),
+        );
+        // The page and the widgets read the same moved times.
+        final day = PrayerDay.compute(
+          _cairo,
+          PrayerMethod.egyptian,
+          _now,
+          tuning: c.read(prayerProvider).value!.tuning,
+        );
+        expect(day.fajr, before.add(const Duration(minutes: 4)));
+
+        await notifier.setOffset(DailyPrayer.fajr, 90);
+        expect(
+          c.read(prayerProvider).value!.settings.offsets[DailyPrayer.fajr],
+          PrayerTuning.maxOffset,
+        );
+        await notifier.setOffset(DailyPrayer.fajr, 0);
+        expect(c.read(prayerProvider).value!.settings.offsets, isEmpty);
+        expect(scheduler.once.values.first.at, before);
+      },
+    );
+
+    test('every prayer can be put back at once', () async {
+      final c = container(
+        scheduler: FakeReminderScheduler(),
+        location: FakeLocationSource(requestResult: _cairo),
+      );
+      await c.read(prayerProvider.future);
+      final notifier = c.read(prayerProvider.notifier);
+      await notifier.setOffset(DailyPrayer.asr, -5);
+      await notifier.setOffset(DailyPrayer.isha, 10);
+      await notifier.resetOffsets();
+      expect(c.read(prayerProvider).value!.settings.offsets, isEmpty);
+    });
+
+    test('a height typed for a place is kept for the few metres a fix wanders '
+        'and dropped when the place moves on', () async {
+      final c = container(
+        scheduler: FakeReminderScheduler(),
+        location: FakeLocationSource(requestResult: _cairo),
+      );
+      await c.read(prayerProvider.future);
+      final notifier = c.read(prayerProvider.notifier);
+      await notifier.setPlace(_cairo);
+      await notifier.setElevation(120);
+      expect(c.read(prayerProvider).value!.tuning.elevation, 120);
+
+      await notifier.setPlace(PrayerPlace(30.0449, 31.2361));
+      expect(c.read(prayerProvider).value!.settings.elevation, 120);
+
+      await notifier.setPlace(PrayerPlace(31.2001, 29.9187));
+      expect(c.read(prayerProvider).value!.settings.elevation, isNull);
+      expect(c.read(prayerProvider).value!.tuning.elevation, 0);
+    });
+
+    test(
+      'without a typed height, the place\'s own GPS height is used',
+      () async {
+        final c = container(
+          scheduler: FakeReminderScheduler(),
+          location: FakeLocationSource(requestResult: _cairo),
+        );
+        await c.read(prayerProvider.future);
+        final notifier = c.read(prayerProvider.notifier);
+        await notifier.setPlace(PrayerPlace(30.0444, 31.2357, altitude: 75));
+        expect(c.read(prayerProvider).value!.tuning.elevation, 75);
+        await notifier.setElevation(10);
+        expect(c.read(prayerProvider).value!.tuning.elevation, 10);
+        await notifier.setElevation(null);
+        expect(c.read(prayerProvider).value!.tuning.elevation, 75);
+      },
+    );
+
+    test('summer time and the Hijri date are saved and shared', () async {
+      final repo = MemoryPrayerRepository();
+      final c = container(
+        scheduler: FakeReminderScheduler(),
+        location: FakeLocationSource(requestResult: _cairo),
+        repository: repo,
+      );
+      await c.read(prayerProvider.future);
+      final notifier = c.read(prayerProvider.notifier);
+      await notifier.setDaylight(DaylightSaving.summer);
+      await notifier.setHijriShift(5);
+      expect(c.read(hijriShiftProvider), PrayerSettings.maxHijriShift);
+      expect(repo.settings.daylight, DaylightSaving.summer);
+      expect(repo.settings.hijriShift, PrayerSettings.maxHijriShift);
+      await notifier.setHijriShift(-1);
+      expect(c.read(hijriShiftProvider), -1);
+    });
 
     test('exact alarms are requested through the scheduler', () async {
       final scheduler = FakeReminderScheduler();

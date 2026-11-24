@@ -12,6 +12,8 @@ import '../../../core/notifications/reminder_scheduler_provider.dart';
 import '../../../core/time/ticking_clock.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../adhkar/application/reminders_provider.dart';
+import '../../prayer/application/prayer_provider.dart';
+import '../../prayer/domain/hijri_date.dart';
 import '../../settings/application/digits_provider.dart';
 import '../../settings/application/settings_provider.dart';
 import '../data/fasting_repository.dart';
@@ -55,6 +57,8 @@ class FastingRemindersNotifier extends AsyncNotifier<FastingSettings> {
     ref.watch(
       settingsProvider.select((value) => value.value?.localeCode ?? 'ar'),
     );
+    // So do the days the person moved the Hijri date, which move the fasts.
+    ref.watch(hijriShiftProvider);
     final settings = await _repository.load();
     unawaited(_schedule(settings));
     return settings;
@@ -94,6 +98,9 @@ class FastingRemindersNotifier extends AsyncNotifier<FastingSettings> {
     }
   }
 
+  HijriDate _hijriOf(DateTime day) =>
+      HijriDate.of(day, shift: ref.read(hijriShiftProvider));
+
   /// Replaces the planned reminders with those of [settings], one at a time
   /// so an older plan never lands after a newer one.
   Future<void> _schedule(FastingSettings settings) {
@@ -112,6 +119,7 @@ class FastingRemindersNotifier extends AsyncNotifier<FastingSettings> {
         now: ref.read(clockProvider)(),
         settings: settings,
         days: ios ? iosDays : androidDays,
+        hijriOf: _hijriOf,
       ).take(ios ? iosLimit : FastingPlan.maxDays);
       final language = ref.read(settingsProvider).value?.localeCode ?? 'ar';
       final l10n = lookupAppLocalizations(Locale(language));
@@ -157,8 +165,13 @@ String fastingReminderBody(
 /// The next day of each sunnah fast, from today, for the switches to show.
 final fastingNextDaysProvider = Provider<Map<SunnahFast, DateTime?>>((ref) {
   final now = ref.watch(clockProvider)();
+  final shift = ref.watch(hijriShiftProvider);
   return {
     for (final fast in SunnahFast.values)
-      fast: FastingPlan.next(fast, now: now),
+      fast: FastingPlan.next(
+        fast,
+        now: now,
+        hijriOf: (day) => HijriDate.of(day, shift: shift),
+      ),
   };
 });

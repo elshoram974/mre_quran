@@ -2002,4 +2002,161 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get printedShowSaved => 'اعرضها';
+
+  @override
+  String get prayerTuningTitle => 'ضبط المواقيت';
+
+  @override
+  String get prayerTuningTileSubtitle =>
+      'تقديم أو تأخير كل صلاة، والتوقيت الصيفي، والارتفاع، والتاريخ الهجري';
+
+  @override
+  String get prayerTuningOffsetsTitle => 'تقديم وتأخير الصلوات';
+
+  @override
+  String get prayerTuningOffsetsHint =>
+      'دقائق تُضاف إلى وقت كل صلاة أو تُنقص منه، وتتبعها التنبيهات والأذان والأدوات. الصفر هو الوقت المحسوب.';
+
+  @override
+  String get prayerTuningAsCalculated => 'كما هو محسوب';
+
+  @override
+  String prayerTuningEarlier(String minutes) {
+    return 'تقديم $minutes';
+  }
+
+  @override
+  String prayerTuningLater(String minutes) {
+    return 'تأخير $minutes';
+  }
+
+  @override
+  String get prayerTuningEarlierButton => 'تقديم دقيقة';
+
+  @override
+  String get prayerTuningLaterButton => 'تأخير دقيقة';
+
+  @override
+  String get prayerTuningResetAll => 'إعادة كل الصلوات للوقت المحسوب';
+
+  @override
+  String get prayerTuningDaylightTitle => 'التوقيت الصيفي';
+
+  @override
+  String get prayerTuningDaylightHint =>
+      'الأوقات تتبع ساعة هاتفك. إن كانت ساعته على غير توقيت مكانك (صيفي وهو شتوي، أو العكس) فاختر هنا الصحيح.';
+
+  @override
+  String get prayerTuningDaylightAuto => 'حسب الهاتف';
+
+  @override
+  String get prayerTuningDaylightSummer => 'صيفي';
+
+  @override
+  String get prayerTuningDaylightWinter => 'شتوي';
+
+  @override
+  String get prayerTuningPhoneSummer => 'ساعة هاتفك الآن على التوقيت الصيفي.';
+
+  @override
+  String get prayerTuningPhoneWinter =>
+      'ساعة هاتفك الآن على التوقيت الشتوي (القياسي).';
+
+  @override
+  String get prayerTuningDaylightShifted =>
+      'الأوقات مُزاحة ساعة كاملة عن ساعة هاتفك.';
+
+  @override
+  String get prayerTuningElevationTitle => 'الارتفاع عن سطح البحر';
+
+  @override
+  String get prayerTuningElevationHint =>
+      'يؤثر على الشروق والمغرب فقط: كلما علوت رأيت الشمس تشرق أبكر وتغيب أبعد. إن كنت ساكنًا في دور عالٍ فاكتب ارتفاعك بنفسك.';
+
+  @override
+  String get prayerTuningElevationField => 'الارتفاع بالمتر';
+
+  @override
+  String prayerTuningElevationDevice(String metres) {
+    return 'من GPS الهاتف: $metres';
+  }
+
+  @override
+  String get prayerTuningElevationNone =>
+      'لم يعطِ الهاتف ارتفاعًا، فالحساب عند مستوى سطح البحر.';
+
+  @override
+  String prayerTuningElevationManual(String metres) {
+    return 'ارتفاع كتبته أنت: $metres';
+  }
+
+  @override
+  String get prayerTuningElevationUseDevice => 'استخدم قراءة الهاتف';
+
+  @override
+  String get prayerTuningElevationSave => 'حفظ';
+
+  @override
+  String prayerTuningElevationInvalid(String min, String max) {
+    return 'اكتب رقمًا من $min إلى $max';
+  }
+
+  @override
+  String prayerTuningElevationEffect(String minutes) {
+    return 'الشروق أبكر والمغرب أبعد بنحو $minutes.';
+  }
+
+  @override
+  String metersCount(String number) {
+    return '$number م';
+  }
+
+  @override
+  String get prayerTuningHijriTitle => 'تعديل التاريخ الهجري';
+
+  @override
+  String get prayerTuningHijriHint =>
+      'التقويم المحسوب قد يختلف يومًا أو يومين عن رؤية الهلال في بلدك. التعديل يغيّر التاريخ المعروض وتذكيرات الصيام.';
+
+  @override
+  String prayerTuningHijriToday(String date) {
+    return 'اليوم: $date';
+  }
+
+  @override
+  String get prayerTuningHijriNone => 'كما في التقويم';
+
+  @override
+  String prayerTuningHijriForward(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count أيام للأمام',
+      two: 'يومان للأمام',
+      one: 'يوم للأمام',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String prayerTuningHijriBack(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count أيام للخلف',
+      two: 'يومان للخلف',
+      one: 'يوم للخلف',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get prayerTuningHijriBackButton => 'يوم للخلف';
+
+  @override
+  String get prayerTuningHijriForwardButton => 'يوم للأمام';
+
+  @override
+  String get prayerTuningNeedsPlace =>
+      'اختر مكانك أولًا من صفحة مواقيت الصلاة، فالضبط يكون على مواقيت مكانك.';
 }

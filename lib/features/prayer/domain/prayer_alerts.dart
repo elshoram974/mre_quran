@@ -1,6 +1,7 @@
 import 'package:meta/meta.dart';
 
 import 'prayer_times.dart';
+import 'prayer_tuning.dart';
 
 /// The prayer choices: the time alerts, the reminder before them, the
 /// after-prayer adhkar reminder, and how the times are worked out.
@@ -16,6 +17,10 @@ class PrayerSettings {
     this.beforeMinutes = 15,
     this.beforeCountdown = true,
     this.automaticLocation = true,
+    this.offsets = const {},
+    this.daylight = DaylightSaving.automatic,
+    this.elevation,
+    this.hijriShift = 0,
   });
 
   /// Reads settings saved by [toJson]. Anything unreadable gives the defaults.
@@ -24,6 +29,9 @@ class PrayerSettings {
     final after = json['after'];
     final alerts = json['alerts'];
     final before = json['before'];
+    final offsets = json['offsets'];
+    final elevation = json['elevation'];
+    final hijriShift = json['hijriShift'];
     return PrayerSettings(
       adhkarReminder: json['on'] == true,
       method: PrayerMethod.tryParse(json['method']),
@@ -36,6 +44,23 @@ class PrayerSettings {
       // Older settings did not record how the place was chosen. Preserve the
       // saved place until the person explicitly chooses device location again.
       automaticLocation: json['automaticLocation'] == true,
+      offsets: {
+        if (offsets is Map<String, Object?>)
+          for (final prayer in DailyPrayer.values)
+            if (offsets[prayer.name] case final int minutes
+                when minutes != 0 && minutes.abs() <= PrayerTuning.maxOffset)
+              prayer: minutes,
+      },
+      daylight: DaylightSaving.parse(json['daylight']),
+      elevation:
+          elevation is int &&
+              elevation >= 0 &&
+              elevation <= PrayerTuning.maxElevation
+          ? elevation
+          : null,
+      hijriShift: hijriShift is int && hijriShift.abs() <= maxHijriShift
+          ? hijriShift
+          : 0,
       alerts: {
         if (alerts is List<Object?>)
           for (final name in alerts)
@@ -44,6 +69,9 @@ class PrayerSettings {
       },
     );
   }
+
+  /// The most days the Hijri date may be moved, either way.
+  static const int maxHijriShift = 2;
 
   /// Minutes after the prayer time an adhkar reminder may come.
   static const List<int> choices = [10, 15, 20, 30];
@@ -77,6 +105,36 @@ class PrayerSettings {
   /// Whether a previously granted device location may refresh the place.
   final bool automaticLocation;
 
+  /// Minutes the person added to a prayer's time, up to
+  /// [PrayerTuning.maxOffset] either way; a prayer not here is not moved.
+  final Map<DailyPrayer, int> offsets;
+
+  /// What the person says about summer time.
+  final DaylightSaving daylight;
+
+  /// Metres above sea level the person typed, or null to use what the phone's
+  /// GPS read for the place.
+  final int? elevation;
+
+  /// Days the person moved the Hijri date, because the calendar's tables can
+  /// differ from the moon sighting where they are: -2 to 2.
+  final int hijriShift;
+
+  /// The height used at [place]: the person's own, else the GPS's, else sea
+  /// level.
+  int elevationAt(PrayerPlace place) =>
+      (elevation ?? place.altitude?.round() ?? 0).clamp(
+        0,
+        PrayerTuning.maxElevation,
+      );
+
+  /// How the times at [place] are moved from the calculation.
+  PrayerTuning tuningAt(PrayerPlace place) => PrayerTuning(
+    offsets: offsets,
+    daylight: daylight,
+    elevation: elevationAt(place),
+  );
+
   /// Whether anything needs the prayer times scheduled.
   bool get needsSchedule => adhkarReminder || alerts.isNotEmpty;
 
@@ -91,6 +149,11 @@ class PrayerSettings {
     int? beforeMinutes,
     bool? beforeCountdown,
     bool? automaticLocation,
+    Map<DailyPrayer, int>? offsets,
+    DaylightSaving? daylight,
+    int? elevation,
+    bool automaticElevation = false,
+    int? hijriShift,
   }) => PrayerSettings(
     adhkarReminder: adhkarReminder ?? this.adhkarReminder,
     method: automaticMethod ? null : (method ?? this.method),
@@ -100,6 +163,10 @@ class PrayerSettings {
     beforeMinutes: beforeMinutes ?? this.beforeMinutes,
     beforeCountdown: beforeCountdown ?? this.beforeCountdown,
     automaticLocation: automaticLocation ?? this.automaticLocation,
+    offsets: offsets ?? this.offsets,
+    daylight: daylight ?? this.daylight,
+    elevation: automaticElevation ? null : (elevation ?? this.elevation),
+    hijriShift: hijriShift ?? this.hijriShift,
   );
 
   /// Compact form for storage.
@@ -112,6 +179,13 @@ class PrayerSettings {
     'before': beforeMinutes,
     'beforeCountdown': beforeCountdown,
     'automaticLocation': automaticLocation,
+    'offsets': {
+      for (final MapEntry(:key, :value) in offsets.entries)
+        if (value != 0) key.name: value,
+    },
+    'daylight': daylight.name,
+    'elevation': ?elevation,
+    'hijriShift': hijriShift,
   };
 }
 
@@ -183,12 +257,14 @@ abstract final class PrayerAlertPlan {
   }) {
     assert(days >= 1 && days <= maxDays);
     final method = settings.method ?? PrayerMethod.forPlace(place);
+    final tuning = settings.tuningAt(place);
     final alerts = <PrayerAlert>[];
     for (var day = 0; day < days; day++) {
       final times = PrayerDay.compute(
         place,
         method,
         DateTime(now.year, now.month, now.day + day),
+        tuning: tuning,
       );
       for (final prayer in DailyPrayer.values) {
         final slot = day * _perDay + prayer.index;

@@ -1,5 +1,9 @@
+import 'dart:math' as math;
+
 import 'package:adhan/adhan.dart';
 import 'package:meta/meta.dart';
+
+import 'prayer_tuning.dart';
 
 /// The five daily prayers.
 enum DailyPrayer {
@@ -23,10 +27,14 @@ enum DailyPrayer {
 @immutable
 class PrayerPlace {
   /// Creates a place, rounding to four decimals. [name] is what the place is
-  /// called ("Cairo, Egypt"), when it is known.
-  PrayerPlace(double latitude, double longitude, {this.name})
+  /// called ("Cairo, Egypt"), when it is known. [altitude] is the height the
+  /// phone's GPS gave, in metres above sea level, rounded to a metre.
+  PrayerPlace(double latitude, double longitude, {this.name, double? altitude})
     : latitude = (latitude * 10000).roundToDouble() / 10000,
-      longitude = (longitude * 10000).roundToDouble() / 10000;
+      longitude = (longitude * 10000).roundToDouble() / 10000,
+      altitude = altitude != null && altitude.isFinite
+          ? altitude.roundToDouble()
+          : null;
 
   /// Reads a place saved by [toJson], or null.
   static PrayerPlace? tryFromJson(Object? json) {
@@ -43,10 +51,12 @@ class PrayerPlace {
       return null;
     }
     final name = json['name'];
+    final altitude = json['alt'];
     return PrayerPlace(
       lat.toDouble(),
       lng.toDouble(),
       name: name is String && name.trim().isNotEmpty ? name.trim() : null,
+      altitude: altitude is num ? altitude.toDouble() : null,
     );
   }
 
@@ -61,15 +71,38 @@ class PrayerPlace {
   /// places the same: the same point with and without a name is one place.
   final String? name;
 
+  /// Metres above sea level as the phone's GPS read them; null when it gave
+  /// none (a place picked on the map has none). Like the name, it is not part
+  /// of what makes two places the same.
+  final double? altitude;
+
   /// The same place, called [name].
   PrayerPlace withName(String? name) =>
-      PrayerPlace(latitude, longitude, name: name);
+      PrayerPlace(latitude, longitude, name: name, altitude: altitude);
+
+  /// The same place at [altitude] metres.
+  PrayerPlace withAltitude(double? altitude) =>
+      PrayerPlace(latitude, longitude, name: name, altitude: altitude);
+
+  /// The distance to [other] in kilometres, along the surface.
+  double distanceKm(PrayerPlace other) {
+    double radians(double degrees) => degrees * math.pi / 180;
+    final dLat = radians(other.latitude - latitude);
+    final dLng = radians(other.longitude - longitude);
+    final a =
+        math.pow(math.sin(dLat / 2), 2) +
+        math.cos(radians(latitude)) *
+            math.cos(radians(other.latitude)) *
+            math.pow(math.sin(dLng / 2), 2);
+    return 6371 * 2 * math.asin(math.sqrt(a));
+  }
 
   /// Compact form for storage.
   Map<String, Object?> toJson() => {
     'lat': latitude,
     'lng': longitude,
     if (name != null) 'name': name,
+    if (altitude != null) 'alt': altitude,
   };
 
   @override
@@ -195,24 +228,37 @@ class PrayerDay {
     required this.isha,
   });
 
-  /// Works out the times at [place] on [date] with [method].
+  /// Works out the times at [place] on [date] with [method], moved as
+  /// [tuning] says: the minutes added to each prayer, the height above sea
+  /// level (which brings sunrise earlier and Maghrib later), and summer time.
   factory PrayerDay.compute(
     PrayerPlace place,
     PrayerMethod method,
-    DateTime date,
-  ) {
+    DateTime date, {
+    PrayerTuning tuning = PrayerTuning.none,
+  }) {
+    final parameters = method._method.getParameters();
+    final horizon = PrayerElevation.shift(place, date, tuning.elevation);
+    parameters.adjustments
+      ..fajr = tuning.offsetOf(DailyPrayer.fajr)
+      ..sunrise = horizon.sunrise
+      ..dhuhr = tuning.offsetOf(DailyPrayer.dhuhr)
+      ..asr = tuning.offsetOf(DailyPrayer.asr)
+      ..maghrib = tuning.offsetOf(DailyPrayer.maghrib) + horizon.sunset
+      ..isha = tuning.offsetOf(DailyPrayer.isha);
     final times = PrayerTimes(
       Coordinates(place.latitude, place.longitude),
       DateComponents.from(date),
-      method._method.getParameters(),
+      parameters,
     );
+    final summer = Duration(minutes: tuning.daylight.shiftOn(date));
     return PrayerDay(
-      fajr: times.fajr.toLocal(),
-      sunrise: times.sunrise.toLocal(),
-      dhuhr: times.dhuhr.toLocal(),
-      asr: times.asr.toLocal(),
-      maghrib: times.maghrib.toLocal(),
-      isha: times.isha.toLocal(),
+      fajr: times.fajr.toLocal().add(summer),
+      sunrise: times.sunrise.toLocal().add(summer),
+      dhuhr: times.dhuhr.toLocal().add(summer),
+      asr: times.asr.toLocal().add(summer),
+      maghrib: times.maghrib.toLocal().add(summer),
+      isha: times.isha.toLocal().add(summer),
     );
   }
 
@@ -258,8 +304,13 @@ class NextPrayer {
 }
 
 /// Finds the prayer after [now] at [place]: today's, or tomorrow's Fajr.
-NextPrayer nextPrayer(PrayerPlace place, PrayerMethod method, DateTime now) {
-  final today = PrayerDay.compute(place, method, now);
+NextPrayer nextPrayer(
+  PrayerPlace place,
+  PrayerMethod method,
+  DateTime now, {
+  PrayerTuning tuning = PrayerTuning.none,
+}) {
+  final today = PrayerDay.compute(place, method, now, tuning: tuning);
   for (final prayer in DailyPrayer.values) {
     if (today.of(prayer).isAfter(now)) {
       return NextPrayer(prayer, today.of(prayer));
@@ -269,6 +320,7 @@ NextPrayer nextPrayer(PrayerPlace place, PrayerMethod method, DateTime now) {
     place,
     method,
     DateTime(now.year, now.month, now.day + 1),
+    tuning: tuning,
   );
   return NextPrayer(DailyPrayer.fajr, tomorrow.fajr);
 }

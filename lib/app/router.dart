@@ -17,6 +17,7 @@ import '../features/mushaf/presentation/mushaf_page.dart';
 import '../features/adhan/presentation/adhan_page.dart';
 import '../features/prayer/presentation/prayer_times_page.dart';
 import '../features/prayer/presentation/prayer_location_picker_page.dart';
+import '../features/prayer/presentation/prayer_tuning_page.dart';
 import '../features/prayer/presentation/qibla_page.dart';
 import '../features/quran_index/presentation/quran_index_page.dart';
 import '../features/quran_text/presentation/quran_search_page.dart';
@@ -119,6 +120,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoute.adhan.path,
         pageBuilder: (context, state) =>
             _page(context, state, const AdhanPage()),
+      ),
+      GoRoute(
+        path: AppRoute.prayerTuning.path,
+        pageBuilder: (context, state) =>
+            _page(context, state, const PrayerTuningPage()),
       ),
       GoRoute(
         path: AppRoute.qibla.path,
@@ -307,7 +313,8 @@ enum AppRoute {
   prayerTimes('/prayer-times'),
   prayerLocationPicker('/prayer-location'),
   qibla('/qibla'),
-  adhan('/adhan');
+  adhan('/adhan'),
+  prayerTuning('/prayer-tuning');
 
   const AppRoute(this.path);
   final String path;
