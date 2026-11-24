@@ -38,7 +38,7 @@ dependencies:
   jni_flutter: ^1.0.3
   liquid_glass_widgets: ^1.17.5
   meta: ^1.19.0
-  mre_fields: ^0.4.0
+  mre_fields: ^0.4.1
   objective_c: ^9.6.2
   path_provider: ^2.1.6
   sensors_plus: ^7.1.1
@@ -54,8 +54,8 @@ dependencies:
   share_plus: ^13.3.1
   pdf: ^3.13.1
   printing: ^5.15.1
-  material_ui: any
-  cupertino_ui: any
+  material_ui: ^1.11.1
+  cupertino_ui: ^1.1.7
   url_launcher: ^6.3.3
   quick_actions: ^1.1.1
 dev_dependencies:
