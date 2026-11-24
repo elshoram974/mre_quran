@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mre_quran/core/notifications/reminder_payload.dart';
 import 'package:mre_quran/core/notifications/reminder_scheduler.dart';
 import 'package:mre_quran/core/notifications/reminder_scheduler_provider.dart';
 import 'package:mre_quran/core/time/ticking_clock.dart';
@@ -13,10 +14,12 @@ import 'package:mre_quran/features/prayer/application/prayer_provider.dart';
 import 'package:mre_quran/features/prayer/domain/prayer_alerts.dart';
 import 'package:mre_quran/features/prayer/domain/prayer_times.dart';
 import 'package:mre_quran/features/settings/application/settings_provider.dart';
+import 'package:mre_quran/features/settings/domain/app_settings.dart';
 
 import '../../helpers/adhan_fixtures.dart';
 import '../../helpers/adhkar_fixtures.dart';
 import '../../helpers/memory_settings_repository.dart';
+import '../../helpers/prayer_soon_fixtures.dart';
 
 final _cairo = PrayerPlace(30.0444, 31.2357);
 final _now = DateTime(2026, 10, 8, 3);
@@ -26,6 +29,7 @@ class _Harness {
     required this.container,
     required this.scheduler,
     required this.platform,
+    required this.soon,
     required this.adhan,
     required this.store,
   });
@@ -33,6 +37,7 @@ class _Harness {
   final ProviderContainer container;
   final FakeReminderScheduler scheduler;
   final FakeAdhanPlatform platform;
+  final FakePrayerSoonPlatform soon;
   final MemoryAdhanRepository adhan;
   final FakeVoiceStore store;
 
@@ -48,11 +53,13 @@ _Harness _harness({
   AdhanSettings settings = const AdhanSettings(),
   Set<String> saved = const {},
   bool iosSounds = true,
+  String locale = 'ar',
   FakeReminderScheduler? schedulerOverride,
 }) {
   final scheduler =
       schedulerOverride ?? (FakeReminderScheduler()..exactAllowed = exact);
   final platform = FakeAdhanPlatform(supported: supported);
+  final soon = FakePrayerSoonPlatform();
   final adhan = MemoryAdhanRepository()..settings = settings;
   final store = FakeVoiceStore(saved: saved);
   final container = ProviderContainer(
@@ -63,8 +70,12 @@ _Harness _harness({
       ),
       prayerRepositoryProvider.overrideWithValue(MemoryPrayerRepository()),
       clockProvider.overrideWithValue(() => _now),
-      settingsRepositoryProvider.overrideWithValue(MemorySettingsRepository()),
+      settingsRepositoryProvider.overrideWithValue(
+        MemorySettingsRepository()
+          ..settings = const AppSettings().copyWith(localeCode: locale),
+      ),
       adhanPlatformProvider.overrideWithValue(platform),
+      prayerSoonPlatformProvider.overrideWithValue(soon),
       adhanRepositoryProvider.overrideWithValue(adhan),
       adhanCatalogSourceProvider.overrideWithValue(FakeAdhanCatalog()),
       voiceStoreProvider.overrideWithValue(store),
@@ -76,6 +87,7 @@ _Harness _harness({
     container: container,
     scheduler: scheduler,
     platform: platform,
+    soon: soon,
     adhan: adhan,
     store: store,
   );
@@ -268,7 +280,7 @@ void main() {
     );
     expect(after, isNotEmpty);
     expect(
-      after.length + _beforeNotifications(h).length,
+      after.length + h.soon.alarms.length,
       PrayerNotifier.notificationLimit,
     );
   });
@@ -276,30 +288,36 @@ void main() {
   test('a reminder comes before each prayer, and can move or stop', () async {
     final h = _harness();
     await h.turnAllOn();
-    final first = h.scheduler.once[PrayerAlertPlan.firstBeforeId]!;
+    // On Android it counts down to the adhan in a notice of the platform's
+    // own, which says when the adhan is, and has a button to take it away.
+    // None of it is a plugin notification.
+    expect(_beforeNotifications(h), isEmpty);
+    final first = h.soon.alarms.first;
     final fajr = h.platform.alarms.first;
+    expect(first.id, PrayerAlertPlan.firstBeforeId);
     expect(first.title, 'اقتربت صلاة الفجر');
+    expect(first.body, startsWith('باقي على الأذان · الساعة '));
     expect(fajr.at.difference(first.at), const Duration(minutes: 15));
-    expect(first.exact, isTrue);
-    // On Android it counts down to the adhan, says when the adhan is, and
-    // has a button to take it away.
-    expect(first.countdownTo, fajr.at);
-    expect(first.dismissLabel, 'إزالة');
+    expect(first.adhan, fajr.at);
+    final config = h.soon.config!;
+    expect(config.dismissLabel, 'إزالة');
     // And a button to the alerts' settings.
-    expect(first.settingsLabel, 'الإعدادات');
-    expect(first.body, startsWith('الأذان الساعة '));
+    expect(config.settingsLabel, 'الإعدادات');
+    expect(config.settingsPayload, ReminderPayload.prayerSettings);
+    expect(config.payload, ReminderPayload.prayerTimes);
+    expect(config.rtl, isTrue);
 
     final notifier = h.container.read(prayerProvider.notifier);
     await notifier.setBeforeMinutes(5);
-    final moved = h.scheduler.once[PrayerAlertPlan.firstBeforeId]!;
+    final moved = h.soon.alarms.first;
     expect(fajr.at.difference(moved.at), const Duration(minutes: 5));
-    expect(moved.countdownTo, fajr.at);
+    expect(moved.adhan, fajr.at);
 
-    // Without the countdown, the words say how long is left.
+    // Without the countdown, it is a notification whose words say how long
+    // is left, and the platform keeps none.
     await notifier.setBeforeCountdown(false);
+    expect(h.soon.alarms, isEmpty);
     final plain = h.scheduler.once[PrayerAlertPlan.firstBeforeId]!;
-    expect(plain.countdownTo, isNull);
-    expect(plain.dismissLabel, isNull);
     expect(plain.body, 'باقي ٥ دقائق على الأذان');
     expect(
       h.container.read(prayerProvider).value!.settings.beforeCountdown,
@@ -308,8 +326,26 @@ void main() {
 
     await notifier.setBeforeReminder(false);
     expect(_beforeNotifications(h), isEmpty);
+    expect(h.soon.alarms, isEmpty);
     // The adhan itself is untouched.
     expect(h.platform.alarms, hasLength(_allAlarms));
+  });
+
+  test('turning the alerts off removes the countdown reminders too', () async {
+    final h = _harness();
+    await h.turnAllOn();
+    expect(h.soon.alarms, isNotEmpty);
+    await h.container.read(prayerProvider.notifier).setAllAlerts(false);
+    expect(h.soon.alarms, isEmpty);
+  });
+
+  test('the countdown reminders speak the app\'s language', () async {
+    final h = _harness(locale: 'en');
+    await h.container.read(settingsProvider.future);
+    await h.turnAllOn();
+    expect(h.soon.config!.rtl, isFalse);
+    expect(h.soon.alarms.first.title, 'Fajr is near');
+    expect(h.soon.alarms.first.body, startsWith('Left until the adhan · '));
   });
 
   test('Fajr plays the Fajr adhan; every adhan is announced, Friday\'s '
@@ -383,8 +419,7 @@ void main() {
       final h = _harness(supported: false);
       await h.turnAllOn();
       final first = h.scheduler.once[PrayerAlertPlan.firstBeforeId]!;
-      expect(first.countdownTo, isNull);
-      expect(first.dismissLabel, isNull);
+      expect(h.soon.alarms, isEmpty);
       expect(first.body, 'باقي ١٥ دقيقة على الأذان');
     });
 

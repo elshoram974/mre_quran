@@ -32,6 +32,9 @@ final class AppLogger {
   /// [reason]: it did no harm this time, but it should not have happened.
   static void recovered(Object error, StackTrace stackTrace, String reason) {
     debug('Recovered: $reason (${error.runtimeType})');
+    // Outside release builds (debug and profile), the whole of it in the
+    // device log, to find out why.
+    if (!kReleaseMode) debugPrint('[Mushafi] $error\n$stackTrace');
     final reporter = _reporter;
     if (reporter == null) return;
     unawaited(reporter.recordError(error, stackTrace, reason: reason));

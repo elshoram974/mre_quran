@@ -9,7 +9,6 @@ import 'package:mre_quran/core/notifications/reminder_scheduler_provider.dart';
 import 'package:mre_quran/core/theme/app_theme.dart';
 import 'package:mre_quran/core/time/ticking_clock.dart';
 import 'package:mre_quran/features/prayer/application/prayer_provider.dart';
-import 'package:mre_quran/features/prayer/domain/prayer_alerts.dart';
 import 'package:mre_quran/features/prayer/data/location_source.dart';
 import 'package:mre_quran/features/prayer/domain/prayer_times.dart';
 import 'package:mre_quran/features/prayer/presentation/prayer_times_card.dart';
@@ -21,6 +20,7 @@ import 'package:mre_quran/core/hints/hints.dart';
 import '../../helpers/no_hints_repository.dart';
 import '../../helpers/adhkar_fixtures.dart';
 import '../../helpers/memory_settings_repository.dart';
+import '../../helpers/prayer_soon_fixtures.dart';
 
 final _cairo = PrayerPlace(30.04, 31.24);
 
@@ -37,11 +37,13 @@ Future<void> _reveal(WidgetTester tester, Finder finder) async {
 class _Harness {
   _Harness({
     required this.scheduler,
+    required this.soon,
     required this.location,
     required this.repository,
   });
 
   final FakeReminderScheduler scheduler;
+  final FakePrayerSoonPlatform soon;
   final FakeLocationSource location;
   final MemoryPrayerRepository repository;
 }
@@ -64,6 +66,7 @@ Future<_Harness> _pump(
   addTearDown(tester.view.resetDevicePixelRatio);
   final harness = _Harness(
     scheduler: scheduler ?? FakeReminderScheduler(),
+    soon: FakePrayerSoonPlatform(),
     location: location ?? FakeLocationSource(requestResult: _cairo),
     repository: MemoryPrayerRepository()..place = place,
   );
@@ -86,6 +89,7 @@ Future<_Harness> _pump(
       overrides: [
         hintsRepositoryProvider.overrideWithValue(hints ?? NoHintsRepository()),
         reminderSchedulerProvider.overrideWithValue(harness.scheduler),
+        prayerSoonPlatformProvider.overrideWithValue(harness.soon),
         locationSourceProvider.overrideWithValue(harness.location),
         prayerRepositoryProvider.overrideWithValue(harness.repository),
         clockProvider.overrideWithValue(() => DateTime(2026, 10, 8, 9)),
@@ -248,9 +252,11 @@ void main() {
         items.where((i) => i.channel == ReminderChannel.prayer),
         hasLength(days),
       );
+      // Each with its reminder before it, which the platform keeps.
+      expect(harness.soon.alarms, hasLength(days));
       expect(
         items.where((i) => i.channel == ReminderChannel.prayerSoon),
-        hasLength(days),
+        isEmpty,
       );
       expect(items.every((item) => item.exact), isTrue);
 
@@ -288,28 +294,26 @@ void main() {
       await _reveal(tester, find.text('تنبيه للصلوات الخمس'));
       await tester.tap(find.text('تنبيه للصلوات الخمس'));
       await tester.pumpAndSettle();
-      // As many as the system is given at once.
+      // As many as the system is given at once, the reminders before them
+      // among them (the platform keeps those).
       expect(
-        harness.scheduler.once,
-        hasLength(PrayerNotifier.notificationLimit),
+        harness.scheduler.once.length + harness.soon.alarms.length,
+        PrayerNotifier.notificationLimit,
       );
       // The reminder before them can be moved.
       await _reveal(tester, find.text('تذكير قبل الصلاة'));
       expect(find.text('١٥ دقيقة'), findsOneWidget);
       // It counts down to the adhan, until the person turns that off.
       await _reveal(tester, find.text('عدّ تنازلي حتى الأذان'));
-      // The first reminder still to come.
-      final reminder = harness.scheduler.once.keys
-          .where(
-            (id) =>
-                id >= PrayerAlertPlan.firstBeforeId &&
-                id < PrayerAlertPlan.firstBeforeId + 1000,
-          )
-          .reduce((a, b) => a < b ? a : b);
-      expect(harness.scheduler.once[reminder]!.countdownTo, isNotNull);
+      // The reminders are the platform's, with their countdown.
+      expect(harness.soon.alarms, isNotEmpty);
+      final reminder = harness.soon.alarms.first.id;
+      expect(harness.scheduler.once, isNot(contains(reminder)));
       await tester.tap(find.text('عدّ تنازلي حتى الأذان'));
       await tester.pumpAndSettle();
-      expect(harness.scheduler.once[reminder]!.countdownTo, isNull);
+      // Off, the first of them is a notification that says how long is left.
+      expect(harness.soon.alarms, isEmpty);
+      expect(harness.scheduler.once[reminder]!.body, startsWith('باقي '));
       // Back up to the day's times, which the page scrolled past.
       await tester.drag(find.byType(Scrollable).first, const Offset(0, 1500));
       await tester.pumpAndSettle();

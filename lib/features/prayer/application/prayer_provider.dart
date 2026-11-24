@@ -20,6 +20,7 @@ import '../../settings/application/digits_provider.dart';
 import '../../settings/application/settings_provider.dart';
 import '../data/location_source.dart';
 import '../data/prayer_repository.dart';
+import '../data/prayer_soon_platform.dart';
 import '../domain/prayer_alerts.dart';
 import 'place_search_provider.dart';
 import '../domain/prayer_times.dart';
@@ -28,6 +29,26 @@ import '../domain/prayer_times.dart';
 final prayerRepositoryProvider = Provider<PrayerRepository>(
   (ref) => LocalPrayerRepository(SharedPreferencesAsync()),
 );
+
+/// Provides the reminder before a prayer that counts down to the adhan, which
+/// only Android shows. `main` overrides it with the platform's; the default
+/// does nothing, which keeps tests off the platform channel.
+final prayerSoonPlatformProvider = Provider<PrayerSoonPlatform>(
+  (ref) => const _NoopPrayerSoonPlatform(),
+);
+
+class _NoopPrayerSoonPlatform implements PrayerSoonPlatform {
+  const _NoopPrayerSoonPlatform();
+
+  @override
+  Future<void> schedule(
+    List<PrayerSoonAlarm> alarms,
+    PrayerSoonConfig config,
+  ) async {}
+
+  @override
+  Future<void> cancelAll() async {}
+}
 
 /// Provides the location source. Tests override it.
 final locationSourceProvider = Provider<LocationSource>(
@@ -386,6 +407,28 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
     }
   }
 
+  /// Hands the reminders with a countdown to the platform, replacing those it
+  /// had. With none, it removes them. A failure leaves the alerts as they are.
+  Future<void> _scheduleSoon(
+    AppLocalizations l10n, {
+    required bool rtl,
+    required List<PrayerSoonAlarm> alarms,
+  }) async {
+    final platform = ref.read(prayerSoonPlatformProvider);
+    if (alarms.isEmpty) return platform.cancelAll();
+    await platform.schedule(
+      alarms,
+      PrayerSoonConfig(
+        channelName: l10n.prayerSoonChannelName,
+        dismissLabel: l10n.prayerSoonDismiss,
+        settingsLabel: l10n.notificationSettings,
+        payload: ReminderPayload.prayerTimes,
+        settingsPayload: ReminderChannel.prayerSoon.settings,
+        rtl: rtl,
+      ),
+    );
+  }
+
   /// How many days ahead the alerts are planned. Android arms only the next
   /// adhan at a time and takes the rest from its own list, so a month costs
   /// nothing and the adhan goes on even when the app is not opened. iOS
@@ -417,6 +460,7 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
       }
       if (!settings.needsSchedule || place == null) {
         await ref.read(adhanPlatformProvider).cancelAll();
+        await ref.read(prayerSoonPlatformProvider).cancelAll();
         return;
       }
       final language = ref.read(settingsProvider).value?.localeCode ?? 'ar';
@@ -451,28 +495,47 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
       // language's dates.
       await initializeDateFormatting(language);
       String clock(DateTime at) => digits(DateFormat.jm(language).format(at));
+      // On Android the reminder before a prayer counts down to the adhan in a
+      // notification of its own, which the platform shows; elsewhere, and
+      // without the countdown, it is a normal notification whose words say
+      // how long is left.
+      final countdown =
+          settings.beforeCountdown &&
+          defaultTargetPlatform == TargetPlatform.android;
+      PrayerSoonAlarm soonOf(PrayerAlert alert) {
+        final adhan = alert.at.add(Duration(minutes: minutes));
+        return PrayerSoonAlarm(
+          id: alert.id,
+          at: alert.at,
+          adhan: adhan,
+          title: l10n.prayerSoonTitle(_alertName(l10n, alert)),
+          body: l10n.prayerSoonCountdownBody(clock(adhan)),
+        );
+      }
+
+      await _scheduleSoon(
+        l10n,
+        rtl: language == 'ar',
+        alarms: [
+          if (countdown)
+            for (final alert in notices)
+              if (alert.kind == PrayerAlertKind.beforePrayer) soonOf(alert),
+        ],
+      );
       for (final alert in notices) {
         final prayer = _alertName(l10n, alert);
         switch (alert.kind) {
           case PrayerAlertKind.beforePrayer:
-            final adhan = alert.at.add(Duration(minutes: minutes));
-            // The countdown shows the time left itself; the words say when.
-            final countdown =
-                settings.beforeCountdown &&
-                defaultTargetPlatform == TargetPlatform.android;
+            if (countdown) break;
             await _scheduler.scheduleOnce(
               id: alert.id,
               at: alert.at,
               title: l10n.prayerSoonTitle(prayer),
-              body: countdown
-                  ? l10n.prayerSoonCountdownBody(clock(adhan))
-                  : l10n.prayerSoonBody(minutes, number(minutes)),
+              body: l10n.prayerSoonBody(minutes, number(minutes)),
               channel: ReminderChannel.prayerSoon,
               channelName: l10n.prayerSoonChannelName,
               payload: ReminderPayload.prayerTimes,
               exact: true,
-              countdownTo: countdown ? adhan : null,
-              dismissLabel: countdown ? l10n.prayerSoonDismiss : null,
               settingsLabel: l10n.notificationSettings,
             );
           case PrayerAlertKind.atTime:

@@ -1900,11 +1900,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get prayerSoonCountdownHint =>
-      'The reminder stays and counts the time left to the second until the adhan, then goes by itself. Its Remove button takes it away at once.';
+      'The reminder stays, with a large countdown of the time left to the second until the adhan, then goes by itself. Its Remove button takes it away at once.';
 
   @override
   String prayerSoonCountdownBody(String time) {
-    return 'The adhan is at $time';
+    return 'Left until the adhan · $time';
   }
 
   @override

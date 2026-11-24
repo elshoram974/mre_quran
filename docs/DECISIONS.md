@@ -566,11 +566,19 @@
 
 ## D-056: The reminder before a prayer counts down to the adhan
 
-- **Decision:** On Android the reminder before a prayer (D-029) counts down to the adhan to the second, in the
-  notification's own chronometer, stays at the top until the adhan and then goes by itself (`timeoutAfter`), and
-  has a *Remove* button that takes it away at once without opening the app (the plugin's
-  `ActionBroadcastReceiver`, declared in the manifest). Its words say when the adhan is. It is on until the person
-  turns it off under the reminder on the prayer times page (`PrayerSettings.beforeCountdown`).
+- **Decision:** On Android the reminder before a prayer (D-029) is a notification of the app's own
+  (`PrayerSoonNotice`), not one of the plugin's: its content area shows the prayer's name, *Left until the adhan ·
+  4:56 pm*, and the time left as a large countdown to the second. The countdown is a `Chronometer` in a
+  `RemoteViews` layout (`prayer_soon_notice.xml`), which the system redraws every second itself, so the app does not
+  run, wake or hold a service while it counts. Text that changed every minute would need the app awake every minute,
+  which battery saving holds back, so none is used. The notice stays until the adhan and then goes by itself
+  (`timeoutAfter`), and has a *Remove* button that takes it away at once without opening the app and a settings
+  button. It follows the app's language and direction, not the phone's (`rtl`, as the widgets do). It is on until the
+  person turns it off under the reminder on the prayer times page (`PrayerSettings.beforeCountdown`); off, it is a
+  normal notification whose words say how many minutes are left.
+- **Scheduling:** `PrayerSoonScheduler` keeps the list and arms only the next alarm, as the adhan's scheduler does
+  (D-029), and arms again after a restart (`PrayerSoonReceiver`). The channel is the same `prayer_soon` the reminder
+  always had, so the person's choices for it stay. Dart reaches it through `PrayerSoonPlatform`.
 - **iOS** has no countdown in a notification; there the reminder still says how many minutes are left.
 
 ## D-057: Reminders of the sunnah fasts
@@ -615,9 +623,12 @@
   shows as loading, not as failed, until it is had or fails anew. A provider no longer uses its `ref` after a wait
   without checking `ref.mounted`.
 - **A blank page:** a person tapping *Retry* got a grey page: building the view threw "called
-  ProviderSubscription.read on a subscription that was closed", and every rebuild of that view threw it again. It
-  could not be made to happen in a test. Should it happen again, the view is built afresh (twice at most in five
-  seconds, then an error with *Retry*) and the error is reported whole, not fatal.
+  ProviderSubscription.read on a subscription that was closed", and every rebuild of that view threw it again, on
+  a downloaded reading too, until the app was opened again. It could not be made to happen in a test (five
+  setups). Should it happen, the page's providers (`svgPageProvider`, `svgPageStoreProvider`,
+  `printedEditionProvider`) are made anew, as a new start would, and the view built afresh: twice at most in five
+  seconds, then an error whose *Retry* does the same. The error is reported whole, not fatal, and printed with its
+  stack outside release builds.
 - **Elsewhere:** under a page that cannot be had offline, the readings that have that page on the phone are offered,
   each opening it (`PrintedFallback.openReading`); when none has it, the nearest page this reading has. Turned to
   text offline (Hafs), the message names a reading that has the page and its short *Show it* opens it.

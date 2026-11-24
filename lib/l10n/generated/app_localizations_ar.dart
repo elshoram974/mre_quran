@@ -1889,11 +1889,11 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get prayerSoonCountdownHint =>
-      'يبقى التذكير ظاهرًا ويعدّ الوقت الباقي بالثواني حتى الأذان، ثم يختفي وحده. وزر «إزالة» فيه يُخفيه فورًا.';
+      'يبقى التذكير ظاهرًا وفيه عدّاد كبير للوقت الباقي بالثواني حتى الأذان، ثم يختفي وحده. وزر «إزالة» فيه يُخفيه فورًا.';
 
   @override
   String prayerSoonCountdownBody(String time) {
-    return 'الأذان الساعة $time';
+    return 'باقي على الأذان · الساعة $time';
   }
 
   @override

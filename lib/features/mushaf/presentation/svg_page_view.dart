@@ -215,7 +215,7 @@ class _SlowGate extends StatefulWidget {
     BuildContext context,
     bool slow,
     VoidCallback restart,
-    bool Function() heal,
+    bool Function(VoidCallback reset) heal,
   )
   builder;
 
@@ -261,9 +261,10 @@ class _SlowGateState extends State<_SlowGate> {
   DateTime? _healedAt;
   int _heals = 0;
 
-  /// Builds the view afresh after the frame, to recover from a failure of
-  /// its own; false (and nothing done) when it has just been tried twice.
-  bool _heal() {
+  /// Builds the view afresh after the frame, after [reset], to recover from
+  /// a failure of its own; false (and nothing done) when it has just been
+  /// tried twice.
+  bool _heal(VoidCallback reset) {
     final now = DateTime.now();
     final last = _healedAt;
     _heals = last != null && now.difference(last) < _healWindow
@@ -271,7 +272,11 @@ class _SlowGateState extends State<_SlowGate> {
         : 1;
     _healedAt = now;
     if (_heals > _healsAllowed) return false;
-    WidgetsBinding.instance.addPostFrameCallback((_) => _restart());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      reset();
+      _restart();
+    });
     return true;
   }
 
@@ -324,7 +329,7 @@ class _SvgBody extends ConsumerWidget {
   final WidgetBuilder? offlineExtras;
   final bool slow;
   final VoidCallback onRetry;
-  final bool Function() onHeal;
+  final bool Function(VoidCallback reset) onHeal;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -333,11 +338,15 @@ class _SvgBody extends ConsumerWidget {
     try {
       artwork = ref.watch(svgPageProvider(request));
     } on StateError catch (error, stack) {
-      // The view's hold on the page was closed under it (seen once, after a
-      // retry). Reading through it again would fail the same way on every
-      // rebuild, leaving a blank page; a view built afresh holds it anew.
+      // The view's hold on the page was found closed. It happened on a phone
+      // and stayed until the app was opened again, so the page's providers
+      // are made anew, as a new start would, and the view built afresh.
       AppLogger.recovered(error, stack, 'Printed page view built afresh');
-      if (onHeal()) {
+      void reset() => ref
+        ..invalidate(svgPageProvider)
+        ..invalidate(svgPageStoreProvider)
+        ..invalidate(printedEditionProvider);
+      if (onHeal(reset)) {
         return const _Late(
           key: ValueKey('loading'),
           after: _placeholderAfter,
@@ -349,7 +358,10 @@ class _SvgBody extends ConsumerWidget {
         title: l10n.readerLoadError,
         message: l10n.printedPageError,
         actionLabel: l10n.retry,
-        onAction: onRetry,
+        onAction: () {
+          reset();
+          onRetry();
+        },
       );
     }
     final frame = ref.watch(

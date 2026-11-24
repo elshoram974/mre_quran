@@ -84,10 +84,6 @@ abstract interface class ReminderScheduler {
   /// sound in the app's `Library/Sounds` to play with it (30 seconds at
   /// most), and a prayer's alerts come through Focus ("Time Sensitive").
   ///
-  /// With [countdownTo], on Android, the notification counts down to that
-  /// time to the second, stays until then and goes by itself, and has a
-  /// button reading [dismissLabel] that takes it away at once.
-  ///
   /// With [settingsLabel], it has a button of that name that opens the
   /// settings of what it reminds of (see [ReminderChannel.settings]).
   Future<void> scheduleOnce({
@@ -100,8 +96,6 @@ abstract interface class ReminderScheduler {
     required String payload,
     bool exact = false,
     String? iosSound,
-    DateTime? countdownTo,
-    String? dismissLabel,
     String? settingsLabel,
   });
 
@@ -354,14 +348,11 @@ class LocalReminderScheduler implements ReminderScheduler {
     required String payload,
     bool exact = false,
     String? iosSound,
-    DateTime? countdownTo,
-    String? dismissLabel,
     String? settingsLabel,
   }) async {
     await _ensureZone();
     final urgent = channel == ReminderChannel.prayer;
     final prayer = urgent || channel == ReminderChannel.prayerSoon;
-    final countdown = countdownTo != null && countdownTo.isAfter(at);
     await _plugin.zonedSchedule(
       id: id,
       title: title,
@@ -375,25 +366,7 @@ class LocalReminderScheduler implements ReminderScheduler {
           priority: urgent ? Priority.high : Priority.defaultPriority,
           // A long body reads whole when the notification is opened.
           styleInformation: BigTextStyleInformation(body),
-          // A countdown to the second in the notification's header, kept at
-          // the top until the time comes, then gone.
-          usesChronometer: countdown,
-          chronometerCountDown: countdown,
-          when: countdown ? countdownTo.millisecondsSinceEpoch : null,
-          showWhen: countdown,
-          ongoing: countdown,
-          autoCancel: !countdown,
-          onlyAlertOnce: countdown,
-          timeoutAfter: countdown
-              ? countdownTo.difference(at).inMilliseconds
-              : null,
           actions: [
-            if (countdown && dismissLabel != null)
-              AndroidNotificationAction(
-                _dismissAction,
-                dismissLabel,
-                cancelNotification: true,
-              ),
             if (settingsLabel != null) _settingsButton(channel, settingsLabel),
           ],
         ),
@@ -411,9 +384,6 @@ class LocalReminderScheduler implements ReminderScheduler {
       payload: payload,
     );
   }
-
-  /// The id of the button that takes a countdown away.
-  static const String _dismissAction = 'dismiss';
 
   @override
   Future<void> cancel(int id) => _plugin.cancel(id: id);

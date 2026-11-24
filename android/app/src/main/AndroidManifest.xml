@@ -84,11 +84,17 @@
         <receiver
             android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver"
             android:exported="false" />
-        <!-- Handles the "Remove" button of the countdown before a prayer: it
-             takes the notification away without opening the app. -->
+        <!-- The reminder before a prayer, with its countdown: shows it when its
+             alarm fires, takes it away on its Remove button, and arms the
+             alarms again after a restart. -->
         <receiver
-            android:name="com.dexterous.flutterlocalnotifications.ActionBroadcastReceiver"
-            android:exported="false" />
+            android:name=".PrayerSoonReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+            </intent-filter>
+        </receiver>
         <receiver
             android:name=".ReminderBootReceiver"
             android:exported="false">

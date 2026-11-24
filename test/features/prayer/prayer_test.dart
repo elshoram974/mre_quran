@@ -15,6 +15,7 @@ import 'package:mre_quran/features/settings/application/settings_provider.dart';
 import 'package:mre_quran/features/settings/domain/app_settings.dart';
 
 import '../../helpers/adhkar_fixtures.dart';
+import '../../helpers/prayer_soon_fixtures.dart';
 import '../../helpers/memory_settings_repository.dart';
 
 final _cairo = PrayerPlace(30.0444, 31.2357);
@@ -334,6 +335,10 @@ void main() {
   });
 
   group('PrayerNotifier', () {
+    // The countdown reminders of the last container made, which the
+    // platform keeps rather than the scheduler.
+    late FakePrayerSoonPlatform soon;
+
     ProviderContainer container({
       required FakeReminderScheduler scheduler,
       required FakeLocationSource location,
@@ -341,12 +346,14 @@ void main() {
       MemorySettingsRepository? settings,
       FakePlaceNameSource? names,
     }) {
+      soon = FakePrayerSoonPlatform();
       final c = ProviderContainer(
         overrides: [
           placeNameSourceProvider.overrideWithValue(
             names ?? FakePlaceNameSource(),
           ),
           reminderSchedulerProvider.overrideWithValue(scheduler),
+          prayerSoonPlatformProvider.overrideWithValue(soon),
           locationSourceProvider.overrideWithValue(location),
           prayerRepositoryProvider.overrideWithValue(
             repository ?? MemoryPrayerRepository(),
@@ -606,8 +613,9 @@ void main() {
           (value) => value.channel == ReminderChannel.prayer,
         );
         expect(atTime, hasLength(PrayerNotifier.planDays));
-        // And as many reminders before it.
-        expect(scheduler.once, hasLength(2 * PrayerNotifier.planDays));
+        // And as many reminders before it, which the platform keeps.
+        expect(scheduler.once, hasLength(PrayerNotifier.planDays));
+        expect(soon.alarms, hasLength(PrayerNotifier.planDays));
         final sample = atTime.first;
         expect(sample.exact, isTrue);
         expect(sample.payload, 'prayer:times');
@@ -645,9 +653,13 @@ void main() {
       await notifier.setAllAlerts(true);
       // As many as the system is given at once; the rest come on a later
       // start.
-      expect(scheduler.once, hasLength(PrayerNotifier.notificationLimit));
+      expect(
+        scheduler.once.length + soon.alarms.length,
+        PrayerNotifier.notificationLimit,
+      );
       await notifier.setAllAlerts(false);
       expect(scheduler.once, isEmpty);
+      expect(soon.alarms, isEmpty);
     });
 
     test(
@@ -743,7 +755,10 @@ void main() {
         expect(location.requests, 0);
         expect(location.quietReads, 1);
         expect(scheduler.permissionRequests, 0);
-        expect(scheduler.once, hasLength(2 * PrayerNotifier.planDays));
+        expect(
+          scheduler.once.length + soon.alarms.length,
+          2 * PrayerNotifier.planDays,
+        );
       },
     );
 
@@ -822,7 +837,7 @@ void main() {
       await c.read(prayerProvider.future);
       await Future<void>.delayed(Duration.zero);
       final titles = scheduler.once.values.map((value) => value.title);
-      expect(titles.first, 'Fajr is near');
+      expect(soon.alarms.first.title, 'Fajr is near');
       expect(titles, contains('Time for the Fajr prayer'));
     });
   });

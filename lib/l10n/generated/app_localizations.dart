@@ -3310,13 +3310,13 @@ abstract class AppLocalizations {
   /// No description provided for @prayerSoonCountdownHint.
   ///
   /// In en, this message translates to:
-  /// **'The reminder stays and counts the time left to the second until the adhan, then goes by itself. Its Remove button takes it away at once.'**
+  /// **'The reminder stays, with a large countdown of the time left to the second until the adhan, then goes by itself. Its Remove button takes it away at once.'**
   String get prayerSoonCountdownHint;
 
   /// No description provided for @prayerSoonCountdownBody.
   ///
   /// In en, this message translates to:
-  /// **'The adhan is at {time}'**
+  /// **'Left until the adhan · {time}'**
   String prayerSoonCountdownBody(String time);
 
   /// No description provided for @prayerSoonDismiss.

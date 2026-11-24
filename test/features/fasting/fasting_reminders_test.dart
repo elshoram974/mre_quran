@@ -121,8 +121,6 @@ void main() {
       payload: '',
       channel: ReminderChannel.adhkar,
       exact: false,
-      countdownTo: null,
-      dismissLabel: null,
       settingsLabel: null,
     );
     await settled();

@@ -210,8 +210,6 @@ class FakeReminderScheduler implements ReminderScheduler {
       String payload,
       ReminderChannel channel,
       bool exact,
-      DateTime? countdownTo,
-      String? dismissLabel,
       String? settingsLabel,
     })
   >
@@ -240,8 +238,6 @@ class FakeReminderScheduler implements ReminderScheduler {
     required String payload,
     bool exact = false,
     String? iosSound,
-    DateTime? countdownTo,
-    String? dismissLabel,
     String? settingsLabel,
   }) async {
     sounds[id] = iosSound;
@@ -252,8 +248,6 @@ class FakeReminderScheduler implements ReminderScheduler {
       payload: payload,
       channel: channel,
       exact: exact,
-      countdownTo: countdownTo,
-      dismissLabel: dismissLabel,
       settingsLabel: settingsLabel,
     );
   }

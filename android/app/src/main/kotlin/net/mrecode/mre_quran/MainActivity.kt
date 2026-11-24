@@ -6,11 +6,14 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
+import org.json.JSONArray
+import org.json.JSONObject
 
 class MainActivity : FlutterActivity() {
     private val widgetChannel = "net.mrecode.mre_quran/prayer_widget"
     private val adhkarWidgetChannel = "net.mrecode.mre_quran/adhkar_widget"
     private val homeWidgetsChannel = "net.mrecode.mre_quran/home_widgets"
+    private val prayerSoonChannel = "net.mrecode.mre_quran/prayer_soon"
     private var adhan: AdhanChannel? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
@@ -57,6 +60,25 @@ class MainActivity : FlutterActivity() {
                 @Suppress("UNCHECKED_CAST")
                 AdhkarWidgetRenderer.save(this, call.arguments as? Map<String, Any?>)
                 result.success(null)
+            }
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, prayerSoonChannel)
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "schedule" -> {
+                        val arguments = call.arguments as Map<*, *>
+                        PrayerSoonScheduler.schedule(
+                            this,
+                            JSONArray(arguments["alarms"] as List<*>),
+                            JSONObject(arguments["config"] as Map<*, *>),
+                        )
+                        result.success(null)
+                    }
+                    "cancelAll" -> {
+                        PrayerSoonScheduler.cancelAll(this)
+                        result.success(null)
+                    }
+                    else -> result.notImplemented()
+                }
             }
         StartupTrace.mark(this, "engine")
         adhan = AdhanChannel(this, flutterEngine.dartExecutor.binaryMessenger)

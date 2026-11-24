@@ -16,6 +16,8 @@ import 'core/haptics/haptics.dart';
 import 'core/notifications/reminder_scheduler.dart';
 import 'core/theme/app_tokens.dart';
 import 'firebase_options.dart';
+import 'features/prayer/application/prayer_provider.dart';
+import 'features/prayer/data/prayer_soon_platform.dart';
 import 'features/settings/application/settings_provider.dart';
 import 'features/settings/data/settings_repository.dart';
 import 'features/settings/domain/app_settings.dart';
@@ -135,6 +137,9 @@ Future<void> _start() async {
         overrides: [
           crashReporterProvider.overrideWithValue(crashReporter),
           reminderSchedulerProvider.overrideWithValue(reminderScheduler),
+          prayerSoonPlatformProvider.overrideWithValue(
+            const ChannelPrayerSoonPlatform(),
+          ),
           initialLocationProvider.overrideWithValue(initialLocation),
           initialSettingsProvider.overrideWithValue((settings: storedSettings)),
           launchHoldProvider.overrideWithValue(launchHold),

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The reminder before a prayer: its name, when the adhan is, and the time
+     left as a large countdown. The countdown is a Chronometer, which the
+     system redraws every second itself, so the app does not run while it
+     counts. It sits in the notification's content area, which Android keeps
+     to 48dp when collapsed, so two short lines and one figure fill it. The
+     colours come from the system's notification styles, so it reads in the
+     light and the dark theme. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/soon_root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:orientation="horizontal">
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/soon_title"
+            style="@style/TextAppearance.Compat.Notification.Title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textAlignment="viewStart" />
+
+        <TextView
+            android:id="@+id/soon_body"
+            style="@style/TextAppearance.Compat.Notification"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textAlignment="viewStart" />
+    </LinearLayout>
+
+    <Chronometer
+        android:id="@+id/soon_timer"
+        style="@style/TextAppearance.Compat.Notification.Title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:fontFeatureSettings="tnum"
+        android:singleLine="true"
+        android:textSize="26sp"
+        android:textStyle="bold" />
+</LinearLayout>
