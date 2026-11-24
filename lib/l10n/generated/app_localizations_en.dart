@@ -2315,4 +2315,114 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reminderKeep => 'No, keep it';
+
+  @override
+  String iqamaTitle(String prayer) {
+    return 'The iqama of $prayer';
+  }
+
+  @override
+  String get iqamaBody =>
+      'The prayer is established, the prayer is established';
+
+  @override
+  String get iqamaChannelName => 'The iqama';
+
+  @override
+  String get iqamaPageTitle => 'The iqama';
+
+  @override
+  String get iqamaTileSubtitle =>
+      'A notice at each prayer\'s iqama, set to a time after the adhan';
+
+  @override
+  String get iqamaIntro =>
+      'At the iqama you get a notice with «قد قامت الصلاة، قد قامت الصلاة» (the prayer is established), not the whole iqama. Set here how many minutes after the adhan each prayer is established at your mosque.';
+
+  @override
+  String get iqamaSwitch => 'Iqama notice';
+
+  @override
+  String get iqamaSwitchHint => 'It comes at the iqama of the five prayers.';
+
+  @override
+  String get iqamaSoundSwitch => 'Notice sound';
+
+  @override
+  String get iqamaSoundHint => 'Turn it off for a silent notice.';
+
+  @override
+  String get iqamaTimesTitle => 'How long after the adhan?';
+
+  @override
+  String get iqamaTimesHint =>
+      'It is usually longer after Fajr and shorter after Maghrib. Set each prayer to when it is established at your mosque.';
+
+  @override
+  String iqamaAfterLine(String minutes) {
+    return '$minutes after the adhan';
+  }
+
+  @override
+  String iqamaAt(String time) {
+    return 'Iqama $time';
+  }
+
+  @override
+  String get iqamaEarlierButton => 'One minute less';
+
+  @override
+  String get iqamaLaterButton => 'One minute more';
+
+  @override
+  String get iqamaResetAll => 'Put every prayer back to the usual';
+
+  @override
+  String get prayerSoonSoundSwitch => 'Reminder sound';
+
+  @override
+  String get prayerSoonSoundHint => 'Turn it off for a silent reminder.';
+
+  @override
+  String prayerTuningSummaryPlace(String place, String method) {
+    return 'These are the times of $place, worked out by $method.';
+  }
+
+  @override
+  String get prayerTuningSummaryNone =>
+      'You have changed nothing: the times are as calculated. Change here what differs from the truth at your mosque or in your country.';
+
+  @override
+  String get prayerTuningSummaryChanged =>
+      'What you changed from the calculation:';
+
+  @override
+  String prayerTuningChipOffset(String prayer, String change) {
+    return '$prayer: $change';
+  }
+
+  @override
+  String prayerTuningChipDaylight(String value) {
+    return 'Time: $value';
+  }
+
+  @override
+  String prayerTuningChipElevation(String metres) {
+    return 'Height: $metres';
+  }
+
+  @override
+  String prayerTuningChipHijri(String shift) {
+    return 'Hijri: $shift';
+  }
+
+  @override
+  String prayerTuningCalculated(String time) {
+    return 'Calculated $time';
+  }
+
+  @override
+  String prayerTuningElevationUsed(String metres) {
+    return 'Height used in the calculation: $metres';
+  }
 }

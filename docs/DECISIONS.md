@@ -661,3 +661,35 @@
 - **Not done:** an automatic check of the phone's summer time against the place, for want of a time-zone map;
   the iqama and the sounds of the reminder before a prayer, which wait for recordings whose source and licence are
   recorded (see `docs/AUDIO_SOURCES.md`).
+
+## D-062: Reminders are a page of their own, and the person can make their own
+
+- **Decision:** The reminders sheet is a page (`RemindersPage`, `/reminders`), opened from Settings, the adhkar tab
+  and a notification's settings button. Under *My reminders* the person makes reminders with their own title and
+  note: **daily, weekly (chosen weekdays) or monthly (a day, 1 to 28)**, at **one to six times a day**
+  (`CustomReminder`). The form (`ReminderEditorPage`) says when the reminder will first come before it is saved, why
+  it cannot be saved when it cannot, and asks before deleting. The adhkar's daily and weekly reminders, the sunnah
+  fasts' (D-057) and the one after each prayer keep their switches, each under its own heading.
+- **Limits:** 20 reminders, and 14 moments (times over days) in each, because the system keeps each as a notification
+  (iOS 64 in all, shared with the prayer alerts). The day of a monthly reminder stops at 28 so that every month has it.
+- **How:** each moment is one recurring notification in its own channel (`custom_reminders`), with a stable id from
+  the reminder and its place in the list; saving or deleting clears all its ids before setting the current ones, so
+  nothing is left behind. A reminder saved without the notification permission is kept, off, and the page says why.
+  Monthly repeats use the plugin's day-of-month match (`ReminderScheduler.schedule(dayOfMonth:)`).
+- **Sunnah fasts:** each fast day already has its own notification the evening before (a run of three white days
+  gives three), not one before the first (`FastingPlan`, D-057).
+
+## D-063: The iqama, and the sound of the reminder before a prayer
+
+- **Decision:** A page, *The iqama* (`IqamaPage`), sets a notice at each prayer's iqama: the words «قد قامت الصلاة،
+  قد قامت الصلاة», not the whole iqama. It comes a number of minutes after the adhan that the person puts per prayer,
+  5 to 60 (usual gaps until then: Fajr 20, Dhuhr 15, Asr 15, Maghrib 10, Isha 15), counted from the prayer's time as
+  moved by D-061, and shows each prayer's resulting time. It is for the five prayers whether or not their alert is
+  on. Its notice has a sound switch, and the reminder before a prayer has one too (`beforeSound`): off, the notice
+  comes silent (`silent` on Android; no sound on iOS; the platform's own countdown notice follows it).
+- **Not done:** a recording of the phrase, and spoken or chime sounds for the reminders. No open-licence recording of
+  the iqama phrase was confirmed; the candidates, whom to ask and what to ask are in
+  `docs/AUDIO_PENDING_LICENCES.md`. Until one is approved the notices use the phone's own notification sound, and
+  nothing is bundled or hosted.
+- **Limit:** with the iqama's notices Android is now given up to 300 notifications at once (it was 150), well below the
+  alarms a phone allows an app; the plan still covers 30 days and is made again at each start.

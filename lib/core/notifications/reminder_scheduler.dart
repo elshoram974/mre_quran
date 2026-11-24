@@ -24,7 +24,10 @@ enum ReminderChannel {
   fasting('fasting_reminders'),
 
   /// The reminders the person made for themselves.
-  custom('custom_reminders');
+  custom('custom_reminders'),
+
+  /// The notice at the iqama, a set time after the adhan.
+  iqama('prayer_iqama');
 
   const ReminderChannel(this.id);
 
@@ -34,13 +37,13 @@ enum ReminderChannel {
   /// What the settings button of a notification of this channel opens: the
   /// prayer times, where the prayers' alerts are chosen, or the reminders.
   String get settings => switch (this) {
-    prayer || prayerSoon => ReminderPayload.prayerSettings,
+    prayer || prayerSoon || iqama => ReminderPayload.prayerSettings,
     adhkar || fasting || custom => ReminderPayload.remindersSettings,
   };
 
   /// The iOS category of its notifications, which carries that button.
   String get iosCategory => switch (this) {
-    prayer || prayerSoon => 'prayer',
+    prayer || prayerSoon || iqama => 'prayer',
     adhkar || fasting || custom => 'reminders',
   };
 }
@@ -91,6 +94,8 @@ abstract interface class ReminderScheduler {
   /// sound in the app's `Library/Sounds` to play with it (30 seconds at
   /// most), and a prayer's alerts come through Focus ("Time Sensitive").
   ///
+  /// With [silent], it makes no sound or vibration.
+  ///
   /// With [settingsLabel], it has a button of that name that opens the
   /// settings of what it reminds of (see [ReminderChannel.settings]).
   Future<void> scheduleOnce({
@@ -103,6 +108,7 @@ abstract interface class ReminderScheduler {
     required String payload,
     bool exact = false,
     String? iosSound,
+    bool silent = false,
     String? settingsLabel,
   });
 
@@ -370,10 +376,12 @@ class LocalReminderScheduler implements ReminderScheduler {
     required String payload,
     bool exact = false,
     String? iosSound,
+    bool silent = false,
     String? settingsLabel,
   }) async {
     await _ensureZone();
-    final urgent = channel == ReminderChannel.prayer;
+    final urgent =
+        channel == ReminderChannel.prayer || channel == ReminderChannel.iqama;
     final prayer = urgent || channel == ReminderChannel.prayerSoon;
     await _plugin.zonedSchedule(
       id: id,
@@ -386,6 +394,7 @@ class LocalReminderScheduler implements ReminderScheduler {
           channelName,
           importance: urgent ? Importance.high : Importance.defaultImportance,
           priority: urgent ? Priority.high : Priority.defaultPriority,
+          silent: silent,
           // A long body reads whole when the notification is opened.
           styleInformation: BigTextStyleInformation(body),
           actions: [
@@ -394,6 +403,7 @@ class LocalReminderScheduler implements ReminderScheduler {
         ),
         iOS: DarwinNotificationDetails(
           sound: iosSound,
+          presentSound: !silent,
           interruptionLevel: prayer ? InterruptionLevel.timeSensitive : null,
           categoryIdentifier: settingsLabel == null
               ? null

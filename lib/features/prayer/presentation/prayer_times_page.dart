@@ -265,6 +265,13 @@ class _Content extends ConsumerWidget {
           ),
         const SizedBox(height: 12),
         AppTileCard(
+          icon: Icons.tune,
+          title: l10n.prayerTuningTitle,
+          subtitle: l10n.prayerTuningTileSubtitle,
+          onTap: () => context.push(AppRoute.prayerTuning.path),
+        ),
+        const SizedBox(height: 12),
+        AppTileCard(
           icon: Icons.explore_outlined,
           title: l10n.qiblaTitle,
           subtitle: l10n.qiblaTileSubtitle,
@@ -279,10 +286,10 @@ class _Content extends ConsumerWidget {
         ),
         const SizedBox(height: 12),
         AppTileCard(
-          icon: Icons.tune,
-          title: l10n.prayerTuningTitle,
-          subtitle: l10n.prayerTuningTileSubtitle,
-          onTap: () => context.push(AppRoute.prayerTuning.path),
+          icon: Icons.record_voice_over_outlined,
+          title: l10n.iqamaPageTitle,
+          subtitle: l10n.iqamaTileSubtitle,
+          onTap: () => context.push(AppRoute.iqama.path),
         ),
         const SizedBox(height: 12),
         AppCard(
@@ -347,6 +354,14 @@ class _Content extends ConsumerWidget {
                       ],
                       onChanged: notifier.setBeforeMinutes,
                     ),
+                  ),
+                if (settings.beforeReminder)
+                  AppSwitchTile(
+                    value: settings.beforeSound,
+                    onChanged: notifier.setBeforeSound,
+                    title: l10n.prayerSoonSoundSwitch,
+                    subtitle: l10n.prayerSoonSoundHint,
+                    icon: Icons.volume_up_outlined,
                   ),
                 // Android counts down in the notification itself.
                 if (settings.beforeReminder &&

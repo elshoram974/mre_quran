@@ -3960,6 +3960,174 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No, keep it'**
   String get reminderKeep;
+
+  /// No description provided for @iqamaTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'The iqama of {prayer}'**
+  String iqamaTitle(String prayer);
+
+  /// No description provided for @iqamaBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The prayer is established, the prayer is established'**
+  String get iqamaBody;
+
+  /// No description provided for @iqamaChannelName.
+  ///
+  /// In en, this message translates to:
+  /// **'The iqama'**
+  String get iqamaChannelName;
+
+  /// No description provided for @iqamaPageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'The iqama'**
+  String get iqamaPageTitle;
+
+  /// No description provided for @iqamaTileSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A notice at each prayer\'s iqama, set to a time after the adhan'**
+  String get iqamaTileSubtitle;
+
+  /// No description provided for @iqamaIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'At the iqama you get a notice with «قد قامت الصلاة، قد قامت الصلاة» (the prayer is established), not the whole iqama. Set here how many minutes after the adhan each prayer is established at your mosque.'**
+  String get iqamaIntro;
+
+  /// No description provided for @iqamaSwitch.
+  ///
+  /// In en, this message translates to:
+  /// **'Iqama notice'**
+  String get iqamaSwitch;
+
+  /// No description provided for @iqamaSwitchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'It comes at the iqama of the five prayers.'**
+  String get iqamaSwitchHint;
+
+  /// No description provided for @iqamaSoundSwitch.
+  ///
+  /// In en, this message translates to:
+  /// **'Notice sound'**
+  String get iqamaSoundSwitch;
+
+  /// No description provided for @iqamaSoundHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn it off for a silent notice.'**
+  String get iqamaSoundHint;
+
+  /// No description provided for @iqamaTimesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How long after the adhan?'**
+  String get iqamaTimesTitle;
+
+  /// No description provided for @iqamaTimesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'It is usually longer after Fajr and shorter after Maghrib. Set each prayer to when it is established at your mosque.'**
+  String get iqamaTimesHint;
+
+  /// No description provided for @iqamaAfterLine.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} after the adhan'**
+  String iqamaAfterLine(String minutes);
+
+  /// No description provided for @iqamaAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Iqama {time}'**
+  String iqamaAt(String time);
+
+  /// No description provided for @iqamaEarlierButton.
+  ///
+  /// In en, this message translates to:
+  /// **'One minute less'**
+  String get iqamaEarlierButton;
+
+  /// No description provided for @iqamaLaterButton.
+  ///
+  /// In en, this message translates to:
+  /// **'One minute more'**
+  String get iqamaLaterButton;
+
+  /// No description provided for @iqamaResetAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Put every prayer back to the usual'**
+  String get iqamaResetAll;
+
+  /// No description provided for @prayerSoonSoundSwitch.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder sound'**
+  String get prayerSoonSoundSwitch;
+
+  /// No description provided for @prayerSoonSoundHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn it off for a silent reminder.'**
+  String get prayerSoonSoundHint;
+
+  /// No description provided for @prayerTuningSummaryPlace.
+  ///
+  /// In en, this message translates to:
+  /// **'These are the times of {place}, worked out by {method}.'**
+  String prayerTuningSummaryPlace(String place, String method);
+
+  /// No description provided for @prayerTuningSummaryNone.
+  ///
+  /// In en, this message translates to:
+  /// **'You have changed nothing: the times are as calculated. Change here what differs from the truth at your mosque or in your country.'**
+  String get prayerTuningSummaryNone;
+
+  /// No description provided for @prayerTuningSummaryChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'What you changed from the calculation:'**
+  String get prayerTuningSummaryChanged;
+
+  /// No description provided for @prayerTuningChipOffset.
+  ///
+  /// In en, this message translates to:
+  /// **'{prayer}: {change}'**
+  String prayerTuningChipOffset(String prayer, String change);
+
+  /// No description provided for @prayerTuningChipDaylight.
+  ///
+  /// In en, this message translates to:
+  /// **'Time: {value}'**
+  String prayerTuningChipDaylight(String value);
+
+  /// No description provided for @prayerTuningChipElevation.
+  ///
+  /// In en, this message translates to:
+  /// **'Height: {metres}'**
+  String prayerTuningChipElevation(String metres);
+
+  /// No description provided for @prayerTuningChipHijri.
+  ///
+  /// In en, this message translates to:
+  /// **'Hijri: {shift}'**
+  String prayerTuningChipHijri(String shift);
+
+  /// No description provided for @prayerTuningCalculated.
+  ///
+  /// In en, this message translates to:
+  /// **'Calculated {time}'**
+  String prayerTuningCalculated(String time);
+
+  /// No description provided for @prayerTuningElevationUsed.
+  ///
+  /// In en, this message translates to:
+  /// **'Height used in the calculation: {metres}'**
+  String prayerTuningElevationUsed(String metres);
 }
 
 class _AppLocalizationsDelegate

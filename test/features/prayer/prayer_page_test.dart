@@ -294,11 +294,16 @@ void main() {
       await _reveal(tester, find.text('تنبيه للصلوات الخمس'));
       await tester.tap(find.text('تنبيه للصلوات الخمس'));
       await tester.pumpAndSettle();
-      // As many as the system is given at once, the reminders before them
-      // among them (the platform keeps those).
+      // Every prayer of the planned days, today's Fajr (gone by nine) aside,
+      // each with its reminder before it (which the platform keeps): within
+      // what the system is given at once.
       expect(
         harness.scheduler.once.length + harness.soon.alarms.length,
-        PrayerNotifier.notificationLimit,
+        PrayerNotifier.planDays * DailyPrayer.values.length * 2 - 2,
+      );
+      expect(
+        harness.scheduler.once.length + harness.soon.alarms.length,
+        lessThanOrEqualTo(PrayerNotifier.notificationLimit),
       );
       // The reminder before them can be moved.
       await _reveal(tester, find.text('تذكير قبل الصلاة'));

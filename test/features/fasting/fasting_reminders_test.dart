@@ -163,6 +163,7 @@ void main() {
       payload: '',
       channel: ReminderChannel.adhkar,
       exact: false,
+      silent: false,
       settingsLabel: null,
     );
     await settled();

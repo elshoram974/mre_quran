@@ -21,6 +21,10 @@ class PrayerSettings {
     this.daylight = DaylightSaving.automatic,
     this.elevation,
     this.hijriShift = 0,
+    this.beforeSound = true,
+    this.iqamaReminder = false,
+    this.iqamaMinutes = const {},
+    this.iqamaSound = true,
   });
 
   /// Reads settings saved by [toJson]. Anything unreadable gives the defaults.
@@ -32,6 +36,7 @@ class PrayerSettings {
     final offsets = json['offsets'];
     final elevation = json['elevation'];
     final hijriShift = json['hijriShift'];
+    final iqama = json['iqamaMinutes'];
     return PrayerSettings(
       adhkarReminder: json['on'] == true,
       method: PrayerMethod.tryParse(json['method']),
@@ -61,6 +66,18 @@ class PrayerSettings {
       hijriShift: hijriShift is int && hijriShift.abs() <= maxHijriShift
           ? hijriShift
           : 0,
+      beforeSound: json['beforeSound'] != false,
+      iqamaReminder: json['iqama'] == true,
+      iqamaSound: json['iqamaSound'] != false,
+      iqamaMinutes: {
+        if (iqama is Map<String, Object?>)
+          for (final prayer in DailyPrayer.values)
+            if (iqama[prayer.name] case final int minutes
+                when minutes >= minIqama &&
+                    minutes <= maxIqama &&
+                    minutes != defaultIqamaMinutes[prayer])
+              prayer: minutes,
+      },
       alerts: {
         if (alerts is List<Object?>)
           for (final name in alerts)
@@ -72,6 +89,22 @@ class PrayerSettings {
 
   /// The most days the Hijri date may be moved, either way.
   static const int maxHijriShift = 2;
+
+  /// The fewest and most minutes after the adhan the iqama may be put.
+  static const int minIqama = 5;
+
+  /// The most minutes after the adhan the iqama may be put.
+  static const int maxIqama = 60;
+
+  /// How long after the adhan the iqama comes, until the person says: the
+  /// usual gap in mosques, longer at Fajr and shorter at Maghrib.
+  static const Map<DailyPrayer, int> defaultIqamaMinutes = {
+    DailyPrayer.fajr: 20,
+    DailyPrayer.dhuhr: 15,
+    DailyPrayer.asr: 15,
+    DailyPrayer.maghrib: 10,
+    DailyPrayer.isha: 15,
+  };
 
   /// Minutes after the prayer time an adhkar reminder may come.
   static const List<int> choices = [10, 15, 20, 30];
@@ -105,6 +138,24 @@ class PrayerSettings {
   /// Whether a previously granted device location may refresh the place.
   final bool automaticLocation;
 
+  /// Whether the reminder before a prayer makes its sound.
+  final bool beforeSound;
+
+  /// Whether a notice comes when the iqama does, for each of the five prayers:
+  /// «قد قامت الصلاة».
+  final bool iqamaReminder;
+
+  /// The minutes after the adhan the person chose for a prayer's iqama; a
+  /// prayer not here keeps its [defaultIqamaMinutes].
+  final Map<DailyPrayer, int> iqamaMinutes;
+
+  /// Whether the iqama's notice makes its sound.
+  final bool iqamaSound;
+
+  /// Minutes after [prayer]'s adhan the iqama comes.
+  int iqamaAfter(DailyPrayer prayer) =>
+      iqamaMinutes[prayer] ?? defaultIqamaMinutes[prayer]!;
+
   /// Minutes the person added to a prayer's time, up to
   /// [PrayerTuning.maxOffset] either way; a prayer not here is not moved.
   final Map<DailyPrayer, int> offsets;
@@ -136,7 +187,8 @@ class PrayerSettings {
   );
 
   /// Whether anything needs the prayer times scheduled.
-  bool get needsSchedule => adhkarReminder || alerts.isNotEmpty;
+  bool get needsSchedule =>
+      adhkarReminder || iqamaReminder || alerts.isNotEmpty;
 
   /// A copy with the given changes. [automaticMethod] clears [method].
   PrayerSettings copyWith({
@@ -154,6 +206,10 @@ class PrayerSettings {
     int? elevation,
     bool automaticElevation = false,
     int? hijriShift,
+    bool? beforeSound,
+    bool? iqamaReminder,
+    Map<DailyPrayer, int>? iqamaMinutes,
+    bool? iqamaSound,
   }) => PrayerSettings(
     adhkarReminder: adhkarReminder ?? this.adhkarReminder,
     method: automaticMethod ? null : (method ?? this.method),
@@ -167,6 +223,10 @@ class PrayerSettings {
     daylight: daylight ?? this.daylight,
     elevation: automaticElevation ? null : (elevation ?? this.elevation),
     hijriShift: hijriShift ?? this.hijriShift,
+    beforeSound: beforeSound ?? this.beforeSound,
+    iqamaReminder: iqamaReminder ?? this.iqamaReminder,
+    iqamaMinutes: iqamaMinutes ?? this.iqamaMinutes,
+    iqamaSound: iqamaSound ?? this.iqamaSound,
   );
 
   /// Compact form for storage.
@@ -186,6 +246,13 @@ class PrayerSettings {
     'daylight': daylight.name,
     'elevation': ?elevation,
     'hijriShift': hijriShift,
+    'beforeSound': beforeSound,
+    'iqama': iqamaReminder,
+    'iqamaSound': iqamaSound,
+    'iqamaMinutes': {
+      for (final MapEntry(:key, :value) in iqamaMinutes.entries)
+        key.name: value,
+    },
   };
 }
 
@@ -199,6 +266,9 @@ enum PrayerAlertKind {
 
   /// A while before the prayer, so the person can get ready.
   beforePrayer,
+
+  /// When the iqama comes, a set time after the adhan.
+  iqama,
 }
 
 /// One notification to schedule.
@@ -236,6 +306,10 @@ abstract final class PrayerAlertPlan {
   /// First id of the reminders before the prayer time.
   static const int firstBeforeId = 7002000;
 
+  /// First id of the notices at the iqama. The fasting reminders' ids end below
+  /// it.
+  static const int firstIqamaId = 7004000;
+
   /// The most days a plan covers. Each day takes one id of each kind per
   /// prayer, so ids stay below the next kind's first.
   static const int maxDays = 31;
@@ -246,7 +320,8 @@ abstract final class PrayerAlertPlan {
   static bool owns(int id) =>
       (id >= firstAfterId && id < firstAfterId + maxDays * _perDay) ||
       (id >= firstAtTimeId && id < firstAtTimeId + maxDays * _perDay) ||
-      (id >= firstBeforeId && id < firstBeforeId + maxDays * _perDay);
+      (id >= firstBeforeId && id < firstBeforeId + maxDays * _perDay) ||
+      (id >= firstIqamaId && id < firstIqamaId + maxDays * _perDay);
 
   /// The notifications after [now] at [place], by time, for [days] days.
   static List<PrayerAlert> compute({
@@ -290,6 +365,17 @@ abstract final class PrayerAlertPlan {
               kind: PrayerAlertKind.atTime,
               prayer: prayer,
               at: start,
+            ),
+          );
+        }
+        final iqama = start.add(Duration(minutes: settings.iqamaAfter(prayer)));
+        if (settings.iqamaReminder && iqama.isAfter(now)) {
+          alerts.add(
+            PrayerAlert(
+              id: firstIqamaId + slot,
+              kind: PrayerAlertKind.iqama,
+              prayer: prayer,
+              at: iqama,
             ),
           );
         }

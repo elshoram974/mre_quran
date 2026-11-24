@@ -267,7 +267,7 @@ void main() {
       await tester.tap(find.text('الدواء'));
       await tester.pumpAndSettle();
       final remove = tester.widget<IconButton>(
-        find.widgetWithIcon(IconButton, Icons.close),
+        find.widgetWithIcon(IconButton, Icons.delete_outline),
       );
       expect(remove.onPressed, isNull);
     });

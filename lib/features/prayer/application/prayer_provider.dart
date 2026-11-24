@@ -321,6 +321,51 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
     change: (settings) => settings.copyWith(beforeReminder: on),
   );
 
+  /// Lets the reminder before each prayer make its sound, or keeps it silent.
+  Future<void> setBeforeSound(bool on) => _change(
+    needsPermission: false,
+    change: (settings) => settings.copyWith(beforeSound: on),
+  );
+
+  /// Turns the notice at each prayer's iqama on or off. Turning it on asks for
+  /// what is missing, so call it from the person's tap.
+  Future<PrayerResult> setIqamaReminder(bool on) => _change(
+    needsPermission: on,
+    change: (settings) => settings.copyWith(iqamaReminder: on),
+  );
+
+  /// Lets the iqama's notice make its sound, or keeps it silent.
+  Future<void> setIqamaSound(bool on) => _change(
+    needsPermission: false,
+    change: (settings) => settings.copyWith(iqamaSound: on),
+  );
+
+  /// Puts the iqama of [prayer] [minutes] after its adhan, between
+  /// [PrayerSettings.minIqama] and [PrayerSettings.maxIqama].
+  Future<void> setIqamaMinutes(DailyPrayer prayer, int minutes) => _change(
+    needsPermission: false,
+    change: (settings) {
+      final clamped = minutes.clamp(
+        PrayerSettings.minIqama,
+        PrayerSettings.maxIqama,
+      );
+      return settings.copyWith(
+        iqamaMinutes: {
+          for (final MapEntry(:key, :value) in settings.iqamaMinutes.entries)
+            if (key != prayer) key: value,
+          if (clamped != PrayerSettings.defaultIqamaMinutes[prayer])
+            prayer: clamped,
+        },
+      );
+    },
+  );
+
+  /// Puts every prayer's iqama back to the usual gap.
+  Future<void> resetIqamaMinutes() => _change(
+    needsPermission: false,
+    change: (settings) => settings.copyWith(iqamaMinutes: const {}),
+  );
+
   /// Makes the reminder before each prayer count down to its adhan, or not.
   Future<void> setBeforeCountdown(bool on) => _change(
     needsPermission: false,
@@ -499,6 +544,7 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
   Future<void> _scheduleSoon(
     AppLocalizations l10n, {
     required bool rtl,
+    required bool sound,
     required List<PrayerSoonAlarm> alarms,
   }) async {
     final platform = ref.read(prayerSoonPlatformProvider);
@@ -508,6 +554,7 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
       PrayerSoonConfig(
         channelName: l10n.prayerSoonChannelName,
         dismissLabel: l10n.prayerSoonDismiss,
+        sound: sound,
         settingsLabel: l10n.notificationSettings,
         payload: ReminderPayload.prayerTimes,
         settingsPayload: ReminderChannel.prayerSoon.settings,
@@ -527,7 +574,7 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
   /// within its 64, leaving room for the adhkar reminders; on Android well
   /// below the alarms a phone allows an app.
   static int get notificationLimit =>
-      defaultTargetPlatform == TargetPlatform.android ? 150 : 48;
+      defaultTargetPlatform == TargetPlatform.android ? 300 : 48;
 
   Future<void> _schedule(PrayerSettings settings, PrayerPlace? place) {
     // Replacing a plan cancels and recreates alarms. Serialize replacements so
@@ -603,6 +650,7 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
       await _scheduleSoon(
         l10n,
         rtl: language == 'ar',
+        sound: settings.beforeSound,
         alarms: [
           if (countdown)
             for (final alert in notices)
@@ -623,6 +671,20 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
               channelName: l10n.prayerSoonChannelName,
               payload: ReminderPayload.prayerTimes,
               exact: true,
+              silent: !settings.beforeSound,
+              settingsLabel: l10n.notificationSettings,
+            );
+          case PrayerAlertKind.iqama:
+            await _scheduler.scheduleOnce(
+              id: alert.id,
+              at: alert.at,
+              title: l10n.iqamaTitle(prayer),
+              body: l10n.iqamaBody,
+              channel: ReminderChannel.iqama,
+              channelName: l10n.iqamaChannelName,
+              payload: ReminderPayload.prayerTimes,
+              exact: true,
+              silent: !settings.iqamaSound,
               settingsLabel: l10n.notificationSettings,
             );
           case PrayerAlertKind.atTime:

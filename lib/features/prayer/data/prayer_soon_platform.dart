@@ -48,6 +48,7 @@ class PrayerSoonConfig {
     required this.payload,
     required this.settingsPayload,
     required this.rtl,
+    this.sound = true,
   });
 
   /// The name of the notification channel.
@@ -69,6 +70,9 @@ class PrayerSoonConfig {
   /// follows rather than the phone's.
   final bool rtl;
 
+  /// Whether the reminder makes its sound.
+  final bool sound;
+
   /// The form the platform reads.
   Map<String, Object> toMap() => {
     'channelName': channelName,
@@ -77,6 +81,7 @@ class PrayerSoonConfig {
     'payload': payload,
     'settingsPayload': settingsPayload,
     'rtl': rtl,
+    'sound': sound,
   };
 }
 

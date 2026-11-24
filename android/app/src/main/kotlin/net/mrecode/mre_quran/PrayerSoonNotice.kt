@@ -55,6 +55,7 @@ internal object PrayerSoonNotice {
             .setOngoing(true)
             .setAutoCancel(false)
             .setOnlyAlertOnce(true)
+            .setSilent(!config.optBoolean("sound", true))
             .setTimeoutAfter(left)
             .setContentIntent(open(context, id, config.optString("payload")))
             .addAction(0, config.optString("dismissLabel", "Remove"), dismiss(context, id))

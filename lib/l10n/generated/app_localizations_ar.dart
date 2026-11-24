@@ -2299,4 +2299,112 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get reminderKeep => 'لا، أبقِه';
+
+  @override
+  String iqamaTitle(String prayer) {
+    return 'إقامة صلاة $prayer';
+  }
+
+  @override
+  String get iqamaBody => 'قد قامت الصلاة، قد قامت الصلاة';
+
+  @override
+  String get iqamaChannelName => 'إقامة الصلاة';
+
+  @override
+  String get iqamaPageTitle => 'الإقامة';
+
+  @override
+  String get iqamaTileSubtitle =>
+      'تنبيه عند إقامة كل صلاة، تضبط وقته بعد الأذان';
+
+  @override
+  String get iqamaIntro =>
+      'عند الإقامة يصلك تنبيه بعبارة «قد قامت الصلاة، قد قامت الصلاة»، لا الإقامة كاملة. تضبط هنا كم دقيقة بعد الأذان تقام كل صلاة في مسجدك.';
+
+  @override
+  String get iqamaSwitch => 'تنبيه الإقامة';
+
+  @override
+  String get iqamaSwitchHint => 'يأتيك عند إقامة الصلوات الخمس.';
+
+  @override
+  String get iqamaSoundSwitch => 'صوت التنبيه';
+
+  @override
+  String get iqamaSoundHint => 'أوقفه ليأتي التنبيه صامتًا.';
+
+  @override
+  String get iqamaTimesTitle => 'كم بعد الأذان؟';
+
+  @override
+  String get iqamaTimesHint =>
+      'المعتاد أطول بعد الفجر وأقصر بعد المغرب. اضبط كل صلاة على ما تقام به في مسجدك.';
+
+  @override
+  String iqamaAfterLine(String minutes) {
+    return 'بعد الأذان بـ $minutes';
+  }
+
+  @override
+  String iqamaAt(String time) {
+    return 'الإقامة $time';
+  }
+
+  @override
+  String get iqamaEarlierButton => 'تقليل دقيقة';
+
+  @override
+  String get iqamaLaterButton => 'زيادة دقيقة';
+
+  @override
+  String get iqamaResetAll => 'إعادة المعتاد لكل الصلوات';
+
+  @override
+  String get prayerSoonSoundSwitch => 'صوت التذكير';
+
+  @override
+  String get prayerSoonSoundHint => 'أوقفه ليأتي التذكير صامتًا.';
+
+  @override
+  String prayerTuningSummaryPlace(String place, String method) {
+    return 'هذه مواقيت $place، محسوبة بطريقة $method.';
+  }
+
+  @override
+  String get prayerTuningSummaryNone =>
+      'لم تغيّر شيئًا: المواقيت كما حُسبت. غيّر هنا ما يخالف الواقع في مسجدك أو بلدك.';
+
+  @override
+  String get prayerTuningSummaryChanged => 'ما غيّرته عن الحساب:';
+
+  @override
+  String prayerTuningChipOffset(String prayer, String change) {
+    return '$prayer: $change';
+  }
+
+  @override
+  String prayerTuningChipDaylight(String value) {
+    return 'التوقيت: $value';
+  }
+
+  @override
+  String prayerTuningChipElevation(String metres) {
+    return 'الارتفاع: $metres';
+  }
+
+  @override
+  String prayerTuningChipHijri(String shift) {
+    return 'الهجري: $shift';
+  }
+
+  @override
+  String prayerTuningCalculated(String time) {
+    return 'المحسوب $time';
+  }
+
+  @override
+  String prayerTuningElevationUsed(String metres) {
+    return 'الارتفاع المستخدم في الحساب: $metres';
+  }
 }

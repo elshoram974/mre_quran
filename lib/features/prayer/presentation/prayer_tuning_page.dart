@@ -5,7 +5,6 @@ import 'package:mre_fields/mre_fields.dart';
 
 import '../../../core/l10n/l10n.dart';
 import '../../../core/layout/adaptive_layout.dart';
-import '../../../core/theme/app_tokens.dart';
 import '../../../core/time/ticking_clock.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_group_card.dart';
@@ -15,6 +14,7 @@ import '../../../core/widgets/app_section_header.dart';
 import '../../../core/widgets/app_segmented_control.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/widgets/app_stepper.dart';
+import '../../../core/widgets/app_tag.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../settings/application/digits_provider.dart';
@@ -24,6 +24,7 @@ import '../domain/prayer_alerts.dart';
 import '../domain/prayer_times.dart';
 import '../domain/prayer_tuning.dart';
 import 'prayer_labels.dart';
+import 'prayer_step_row.dart';
 
 /// Where the person moves the times away from the calculation, because the
 /// calculation is not always the truth where they are: some minutes for each
@@ -77,6 +78,8 @@ class PrayerTuningPage extends ConsumerWidget {
             child: ListView(
               padding: padding,
               children: [
+                _SummaryCard(state: data),
+                const SizedBox(height: 24),
                 _OffsetsSection(state: data),
                 const SizedBox(height: 24),
                 _DaylightSection(settings: data.settings),
@@ -88,6 +91,90 @@ class PrayerTuningPage extends ConsumerWidget {
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+/// What the times are of, and what the person changed from the calculation:
+/// the first thing on the page, so it is plain where they stand.
+class _SummaryCard extends ConsumerWidget {
+  const _SummaryCard({required this.state});
+
+  final PrayerState state;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final digits = ref.watch(digitsFormatterProvider);
+    final displayDigits = ref.watch(displayDigitsFormatterProvider);
+    final place = state.place!;
+    final settings = state.settings;
+    final tuning = state.tuning;
+    String minutes(int value) => l10n.minutesCount(value, digits(value));
+    final changes = [
+      for (final prayer in DailyPrayer.values)
+        if (tuning.offsetOf(prayer) != 0)
+          l10n.prayerTuningChipOffset(
+            prayerName(l10n, prayer),
+            tuning.offsetOf(prayer) < 0
+                ? l10n.prayerTuningEarlier(minutes(-tuning.offsetOf(prayer)))
+                : l10n.prayerTuningLater(minutes(tuning.offsetOf(prayer))),
+          ),
+      if (tuning.daylight != DaylightSaving.automatic)
+        l10n.prayerTuningChipDaylight(
+          tuning.daylight == DaylightSaving.summer
+              ? l10n.prayerTuningDaylightSummer
+              : l10n.prayerTuningDaylightWinter,
+        ),
+      // Only a height the person typed is a change; the phone's is the
+      // calculation's own.
+      if (settings.elevation != null)
+        l10n.prayerTuningChipElevation(
+          l10n.metersCount(digits(tuning.elevation)),
+        ),
+      if (settings.hijriShift != 0)
+        l10n.prayerTuningChipHijri(
+          _HijriSection.label(l10n, settings.hijriShift),
+        ),
+    ];
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.prayerTuningSummaryPlace(
+              place.name ??
+                  '${formatPrayerCoordinate(place.latitude, displayDigits)}, '
+                      '${formatPrayerCoordinate(place.longitude, displayDigits)}',
+              prayerMethodLabel(l10n, state.method!),
+            ),
+            style: theme.textTheme.titleSmall,
+          ),
+          const SizedBox(height: 8),
+          if (changes.isEmpty)
+            Text(
+              l10n.prayerTuningSummaryNone,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            )
+          else ...[
+            Text(
+              l10n.prayerTuningSummaryChanged,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [for (final change in changes) AppTag(change)],
+            ),
+          ],
+        ],
       ),
     );
   }
@@ -107,6 +194,12 @@ class _OffsetsSection extends ConsumerWidget {
     final displayDigits = ref.watch(displayDigitsFormatterProvider);
     final notifier = ref.read(prayerProvider.notifier);
     final offsets = state.settings.offsets;
+    // The times as calculated, to say what they were before the changes.
+    final plain = PrayerDay.compute(
+      state.place!,
+      state.method!,
+      ref.watch(clockProvider)(),
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -122,6 +215,16 @@ class _OffsetsSection extends ConsumerWidget {
                 time: day == null
                     ? null
                     : formatPrayerTime(context, day.of(prayer), displayDigits),
+                // Said only when the time is not the calculated one.
+                calculated: day == null || day.of(prayer) == plain.of(prayer)
+                    ? null
+                    : l10n.prayerTuningCalculated(
+                        formatPrayerTime(
+                          context,
+                          plain.of(prayer),
+                          displayDigits,
+                        ),
+                      ),
                 minutes: offsets[prayer] ?? 0,
                 digits: digits,
                 onChanged: (minutes) => notifier.setOffset(prayer, minutes),
@@ -146,6 +249,7 @@ class _OffsetRow extends StatelessWidget {
   const _OffsetRow({
     required this.prayer,
     required this.time,
+    required this.calculated,
     required this.minutes,
     required this.digits,
     required this.onChanged,
@@ -153,6 +257,7 @@ class _OffsetRow extends StatelessWidget {
 
   final DailyPrayer prayer;
   final String? time;
+  final String? calculated;
   final int minutes;
   final String Function(int) digits;
   final ValueChanged<int> onChanged;
@@ -160,62 +265,25 @@ class _OffsetRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final theme = Theme.of(context);
     const limit = PrayerTuning.maxOffset;
-    final label = switch (minutes) {
-      0 => l10n.prayerTuningAsCalculated,
-      < 0 => l10n.prayerTuningEarlier(
-        l10n.minutesCount(-minutes, digits(-minutes)),
-      ),
-      _ => l10n.prayerTuningLater(l10n.minutesCount(minutes, digits(minutes))),
-    };
-    final stacked =
-        MediaQuery.textScalerOf(context).scale(1) >= AppTokens.stackTextScale;
-    final icon = Icon(prayerIcon(prayer), color: theme.colorScheme.primary);
-    final name = Text(
-      prayerName(l10n, prayer),
-      style: theme.textTheme.titleMedium,
-    );
-    return Padding(
-      padding: const EdgeInsetsDirectional.fromSTEB(16, 8, 16, 8),
-      child: Column(
-        children: [
-          // With large text the time goes under the name, so neither is
-          // squeezed.
-          if (stacked) ...[
-            Row(
-              children: [
-                icon,
-                const SizedBox(width: 12),
-                Expanded(child: name),
-              ],
-            ),
-            if (time != null)
-              Align(
-                alignment: AlignmentDirectional.centerStart,
-                child: Text(time!, style: theme.textTheme.titleMedium),
-              ),
-          ] else
-            Row(
-              children: [
-                icon,
-                const SizedBox(width: 12),
-                Expanded(child: name),
-                if (time != null)
-                  Text(time!, style: theme.textTheme.titleMedium),
-              ],
-            ),
-          const SizedBox(height: 4),
-          AppStepper(
-            label: label,
-            highlighted: minutes != 0,
-            decreaseLabel: l10n.prayerTuningEarlierButton,
-            increaseLabel: l10n.prayerTuningLaterButton,
-            onDecrease: minutes > -limit ? () => onChanged(minutes - 1) : null,
-            onIncrease: minutes < limit ? () => onChanged(minutes + 1) : null,
-          ),
-        ],
-      ),
+    return PrayerStepRow(
+      prayer: prayer,
+      time: time,
+      note: calculated,
+      label: switch (minutes) {
+        0 => l10n.prayerTuningAsCalculated,
+        < 0 => l10n.prayerTuningEarlier(
+          l10n.minutesCount(-minutes, digits(-minutes)),
+        ),
+        _ => l10n.prayerTuningLater(
+          l10n.minutesCount(minutes, digits(minutes)),
+        ),
+      },
+      highlighted: minutes != 0,
+      decreaseLabel: l10n.prayerTuningEarlierButton,
+      increaseLabel: l10n.prayerTuningLaterButton,
+      onDecrease: minutes > -limit ? () => onChanged(minutes - 1) : null,
+      onIncrease: minutes < limit ? () => onChanged(minutes + 1) : null,
     );
   }
 }
@@ -359,6 +427,12 @@ class _ElevationCardState extends ConsumerState<_ElevationCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // The value in use first, then where it comes from.
+          Text(
+            l10n.prayerTuningElevationUsed(metres(used)),
+            style: theme.textTheme.titleMedium,
+          ),
+          const SizedBox(height: 4),
           Text(
             source,
             style: theme.textTheme.bodyMedium?.copyWith(
@@ -369,6 +443,7 @@ class _ElevationCardState extends ConsumerState<_ElevationCard> {
           MRETextField(
             controller: _controller,
             labelText: l10n.prayerTuningElevationField,
+            suffix: Text(l10n.metersCount('').trim()),
             keyboardType: TextInputType.number,
             textInputAction: TextInputAction.done,
             inputFormatters: [
@@ -442,8 +517,16 @@ class _HijriSection extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // The date itself first: that is what the person is correcting.
+              Text(
+                l10n.prayerTuningHijriToday(
+                  hijriLabel(l10n, today, displayDigits),
+                ),
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 8),
               AppStepper(
-                label: _label(l10n, shift),
+                label: label(l10n, shift),
                 highlighted: shift != 0,
                 decreaseLabel: l10n.prayerTuningHijriBackButton,
                 increaseLabel: l10n.prayerTuningHijriForwardButton,
@@ -454,15 +537,6 @@ class _HijriSection extends ConsumerWidget {
                     ? () => notifier.setHijriShift(shift + 1)
                     : null,
               ),
-              const SizedBox(height: 8),
-              Text(
-                l10n.prayerTuningHijriToday(
-                  hijriLabel(l10n, today, displayDigits),
-                ),
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
             ],
           ),
         ),
@@ -470,7 +544,8 @@ class _HijriSection extends ConsumerWidget {
     );
   }
 
-  static String _label(AppLocalizations l10n, int shift) => switch (shift) {
+  /// How far the date is moved, in words.
+  static String label(AppLocalizations l10n, int shift) => switch (shift) {
     0 => l10n.prayerTuningHijriNone,
     < 0 => l10n.prayerTuningHijriBack(-shift),
     _ => l10n.prayerTuningHijriForward(shift),

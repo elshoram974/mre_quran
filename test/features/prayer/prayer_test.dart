@@ -182,6 +182,7 @@ void main() {
           PrayerAlertKind.afterPrayer => PrayerAlertPlan.firstAfterId,
           PrayerAlertKind.atTime => PrayerAlertPlan.firstAtTimeId,
           PrayerAlertKind.beforePrayer => PrayerAlertPlan.firstBeforeId,
+          PrayerAlertKind.iqama => PrayerAlertPlan.firstIqamaId,
         };
         expect(
           alerts
@@ -839,6 +840,94 @@ void main() {
       expect(repo.settings.hijriShift, PrayerSettings.maxHijriShift);
       await notifier.setHijriShift(-1);
       expect(c.read(hijriShiftProvider), -1);
+    });
+
+    test('the iqama is a notice at its time, after the adhan, in its own '
+        'channel', () async {
+      final scheduler = FakeReminderScheduler();
+      final c = container(
+        scheduler: scheduler,
+        location: FakeLocationSource(requestResult: _cairo),
+      );
+      await c.read(prayerProvider.future);
+      final notifier = c.read(prayerProvider.notifier);
+      expect(await notifier.setIqamaReminder(true), PrayerResult.ok);
+      final iqamas = scheduler.once.entries
+          .where((entry) => entry.value.channel == ReminderChannel.iqama)
+          .toList();
+      // Five a day, for the days planned; today's gone by three in the morning
+      // only for none.
+      expect(iqamas, isNotEmpty);
+      final first = scheduler.once[PrayerAlertPlan.firstIqamaId]!;
+      expect(first.title, 'إقامة صلاة الفجر');
+      expect(first.body, 'قد قامت الصلاة، قد قامت الصلاة');
+      expect(first.exact, isTrue);
+      expect(first.silent, isFalse);
+      expect(first.settingsLabel, 'الإعدادات');
+      final day = PrayerDay.compute(_cairo, PrayerMethod.egyptian, _now);
+      expect(first.at, day.fajr.add(const Duration(minutes: 20)));
+
+      await notifier.setIqamaMinutes(DailyPrayer.fajr, 30);
+      expect(
+        scheduler.once[PrayerAlertPlan.firstIqamaId]!.at,
+        day.fajr.add(const Duration(minutes: 30)),
+      );
+      await notifier.setIqamaMinutes(DailyPrayer.fajr, 500);
+      expect(
+        c.read(prayerProvider).value!.settings.iqamaMinutes[DailyPrayer.fajr],
+        PrayerSettings.maxIqama,
+      );
+      await notifier.resetIqamaMinutes();
+      expect(c.read(prayerProvider).value!.settings.iqamaMinutes, isEmpty);
+
+      await notifier.setIqamaSound(false);
+      expect(scheduler.once[PrayerAlertPlan.firstIqamaId]!.silent, isTrue);
+
+      await notifier.setIqamaReminder(false);
+      expect(
+        scheduler.once.values.where(
+          (value) => value.channel == ReminderChannel.iqama,
+        ),
+        isEmpty,
+      );
+    });
+
+    test(
+      'the iqama asks for notifications, and stays off without them',
+      () async {
+        final scheduler = FakeReminderScheduler(allow: false);
+        final c = container(
+          scheduler: scheduler,
+          location: FakeLocationSource(requestResult: _cairo),
+        );
+        await c.read(prayerProvider.future);
+        expect(
+          await c.read(prayerProvider.notifier).setIqamaReminder(true),
+          PrayerResult.notificationsDenied,
+        );
+        expect(c.read(prayerProvider).value!.settings.iqamaReminder, isFalse);
+        expect(scheduler.once, isEmpty);
+      },
+    );
+
+    test('the reminder before a prayer can be silent', () async {
+      final scheduler = FakeReminderScheduler();
+      final c = container(
+        scheduler: scheduler,
+        location: FakeLocationSource(requestResult: _cairo),
+      );
+      await c.read(prayerProvider.future);
+      final notifier = c.read(prayerProvider.notifier);
+      await notifier.setAlert(DailyPrayer.fajr, true);
+      // On Android the countdown reminder is the platform's, with its sound.
+      expect(soon.config!.sound, isTrue);
+      await notifier.setBeforeSound(false);
+      expect(soon.config!.sound, isFalse);
+      // Without the countdown it is a notification, silent the same way.
+      await notifier.setBeforeCountdown(false);
+      expect(scheduler.once[PrayerAlertPlan.firstBeforeId]!.silent, isTrue);
+      await notifier.setBeforeSound(true);
+      expect(scheduler.once[PrayerAlertPlan.firstBeforeId]!.silent, isFalse);
     });
 
     test('exact alarms are requested through the scheduler', () async {

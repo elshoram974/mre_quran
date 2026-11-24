@@ -219,6 +219,89 @@ void main() {
     });
   });
 
+  group('the iqama', () {
+    final now = DateTime(2026, 10, 8, 3);
+    List<PrayerAlert> plan(PrayerSettings settings) => PrayerAlertPlan.compute(
+      place: _cairo,
+      settings: settings,
+      now: now,
+      days: 1,
+    ).where((alert) => alert.kind == PrayerAlertKind.iqama).toList();
+
+    test('is off until the person turns it on', () {
+      expect(plan(const PrayerSettings(alerts: {DailyPrayer.fajr})), isEmpty);
+      expect(const PrayerSettings().needsSchedule, isFalse);
+      expect(const PrayerSettings(iqamaReminder: true).needsSchedule, isTrue);
+    });
+
+    test('comes for the five prayers, the usual gap after each adhan', () {
+      final iqamas = plan(const PrayerSettings(iqamaReminder: true));
+      final day = PrayerDay.compute(_cairo, PrayerMethod.egyptian, now);
+      expect(iqamas.map((alert) => alert.prayer), DailyPrayer.values);
+      for (final alert in iqamas) {
+        expect(
+          _minutes(alert.at, day.of(alert.prayer)),
+          PrayerSettings.defaultIqamaMinutes[alert.prayer],
+        );
+      }
+      expect(iqamas.map((alert) => alert.id), [
+        for (var i = 0; i < 5; i++) PrayerAlertPlan.firstIqamaId + i,
+      ]);
+      expect(iqamas.every((alert) => PrayerAlertPlan.owns(alert.id)), isTrue);
+    });
+
+    test('follows the gap the person chose, and the minutes they moved '
+        'the prayer by', () {
+      const settings = PrayerSettings(
+        iqamaReminder: true,
+        iqamaMinutes: {DailyPrayer.dhuhr: 25},
+        offsets: {DailyPrayer.dhuhr: 3},
+      );
+      final day = PrayerDay.compute(
+        _cairo,
+        PrayerMethod.egyptian,
+        now,
+        tuning: settings.tuningAt(_cairo),
+      );
+      final dhuhr = plan(settings)
+          .firstWhere((alert) => alert.prayer == DailyPrayer.dhuhr);
+      expect(_minutes(dhuhr.at, day.dhuhr), 25);
+      expect(settings.iqamaAfter(DailyPrayer.asr), 15);
+    });
+
+    test('a gap already past is not planned', () {
+      final late = PrayerAlertPlan.compute(
+        place: _cairo,
+        settings: const PrayerSettings(iqamaReminder: true),
+        now: DateTime(2026, 10, 8, 23, 59),
+        days: 1,
+      );
+      expect(late.where((a) => a.kind == PrayerAlertKind.iqama), isEmpty);
+    });
+
+    test('is saved with the sounds, and nonsense means the usual', () {
+      const settings = PrayerSettings(
+        iqamaReminder: true,
+        iqamaSound: false,
+        beforeSound: false,
+        iqamaMinutes: {DailyPrayer.fajr: 30, DailyPrayer.isha: 15},
+      );
+      final back = PrayerSettings.fromJson(settings.toJson());
+      expect(back.iqamaReminder, isTrue);
+      expect(back.iqamaSound, isFalse);
+      expect(back.beforeSound, isFalse);
+      // Isha's 15 is the usual, so it is not kept.
+      expect(back.iqamaMinutes, {DailyPrayer.fajr: 30});
+      final odd = PrayerSettings.fromJson({
+        'iqamaMinutes': {'fajr': 2, 'dhuhr': 600, 'asr': 'x'},
+      });
+      expect(odd.iqamaMinutes, isEmpty);
+      expect(odd.iqamaReminder, isFalse);
+      expect(odd.iqamaSound, isTrue);
+      expect(odd.beforeSound, isTrue);
+    });
+  });
+
   test('the alerts follow the minutes the person added', () {
     final now = DateTime(2026, 10, 8, 3);
     List<PrayerAlert> plan(PrayerSettings settings) => PrayerAlertPlan.compute(

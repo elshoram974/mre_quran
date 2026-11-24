@@ -57,6 +57,7 @@ class _NoopReminderScheduler implements ReminderScheduler {
     required String payload,
     bool exact = false,
     String? iosSound,
+    bool silent = false,
     String? settingsLabel,
   }) async {}
 

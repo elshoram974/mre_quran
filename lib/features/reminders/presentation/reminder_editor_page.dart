@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart' show LengthLimitingTextInputFormatter;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart' show DateFormat;
@@ -211,7 +212,9 @@ class _EditorFormState extends ConsumerState<_EditorForm> {
           controller: _title,
           labelText: l10n.reminderTitleField,
           hintText: l10n.reminderTitleHint,
-          maxLength: CustomReminder.maxTitle,
+          inputFormatters: [
+            LengthLimitingTextInputFormatter(CustomReminder.maxTitle),
+          ],
           textInputAction: TextInputAction.next,
           onChanged: (_) => setState(() {}),
         ),
@@ -219,7 +222,9 @@ class _EditorFormState extends ConsumerState<_EditorForm> {
         MRETextField(
           controller: _note,
           labelText: l10n.reminderNoteField,
-          maxLength: CustomReminder.maxNote,
+          inputFormatters: [
+            LengthLimitingTextInputFormatter(CustomReminder.maxNote),
+          ],
           maxLines: 2,
           onChanged: (_) => setState(() {}),
         ),
@@ -287,7 +292,10 @@ class _EditorFormState extends ConsumerState<_EditorForm> {
                 Expanded(
                   child: Text(
                     formatReminderTime(context, _times[index], displayDigits),
-                    style: theme.textTheme.titleMedium,
+                    // The accent says the time can be changed by a tap.
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: theme.colorScheme.primary,
+                    ),
                   ),
                 ),
                 IconButton(
@@ -295,7 +303,7 @@ class _EditorFormState extends ConsumerState<_EditorForm> {
                   onPressed: _times.length > 1
                       ? () => setState(() => _times.removeAt(index))
                       : null,
-                  icon: const Icon(Icons.close),
+                  icon: const Icon(Icons.delete_outline),
                 ),
               ],
             ),

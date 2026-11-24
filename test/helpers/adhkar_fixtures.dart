@@ -222,6 +222,7 @@ class FakeReminderScheduler implements ReminderScheduler {
       String payload,
       ReminderChannel channel,
       bool exact,
+      bool silent,
       String? settingsLabel,
     })
   >
@@ -250,6 +251,7 @@ class FakeReminderScheduler implements ReminderScheduler {
     required String payload,
     bool exact = false,
     String? iosSound,
+    bool silent = false,
     String? settingsLabel,
   }) async {
     sounds[id] = iosSound;
@@ -260,6 +262,7 @@ class FakeReminderScheduler implements ReminderScheduler {
       payload: payload,
       channel: channel,
       exact: exact,
+      silent: silent,
       settingsLabel: settingsLabel,
     );
   }

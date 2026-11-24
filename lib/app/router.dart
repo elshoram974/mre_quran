@@ -16,6 +16,7 @@ import '../features/bookmarks/presentation/bookmarks_page.dart';
 import '../features/mushaf/presentation/mushaf_page.dart';
 import '../features/adhan/presentation/adhan_page.dart';
 import '../features/prayer/presentation/prayer_times_page.dart';
+import '../features/prayer/presentation/iqama_page.dart';
 import '../features/prayer/presentation/prayer_location_picker_page.dart';
 import '../features/prayer/presentation/prayer_tuning_page.dart';
 import '../features/reminders/presentation/reminder_editor_page.dart';
@@ -138,6 +139,11 @@ final routerProvider = Provider<GoRouter>((ref) {
             ReminderEditorPage(reminderId: id == 'new' ? null : id),
           );
         },
+      ),
+      GoRoute(
+        path: AppRoute.iqama.path,
+        pageBuilder: (context, state) =>
+            _page(context, state, const IqamaPage()),
       ),
       GoRoute(
         path: AppRoute.prayerTuning.path,
@@ -333,6 +339,7 @@ enum AppRoute {
   qibla('/qibla'),
   adhan('/adhan'),
   prayerTuning('/prayer-tuning'),
+  iqama('/iqama'),
   reminders('/reminders'),
   reminderEdit('/reminders/:id');
 
