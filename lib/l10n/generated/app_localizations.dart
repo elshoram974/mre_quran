@@ -3720,6 +3720,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Choose your place first on the prayer times page: the adjustments are made to the times of your place.'**
   String get prayerTuningNeedsPlace;
+
+  /// No description provided for @customReminderBody.
+  ///
+  /// In en, this message translates to:
+  /// **'A reminder you made.'**
+  String get customReminderBody;
+
+  /// No description provided for @customReminderChannel.
+  ///
+  /// In en, this message translates to:
+  /// **'My reminders'**
+  String get customReminderChannel;
 }
 
 class _AppLocalizationsDelegate

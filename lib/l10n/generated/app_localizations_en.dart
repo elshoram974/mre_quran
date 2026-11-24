@@ -2174,4 +2174,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get prayerTuningNeedsPlace =>
       'Choose your place first on the prayer times page: the adjustments are made to the times of your place.';
+
+  @override
+  String get customReminderBody => 'A reminder you made.';
+
+  @override
+  String get customReminderChannel => 'My reminders';
 }

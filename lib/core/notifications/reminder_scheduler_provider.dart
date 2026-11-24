@@ -35,6 +35,8 @@ class _NoopReminderScheduler implements ReminderScheduler {
     required String channelName,
     required String payload,
     int? weekday,
+    int? dayOfMonth,
+    ReminderChannel channel = ReminderChannel.adhkar,
     String? settingsLabel,
   }) async {}
 

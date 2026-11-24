@@ -21,7 +21,10 @@ enum ReminderChannel {
   prayerSoon('prayer_soon'),
 
   /// The reminder, the evening before, of a day it is sunnah to fast.
-  fasting('fasting_reminders');
+  fasting('fasting_reminders'),
+
+  /// The reminders the person made for themselves.
+  custom('custom_reminders');
 
   const ReminderChannel(this.id);
 
@@ -32,13 +35,13 @@ enum ReminderChannel {
   /// prayer times, where the prayers' alerts are chosen, or the reminders.
   String get settings => switch (this) {
     prayer || prayerSoon => ReminderPayload.prayerSettings,
-    adhkar || fasting => ReminderPayload.remindersSettings,
+    adhkar || fasting || custom => ReminderPayload.remindersSettings,
   };
 
   /// The iOS category of its notifications, which carries that button.
   String get iosCategory => switch (this) {
     prayer || prayerSoon => 'prayer',
-    adhkar || fasting => 'reminders',
+    adhkar || fasting || custom => 'reminders',
   };
 }
 
@@ -64,7 +67,9 @@ abstract interface class ReminderScheduler {
 
   /// Fires a notification every day at [minutes] after midnight, local time;
   /// with [weekday] (1 Monday to 7 Sunday, as `DateTime.weekday`), once a week
-  /// on that day. Replaces any reminder with the same [id]. With
+  /// on that day; with [dayOfMonth] (1 to 28, so every month has it), once a
+  /// month on that day. It comes in [channel]. Replaces any reminder with the
+  /// same [id]. With
   /// [settingsLabel], it has a button of that name that opens the reminders'
   /// settings.
   Future<void> schedule({
@@ -75,6 +80,8 @@ abstract interface class ReminderScheduler {
     required String channelName,
     required String payload,
     int? weekday,
+    int? dayOfMonth,
+    ReminderChannel channel = ReminderChannel.adhkar,
     String? settingsLabel,
   });
 
@@ -261,6 +268,8 @@ class LocalReminderScheduler implements ReminderScheduler {
     required String channelName,
     required String payload,
     int? weekday,
+    int? dayOfMonth,
+    ReminderChannel channel = ReminderChannel.adhkar,
     String? settingsLabel,
   }) async {
     await _ensureZone();
@@ -269,11 +278,22 @@ class LocalReminderScheduler implements ReminderScheduler {
       tz.local,
       now.year,
       now.month,
-      now.day,
+      dayOfMonth ?? now.day,
       minutes ~/ 60,
       minutes % 60,
     );
-    if (!first.isAfter(now)) first = first.add(const Duration(days: 1));
+    if (!first.isAfter(now)) {
+      first = dayOfMonth == null
+          ? first.add(const Duration(days: 1))
+          : tz.TZDateTime(
+              tz.local,
+              now.year,
+              now.month + 1,
+              dayOfMonth,
+              minutes ~/ 60,
+              minutes % 60,
+            );
+    }
     if (weekday != null) {
       // The next day that falls on [weekday], on or after the first time.
       while (first.weekday != weekday) {
@@ -287,20 +307,22 @@ class LocalReminderScheduler implements ReminderScheduler {
       scheduledDate: first,
       notificationDetails: NotificationDetails(
         android: AndroidNotificationDetails(
-          ReminderChannel.adhkar.id,
+          channel.id,
           channelName,
           actions: settingsLabel == null
               ? null
-              : [_settingsButton(ReminderChannel.adhkar, settingsLabel)],
+              : [_settingsButton(channel, settingsLabel)],
         ),
         iOS: DarwinNotificationDetails(
           categoryIdentifier: settingsLabel == null
               ? null
-              : ReminderChannel.adhkar.iosCategory,
+              : channel.iosCategory,
         ),
       ),
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-      matchDateTimeComponents: weekday == null
+      matchDateTimeComponents: dayOfMonth != null
+          ? DateTimeComponents.dayOfMonthAndTime
+          : weekday == null
           ? DateTimeComponents.time
           : DateTimeComponents.dayOfWeekAndTime,
       payload: payload,

@@ -2159,4 +2159,10 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get prayerTuningNeedsPlace =>
       'اختر مكانك أولًا من صفحة مواقيت الصلاة، فالضبط يكون على مواقيت مكانك.';
+
+  @override
+  String get customReminderBody => 'تذكير أضفته بنفسك.';
+
+  @override
+  String get customReminderChannel => 'تذكيراتي';
 }

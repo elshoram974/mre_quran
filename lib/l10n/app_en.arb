@@ -778,5 +778,7 @@
   "@prayerTuningHijriBack": {"placeholders": {"count": {"type": "int"}}},
   "prayerTuningHijriBackButton": "One day back",
   "prayerTuningHijriForwardButton": "One day forward",
-  "prayerTuningNeedsPlace": "Choose your place first on the prayer times page: the adjustments are made to the times of your place."
+  "prayerTuningNeedsPlace": "Choose your place first on the prayer times page: the adjustments are made to the times of your place.",
+  "customReminderBody": "A reminder you made.",
+  "customReminderChannel": "My reminders"
 }

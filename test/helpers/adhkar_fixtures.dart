@@ -158,6 +158,10 @@ class FakeReminderScheduler implements ReminderScheduler {
 
   /// The weekday of each reminder scheduled for one day of the week.
   final Map<int, int> weekdays = {};
+
+  /// The day of the month of each monthly reminder, and the channel of each.
+  final Map<int, int> monthDays = {};
+  final Map<int, ReminderChannel> channels = {};
   final StreamController<String> tapController = StreamController.broadcast();
 
   final String? launch;
@@ -183,6 +187,8 @@ class FakeReminderScheduler implements ReminderScheduler {
     required String channelName,
     required String payload,
     int? weekday,
+    int? dayOfMonth,
+    ReminderChannel channel = ReminderChannel.adhkar,
     String? settingsLabel,
   }) async {
     if (weekday == null) {
@@ -190,6 +196,12 @@ class FakeReminderScheduler implements ReminderScheduler {
     } else {
       weekdays[id] = weekday;
     }
+    if (dayOfMonth == null) {
+      monthDays.remove(id);
+    } else {
+      monthDays[id] = dayOfMonth;
+    }
+    channels[id] = channel;
     scheduled[id] = (
       minutes: minutes,
       title: title,
@@ -255,6 +267,9 @@ class FakeReminderScheduler implements ReminderScheduler {
   @override
   Future<void> cancel(int id) async {
     scheduled.remove(id);
+    weekdays.remove(id);
+    monthDays.remove(id);
+    channels.remove(id);
     once.remove(id);
   }
 

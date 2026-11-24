@@ -666,5 +666,7 @@
   "@prayerTuningHijriBack": {"placeholders": {"count": {"type": "int"}}},
   "prayerTuningHijriBackButton": "يوم للخلف",
   "prayerTuningHijriForwardButton": "يوم للأمام",
-  "prayerTuningNeedsPlace": "اختر مكانك أولًا من صفحة مواقيت الصلاة، فالضبط يكون على مواقيت مكانك."
+  "prayerTuningNeedsPlace": "اختر مكانك أولًا من صفحة مواقيت الصلاة، فالضبط يكون على مواقيت مكانك.",
+  "customReminderBody": "تذكير أضفته بنفسك.",
+  "customReminderChannel": "تذكيراتي"
 }
