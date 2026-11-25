@@ -147,27 +147,56 @@ class SvgPageStore {
     final manifest = await _manifest();
     final entry = manifest.entry(page);
     final folder = await _folder();
-    for (final extension in _extensions) {
-      final name = SvgManifest.fileName(page, extension);
-      final packed = File('$folder/$name$_packed');
-      if (await packed.exists()) continue;
-      // The whole Mushaf may be on the device still in its archives: the
-      // system finished the download while the app was closed, or the
-      // unpacking was cut short. It is unpacked first, so a page that came
-      // with it never goes to the network.
-      if (await hasArchives()) {
-        await install();
-        if (await packed.exists()) continue;
+    File packedOf(String extension) =>
+        File('$folder/${SvgManifest.fileName(page, extension)}$_packed');
+    Future<List<String>> missing() async => [
+      for (final extension in _extensions)
+        if (!await packedOf(extension).exists()) extension,
+    ];
+    var needed = await missing();
+    if (needed.isEmpty) return;
+    // The whole Mushaf may be on the device still in its archives: the
+    // system finished the download while the app was closed, or the
+    // unpacking was cut short. It is unpacked first, so a page that came
+    // with it never goes to the network.
+    if (await hasArchives()) {
+      await install();
+      needed = await missing();
+    }
+    // The page's two files come down together, then are checked and packed
+    // in one go, off the main isolate when they are large, so a page arriving
+    // while the reader turns pages does not stall a frame.
+    final uris = [
+      for (final extension in needed) manifest.url(page, extension),
+    ];
+    final expected = [
+      for (final extension in needed)
+        extension == 'svg' ? entry.svgSha256 : entry.jsonSha256,
+    ];
+    final fetched = await Future.wait(uris.map(_fetch));
+    List<List<int>?> pack() => [
+      for (var i = 0; i < fetched.length; i++)
+        _checkAndPack(fetched[i], expected[i]),
+    ];
+    // A small file costs less than starting an isolate for it.
+    final size = fetched.fold<int>(0, (sum, bytes) => sum + bytes.length);
+    final packed = size < _offMainBytes ? pack() : await Isolate.run(pack);
+    for (var i = 0; i < needed.length; i++) {
+      final compressed = packed[i];
+      if (compressed == null) {
+        throw PageDownloadException(uris[i], 'checksum mismatch');
       }
-      final expected = extension == 'svg' ? entry.svgSha256 : entry.jsonSha256;
-      final uri = manifest.url(page, extension);
-      final bytes = await _fetch(uri);
-      if (sha256.convert(bytes).toString() != expected) {
-        throw PageDownloadException(uri, 'checksum mismatch');
-      }
-      await _writePacked(packed, bytes);
+      await _writeFile(packedOf(needed[i]), compressed);
     }
   }
+
+  /// From this many downloaded bytes, a page is checked and packed in an
+  /// isolate of its own.
+  static const int _offMainBytes = 64 * 1024;
+
+  /// [bytes] gzip-compressed when their SHA-256 is [expected]; else null.
+  static List<int>? _checkAndPack(List<int> bytes, String expected) =>
+      sha256.convert(bytes).toString() == expected ? gzip.encode(bytes) : null;
 
   /// The page nearest [page], either way, whose files are on the device;
   /// null when none is. [page] itself is not counted.
@@ -349,12 +378,23 @@ class SvgPageStore {
   }
 
   /// Written to a side file first, so a half-written file is never read.
-  static Future<void> _writePacked(File packed, List<int> bytes) async {
+  static Future<void> _writePacked(File packed, List<int> bytes) =>
+      _writeFile(packed, gzip.encode(bytes));
+
+  /// Writes [compressed] to [packed] by way of a side file.
+  static Future<void> _writeFile(File packed, List<int> compressed) async {
     await packed.parent.create(recursive: true);
-    final temp = File('${packed.path}.part');
-    await temp.writeAsBytes(gzip.encode(bytes), flush: true);
+    // Each write has its own side file (the unpacking runs in an isolate of
+    // its own), so two writes of one file never mix.
+    final temp = File(
+      '${packed.path}.${DateTime.now().microsecondsSinceEpoch}-'
+      '${_sideFiles++}.part',
+    );
+    await temp.writeAsBytes(compressed, flush: true);
     await temp.rename(packed.path);
   }
+
+  static int _sideFiles = 0;
 
   /// Runs [work] when a place is free: at most [_preparing] pages are
   /// prepared at once, so they do not fight over the processor. The page
@@ -414,8 +454,14 @@ class SvgPageStore {
     }
   }
 
+  /// One client for every page, so its connections are kept and reused: a new
+  /// client for each file paid a new secure handshake each time.
+  static final HttpClient _client = HttpClient()
+    ..connectionTimeout = const Duration(seconds: 8)
+    ..idleTimeout = const Duration(seconds: 20);
+
   static Future<Uint8List> _httpFetch(Uri uri) async {
-    final client = HttpClient()..connectionTimeout = const Duration(seconds: 8);
+    final client = _client;
     try {
       final request = await client.getUrl(uri);
       final response = await request.close().timeout(
@@ -438,8 +484,6 @@ class SvgPageStore {
         '${error.runtimeType}',
         unreachable: true,
       );
-    } finally {
-      client.close();
     }
   }
 }

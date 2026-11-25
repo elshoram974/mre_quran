@@ -73,8 +73,14 @@ class _Content extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final active = ref.watch(activeSessionProvider);
-    final now = ref.watch(tickingNowProvider);
-    final featured = active ?? catalog.suggestedAt(now.hour * 60 + now.minute);
+    // Only a change of the suggested collection rebuilds the page, not each
+    // tick of the clock.
+    final suggested = ref.watch(
+      tickingNowProvider.select(
+        (now) => catalog.suggestedAt(now.hour * 60 + now.minute),
+      ),
+    );
+    final featured = active ?? suggested;
     final starred = [
       for (final id
           in ref.watch(adhkarFavoritesProvider).value ?? const <String>[])

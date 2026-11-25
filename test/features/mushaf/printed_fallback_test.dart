@@ -98,7 +98,14 @@ void main() {
     await fallback().retry(2);
     expect(current().readerMode, ReaderMode.text);
     expect(current().textUntilOnline, isTrue);
-    expect(server.requests.last.pathSegments.last, '002.svg');
+    // Page 2 was tried again: its two files are asked for together.
+    expect(
+      {
+        for (final uri in server.requests.reversed.take(2))
+          uri.pathSegments.last,
+      },
+      {'002.svg', '002.json'},
+    );
   });
 
   test('once a page downloads, the printed Mushaf is back', () async {
@@ -124,10 +131,11 @@ void main() {
     await fallback().offline();
     server.offline = true;
     await fallback().retry(2);
-    // Page 2 opens offline and proves nothing: page 3 was tried.
+    // Page 2 opens offline and proves nothing: page 3 was tried, its two
+    // files together.
     expect(
-      [for (final uri in server.requests) uri.pathSegments.last],
-      ['003.svg'],
+      {for (final uri in server.requests) uri.pathSegments.last},
+      {'003.svg', '003.json'},
     );
     expect(current().readerMode, ReaderMode.text);
   });

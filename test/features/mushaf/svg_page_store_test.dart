@@ -6,6 +6,7 @@ import 'package:crypto/crypto.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mre_quran/features/mushaf/data/svg_manifest_parser.dart';
 import 'package:mre_quran/features/mushaf/data/svg_page_store.dart';
+import 'package:mre_quran/features/mushaf/domain/svg_manifest.dart';
 import 'package:mre_quran/features/settings/domain/app_settings.dart';
 
 import '../../helpers/svg_page_fixtures.dart';
@@ -172,11 +173,57 @@ void main() {
       ),
     );
     expect(stored('001.svg.gz').existsSync(), isFalse);
-    expect(stored('001.svg.gz.part').existsSync(), isFalse);
+    // No half-written side file is left either.
+    final folder = stored('').parent;
+    expect(
+      folder.existsSync()
+          ? folder.listSync().where((file) => file.path.endsWith('.part'))
+          : const <FileSystemEntity>[],
+      isEmpty,
+    );
 
     // The real file is taken once it can be had.
     server.tamper = false;
     expect((await store.page(1)).page, 1);
+  });
+
+  test('a page as large as the real ones is checked and packed in an '
+      'isolate of its own, and a damaged one is refused there too', () async {
+    // A real page's drawing is a few hundred kilobytes.
+    final large = '$fixtureSvg<!--${'x' * 200000}-->';
+    var damaged = false;
+    final base = fixtureManifest(pages: 1);
+    final manifest = SvgManifest(
+      edition: base.edition,
+      base: base.base,
+      packedBytes: base.packedBytes,
+      archives: base.archives,
+      pages: [
+        (
+          svgSha256: sha256.convert(utf8.encode(large)).toString(),
+          jsonSha256: base.entry(1).jsonSha256,
+          bytes: large.length + fixtureJson.length,
+        ),
+      ],
+    );
+    final big = SvgPageStore(
+      root: () async => root,
+      manifest: () async => manifest,
+      fetch: (uri) async => bytesOf(
+        uri.path.endsWith('.svg') ? (damaged ? '$large ' : large) : fixtureJson,
+      ),
+    );
+    damaged = true;
+    await expectLater(big.fetch(1), throwsA(isA<PageDownloadException>()));
+    expect(stored('001.svg.gz').existsSync(), isFalse);
+
+    damaged = false;
+    await big.fetch(1);
+    expect(
+      utf8.decode(gzip.decode(stored('001.svg.gz').readAsBytesSync())),
+      large,
+    );
+    expect(stored('001.svg.gz').lengthSync(), lessThan(large.length ~/ 10));
   });
 
   test('concurrent requests for a page share one download', () async {

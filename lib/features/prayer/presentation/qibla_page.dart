@@ -88,13 +88,11 @@ class _Compass extends ConsumerWidget {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final digits = ref.watch(digitsFormatterProvider);
-    final reading = ref.watch(compassHeadingProvider);
-    final heading = reading.value;
-    final noSensor = reading.hasError;
-    final turn = heading == null ? null : angleBetween(heading, qibla);
-    final aligned = turn != null && turn.abs() <= qiblaTolerance;
-    // Report after the frame so the page does not rebuild while building.
-
+    // The heading changes many times a second: only the dial and the line
+    // under it follow it, not the whole page.
+    final noSensor = ref.watch(
+      compassHeadingProvider.select((reading) => reading.hasError),
+    );
     final degrees = digits(qibla.round());
     final point = compassPointName(l10n, CompassPoint.of(qibla));
     return LayoutBuilder(
@@ -112,10 +110,8 @@ class _Compass extends ConsumerWidget {
             Center(
               child: SizedBox.square(
                 dimension: dial,
-                child: QiblaCompass(
+                child: _Dial(
                   qibla: qibla,
-                  heading: heading,
-                  aligned: aligned,
                   letters: [
                     l10n.compassLetterNorth,
                     l10n.compassLetterEast,
@@ -127,21 +123,7 @@ class _Compass extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 16),
-            if (turn != null)
-              Semantics(
-                liveRegion: aligned,
-                child: Text(
-                  aligned
-                      ? l10n.qiblaAligned
-                      : turn > 0
-                      ? l10n.qiblaTurnRight(digits(turn.abs().round()))
-                      : l10n.qiblaTurnLeft(digits(turn.abs().round())),
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    color: aligned ? theme.colorScheme.primary : null,
-                  ),
-                ),
-              ),
+            _TurnLine(qibla: qibla),
             const SizedBox(height: 16),
             if (noSensor)
               AppNotice(l10n.qiblaNoSensor)
@@ -155,6 +137,72 @@ class _Compass extends ConsumerWidget {
           ],
         );
       },
+    );
+  }
+}
+
+/// The dial, redrawn with each reading of the compass.
+class _Dial extends ConsumerWidget {
+  const _Dial({
+    required this.qibla,
+    required this.letters,
+    required this.semanticLabel,
+  });
+
+  final double qibla;
+  final List<String> letters;
+  final String semanticLabel;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final heading = ref.watch(
+      compassHeadingProvider.select((reading) => reading.value),
+    );
+    final turn = heading == null ? null : angleBetween(heading, qibla);
+    return QiblaCompass(
+      qibla: qibla,
+      heading: heading,
+      aligned: turn != null && turn.abs() <= qiblaTolerance,
+      letters: letters,
+      semanticLabel: semanticLabel,
+    );
+  }
+}
+
+/// Which way to turn, and by how many degrees: rebuilt only when that whole
+/// number, or being aligned, changes.
+class _TurnLine extends ConsumerWidget {
+  const _TurnLine({required this.qibla});
+
+  final double qibla;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final turn = ref.watch(
+      compassHeadingProvider.select((reading) {
+        final heading = reading.value;
+        if (heading == null) return null;
+        final turn = angleBetween(heading, qibla);
+        return (degrees: turn.round(), aligned: turn.abs() <= qiblaTolerance);
+      }),
+    );
+    if (turn == null) return const SizedBox.shrink();
+    final l10n = context.l10n;
+    final theme = Theme.of(context);
+    final digits = ref.watch(digitsFormatterProvider);
+    return Semantics(
+      liveRegion: turn.aligned,
+      child: Text(
+        turn.aligned
+            ? l10n.qiblaAligned
+            : turn.degrees > 0
+            ? l10n.qiblaTurnRight(digits(turn.degrees.abs()))
+            : l10n.qiblaTurnLeft(digits(turn.degrees.abs())),
+        textAlign: TextAlign.center,
+        style: theme.textTheme.titleMedium?.copyWith(
+          color: turn.aligned ? theme.colorScheme.primary : null,
+        ),
+      ),
     );
   }
 }

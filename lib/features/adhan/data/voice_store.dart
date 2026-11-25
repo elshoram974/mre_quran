@@ -149,8 +149,12 @@ class FileVoiceStore implements VoiceStore {
     return Directory('${support.path}/adhan');
   }
 
+  /// The folder, asked of the platform once: the Adhan page looks up every
+  /// voice's files when it opens.
+  late final Future<Directory> _folder = _directory();
+
   Future<File> _file(AdhanVoice voice, AdhanFile from) async =>
-      File('${(await _directory()).path}/${voice.id}.${from.extension}');
+      File('${(await _folder).path}/${voice.id}.${from.extension}');
 
   /// The saved copy of [voice], from whichever of its files it came.
   @override

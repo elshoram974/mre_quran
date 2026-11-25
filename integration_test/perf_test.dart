@@ -133,6 +133,12 @@ void main() {
       },
     };
 
+    // `--dart-define=PHASES=adhan_page,tuning_page` runs only those.
+    const only = String.fromEnvironment('PHASES');
+    if (only.isNotEmpty) {
+      final names = only.split(',').toSet();
+      phases.removeWhere((name, _) => !names.contains(name));
+    }
     // First pass warms up shaders and caches; only the second is measured.
     for (final phase in phases.values) {
       await phase();

@@ -48,6 +48,22 @@ the app a reader gets, so never judge speed from them.
   display and haptic settings that were still read one after another. A unit
   test holds storage reads open and checks that all have started.
 - Index search keys are computed once (`IndexSearcher`), not per keystroke.
+- **Prayer notices on Android (D-065).** The plan of the month's notices was handed to the notifications plugin one
+  notice at a time, up to 300, at every start and after every change on the Adhan page. The plugin rewrites its whole
+  saved list for each notice on the main thread, which also runs the UI, so the start and the page stalled for
+  seconds. Android now takes the whole plan in one call to the app's own scheduler, and both native schedulers cancel
+  only the alarm they armed instead of one system call per stored alarm.
+- **The Adhan page.** A download's progress, or the voice being heard, rebuilt the whole page; each card now watches
+  only its own state. The checks behind its first section (exact alarms, battery saving) were dropped when the
+  section scrolled out of view and asked of the system again when it came back, so their notices popped in under
+  the finger; they now live as long as the page.
+- **Mushaf pages that are downloaded.** One HTTP client keeps its connections (a new one per file paid a new TLS
+  handshake), the page's two files come down together, and a real page (from 64 KB) is checked and compressed in an
+  isolate of its own instead of on the main one.
+- **The Qibla page** rebuilt its whole list at each compass reading, many times a second; now only the dial does,
+  and the line under it when its whole degree changes.
+- The Duas page rebuilds when the suggested collection changes, not at each 30-second tick of the clock. The Adhan
+  page asks the platform for the voices' folder once, not once per file.
 
 ## Results
 
@@ -134,6 +150,12 @@ index, 2.2 / 2.5 ms scrolling it, and 5.1 / 7.4 ms searching it. This is a
 single emulator run, not a controlled before-and-after comparison or a
 substitute for measurements on a physical device.
 
+The Adhan, Tuning and Reminders pages were measured on a Pixel 3 XL emulator (API 29) after the changes above,
+flung down and back (`--dart-define=PHASES=adhan_page,tuning_page,reminders_page`). Build time stayed small
+(average 6.0, 1.8 and 4.3 ms; worst 27.7, 14.7 and 28.5 ms). Raster time was 110, 33 and 110 ms on average, almost
+all inside the emulator's translated OpenGL (`RenderPassGLES::EncodeCommandsInReactor`), whose log was full of GL
+errors: it does not stand for a phone. Measure scrolling on a physical device.
+
 ## Rules
 
 - Do not await independent work one after another before `runApp`. Run it in parallel.
@@ -141,3 +163,5 @@ substitute for measurements on a physical device.
 - Apply user changes first, persist after.
 - Keep shimmer and glass off hot lists; use the minimal glass quality on repeated cards.
 - Re-run the perf scenario after changing the shell, the index, sheets, or start-up.
+- Never hand the notifications plugin many notices in a loop on Android; it is quadratic on the main thread.
+- A page watches a provider that changes often only through `select`, or in the widget that shows the change.

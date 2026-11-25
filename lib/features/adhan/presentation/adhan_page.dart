@@ -40,6 +40,12 @@ class AdhanPage extends ConsumerWidget {
     final l10n = context.l10n;
     final supported = ref.watch(adhanSupportedProvider);
     final settings = ref.watch(adhanSettingsProvider);
+    // Kept while the page is open. The section that reads them scrolls out of
+    // view, and without this they were asked of the system again each time it
+    // came back, and their notices popped in under the finger.
+    ref
+      ..listen(adhanExactAllowedProvider, (_, _) {})
+      ..listen(adhanBatteryUnrestrictedProvider, (_, _) {});
     // Only the list and whether it failed: each card watches its own state,
     // so a download's progress does not rebuild the page.
     final voices = ref.watch(

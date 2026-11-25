@@ -210,6 +210,10 @@ class _Content extends ConsumerWidget {
     final method = state.method!;
     final place = state.place!;
     final exact = ref.watch(exactAlarmsAllowedProvider).value ?? true;
+    // Kept while the page is open: the battery notice below scrolls out of
+    // view, and without this the system was asked again each time it came
+    // back, and the notice popped in under the finger.
+    ref.listen(adhanBatteryUnrestrictedProvider, (_, _) {});
     final allAlerts = settings.alerts.length == DailyPrayer.values.length;
     return ListView(
       padding: pagePadding(context),
