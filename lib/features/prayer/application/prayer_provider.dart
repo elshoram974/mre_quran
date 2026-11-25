@@ -14,6 +14,7 @@ import '../../../core/notifications/reminder_scheduler_provider.dart';
 import '../../../core/time/ticking_clock.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../adhan/application/adhan_providers.dart';
+import '../../adhan/domain/adhan_settings.dart';
 import '../../adhan/data/adhan_platform.dart';
 import '../../adhan/data/ios_adhan_sounds.dart';
 import '../../settings/application/digits_provider.dart';
@@ -356,6 +357,16 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
     change: (settings) => settings.copyWith(iqamaSound: on),
   );
 
+  /// Turns the iqama of [prayer] on or off, the others as they are.
+  Future<void> setIqamaFor(DailyPrayer prayer, bool on) => _change(
+    needsPermission: false,
+    change: (settings) => settings.copyWith(
+      iqamaOff: on
+          ? ({...settings.iqamaOff}..remove(prayer))
+          : {...settings.iqamaOff, prayer},
+    ),
+  );
+
   /// Puts the iqama of [prayer] [minutes] after its adhan, between
   /// [PrayerSettings.minIqama] and [PrayerSettings.maxIqama].
   Future<void> setIqamaMinutes(DailyPrayer prayer, int minutes) => _change(
@@ -568,11 +579,16 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
       await platform.cancelAll();
       return true;
     }
+    // The adhan's ways of stopping silence the notices' voices too.
+    final adhan =
+        ref.read(adhanSettingsProvider).value ?? const AdhanSettings();
     return platform.schedule(
       alarms,
       PrayerSoonConfig(
         dismissLabel: l10n.prayerSoonDismiss,
         sound: sound,
+        stopWhenFlipped: adhan.stopWhenFlipped,
+        stopWithVolumeKeys: adhan.stopWithVolumeKeys,
         settingsLabel: l10n.notificationSettings,
         payload: ReminderPayload.prayerTimes,
         settingsPayload: ReminderChannel.prayerSoonFajr.settings,
@@ -801,6 +817,8 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
         urgent:
             notice.channel == ReminderChannel.prayer ||
             notice.channel == ReminderChannel.iqama,
+        // The iqama stops an adhan still playing.
+        endsAdhan: notice.channel == ReminderChannel.iqama,
         silent: notice.silent,
         payload: notice.payload,
         settingsPayload: notice.channel.settings,

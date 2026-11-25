@@ -967,14 +967,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adhanFlipSwitch => 'Stop when the phone is turned face down';
 
   @override
-  String get adhanFlipHint => 'Put the screen against the table to silence it.';
+  String get adhanFlipHint =>
+      'Put the screen against the table to silence the adhan, and the voice of the iqama and prayer-soon notices too.';
 
   @override
   String get adhanVolumeKeysSwitch => 'Stop the adhan with the volume buttons';
 
   @override
   String get adhanVolumeKeysHint =>
-      'A press of volume up or down stops the adhan, as it silences a ringing call.';
+      'A press of volume up or down stops the adhan and silences the voice of the iqama and prayer-soon notices, as it silences a ringing call.';
 
   @override
   String get adhanAnnounceSwitch => 'Announce the prayer before the adhan';
@@ -2494,7 +2495,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get iqamaTimesHint =>
-      'It is usually longer after Fajr and shorter after Maghrib. Set each prayer to when it is established at your mosque.';
+      'Turn each prayer\'s iqama on or off by itself. It is usually longer after Fajr and shorter after Maghrib. Set each prayer to when it is established at your mosque.';
 
   @override
   String iqamaAfterLine(String minutes) {
@@ -2511,6 +2512,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get iqamaLaterButton => 'One minute more';
+
+  @override
+  String get iqamaPrayerOff => 'Off for this prayer';
 
   @override
   String get iqamaResetAll => 'Put every prayer back to the usual';

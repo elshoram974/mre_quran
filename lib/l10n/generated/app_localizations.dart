@@ -1774,7 +1774,7 @@ abstract class AppLocalizations {
   /// No description provided for @adhanFlipHint.
   ///
   /// In en, this message translates to:
-  /// **'Put the screen against the table to silence it.'**
+  /// **'Put the screen against the table to silence the adhan, and the voice of the iqama and prayer-soon notices too.'**
   String get adhanFlipHint;
 
   /// No description provided for @adhanVolumeKeysSwitch.
@@ -1786,7 +1786,7 @@ abstract class AppLocalizations {
   /// No description provided for @adhanVolumeKeysHint.
   ///
   /// In en, this message translates to:
-  /// **'A press of volume up or down stops the adhan, as it silences a ringing call.'**
+  /// **'A press of volume up or down stops the adhan and silences the voice of the iqama and prayer-soon notices, as it silences a ringing call.'**
   String get adhanVolumeKeysHint;
 
   /// No description provided for @adhanAnnounceSwitch.
@@ -4234,7 +4234,7 @@ abstract class AppLocalizations {
   /// No description provided for @iqamaTimesHint.
   ///
   /// In en, this message translates to:
-  /// **'It is usually longer after Fajr and shorter after Maghrib. Set each prayer to when it is established at your mosque.'**
+  /// **'Turn each prayer\'s iqama on or off by itself. It is usually longer after Fajr and shorter after Maghrib. Set each prayer to when it is established at your mosque.'**
   String get iqamaTimesHint;
 
   /// No description provided for @iqamaAfterLine.
@@ -4260,6 +4260,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'One minute more'**
   String get iqamaLaterButton;
+
+  /// No description provided for @iqamaPrayerOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Off for this prayer'**
+  String get iqamaPrayerOff;
 
   /// No description provided for @iqamaResetAll.
   ///

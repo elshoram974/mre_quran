@@ -25,6 +25,7 @@ class PrayerSettings {
     this.iqamaReminder = false,
     this.iqamaMinutes = const {},
     this.iqamaSound = true,
+    this.iqamaOff = const {},
   });
 
   /// Reads settings saved by [toJson]. Anything unreadable gives the defaults.
@@ -69,6 +70,12 @@ class PrayerSettings {
       beforeSound: json['beforeSound'] != false,
       iqamaReminder: json['iqama'] == true,
       iqamaSound: json['iqamaSound'] != false,
+      iqamaOff: {
+        if (json['iqamaOff'] case final List<Object?> off)
+          for (final name in off)
+            for (final prayer in DailyPrayer.values)
+              if (prayer.name == name) prayer,
+      },
       iqamaMinutes: {
         if (iqama is Map<String, Object?>)
           for (final prayer in DailyPrayer.values)
@@ -152,6 +159,14 @@ class PrayerSettings {
   /// Whether the iqama's notice makes its sound.
   final bool iqamaSound;
 
+  /// The prayers whose iqama the person turned off; the others keep theirs
+  /// while [iqamaReminder] is on.
+  final Set<DailyPrayer> iqamaOff;
+
+  /// Whether [prayer]'s iqama has its notice and its count in the app.
+  bool iqamaFor(DailyPrayer prayer) =>
+      iqamaReminder && !iqamaOff.contains(prayer);
+
   /// Minutes after [prayer]'s adhan the iqama comes.
   int iqamaAfter(DailyPrayer prayer) =>
       iqamaMinutes[prayer] ?? defaultIqamaMinutes[prayer]!;
@@ -210,6 +225,7 @@ class PrayerSettings {
     bool? iqamaReminder,
     Map<DailyPrayer, int>? iqamaMinutes,
     bool? iqamaSound,
+    Set<DailyPrayer>? iqamaOff,
   }) => PrayerSettings(
     adhkarReminder: adhkarReminder ?? this.adhkarReminder,
     method: automaticMethod ? null : (method ?? this.method),
@@ -227,6 +243,7 @@ class PrayerSettings {
     iqamaReminder: iqamaReminder ?? this.iqamaReminder,
     iqamaMinutes: iqamaMinutes ?? this.iqamaMinutes,
     iqamaSound: iqamaSound ?? this.iqamaSound,
+    iqamaOff: iqamaOff ?? this.iqamaOff,
   );
 
   /// Compact form for storage.
@@ -249,6 +266,7 @@ class PrayerSettings {
     'beforeSound': beforeSound,
     'iqama': iqamaReminder,
     'iqamaSound': iqamaSound,
+    'iqamaOff': [for (final prayer in iqamaOff) prayer.name],
     'iqamaMinutes': {
       for (final MapEntry(:key, :value) in iqamaMinutes.entries)
         key.name: value,
@@ -369,7 +387,7 @@ abstract final class PrayerAlertPlan {
           );
         }
         final iqama = start.add(Duration(minutes: settings.iqamaAfter(prayer)));
-        if (settings.iqamaReminder && iqama.isAfter(now)) {
+        if (settings.iqamaFor(prayer) && iqama.isAfter(now)) {
           alerts.add(
             PrayerAlert(
               id: firstIqamaId + slot,
@@ -440,6 +458,7 @@ abstract final class IqamaClock {
         tuning: tuning,
       );
       for (final prayer in DailyPrayer.values) {
+        if (!settings.iqamaFor(prayer)) continue;
         final adhan = times.of(prayer);
         final at = adhan.add(Duration(minutes: settings.iqamaAfter(prayer)));
         if (!now.isBefore(adhan) && now.isBefore(at)) {

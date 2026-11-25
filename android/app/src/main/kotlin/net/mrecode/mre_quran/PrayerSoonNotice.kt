@@ -30,8 +30,8 @@ import org.json.JSONObject
  */
 internal object PrayerSoonNotice {
     @SuppressLint("MissingPermission")
-    fun post(context: Context, id: Int, alarm: JSONObject, config: JSONObject) {
-        if (!alarm.optBoolean("countdown", true)) return postPlain(context, id, alarm, config)
+    fun post(context: Context, id: Int, alarm: JSONObject, config: JSONObject, quiet: Boolean = false) {
+        if (!alarm.optBoolean("countdown", true)) return postPlain(context, id, alarm, config, quiet)
         val left = alarm.getLong("adhan") - System.currentTimeMillis()
         val notifications = NotificationManagerCompat.from(context)
         if (left <= 0 || !notifications.areNotificationsEnabled()) return
@@ -65,7 +65,7 @@ internal object PrayerSoonNotice {
             .setOngoing(true)
             .setAutoCancel(false)
             .setOnlyAlertOnce(true)
-            .setSilent(silent(alarm, config))
+            .setSilent(quiet || silent(alarm, config))
             .setTimeoutAfter(left)
             .setContentIntent(open(context, id, payload(alarm, config)))
             .addAction(0, config.optString("dismissLabel", "Remove"), dismiss(context, id))
@@ -75,7 +75,7 @@ internal object PrayerSoonNotice {
 
     /** A notice that shows and is swiped away like any other. */
     @SuppressLint("MissingPermission")
-    private fun postPlain(context: Context, id: Int, alarm: JSONObject, config: JSONObject) {
+    private fun postPlain(context: Context, id: Int, alarm: JSONObject, config: JSONObject, quiet: Boolean) {
         val notifications = NotificationManagerCompat.from(context)
         if (!notifications.areNotificationsEnabled()) return
         val channel = alarm.getString("channel")
@@ -91,10 +91,22 @@ internal object PrayerSoonNotice {
             .setPriority(if (urgent) NotificationCompat.PRIORITY_HIGH else NotificationCompat.PRIORITY_DEFAULT)
             .setWhen(alarm.getLong("at"))
             .setAutoCancel(true)
-            .setSilent(silent(alarm, config))
+            .setSilent(quiet || silent(alarm, config))
             .setContentIntent(open(context, id, payload(alarm, config)))
         addSettings(context, id, builder, alarm, config)
         notifications.notify(id, builder.build())
+    }
+
+    /** Whether [alarm] makes a sound when it comes. */
+    fun sounds(alarm: JSONObject, config: JSONObject): Boolean = !silent(alarm, config)
+
+    /**
+     * Stops [id]'s sound and keeps the notice: taking a notice away stops its
+     * sound, and it is shown again at once without one.
+     */
+    fun silence(context: Context, id: Int, alarm: JSONObject, config: JSONObject) {
+        NotificationManagerCompat.from(context).cancel(id)
+        post(context, id, alarm, config, quiet = true)
     }
 
     /** Whether [alarm] comes without its sound: its own say, else the config's. */

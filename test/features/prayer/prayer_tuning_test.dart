@@ -391,4 +391,16 @@ void main() {
     expect(plain, hasLength(1));
     expect(_minutes(moved.single.at, plain.single.at), 7);
   });
+
+  test('an iqama turned off for one prayer is neither noticed nor counted', () {
+    const settings = PrayerSettings(
+      iqamaReminder: true,
+      iqamaOff: {DailyPrayer.dhuhr},
+    );
+    expect(settings.iqamaFor(DailyPrayer.dhuhr), isFalse);
+    expect(settings.iqamaFor(DailyPrayer.asr), isTrue);
+    final back = PrayerSettings.fromJson(settings.toJson());
+    expect(back.iqamaOff, {DailyPrayer.dhuhr});
+    expect(const PrayerSettings().iqamaOff, isEmpty);
+  });
 }

@@ -18,6 +18,7 @@ import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import org.json.JSONObject
+import java.lang.ref.WeakReference
 
 /**
  * Plays the adhan with a notice that stays until it is stopped, as an
@@ -39,6 +40,7 @@ class AdhanService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        playing = WeakReference(this)
         if (intent == null || intent.action == ACTION_STOP) {
             finish()
             return START_NOT_STICKY
@@ -137,6 +139,7 @@ class AdhanService : Service() {
     }
 
     private fun finish() {
+        if (playing?.get() === this) playing = null
         release()
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
@@ -148,6 +151,20 @@ class AdhanService : Service() {
     }
 
     companion object {
+        /** The service while it plays; null once it has stopped. */
+        @Volatile
+        private var playing: WeakReference<AdhanService>? = null
+
+        /**
+         * Stops an adhan still playing: the iqama has come, and the adhan
+         * must not go on over it, nor come back after it. Called from the app's
+         * own process, where the service runs.
+         */
+        fun stopIfPlaying() {
+            val service = playing?.get() ?: return
+            Handler(Looper.getMainLooper()).post { service.finish() }
+        }
+
         const val ACTION_STOP = "net.mrecode.mre_quran.ADHAN_STOP"
         const val EXTRA_ALARM = "alarm"
         const val EXTRA_CONFIG = "config"

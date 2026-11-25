@@ -3,11 +3,13 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../../core/l10n/l10n.dart';
 import '../../../core/layout/adaptive_layout.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/app_group_card.dart';
 import '../../../core/widgets/app_notice.dart';
 import '../../../core/widgets/app_page_scaffold.dart';
 import '../../../core/widgets/app_section_header.dart';
 import '../../../core/widgets/app_shimmer.dart';
+import '../../../core/widgets/app_stepper.dart';
 import '../../../core/widgets/app_switch_tile.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../settings/application/digits_provider.dart';
@@ -15,7 +17,6 @@ import '../application/prayer_provider.dart';
 import '../domain/prayer_alerts.dart';
 import '../domain/prayer_times.dart';
 import 'prayer_labels.dart';
-import 'prayer_step_row.dart';
 
 /// The iqama: a notice when each prayer is established («قد قامت الصلاة»),
 /// a set time after its adhan that the person puts where their own mosque
@@ -132,8 +133,8 @@ class _IqamaPageState extends ConsumerState<IqamaPage> {
   }
 }
 
-/// The five prayers, each with its iqama and a stepper for the gap after its
-/// adhan.
+/// The five prayers, each with a switch for its own iqama, the time it comes,
+/// and a stepper for the gap after its adhan while it is on.
 class _TimesCard extends ConsumerWidget {
   const _TimesCard({required this.settings});
 
@@ -151,32 +152,57 @@ class _TimesCard extends ConsumerWidget {
         for (final prayer in DailyPrayer.values)
           Builder(
             builder: (context) {
+              final on = settings.iqamaFor(prayer);
               final minutes = settings.iqamaAfter(prayer);
               final adhan = day?.of(prayer);
-              return PrayerStepRow(
-                prayer: prayer,
-                time: adhan == null
-                    ? null
-                    : l10n.iqamaAt(
-                        formatPrayerTime(
-                          context,
-                          adhan.add(Duration(minutes: minutes)),
-                          displayDigits,
-                        ),
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  AppSwitchTile(
+                    value: on,
+                    onChanged: (value) => notifier.setIqamaFor(prayer, value),
+                    title: prayerName(l10n, prayer),
+                    subtitle: !on
+                        ? l10n.iqamaPrayerOff
+                        : adhan == null
+                        ? null
+                        : l10n.iqamaAt(
+                            formatPrayerTime(
+                              context,
+                              adhan.add(Duration(minutes: minutes)),
+                              displayDigits,
+                            ),
+                          ),
+                    icon: prayerIcon(prayer),
+                  ),
+                  if (on)
+                    Padding(
+                      padding: const EdgeInsetsDirectional.fromSTEB(
+                        16,
+                        0,
+                        16,
+                        AppTokens.spaceSmall,
                       ),
-                label: l10n.iqamaAfterLine(
-                  l10n.minutesCount(minutes, digits(minutes)),
-                ),
-                highlighted:
-                    minutes != PrayerSettings.defaultIqamaMinutes[prayer],
-                decreaseLabel: l10n.iqamaEarlierButton,
-                increaseLabel: l10n.iqamaLaterButton,
-                onDecrease: minutes > PrayerSettings.minIqama
-                    ? () => notifier.setIqamaMinutes(prayer, minutes - 1)
-                    : null,
-                onIncrease: minutes < PrayerSettings.maxIqama
-                    ? () => notifier.setIqamaMinutes(prayer, minutes + 1)
-                    : null,
+                      child: AppStepper(
+                        label: l10n.iqamaAfterLine(
+                          l10n.minutesCount(minutes, digits(minutes)),
+                        ),
+                        highlighted:
+                            minutes !=
+                            PrayerSettings.defaultIqamaMinutes[prayer],
+                        decreaseLabel: l10n.iqamaEarlierButton,
+                        increaseLabel: l10n.iqamaLaterButton,
+                        onDecrease: minutes > PrayerSettings.minIqama
+                            ? () =>
+                                  notifier.setIqamaMinutes(prayer, minutes - 1)
+                            : null,
+                        onIncrease: minutes < PrayerSettings.maxIqama
+                            ? () =>
+                                  notifier.setIqamaMinutes(prayer, minutes + 1)
+                            : null,
+                      ),
+                    ),
+                ],
               );
             },
           ),

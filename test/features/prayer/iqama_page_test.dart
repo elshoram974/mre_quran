@@ -90,6 +90,35 @@ void main() {
     expect(find.text('إعادة المعتاد لكل الصلوات'), findsNothing);
   });
 
+  testWidgets('each prayer\'s iqama turns off by itself, and its notices go', (
+    tester,
+  ) async {
+    final harness = await _pump(
+      tester,
+      settings: const PrayerSettings(iqamaReminder: true),
+    );
+    final fajr = handedOver(
+      harness.scheduler,
+      harness.soon,
+    ).values.where((value) => value.channel == ReminderChannel.iqama).length;
+    // The Fajr row's switch is the first after the main ones.
+    await tester.tap(find.text('الفجر'));
+    await tester.pumpAndSettle();
+    expect(harness.repository.settings.iqamaOff, {DailyPrayer.fajr});
+    expect(harness.repository.settings.iqamaFor(DailyPrayer.fajr), isFalse);
+    expect(find.text('متوقفة لهذه الصلاة'), findsOneWidget);
+    // Its stepper goes; the four others keep theirs.
+    expect(find.byTooltip('زيادة دقيقة'), findsNWidgets(4));
+    final left = handedOver(
+      harness.scheduler,
+      harness.soon,
+    ).values.where((value) => value.channel == ReminderChannel.iqama).length;
+    expect(left, lessThan(fajr));
+    await tester.tap(find.text('الفجر'));
+    await tester.pumpAndSettle();
+    expect(harness.repository.settings.iqamaOff, isEmpty);
+  });
+
   testWidgets('the gap stops at five minutes and an hour', (tester) async {
     await _pump(
       tester,

@@ -960,14 +960,15 @@ class AppLocalizationsAr extends AppLocalizations {
   String get adhanFlipSwitch => 'إيقاف الأذان عند قلب الهاتف';
 
   @override
-  String get adhanFlipHint => 'ضع الشاشة على السطح ليسكت الصوت.';
+  String get adhanFlipHint =>
+      'ضع الشاشة على السطح ليسكت الأذان، وصوت تنبيه الإقامة واقتراب الصلاة كذلك.';
 
   @override
   String get adhanVolumeKeysSwitch => 'إيقاف الأذان بأزرار الصوت';
 
   @override
   String get adhanVolumeKeysHint =>
-      'ضغطة على رفع الصوت أو خفضه توقف الأذان، كما تُسكت رنين المكالمة.';
+      'ضغطة على رفع الصوت أو خفضه توقف الأذان، وتُسكت صوت تنبيه الإقامة واقتراب الصلاة، كما تُسكت رنين المكالمة.';
 
   @override
   String get adhanAnnounceSwitch => 'إعلان الصلاة قبل الأذان';
@@ -2477,7 +2478,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get iqamaTimesHint =>
-      'المعتاد أطول بعد الفجر وأقصر بعد المغرب. اضبط كل صلاة على ما تقام به في مسجدك.';
+      'شغّل إقامة كل صلاة أو أوقفها بمفردها. المعتاد أطول بعد الفجر وأقصر بعد المغرب؛ اضبط كل صلاة على ما تقام به في مسجدك.';
 
   @override
   String iqamaAfterLine(String minutes) {
@@ -2494,6 +2495,9 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get iqamaLaterButton => 'زيادة دقيقة';
+
+  @override
+  String get iqamaPrayerOff => 'متوقفة لهذه الصلاة';
 
   @override
   String get iqamaResetAll => 'إعادة المعتاد لكل الصلوات';

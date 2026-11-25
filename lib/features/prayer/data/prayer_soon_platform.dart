@@ -18,6 +18,7 @@ class PrayerSoonAlarm {
     required this.sound,
   }) : countdown = true,
        urgent = false,
+       endsAdhan = false,
        silent = null,
        payload = null,
        settingsPayload = null;
@@ -33,6 +34,7 @@ class PrayerSoonAlarm {
     required this.channelName,
     required this.sound,
     required this.urgent,
+    this.endsAdhan = false,
     required bool this.silent,
     required String this.payload,
     required String this.settingsPayload,
@@ -54,6 +56,9 @@ class PrayerSoonAlarm {
 
   /// Whether its channel is of high importance (the prayer time, the iqama).
   final bool urgent;
+
+  /// Whether it stops an adhan still playing when it comes: the iqama's.
+  final bool endsAdhan;
 
   /// Whether it comes without sound; null leaves it to the config.
   final bool? silent;
@@ -97,6 +102,7 @@ class PrayerSoonAlarm {
     'channelName': channelName,
     'sound': ?sound,
     if (urgent) 'urgent': true,
+    if (endsAdhan) 'endsAdhan': true,
     'silent': ?silent,
     'payload': ?payload,
     'settingsPayload': ?settingsPayload,
@@ -113,6 +119,8 @@ class PrayerSoonConfig {
     required this.settingsPayload,
     required this.rtl,
     this.sound = true,
+    this.stopWhenFlipped = true,
+    this.stopWithVolumeKeys = true,
   });
 
   /// The text of the button that takes the reminder away.
@@ -134,6 +142,14 @@ class PrayerSoonConfig {
   /// Whether the reminder makes its sound.
   final bool sound;
 
+  /// Whether turning the phone face down silences a notice's voice, as it
+  /// stops the adhan.
+  final bool stopWhenFlipped;
+
+  /// Whether a volume button silences a notice's voice, as it stops the
+  /// adhan.
+  final bool stopWithVolumeKeys;
+
   /// The form the platform reads.
   Map<String, Object> toMap() => {
     'dismissLabel': dismissLabel,
@@ -142,6 +158,8 @@ class PrayerSoonConfig {
     'settingsPayload': settingsPayload,
     'rtl': rtl,
     'sound': sound,
+    'stopWhenFlipped': stopWhenFlipped,
+    'stopWithVolumeKeys': stopWithVolumeKeys,
   };
 }
 

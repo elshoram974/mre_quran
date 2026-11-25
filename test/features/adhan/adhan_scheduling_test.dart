@@ -527,4 +527,31 @@ void main() {
       expect(missing.scheduler.sounds.values.whereType<String>(), isEmpty);
     });
   });
+
+  test('the iqama ends an adhan still playing; the notices follow the '
+      'adhan\'s ways of silencing', () async {
+    final h = _harness();
+    await h.container.read(prayerProvider.future);
+    await h.container.read(adhanSettingsProvider.future);
+    await h.container
+        .read(adhanSettingsProvider.notifier)
+        .change((value) => value.copyWith(stopWithVolumeKeys: false));
+    await h.container.read(prayerProvider.notifier).setIqamaReminder(true);
+    final iqamas = [
+      for (final alarm in h.soon.plain)
+        if (alarm.channel == ReminderChannel.iqama.id) alarm,
+    ];
+    expect(iqamas, isNotEmpty);
+    expect(iqamas.every((alarm) => alarm.endsAdhan), isTrue);
+    expect(iqamas.first.toMap()['endsAdhan'], isTrue);
+    expect(
+      h.soon.plain.where(
+        (alarm) => alarm.channel != ReminderChannel.iqama.id && alarm.endsAdhan,
+      ),
+      isEmpty,
+    );
+    expect(h.soon.config!.stopWhenFlipped, isTrue);
+    expect(h.soon.config!.stopWithVolumeKeys, isFalse);
+    expect(h.soon.config!.toMap()['stopWithVolumeKeys'], isFalse);
+  });
 }
