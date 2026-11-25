@@ -1,12 +1,15 @@
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../../core/theme/app_platform.dart';
 import '../../core/theme/app_surface_style.dart';
 import '../../core/theme/app_tokens.dart';
 import 'shell_destination.dart';
 
-/// The Android tab bar: a floating pill where the selected destination grows
-/// into a rounded chip with its label and the others stay icon-only, so the
-/// bar reads at a glance and stays light.
+/// The phone's tab bar: a floating pill where the selected destination grows
+/// into a rounded chip with its label beside its icon and the others stay
+/// icon-only, so the bar reads at a glance and stays light. Liquid glass on
+/// iOS, a raised surface elsewhere.
 class ExpandingNavBar extends StatelessWidget {
   /// Creates the bar for [destinations] with [index] selected.
   const ExpandingNavBar({
@@ -37,15 +40,8 @@ class ExpandingNavBar extends StatelessWidget {
         padding: const EdgeInsetsDirectional.symmetric(
           horizontal: AppTokens.gutterCompact,
         ),
-        child: Container(
-          height: AppTokens.floatingBarHeight,
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: surfaces.raised,
-            borderRadius: BorderRadius.circular(AppTokens.floatingBarHeight),
-            border: Border.all(color: surfaces.hairline),
-            boxShadow: surfaces.floatingShadow,
-          ),
+        child: _BarSurface(
+          surfaces: surfaces,
           child: LayoutBuilder(
             builder: (context, constraints) {
               final total = constraints.maxWidth;
@@ -150,6 +146,42 @@ class _Item extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// The bar's floating pill: liquid glass on iOS, a raised surface elsewhere.
+class _BarSurface extends StatelessWidget {
+  const _BarSurface({required this.surfaces, required this.child});
+
+  final AppSurfaceStyle surfaces;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final content = Padding(padding: const EdgeInsets.all(8), child: child);
+    if (context.isCupertino) {
+      return SizedBox(
+        height: AppTokens.floatingBarHeight,
+        child: GlassContainer(
+          useOwnLayer: true,
+          quality: GlassQuality.premium,
+          shape: const LiquidRoundedSuperellipse(
+            borderRadius: AppTokens.floatingBarHeight / 2,
+          ),
+          child: Material(type: MaterialType.transparency, child: content),
+        ),
+      );
+    }
+    return Container(
+      height: AppTokens.floatingBarHeight,
+      decoration: BoxDecoration(
+        color: surfaces.raised,
+        borderRadius: BorderRadius.circular(AppTokens.floatingBarHeight),
+        border: Border.all(color: surfaces.hairline),
+        boxShadow: surfaces.floatingShadow,
+      ),
+      child: content,
     );
   }
 }

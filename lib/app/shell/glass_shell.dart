@@ -2,7 +2,9 @@ import 'package:material_ui/material_ui.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 
 import '../../core/layout/adaptive_layout.dart';
+import '../../core/theme/app_tokens.dart';
 import '../../core/widgets/app_page_scaffold.dart';
+import 'expanding_nav_bar.dart';
 import 'expanding_nav_rail.dart';
 import 'shell_destination.dart';
 
@@ -52,7 +54,6 @@ class GlassShell extends StatelessWidget {
     final beside = ExpandingNavRail.labelsBesideAt(
       MediaQuery.sizeOf(context).width,
     );
-    final scheme = Theme.of(context).colorScheme;
     return Material(
       type: MaterialType.transparency,
       child: GlassScaffold(
@@ -63,25 +64,12 @@ class GlassShell extends StatelessWidget {
         bottomBar: bottomBar
             ? _CenteredBar(
                 shown: showNavigation,
-                child: GlassTabBar.bottom(
-                  selectedIndex: index,
-                  onTabSelected: onSelected,
-                  quality: GlassQuality.premium,
-                  selectedIconColor: scheme.primary,
-                  selectedLabelColor: scheme.primary,
-                  unselectedIconColor: scheme.onSurfaceVariant,
-                  unselectedLabelColor: scheme.onSurfaceVariant,
-                  tabs: [
-                    // Only the chosen tab names itself; the others show
-                    // their icon, as on Android.
-                    for (final (i, item) in destinations.indexed)
-                      GlassTab(
-                        icon: Icon(item.icon),
-                        activeIcon: Icon(item.activeIcon),
-                        label: i == index ? item.label : null,
-                        semanticLabel: item.label,
-                      ),
-                  ],
+                // The chosen tab's name beside its icon, as on Android: the
+                // glass tab bar can only put it under.
+                child: ExpandingNavBar(
+                  index: index,
+                  onSelected: onSelected,
+                  destinations: destinations,
                 ),
               )
             : null,
@@ -121,10 +109,12 @@ class _CenteredBar extends StatelessWidget implements PreferredSizeWidget {
   /// Whether the bar shows; it slides away while the reader hides its bars.
   final bool shown;
 
-  final GlassTabBar child;
+  final Widget child;
 
   @override
-  Size get preferredSize => child.preferredSize;
+  Size get preferredSize => const Size.fromHeight(
+    AppTokens.floatingBarHeight + AppTokens.floatingBarGap,
+  );
 
   @override
   Widget build(BuildContext context) => Center(

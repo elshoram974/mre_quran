@@ -224,15 +224,30 @@ void main() {
     }
 
     debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
     await pump();
-    expect(find.byType(GlassTabBar), findsOneWidget);
-    expect(find.byType(ExpandingNavBar), findsNothing);
+    // The same pill as Android's, its chosen tab named beside its icon, in
+    // liquid glass.
+    expect(find.byType(ExpandingNavBar), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(ExpandingNavBar),
+        matching: find.byType(GlassContainer),
+      ),
+      findsOneWidget,
+    );
 
     debugDefaultTargetPlatformOverride = TargetPlatform.android;
     await tester.pumpWidget(const SizedBox());
     await pump();
     expect(find.byType(ExpandingNavBar), findsOneWidget);
-    expect(find.byType(GlassTabBar), findsNothing);
+    expect(
+      find.descendant(
+        of: find.byType(ExpandingNavBar),
+        matching: find.byType(GlassContainer),
+      ),
+      findsNothing,
+    );
     debugDefaultTargetPlatformOverride = null;
   });
 
@@ -267,19 +282,19 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    ScaffoldMessenger.of(tester.element(find.byType(GlassTabBar)))
+    ScaffoldMessenger.of(tester.element(find.byType(ExpandingNavBar)))
         .showSnackBar(const SnackBar(content: Text('hello')));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
     expect(find.text('hello'), findsOneWidget);
-    // It floats above the glass tab bar, not behind it.
+    // It floats above the glass bar, not behind it.
     final surface = find.descendant(
       of: find.byType(SnackBar),
       matching: find.byType(Material),
     );
     expect(
       tester.getRect(surface.first).bottom,
-      lessThanOrEqualTo(tester.getRect(find.byType(GlassTabBar)).top),
+      lessThanOrEqualTo(tester.getRect(find.byType(GlassContainer).first).top),
     );
   });
 

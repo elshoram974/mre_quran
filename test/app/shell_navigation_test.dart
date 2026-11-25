@@ -151,10 +151,17 @@ void main() {
     addTearDown(() => debugDefaultTargetPlatformOverride = null);
 
     await _pump(tester, const Size(820, 1180));
-    expect(find.byType(GlassTabBar), findsOneWidget);
+    expect(find.byType(ExpandingNavBar), findsOneWidget);
     expect(find.byType(ExpandingNavRail), findsNothing);
     expect(
-      tester.getSize(find.byType(GlassTabBar)).width,
+      find.descendant(
+        of: find.byType(ExpandingNavBar),
+        matching: find.byType(GlassContainer),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      tester.getSize(find.byType(ExpandingNavBar)).width,
       lessThanOrEqualTo(560),
     );
     expect(tester.takeException(), isNull);
@@ -162,7 +169,7 @@ void main() {
     await tester.pumpWidget(const SizedBox());
     await _pump(tester, const Size(1194, 834));
     expect(find.byType(ExpandingNavRail), findsOneWidget);
-    expect(find.byType(GlassTabBar), findsNothing);
+    expect(find.byType(ExpandingNavBar), findsNothing);
     // The rail itself is liquid glass: the glass segmented control stood
     // upright, its glass indicator under the chosen tab.
     expect(
