@@ -2,6 +2,8 @@ import 'dart:async';
 
 import '../../../core/widgets/app_snack_bar.dart';
 
+import 'dart:ui' show DisplayFeature, DisplayFeatureType;
+
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -40,21 +42,50 @@ const double mushafSpreadMinWidth = 700;
 /// read them, so it keeps one; tablets start at 600.
 const double mushafSpreadMinShortestSide = 600;
 
-/// Whether the reader shows two facing pages in a window of [size].
+/// How tall a window may be for its width and still open as a book: the
+/// near-square inner screen of a foldable (an iPhone Duo, a Galaxy or Pixel
+/// Fold opened like a book) gives each page about a phone's width, which
+/// reads well. A tablet held tall is taller than this and keeps one page.
+const double mushafSpreadMaxTallness = 1.15;
+
+/// Whether the reader shows two facing pages in a window of [size], whose
+/// display has [features] (a foldable's fold or hinge).
 ///
-/// Automatic is for a tablet held wide: the screen is wider than tall and big
-/// enough to read two pages. A tall window (a portrait tablet, a phone) shows
-/// one page that fills it. A person's own choice always wins, so a facing
-/// spread can be asked for on a small screen and a single page on a large one.
-bool resolveMushafSpread(ReaderPageLayout layout, Size size) =>
-    switch (layout) {
-      ReaderPageLayout.auto =>
-        size.width >= mushafSpreadMinWidth &&
+/// Automatic opens the Mushaf as a book where it reads like one: a tablet held
+/// wide, the near-square inner screen of a foldable, and any screen whose fold
+/// stands upright between two halves, a page on each side of it, as a printed
+/// Mushaf opens at its spine. A tall window (a portrait tablet, a phone) and a
+/// phone on its side show one page. A person's own choice always wins, so a
+/// facing spread can be asked for on a small screen and a single page on a
+/// large one.
+bool resolveMushafSpread(
+  ReaderPageLayout layout,
+  Size size, {
+  List<DisplayFeature> features = const [],
+}) => switch (layout) {
+  ReaderPageLayout.auto =>
+    _uprightFold(features, size) ||
+        (size.width >= mushafSpreadMinWidth &&
             size.shortestSide >= mushafSpreadMinShortestSide &&
-            size.width > size.height,
-      ReaderPageLayout.single => false,
-      ReaderPageLayout.spread => true,
-    };
+            size.height <= size.width * mushafSpreadMaxTallness),
+  ReaderPageLayout.single => false,
+  ReaderPageLayout.spread => true,
+};
+
+/// Whether a fold or hinge runs top to bottom near the middle of [size].
+bool _uprightFold(List<DisplayFeature> features, Size size) {
+  for (final feature in features) {
+    if (feature.type != DisplayFeatureType.fold &&
+        feature.type != DisplayFeatureType.hinge) {
+      continue;
+    }
+    final bounds = feature.bounds;
+    final upright = bounds.height >= size.height * 0.9;
+    final central = (bounds.center.dx - size.width / 2).abs() < size.width / 8;
+    if (upright && central) return true;
+  }
+  return false;
+}
 
 /// The Mushaf as a book that turns its pages (see [BookFlip]).
 ///
@@ -165,6 +196,7 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
       ref.read(settingsProvider).value?.readerPageLayout ??
           ReaderPageLayout.auto,
       MediaQuery.sizeOf(context),
+      features: MediaQuery.displayFeaturesOf(context),
     );
     // In a spread an odd page and the even one after it face each other.
     final shown = spread
@@ -375,7 +407,11 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
     );
     // Decided on the whole window, as the toolbar's toggle is, so the two
     // never disagree; the rail or bar beside the pages does not change it.
-    final spread = resolveMushafSpread(layout, MediaQuery.sizeOf(context));
+    final spread = resolveMushafSpread(
+      layout,
+      MediaQuery.sizeOf(context),
+      features: MediaQuery.displayFeaturesOf(context),
+    );
     // At start-up the page on screen comes first; the pages around it are
     // fetched and prepared once it is drawn, so they never slow it down.
     final settled = ref.watch(readerPaintedProvider);

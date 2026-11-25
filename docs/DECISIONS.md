@@ -750,3 +750,15 @@
   permission pending. The app's version shows at the end of the settings.
 - **Why:** the owner asked that every licence be stated plainly and that the licences sit with the privacy policy.
 
+
+## D-068: The Mushaf opens as a book on a foldable
+
+- **Decision:** On *automatic* page layout the reader shows two facing pages not only on a tablet held wide but on
+  any large screen no taller than 1.15 times its width (the near-square inner screen of an iPhone Duo or of an Android
+  foldable opened like a book), and on any screen whose fold or hinge stands upright near its middle, a page on each
+  side, as a printed Mushaf opens at its spine. A tablet held tall and a phone (upright or on its side) keep one page.
+  The person's own choice of one page or two still wins.
+- **Why:** the owner wants the Mushaf on the iPhone Duo to read like a Mushaf. On those screens each of the two pages
+  is about as wide as a phone's single page.
+- **Limits:** Flutter does not yet report the iPhone Duo's fold on iOS (flutter/flutter#193025), so there the screen's
+  proportions decide; a hinge with a gap of its own (a dual-screen device) is not yet kept clear between the pages.

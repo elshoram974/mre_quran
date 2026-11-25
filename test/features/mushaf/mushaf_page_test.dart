@@ -1,3 +1,5 @@
+import 'dart:ui' show DisplayFeature, DisplayFeatureState, DisplayFeatureType;
+
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart' show RenderClipRRect;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -419,6 +421,42 @@ void main() {
     expect(auto(const Size(834, 1194)), isFalse, reason: 'iPad held tall');
     expect(auto(const Size(932, 430)), isFalse, reason: 'phone on its side');
     expect(auto(const Size(390, 844)), isFalse, reason: 'phone');
+    expect(
+      auto(const Size(884, 982)),
+      isTrue,
+      reason: 'a foldable opened like a book, near square',
+    );
+    expect(auto(const Size(820, 1180)), isFalse, reason: 'iPad held tall');
+    // Half folded, the fold upright between the halves: a page each side,
+    // even where the screen alone would keep one.
+    const fold = DisplayFeature(
+      bounds: Rect.fromLTWH(400, 0, 0, 900),
+      type: DisplayFeatureType.fold,
+      state: DisplayFeatureState.postureHalfOpened,
+    );
+    expect(
+      resolveMushafSpread(
+        ReaderPageLayout.auto,
+        const Size(800, 900),
+        features: const [fold],
+      ),
+      isTrue,
+    );
+    // Folded flat across (a phone held like a laptop): not a book.
+    expect(
+      resolveMushafSpread(
+        ReaderPageLayout.auto,
+        const Size(800, 1400),
+        features: const [
+          DisplayFeature(
+            bounds: Rect.fromLTWH(0, 700, 800, 0),
+            type: DisplayFeatureType.fold,
+            state: DisplayFeatureState.postureHalfOpened,
+          ),
+        ],
+      ),
+      isFalse,
+    );
     expect(
       resolveMushafSpread(ReaderPageLayout.spread, const Size(390, 844)),
       isTrue,
