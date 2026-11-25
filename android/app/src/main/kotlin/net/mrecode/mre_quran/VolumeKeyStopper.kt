@@ -11,6 +11,8 @@ import android.media.AudioTrack
 import android.media.VolumeProvider
 import android.media.session.MediaSession
 import android.media.session.PlaybackState
+import android.os.Handler
+import android.os.Looper
 import android.os.SystemClock
 import androidx.core.content.ContextCompat
 
@@ -27,9 +29,11 @@ import androidx.core.content.ContextCompat
  * - a silent track plays as media, which makes this app the one playing
  *   media: the keys come to it with the screen off too;
  * - a media session that owns its volume gets each press, even at the end of
- *   the volume where nothing would change;
+ *   the volume where nothing would change (a session hands a press to its
+ *   volume only through its callback, so it has an empty one);
  * - the system's note that a volume changed catches a press any other way,
- *   and a media volume a press moved is put back where it was.
+ *   and a media volume a press moved is put back where it was. A note that
+ *   moved nothing, or that only says the volume was put back, is not a press.
  *
  * Presses in the first moment are ignored, so a key already held when the
  * sound began does not stop it.
@@ -48,10 +52,14 @@ internal class VolumeKeyStopper(
 
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            // A press moved the media volume (the silent track made media the
-            // stream the keys move): it goes back where it was.
             val stream = intent.getIntExtra(EXTRA_STREAM, -1)
+            val value = intent.getIntExtra(EXTRA_VALUE, -1)
+            if (value == intent.getIntExtra(EXTRA_PREVIOUS, -1)) return
             if (stream == AudioManager.STREAM_MUSIC && mediaVolume >= 0) {
+                // Only the media volume being put back, below.
+                if (value == mediaVolume) return
+                // A press moved the media volume (the silent track made media
+                // the stream the keys move): it goes back where it was.
                 try {
                     audio.setStreamVolume(AudioManager.STREAM_MUSIC, mediaVolume, 0)
                 } catch (_: SecurityException) {
@@ -61,8 +69,19 @@ internal class VolumeKeyStopper(
         }
     }
 
-    /** Starts listening. */
+    /**
+     * Starts listening. Whatever part of it the phone refuses is let go, so
+     * the sound it listens for goes on regardless.
+     */
     fun start() {
+        try {
+            listen()
+        } catch (_: RuntimeException) {
+            stop()
+        }
+    }
+
+    private fun listen() {
         since = SystemClock.elapsedRealtime()
         mediaVolume = audio.getStreamVolume(AudioManager.STREAM_MUSIC)
         silence = silentTrack()?.also {
@@ -72,6 +91,7 @@ internal class VolumeKeyStopper(
             }
         }
         session = MediaSession(context, "adhan").apply {
+            setCallback(object : MediaSession.Callback() {}, Handler(Looper.getMainLooper()))
             setPlaybackToRemote(
                 object : VolumeProvider(VOLUME_CONTROL_RELATIVE, STEPS, STEPS / 2) {
                     override fun onAdjustVolume(direction: Int) {
@@ -123,6 +143,7 @@ internal class VolumeKeyStopper(
 
     private fun press() {
         if (SystemClock.elapsedRealtime() - since < SETTLE_MILLIS) return
+        android.util.Log.i("ZZVOLTEST", "press")
         onPress()
     }
 
@@ -166,6 +187,10 @@ internal class VolumeKeyStopper(
 
         /** Which stream it was, in that broadcast. */
         const val EXTRA_STREAM = "android.media.EXTRA_VOLUME_STREAM_TYPE"
+
+        /** Its volume now, and before, in that broadcast. */
+        const val EXTRA_VALUE = "android.media.EXTRA_VOLUME_STREAM_VALUE"
+        const val EXTRA_PREVIOUS = "android.media.EXTRA_PREV_VOLUME_STREAM_VALUE"
 
         const val STEPS = 10
         const val SETTLE_MILLIS = 800L

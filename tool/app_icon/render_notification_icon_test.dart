@@ -4,8 +4,10 @@
 // notification's small icon from its shape alone, so the launcher icon
 // showed as a blank disc; this reads as the app's mark at 24 dp.
 //
-// Writes res/drawable-*dpi/ic_stat_mre.png (24 dp, the star within the 22 dp
-// the system leaves clear).
+// Writes one file, res/drawable/ic_stat_mre.png, 96 px: the size the densest
+// screens (xxxhdpi) show at 24 dp, so it is sharp on every phone; the system
+// scales it to the status bar and the notice. The star keeps within the 22 dp
+// the system leaves clear.
 //
 // Run: flutter test tool/app_icon/render_notification_icon_test.dart
 import 'dart:io';
@@ -19,18 +21,9 @@ const String _res = 'android/app/src/main/res';
 
 void main() {
   testWidgets('renders the notification icon', (tester) async {
-    await tester.runAsync(() async {
-      const densities = {
-        'mdpi': 1.0,
-        'hdpi': 1.5,
-        'xhdpi': 2.0,
-        'xxhdpi': 3.0,
-        'xxxhdpi': 4.0,
-      };
-      for (final MapEntry(key: name, value: scale) in densities.entries) {
-        await _write('$_res/drawable-$name/ic_stat_mre.png', 24 * scale);
-      }
-    });
+    await tester.runAsync(
+      () => _write('$_res/drawable/ic_stat_mre.png', 24 * 4),
+    );
   });
 }
 

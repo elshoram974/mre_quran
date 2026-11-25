@@ -52,11 +52,17 @@ class PrayerSoonReceiver : BroadcastReceiver() {
      * While a notice's voice plays, turning the phone face down or pressing a
      * volume button silences it, as they stop the adhan (when the person
      * chose so). The notice stays, without its sound.
+     *
+     * The listeners take the application's context: the one a receiver is
+     * handed may not register a receiver, and doing so threw and took the
+     * whole app down with every notice that had a voice. Whatever goes wrong
+     * here, the notice is already shown and stays.
      */
-    private fun listenToSilence(context: Context, id: Int, alarm: JSONObject, config: JSONObject) {
+    private fun listenToSilence(receiverContext: Context, id: Int, alarm: JSONObject, config: JSONObject) {
         val flip = config.optBoolean("stopWhenFlipped", true)
         val keys = config.optBoolean("stopWithVolumeKeys", true)
         if (!PrayerSoonNotice.sounds(alarm, config) || (!flip && !keys)) return
+        val context = receiverContext.applicationContext
         val pending = goAsync()
         val main = Handler(Looper.getMainLooper())
         var done = false
@@ -71,8 +77,13 @@ class PrayerSoonReceiver : BroadcastReceiver() {
             if (silence) PrayerSoonNotice.silence(context, id, alarm, config)
             pending.finish()
         }
-        if (flip) flipDetector = FlipDetector(context) { main.post { end(true) } }.also { it.start() }
-        if (keys) volumeKeys = VolumeKeyStopper(context) { main.post { end(true) } }.also { it.start() }
+        try {
+            if (flip) flipDetector = FlipDetector(context) { main.post { end(true) } }.also { it.start() }
+            if (keys) volumeKeys = VolumeKeyStopper(context) { main.post { end(true) } }.also { it.start() }
+        } catch (_: RuntimeException) {
+            end(false)
+            return
+        }
         // The longest voice lasts about nine seconds.
         main.postDelayed({ end(false) }, LISTEN_MILLIS)
     }
