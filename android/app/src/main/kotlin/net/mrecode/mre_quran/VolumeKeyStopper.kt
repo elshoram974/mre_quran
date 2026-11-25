@@ -4,6 +4,10 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.media.AudioAttributes
+import android.media.AudioFormat
+import android.media.AudioManager
+import android.media.AudioTrack
 import android.media.VolumeProvider
 import android.media.session.MediaSession
 import android.media.session.PlaybackState
@@ -11,30 +15,62 @@ import android.os.SystemClock
 import androidx.core.content.ContextCompat
 
 /**
- * Calls [onPress] when a volume button is pressed while the adhan plays, as a
- * press silences a ringing call.
+ * Calls [onPress] when a volume button is pressed while the adhan or a
+ * notice's voice plays, as a press silences a ringing call, with the app open
+ * or not and the screen on or off.
  *
- * Two ways, because phones route the keys differently: a media session that
- * owns its volume gets the presses (even when the volume is already at its
- * end, where it would not change), and the system's note that a volume
- * changed catches the rest. Presses in the first moment are ignored, so the
- * adhan is not stopped by a key already held when it began.
+ * With the screen off, Android hands the volume keys to the media that is
+ * playing, or to nobody when none is: the adhan and the notices play as an
+ * alarm or a notification, not as media, so on their own they never got the
+ * keys. So, while listening:
+ *
+ * - a silent track plays as media, which makes this app the one playing
+ *   media: the keys come to it with the screen off too;
+ * - a media session that owns its volume gets each press, even at the end of
+ *   the volume where nothing would change;
+ * - the system's note that a volume changed catches a press any other way,
+ *   and a media volume a press moved is put back where it was.
+ *
+ * Presses in the first moment are ignored, so a key already held when the
+ * sound began does not stop it.
  */
 internal class VolumeKeyStopper(
     private val context: Context,
     private val onPress: () -> Unit,
 ) {
     private var session: MediaSession? = null
+    private var silence: AudioTrack? = null
     private var registered = false
     private var since = 0L
+    private var mediaVolume = -1
+
+    private val audio = context.getSystemService(AudioManager::class.java)
 
     private val receiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) = press()
+        override fun onReceive(context: Context, intent: Intent) {
+            // A press moved the media volume (the silent track made media the
+            // stream the keys move): it goes back where it was.
+            val stream = intent.getIntExtra(EXTRA_STREAM, -1)
+            if (stream == AudioManager.STREAM_MUSIC && mediaVolume >= 0) {
+                try {
+                    audio.setStreamVolume(AudioManager.STREAM_MUSIC, mediaVolume, 0)
+                } catch (_: SecurityException) {
+                }
+            }
+            press()
+        }
     }
 
     /** Starts listening. */
     fun start() {
         since = SystemClock.elapsedRealtime()
+        mediaVolume = audio.getStreamVolume(AudioManager.STREAM_MUSIC)
+        silence = silentTrack()?.also {
+            try {
+                it.play()
+            } catch (_: IllegalStateException) {
+            }
+        }
         session = MediaSession(context, "adhan").apply {
             setPlaybackToRemote(
                 object : VolumeProvider(VOLUME_CONTROL_RELATIVE, STEPS, STEPS / 2) {
@@ -63,6 +99,14 @@ internal class VolumeKeyStopper(
 
     /** Stops listening. */
     fun stop() {
+        silence?.run {
+            try {
+                stop()
+            } catch (_: IllegalStateException) {
+            }
+            release()
+        }
+        silence = null
         session?.run {
             isActive = false
             release()
@@ -82,9 +126,46 @@ internal class VolumeKeyStopper(
         onPress()
     }
 
+    /**
+     * A second of silence that loops, played as media without asking for the
+     * audio focus, so nothing else the person listens to pauses for it.
+     */
+    private fun silentTrack(): AudioTrack? {
+        val rate = 8000
+        val frames = rate
+        return try {
+            AudioTrack.Builder()
+                .setAudioAttributes(
+                    AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_MEDIA)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_UNKNOWN)
+                        .build(),
+                )
+                .setAudioFormat(
+                    AudioFormat.Builder()
+                        .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+                        .setSampleRate(rate)
+                        .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
+                        .build(),
+                )
+                .setTransferMode(AudioTrack.MODE_STATIC)
+                .setBufferSizeInBytes(frames * 2)
+                .build()
+                .apply {
+                    write(ShortArray(frames), 0, frames)
+                    setLoopPoints(0, frames, -1)
+                }
+        } catch (_: Exception) {
+            null
+        }
+    }
+
     private companion object {
         /** The system's broadcast when a stream's volume changes. */
         const val VOLUME_CHANGED = "android.media.VOLUME_CHANGED_ACTION"
+
+        /** Which stream it was, in that broadcast. */
+        const val EXTRA_STREAM = "android.media.EXTRA_VOLUME_STREAM_TYPE"
 
         const val STEPS = 10
         const val SETTLE_MILLIS = 800L

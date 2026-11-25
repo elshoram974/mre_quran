@@ -809,3 +809,19 @@
   does the same on screens 600 dp across and wider for apps targeting it. The reader is a tab kept alive behind the
   others, so its lock was released only if the reader was destroyed, which leaving the tab never does: once turned,
   the whole app stayed held that way.
+
+## D-072: A volume button or a turned-over phone silences the adhan and every notice, the app open or not
+
+- **Decision:** While the adhan or a notice's voice plays (the reminder before a prayer, the iqama), a press of either
+  volume button, or turning the phone face down, stops it, as with a ringing call. Each can be turned off in the
+  adhan's settings (*Stop the adhan with the volume buttons*, *Stop when the phone is turned face down*). Android
+  listens natively (`VolumeKeyStopper`, `FlipDetector`) only for as long as the sound plays: the adhan from its
+  service, a notice for twelve seconds from the alarm that posts it.
+- **How the keys reach the app:** with the screen off, or with another app in front, Android hands the volume keys to
+  the media playing; the adhan plays as an alarm and a notice as a notification, so the keys went elsewhere and only
+  the open app heard them. While listening, the app plays a looping silence as media (without asking for the audio
+  focus, so nothing the person listens to pauses), owns a media session whose volume is its own (so even a press at
+  the end of the scale is seen), and watches the system's note that a volume changed, putting the media volume back
+  when a press moved it.
+- **Limit:** checked by compiling only; a phone's own volume handling can differ, so try it on a device
+  with the screen off and the app closed before a release.
