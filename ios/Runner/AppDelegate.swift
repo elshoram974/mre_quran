@@ -145,7 +145,7 @@ final class StartupTraceBridge: NSObject {
   /// Notes [step] of the launch under way.
   @objc static func mark(_ step: String) { StartupTrace.mark(step) }
 
-  /// The trace of an earlier launch that stalled, once.
+  /// The trace of an earlier launch that never showed its first frame, once.
   @objc static func takeStalled() -> String? { StartupTrace.takeStalled() }
 }
 
@@ -154,30 +154,37 @@ final class StartupTraceBridge: NSObject {
 /// afterwards: what started it and the last step it reached. Each step goes
 /// to the system log (category "startup") and is kept on the device until the
 /// first frame is on screen; the next launch hands an unfinished one to Dart,
-/// which reports it. Nothing personal is kept: step names, milliseconds, the
-/// launch option names, and the iOS version.
+/// which reports it when it was a real stall (isLaunchStallWorthReporting in
+/// lib/features/startup/domain/launch_stall.dart decides). Nothing personal is
+/// kept: step names, milliseconds, whether it is a debug build, the launch
+/// option names, and the iOS version.
 enum StartupTrace {
   private static let currentKey = "startupTrace.current"
   private static let stalledKey = "startupTrace.stalled"
   private static let firstFrame = "dart:firstFrame"
-  /// A launch left by the person before this is not counted as stalled.
-  private static let leftQuicklyMs = 3000
   private static let log = Logger(subsystem: "net.mrecode.mreQuran", category: "startup")
   private static var begunAt = CACurrentMediaTime()
   private static var open = false
   private static var observers: [NSObjectProtocol] = []
 
-  /// Starts the trace of a launch, keeping the last one if it stalled.
+  /// Starts the trace of a launch, keeping the last one if it never finished.
   static func begin(from options: [UIApplication.LaunchOptionsKey: Any]?) {
     let defaults = UserDefaults.standard
-    if let previous = defaults.string(forKey: currentKey), stalled(previous) {
+    if let previous = defaults.string(forKey: currentKey), !previous.contains(" \(firstFrame)@") {
       defaults.set(previous, forKey: stalledKey)
       log.warning("previous launch never showed its first frame: \(previous, privacy: .public)")
     }
     begunAt = CACurrentMediaTime()
     open = true
     let names = (options?.keys.map { $0.rawValue } ?? []).sorted().joined(separator: ",")
-    let line = "ios \(UIDevice.current.systemVersion) from \(names.isEmpty ? "icon" : names):"
+    // A debugger starts and ends a debug build, so Dart never reports its
+    // launches.
+    #if DEBUG
+    let build = " debug"
+    #else
+    let build = ""
+    #endif
+    let line = "ios \(UIDevice.current.systemVersion)\(build) from \(names.isEmpty ? "icon" : names):"
     defaults.set(line, forKey: currentKey)
     log.info("\(line, privacy: .public)")
     let center = NotificationCenter.default
@@ -206,20 +213,12 @@ enum StartupTrace {
     log.info("\(step, privacy: .public) at \(at)ms")
   }
 
-  /// The trace of a launch that stalled, once; nil when none did.
+  /// The trace of an earlier launch that never showed its first frame, once;
+  /// nil when none did. Dart tells whether it was a stall worth reporting.
   static func takeStalled() -> String? {
     let defaults = UserDefaults.standard
     guard let stalled = defaults.string(forKey: stalledKey) else { return nil }
     defaults.removeObject(forKey: stalledKey)
     return stalled
-  }
-
-  /// Whether [trace] never reached the screen, and was not simply left by
-  /// the person within a moment of tapping.
-  private static func stalled(_ trace: String) -> Bool {
-    if trace.contains(" \(firstFrame)@") { return false }
-    guard let range = trace.range(of: #" pause@(\d+)"#, options: .regularExpression),
-          let left = Int(trace[range].dropFirst(" pause@".count)) else { return true }
-    return left >= leftQuicklyMs
   }
 }

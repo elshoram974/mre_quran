@@ -2,6 +2,7 @@ package net.mrecode.mre_quran
 
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ApplicationInfo
 import android.os.Build
 import android.os.SystemClock
 import android.util.Log
@@ -13,9 +14,11 @@ import androidx.annotation.Keep
  * told about afterwards: where it was started from and the last step it
  * reached. Each step is written to logcat (tag MushafiStartup) and kept on
  * the device until the launch shows its first frame. The next launch hands
- * an unfinished one to Dart, which reports it. Nothing personal is kept:
- * step names, milliseconds, the intent's action and extra names, and the
- * Android version. Dart calls [mark] and [takeStalled] directly through JNI
+ * an unfinished one to Dart, which reports it when it was a real stall
+ * (isLaunchStallWorthReporting in lib/features/startup/domain/launch_stall.dart
+ * decides). Nothing personal is kept: step names, milliseconds, whether the
+ * build is debuggable, the intent's action and extra names, and the Android
+ * version. Dart calls [mark] and [takeStalled] directly through JNI
  * (lib/features/startup/data/startup_trace.dart), so they are static and
  * kept from shrinking.
  */
@@ -26,24 +29,25 @@ object StartupTrace {
     private const val CURRENT = "current"
     private const val STALLED = "stalled"
 
-    /** A launch left by the person before this is not counted as stalled. */
-    private const val LEFT_QUICKLY_MS = 3000L
-
     private var begunAt = 0L
     private var open = false
 
-    /** Starts the trace of a launch, keeping the last one if it stalled. */
+    /** Starts the trace of a launch, keeping the last one if it never finished. */
     fun begin(context: Context, intent: Intent?, restored: Boolean) {
         val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         val previous = prefs.getString(CURRENT, null)
         val editor = prefs.edit()
-        if (previous != null && stalled(previous)) {
+        if (previous != null && unfinished(previous)) {
             editor.putString(STALLED, previous)
             Log.w(TAG, "previous launch never showed its first frame: $previous")
         }
         begunAt = SystemClock.elapsedRealtime()
         open = true
-        val line = "android ${Build.VERSION.SDK_INT} from ${source(intent, restored)}:"
+        // Debug and profile builds are debuggable: a debugger starts and ends
+        // them, so Dart never reports their launches.
+        val debuggable = (context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
+        val build = if (debuggable) " debug" else ""
+        val line = "android ${Build.VERSION.SDK_INT}$build from ${source(intent, restored)}:"
         editor.putString(CURRENT, line).apply()
         Log.i(TAG, line)
     }
@@ -60,7 +64,10 @@ object StartupTrace {
         Log.i(TAG, "$step at ${at}ms")
     }
 
-    /** The trace of a launch that stalled, once; null when none did. */
+    /**
+     * The trace of an earlier launch that never showed its first frame, once;
+     * null when none did. Dart tells whether it was a stall worth reporting.
+     */
     @JvmStatic
     fun takeStalled(context: Context): String? {
         val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
@@ -69,15 +76,9 @@ object StartupTrace {
         return stalled
     }
 
-    /**
-     * Whether [trace] never reached the screen, and was not simply left by
-     * the person within a moment of tapping.
-     */
-    private fun stalled(trace: String): Boolean {
-        if (trace.contains(" $DISPLAYED@") || trace.contains(" $DART_FIRST_FRAME@")) return false
-        val left = Regex(" pause@(\\d+)").find(trace)?.groupValues?.get(1)?.toLongOrNull()
-        return left == null || left >= LEFT_QUICKLY_MS
-    }
+    /** Whether [trace] never reached the screen. */
+    private fun unfinished(trace: String): Boolean =
+        !trace.contains(" $DISPLAYED@") && !trace.contains(" $DART_FIRST_FRAME@")
 
     /** Where the launch came from: the icon, a restore, or an intent's names. */
     private fun source(intent: Intent?, restored: Boolean): String {

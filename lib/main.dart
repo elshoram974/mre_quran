@@ -26,6 +26,7 @@ import 'features/startup/application/optional_startup.dart';
 import 'features/startup/application/startup_providers.dart';
 import 'features/startup/data/startup_trace.dart';
 import 'features/startup/data/last_tab_repository.dart';
+import 'features/startup/domain/launch_stall.dart';
 import 'core/notifications/reminder_scheduler_provider.dart';
 import 'l10n/generated/app_localizations.dart';
 
@@ -38,9 +39,12 @@ bool _appStarted = false;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // The launch hold's limit counts from here, not from after the start-up
+  // services, so they are part of it.
+  final sinceMain = Stopwatch()..start();
   _trace.mark('dart:main');
   try {
-    await _start();
+    await _start(sinceMain);
   } on Object catch (error, stackTrace) {
     // The launch screen stays until the first frame, so a start-up step that
     // fails must never end `main` before the app is on its way: whatever went
@@ -60,7 +64,7 @@ Future<void> main() async {
   }
 }
 
-Future<void> _start() async {
+Future<void> _start(Stopwatch sinceMain) async {
   // Android 15+ always draws edge to edge; earlier versions do the same so
   // the app looks and lays out alike everywhere.
   unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge));
@@ -96,14 +100,14 @@ Future<void> _start() async {
   final crashReporter = _crashReporter(firebase);
   // Breadcrumbs and recovered errors go with the next report.
   AppLogger.attach(crashReporter);
-  if (storedSettings != null) {
-    unawaited(
-      _optionalStartup(
-        'crash collection',
-        () => crashReporter.setCollectionEnabled(settings.crashReportsEnabled),
-      ),
-    );
-  }
+  // Every launch, the first one too: it is what turns reporting off in
+  // debug builds, which the platform's own setting leaves on.
+  unawaited(
+    _optionalStartup(
+      'crash collection',
+      () => crashReporter.setCollectionEnabled(settings.crashReportsEnabled),
+    ),
+  );
   FlutterError.onError = (details) =>
       AppLogger.flutterError(crashReporter, details);
   PlatformDispatcher.instance.onError = (error, stackTrace) {
@@ -118,9 +122,9 @@ Future<void> _start() async {
     ], await rootBundle.loadString(AppAssets.adhkarLicense));
   });
   // The native launch screen stays until the first screen is ready
-  // (LaunchGate), and never longer than its limit.
+  // (LaunchGate), and never longer than its limit, counted from `main`.
   final launchHold = LaunchHold.hold(
-    most: AppTokens.launchMost,
+    most: _atLeastZero(AppTokens.launchMost - sinceMain.elapsed),
     onRelease: (reason) => _trace.mark('release:$reason'),
   );
   final initialLocation = resolveInitialLocation(
@@ -172,11 +176,27 @@ CrashReporter _crashReporter(FirebaseApp? firebase) {
   }
 }
 
+/// [left], or no time at all once the limit has passed.
+Duration _atLeastZero(Duration left) => left.isNegative ? Duration.zero : left;
+
 /// Once this launch's first frame is on screen, notes it, and reports an
-/// earlier launch that never got there, with where it stopped.
+/// earlier launch that never got there, with where it stopped, when it was
+/// a real stall (never from a debug build, and only when the person was
+/// kept on the launch screen for twice the hold's limit, or it ended there).
 Future<void> _reportStalledLaunch(CrashReporter reporter) async {
   await WidgetsBinding.instance.waitUntilFirstFrameRasterized;
   _trace.mark('dart:firstFrame');
-  final stalled = _trace.takeStalled();
-  if (stalled != null) AppLogger.launchStalled(reporter, stalled);
+  final unfinished = _trace.takeStalled();
+  if (unfinished == null) return;
+  if (isLaunchStallWorthReporting(
+    unfinished,
+    debugBuild: kDebugMode,
+    least: AppTokens.launchMost * 2,
+  )) {
+    AppLogger.launchStalled(reporter, unfinished);
+  } else {
+    AppLogger.debug(
+      'An earlier launch did not finish, not a stall: $unfinished',
+    );
+  }
 }

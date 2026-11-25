@@ -276,9 +276,9 @@
   `LaunchGate` lets the frame through as soon as the Quran text is read and the Mushaf page is drawn
   (`startupReadyProvider`). When a notification, widget or shortcut opens another screen over the Mushaf
   (`opensOnReaderProvider`), it waits only for the text. The hold has its own limit (`AppTokens.launchMost`,
-  4 s, timed from `main`, not from a widget), so nothing that goes wrong while the app builds can keep the
-  launch screen up. The pages around the first are prepared only after it, and the text's checksums are
-  computed off the main thread.
+  4 s, timed from the start of `main`, so the start-up services count against it, and not from a widget), so
+  nothing that goes wrong while the app builds can keep the launch screen up. The pages around the first are
+  prepared only after it, and the text's checksums are computed off the main thread.
 - **Why not hold Android's launch screen natively** (`setKeepOnScreenCondition`): Flutter already delays
   Android's first draw until its own first frame, and holding the draw from both sides left the app stuck
   on its launch screen.
@@ -394,12 +394,21 @@
   (`dart:main`, any start-up service that timed out, `dart:runApp`, `release:ready` or `release:limit`), and
   the first frame on screen. Each step goes to the system log (logcat tag `MushafiStartup`; iOS subsystem
   `net.mrecode.mreQuran`, category `startup`) and is kept on the device until the first frame is shown.
-  When a launch never got there (and was not left by the person within 3 s), the next launch reports it
-  through `AppLogger.launchStalled` as a non-fatal `LaunchStalled` carrying its steps.
+  When a launch never got there, the next launch reports it through `AppLogger.launchStalled` as a
+  non-fatal `LaunchStalled` carrying its steps, if it was a real stall (`isLaunchStallWorthReporting`): it
+  ended while on the launch screen (a crash, or the system ending a launch that hung), or the person had it on
+  the launch screen for twice the hold's limit (8 s) in all before leaving. Neither launch may be a debug
+  build: the trace says ` debug` (Android: any debuggable build, so profile too), and a debug build reports
+  nothing. Crashlytics' collection is set at every launch, so a new debug install reports nothing either.
+- **Measured** (2026-11-25): a `LaunchStalled` from a debug run on iOS 27.2, `engine@2190 active@3813` and
+  no Dart step, was a debug launch that never reached Dart's `main` (a debug build compiles its Dart as it
+  runs, so it starts slowly, and the debugger ends it; opened from the icon without one, it cannot run its
+  Dart at all), not a stall people would see; it is no longer reported. Its times count from
+  `didFinishLaunching` (Android: `onCreate`), not from the tap.
 - **Why:** a launch that stayed on the launch screen happened on a device and could not be reproduced on
   emulators; the trace says where it stopped the next time it happens.
-- **Privacy:** step names, milliseconds, the OS version and the intent's extra names only; reported only when
-  crash reports are on, and never from debug builds.
+- **Privacy:** step names, milliseconds, the OS version, whether the build is a debug one, and the intent's
+  extra names only; reported only when crash reports are on, and never from debug builds.
 
 ## D-044: Widget previews are drawn in the app, and the widgets have a language of their own
 
