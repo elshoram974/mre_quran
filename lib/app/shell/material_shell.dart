@@ -47,6 +47,9 @@ class MaterialShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bottomBar = size.usesBottomBar;
+    final beside = ExpandingNavRail.labelsBesideAt(
+      MediaQuery.sizeOf(context).width,
+    );
     return Scaffold(
       // The tab bar floats; every page runs under it and keeps clear of it
       // through the bottom padding the Scaffold publishes.
@@ -61,8 +64,13 @@ class MaterialShell extends StatelessWidget {
                 index: index,
                 onSelected: onSelected,
                 destinations: destinations,
+                labelsBeside: beside,
               ),
-              railWidth: ExpandingNavRail.widthOf(context, destinations),
+              railWidth: ExpandingNavRail.widthOf(
+                context,
+                destinations,
+                labelsBeside: beside,
+              ),
               shown: showNavigation,
               overContent: overContent,
               child: ContentContainer(child: child),

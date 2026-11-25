@@ -147,6 +147,8 @@ void main() {
     tester,
   ) async {
     debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+    // Reset even when an expectation fails, so later tests run as Android.
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
 
     await _pump(tester, const Size(820, 1180));
     expect(find.byType(GlassTabBar), findsOneWidget);
@@ -161,7 +163,20 @@ void main() {
     await _pump(tester, const Size(1194, 834));
     expect(find.byType(ExpandingNavRail), findsOneWidget);
     expect(find.byType(GlassTabBar), findsNothing);
-    // The rail itself is liquid glass.
+    // The rail itself is liquid glass: the glass segmented control stood
+    // upright, its glass indicator under the chosen tab.
+    expect(
+      find.descendant(
+        of: find.byType(ExpandingNavRail),
+        matching: find.byType(GlassSegmentedControl),
+      ),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+    // On a large screen the chosen tab's name goes beside its icon, on glass
+    // too.
+    await tester.pumpWidget(const SizedBox());
+    await _pump(tester, const Size(1366, 1024));
     expect(
       find.ancestor(
         of: find.byIcon(Icons.settings_outlined),
@@ -173,30 +188,39 @@ void main() {
     debugDefaultTargetPlatformOverride = null;
   });
 
-  testWidgets('the rail names only the chosen tab, beside its icon', (
-    tester,
-  ) async {
-    await _pump(tester, const Size(1194, 834));
-    final rail = find.byType(ExpandingNavRail);
-    expect(
-      find.descendant(of: rail, matching: find.text('المصحف')),
-      findsOneWidget,
+  for (final (width, beside) in [(1194.0, false), (1366.0, true)]) {
+    testWidgets(
+      'the rail names only the chosen tab, ${beside ? 'beside' : 'under'} '
+      'its icon, at width $width',
+      (tester) async {
+        await _pump(tester, Size(width, 900));
+        final rail = find.byType(ExpandingNavRail);
+        expect(
+          find.descendant(of: rail, matching: find.text('المصحف')),
+          findsOneWidget,
+        );
+        expect(
+          find.descendant(of: rail, matching: find.text('الإعدادات')),
+          findsNothing,
+        );
+        final icon = tester.getCenter(
+          find.descendant(
+            of: rail,
+            matching: find.byIcon(Icons.auto_stories_rounded),
+          ),
+        );
+        final label = tester.getCenter(
+          find.descendant(of: rail, matching: find.text('المصحف')),
+        );
+        if (beside) {
+          expect(label.dy, closeTo(icon.dy, 4));
+        } else {
+          expect(label.dy, greaterThan(icon.dy + 8));
+          expect(label.dx, closeTo(icon.dx, 4));
+        }
+      },
     );
-    expect(
-      find.descendant(of: rail, matching: find.text('الإعدادات')),
-      findsNothing,
-    );
-    final icon = tester.getCenter(
-      find.descendant(
-        of: rail,
-        matching: find.byIcon(Icons.auto_stories_rounded),
-      ),
-    );
-    final label = tester.getCenter(
-      find.descendant(of: rail, matching: find.text('المصحف')),
-    );
-    expect(label.dy, closeTo(icon.dy, 4));
-  });
+  }
 
   testWidgets('on a wide window the rail lies over the Mushaf and never moves '
       'it', (tester) async {

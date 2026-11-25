@@ -26,6 +26,10 @@ extension ShellNavigation on WindowSize {
 
   /// Widest a floating bar grows; wider windows centre it instead of stretching.
   static const double bottomBarMaxWidth = 560;
+
+  /// Window width from which the rail's chosen tab shows its label beside its
+  /// icon (a large screen); narrower rails put it under the icon.
+  static const double railLabelsBesideMinWidth = 1200;
 }
 
 class ContentContainer extends StatelessWidget {

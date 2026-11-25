@@ -49,6 +49,9 @@ class GlassShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bottomBar = size.usesBottomBar;
+    final beside = ExpandingNavRail.labelsBesideAt(
+      MediaQuery.sizeOf(context).width,
+    );
     final scheme = Theme.of(context).colorScheme;
     return Material(
       type: MaterialType.transparency,
@@ -92,8 +95,13 @@ class GlassShell extends StatelessWidget {
                     index: index,
                     onSelected: onSelected,
                     destinations: destinations,
+                    labelsBeside: beside,
                   ),
-                  railWidth: ExpandingNavRail.widthOf(context, destinations),
+                  railWidth: ExpandingNavRail.widthOf(
+                    context,
+                    destinations,
+                    labelsBeside: beside,
+                  ),
                   shown: showNavigation,
                   overContent: overContent,
                   child: ContentContainer(child: child),
