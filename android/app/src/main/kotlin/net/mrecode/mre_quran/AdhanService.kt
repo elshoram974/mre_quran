@@ -220,7 +220,7 @@ class AdhanService : Service() {
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
             )
             val builder = NotificationCompat.Builder(context, CHANNEL_ID)
-                .setSmallIcon(R.mipmap.ic_launcher)
+                .setSmallIcon(R.drawable.ic_stat_mre)
                 .setContentTitle(alarm.optString("title"))
                 .setContentText(alarm.optString("body"))
                 .setCategory(NotificationCompat.CATEGORY_ALARM)

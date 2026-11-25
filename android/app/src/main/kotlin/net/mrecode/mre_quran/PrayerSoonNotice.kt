@@ -55,7 +55,7 @@ internal object PrayerSoonNotice {
             )
         }
         val builder = NotificationCompat.Builder(context, channel)
-            .setSmallIcon(R.mipmap.ic_launcher)
+            .setSmallIcon(R.drawable.ic_stat_mre)
             // The plain words stand in where a custom view is not shown.
             .setContentTitle(title)
             .setContentText(body)
@@ -83,7 +83,7 @@ internal object PrayerSoonNotice {
         ensureChannel(context, channel, alarm.optString("channelName", "Prayer"), alarm.optSound(), urgent)
         val body = alarm.optString("body")
         val builder = NotificationCompat.Builder(context, channel)
-            .setSmallIcon(R.mipmap.ic_launcher)
+            .setSmallIcon(R.drawable.ic_stat_mre)
             .setContentTitle(alarm.optString("title"))
             .setContentText(body)
             // A long body reads whole when the notice is opened.

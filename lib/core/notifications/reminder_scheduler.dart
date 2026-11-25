@@ -193,7 +193,9 @@ class LocalReminderScheduler implements ReminderScheduler {
         final label = await settingsLabel?.call();
         await plugin.initialize(
           settings: InitializationSettings(
-            android: const AndroidInitializationSettings('@mipmap/ic_launcher'),
+            android: const AndroidInitializationSettings(
+              '@drawable/ic_stat_mre',
+            ),
             iOS: DarwinInitializationSettings(
               requestAlertPermission: false,
               requestBadgePermission: false,

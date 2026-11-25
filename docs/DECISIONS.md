@@ -825,3 +825,11 @@
   when a press moved it.
 - **Limit:** checked by compiling only; a phone's own volume handling can differ, so try it on a device
   with the screen off and the app closed before a release.
+
+## D-073: Notifications carry the app's star, not its launcher icon
+
+- **Decision:** Android draws a notification's small icon from its shape alone, so the launcher icon showed as a
+  blank disc. Every notice (the adhan's, the reminders', the plugin's) uses `ic_stat_mre`: the app's eight-pointed
+  star, white on transparent, its middle dot cut out, 24 dp, drawn per density by
+  `tool/app_icon/render_notification_icon_test.dart`. It is kept from resource shrinking in `res/raw/keep.xml`
+  because the plugin finds it by name.
