@@ -1,8 +1,29 @@
+import 'dart:math' as math;
+
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mre_quran/features/mushaf/presentation/flip/book_flip.dart';
+import 'package:mre_quran/features/mushaf/presentation/flip/curl_mesh.dart';
 import 'package:mre_quran/features/mushaf/presentation/flip/page_curl_painter.dart';
 import 'package:mre_quran/features/mushaf/presentation/flip/paper_shade_painter.dart';
+
+/// Length of the row of paper at [y] across the whole leaf, measured along
+/// the folded leaf.
+double bentLength(CurlFold fold, double y) {
+  var length = 0.0;
+  var last = fold.place(0, y);
+  const samples = 900;
+  for (var i = 1; i <= samples; i++) {
+    final now = fold.place(fold.width * i / samples, y);
+    length += math.sqrt(
+      math.pow(now.x - last.x, 2) +
+          math.pow(now.y - last.y, 2) +
+          math.pow(now.z - last.z, 2),
+    );
+    last = now;
+  }
+  return length;
+}
 
 Future<List<int>> _pump(
   WidgetTester tester, {
@@ -167,25 +188,198 @@ void main() {
     expect(first, isEmpty);
   });
 
-  /// The lead of the painter drawing the turning sheet.
-  double leadOf(WidgetTester tester) => tester
-      .widgetList<CustomPaint>(find.byType(CustomPaint))
-      .map((w) => w.painter)
-      .whereType<PageCurlPainter>()
-      .single
-      .lead;
+  /// The painter drawing the turning leaf.
+  PageCurlPainter painterOf(WidgetTester tester) =>
+      tester.widget<CustomPaint>(curl()).painter! as PageCurlPainter;
 
-  testWidgets('spread: the sheet bends one way going forward and the other '
-      'going back', (tester) async {
-    await _pump(tester, realistic: true, spread: true, page: 4);
-    var gesture = await halfway(tester, 210);
-    expect(leadOf(tester), closeTo(1, 0.02));
+  /// The fold of the turning leaf, and where its canvas is on screen.
+  ({CurlFold fold, Rect canvas, PageCurlPainter painter}) foldOf(
+    WidgetTester tester,
+  ) {
+    final canvas = tester.getRect(curl());
+    final painter = painterOf(tester);
+    return (
+      fold: painter.foldFor(canvas.size),
+      canvas: canvas,
+      painter: painter,
+    );
+  }
+
+  for (final direction in TextDirection.values) {
+    final app = direction == TextDirection.rtl ? 'Arabic' : 'English';
+
+    group('$app app: the leaf folds like paper, on the physical sides of the '
+        'book', () {
+      Future<void> pumpBook(WidgetTester tester, {required int page}) async {
+        tester.view.physicalSize = const Size(900, 700);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Directionality(
+              textDirection: direction,
+              child: BookFlip(
+                pageCount: 20,
+                spread: true,
+                page: page,
+                onPageChanged: (_) {},
+                pageBuilder: (context, p) => Center(child: Text('page $p')),
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+      }
+
+      const spine = 450.0;
+
+      testWidgets('going forward the left-hand page folds from its left edge '
+          'and shows the next page', (tester) async {
+        await pumpBook(tester, page: 3);
+        final gesture = await halfway(tester, 210);
+        final (:fold, :canvas, :painter) = foldOf(tester);
+        expect(painter.fromRight, isFalse);
+        // The leaf is the left-hand page, hinged on the spine.
+        expect(canvas.left, 0);
+        expect(canvas.right, spine);
+        final h = canvas.height;
+        // Held in the middle of the edge, the fold runs straight down the
+        // left-hand page.
+        expect(fold.normalY, 0);
+        final foldAt = canvas.left + fold.foldX;
+        expect(foldAt, inExclusiveRange(0, spine));
+        // Between the fold and the spine the page lies where it was.
+        final flat = fold.place(fold.foldX + 5, h / 2);
+        expect(canvas.left + flat.x, closeTo(foldAt + 5, 1e-6));
+        expect(flat.z, 0);
+        expect(fold.showsFront(fold.foldX + 5, h / 2), isTrue);
+        // The free edge has come up and over toward the spine, upside down:
+        // the back of the leaf, the next page, faces the reader there.
+        final edge = fold.place(0, h / 2);
+        expect(canvas.left + edge.x, inExclusiveRange(foldAt, spine));
+        expect(edge.z, greaterThan(0));
+        expect(fold.showsFront(0, h / 2), isFalse);
+        // Folded, not stretched: a row of the page keeps its length.
+        expect(bentLength(fold, h / 2), closeTo(canvas.width, 0.5));
+        await gesture.up();
+        await tester.pumpAndSettle();
+      });
+
+      testWidgets('going back the right-hand page folds from its right edge '
+          'and shows the page before', (tester) async {
+        await pumpBook(tester, page: 5);
+        final gesture = await halfway(tester, -210);
+        final (:fold, :canvas, :painter) = foldOf(tester);
+        expect(painter.fromRight, isTrue);
+        final h = canvas.height;
+        final w = canvas.width;
+        expect(fold.normalY, 0);
+        // The fold is on the right-hand page this time.
+        final foldAt = canvas.left + 2 * w - fold.foldX;
+        expect(foldAt, inExclusiveRange(spine, 2 * spine));
+        // Between the spine and the fold the right-hand page lies where it
+        // was, its own page showing.
+        final flat = fold.place(fold.foldX + 5, h / 2);
+        expect(canvas.left + flat.x, closeTo(foldAt - 5, 1e-6));
+        expect(fold.showsFront(fold.foldX + 5, h / 2), isFalse);
+        // Its right edge has come over toward the spine, showing the page
+        // before.
+        final edge = fold.place(0, h / 2);
+        expect(canvas.left + edge.x, inExclusiveRange(spine, foldAt));
+        expect(edge.z, greaterThan(0));
+        expect(fold.showsFront(0, h / 2), isTrue);
+        expect(bentLength(fold, h / 2), closeTo(w, 0.5));
+        await gesture.up();
+        await tester.pumpAndSettle();
+      });
+
+      testWidgets('held near a corner, that corner lifts first', (
+        tester,
+      ) async {
+        await pumpBook(tester, page: 3);
+        var gesture = await tester.startGesture(const Offset(300, 660));
+        for (var i = 0; i < 8; i++) {
+          await gesture.moveBy(const Offset(5, 0));
+          await tester.pump(const Duration(milliseconds: 8));
+        }
+        final low = foldOf(tester);
+        final h = low.canvas.height;
+        expect(low.painter.grip, greaterThan(0.8));
+        expect(low.fold.depth(0, h), greaterThan(low.fold.depth(0, 0)));
+        expect(low.fold.place(0, 0).z, 0, reason: 'the top corner still lies');
+        expect(low.fold.place(0, h).z, greaterThan(0));
+        await gesture.up();
+        await tester.pumpAndSettle();
+
+        // Going back, held high on the right-hand page's edge.
+        gesture = await tester.startGesture(const Offset(600, 40));
+        for (var i = 0; i < 8; i++) {
+          await gesture.moveBy(const Offset(-5, 0));
+          await tester.pump(const Duration(milliseconds: 8));
+        }
+        final high = foldOf(tester);
+        expect(high.painter.fromRight, isTrue);
+        expect(high.painter.grip, lessThan(-0.8));
+        expect(high.fold.depth(0, 0), greaterThan(high.fold.depth(0, h)));
+        expect(high.fold.place(0, h).z, 0, reason: 'the bottom corner lies');
+        await gesture.up();
+        await tester.pumpAndSettle();
+      });
+    });
+  }
+
+  testWidgets('a leaf caught while it settles keeps the side it was lifted '
+      'from', (tester) async {
+    await _pump(tester, realistic: true, spread: true, page: 3);
+    var gesture = await halfway(tester, 380);
+    expect(painterOf(tester).fromRight, isFalse);
+    await gesture.up();
+    // The spring takes it on toward the right-hand side.
+    await tester.pump(const Duration(milliseconds: 40));
+    await tester.pump(const Duration(milliseconds: 40));
+    expect(curl(), findsOneWidget);
+    // Caught past half way: the hand now holds the leaf nearer the right,
+    // but it is the same leaf, lifted from the left, and it does not jump.
+    gesture = await tester.startGesture(const Offset(400, 350));
+    await gesture.moveBy(const Offset(-20, 0));
+    await tester.pump(const Duration(milliseconds: 8));
+    await gesture.moveBy(const Offset(-20, 0));
+    await tester.pump(const Duration(milliseconds: 8));
+    expect(curl(), findsOneWidget);
+    expect(painterOf(tester).fromRight, isFalse);
     await gesture.up();
     await tester.pumpAndSettle();
-    gesture = await halfway(tester, -210);
-    expect(leadOf(tester), closeTo(-1, 0.1));
+  });
+
+  testWidgets('with animations off a turn lands at once', (tester) async {
+    tester.view.physicalSize = const Size(400, 700);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final changes = <int>[];
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Builder(
+          builder: (context) => MediaQuery(
+            data: MediaQuery.of(context).copyWith(disableAnimations: true),
+            child: BookFlip(
+              pageCount: 20,
+              spread: false,
+              page: 4,
+              onPageChanged: changes.add,
+              pageBuilder: (context, p) => Center(child: Text('page $p')),
+            ),
+          ),
+        ),
+      ),
+    );
+    final gesture = await halfway(tester, 210);
+    // The hand moves the leaf itself; only what it lets go of jumps.
+    expect(curl(), findsOneWidget);
     await gesture.up();
-    await tester.pumpAndSettle();
+    await tester.pump();
+    expect(changes, [5]);
+    expect(curl(), findsNothing);
+    expect(tester.hasRunningAnimations, isFalse);
   });
 
   testWidgets('a turn tells the reader it began, before anything moves', (

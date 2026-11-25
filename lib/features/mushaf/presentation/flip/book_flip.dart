@@ -6,6 +6,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 
 import 'book_geometry.dart';
+import 'curl_mesh.dart';
 import 'page_curl_painter.dart';
 import 'paper_shade_painter.dart';
 
@@ -15,8 +16,14 @@ typedef BookPageBuilder = Widget Function(BuildContext context, int page);
 /// A book that turns its pages like paper.
 ///
 /// The book opens right to left. A drag to the right turns forward. In spread
-/// mode the left-hand page lifts from its outer edge, bends as it rises, swings
-/// over the spine, and lands on the right with its back showing the next page.
+/// mode the left-hand page is lifted by its outer (left) edge: that edge rolls
+/// up and folds back over the page toward the spine, showing the next page on
+/// its back, while the part between the fold and the spine stays flat. The
+/// fold travels to the spine, and the leaf lands on the right. A drag to the
+/// left turns back, the mirror image: the right-hand page is lifted by its
+/// right edge and folds over toward the spine, showing the page before. The
+/// paper folds and never stretches (see [CurlFold]); held near a corner, it
+/// lifts that corner first.
 ///
 /// Single mode shows one page of that open book at a time, and moves the way
 /// the reader's eyes and hands would. Going from a right-hand (odd) page to the
@@ -99,13 +106,30 @@ class _BookFlipState extends State<BookFlip>
   late BookGeometry _geometry = _makeGeometry();
   late double _position = _geometry.stepOfPage(widget.page).toDouble();
   bool _dragging = false;
-  int _dragStartStep = 0;
+  late int _dragStartStep = _position.round();
   int _reportedStep = 0;
 
-  /// 1 while turning forward, -1 while turning back, eased between so the
-  /// bend of the sheet mirrors smoothly when the hand changes direction.
-  double _lead = 1;
-  double _leadTarget = 1;
+  /// The step whose leaf is in the air, or null while the book is at rest.
+  int? _liftedStep;
+
+  /// Whether the leaf in the air was lifted off the right-hand side, turning
+  /// back. It is the side the hand took it from and stays so until the leaf
+  /// lies down again, whichever way the hand then moves.
+  bool _fromRight = false;
+
+  /// Where along its free edge the hand holds the leaf in the air: -1 top
+  /// corner, 0 middle, 1 bottom corner.
+  double _grip = 0;
+
+  /// The grip the next leaf to lift will be held by.
+  double _nextGrip = _actionGrip;
+
+  /// A turn by a screen reader action is drawn as a hand would make it, from
+  /// low on the edge.
+  static const double _actionGrip = 0.5;
+
+  /// How far a leaf must be off its page to count as lifted.
+  static const double _rest = 0.0005;
 
   ui.Image? _front;
   ui.Image? _back;
@@ -136,6 +160,7 @@ class _BookFlipState extends State<BookFlip>
       _settle.stop();
       _disposeTextures();
       _position = target.toDouble();
+      _liftedStep = null;
       _reportedStep = target;
     }
   }
@@ -212,20 +237,27 @@ class _BookFlipState extends State<BookFlip>
     _textureStep = step;
   }
 
-  /// Points the bend of the sheet the way the turn is going.
-  void _steer(double direction) {
-    if (direction == 0) return;
-    _leadTarget = direction > 0 ? 1 : -1;
+  /// Moves the book to [next]. A leaf that leaves its page now is lifted off
+  /// the side it lay on: the left going forward, the right going back, and
+  /// by the grip of the hand that moved it.
+  void _moveTo(double next) {
+    final step = next.floor();
+    if (next - step <= _rest) {
+      _liftedStep = null;
+    } else if (_liftedStep != step) {
+      _liftedStep = step;
+      // Coming from the step after, the leaf lay on the right.
+      _fromRight = _position > step + 0.5;
+      _grip = _nextGrip;
+    }
+    _position = next;
   }
-
-  void _easeLead() => _lead += (_leadTarget - _lead) * 0.3;
 
   void _onTick() {
     final next = _geometry.clampPosition(_settle.value);
-    _easeLead();
     final step = next.floor();
-    if (next - step > 0.0005) _ensureTextures(step);
-    setState(() => _position = next);
+    if (next - step > _rest) _ensureTextures(step);
+    setState(() => _moveTo(next));
   }
 
   void _report() {
@@ -235,10 +267,14 @@ class _BookFlipState extends State<BookFlip>
     widget.onPageChanged(_geometry.pageOfStep(step));
   }
 
-  void _dragStart(DragStartDetails details) {
+  void _dragStart(DragStartDetails details, double height) {
     _settle.stop();
     _dragging = true;
     _dragStartStep = _position.round();
+    // Held high on the edge the top corner leads, held low the bottom one.
+    _nextGrip = height > 0
+        ? (details.localPosition.dy / height * 2 - 1).clamp(-1.0, 1.0)
+        : 0;
     widget.onTurnStart?.call();
   }
 
@@ -254,11 +290,9 @@ class _BookFlipState extends State<BookFlip>
     var next = _position + details.delta.dx / (width * (leaf ? 0.7 : 1.0));
     next = next.clamp(_dragStartStep - 1.0, _dragStartStep + 1.0);
     next = _geometry.clampPosition(next);
-    _steer(details.delta.dx);
-    _easeLead();
     final step = next.floor();
-    if (next - step > 0.0005) _ensureTextures(step);
-    setState(() => _position = next);
+    if (next - step > _rest) _ensureTextures(step);
+    setState(() => _moveTo(next));
   }
 
   void _dragEnd(DragEndDetails details, double width) {
@@ -275,10 +309,9 @@ class _BookFlipState extends State<BookFlip>
   }
 
   void _animateTo(double target, [double velocity = 0]) {
-    _steer(target - _position);
     if (MediaQuery.disableAnimationsOf(context)) {
       _settle.stop();
-      setState(() => _position = target);
+      setState(() => _moveTo(target));
       _finish();
       return;
     }
@@ -292,7 +325,7 @@ class _BookFlipState extends State<BookFlip>
     );
     _settle.animateWith(spring).whenComplete(() {
       if (!mounted || _dragging) return;
-      setState(() => _position = target);
+      setState(() => _moveTo(target));
       _finish();
     });
   }
@@ -306,6 +339,7 @@ class _BookFlipState extends State<BookFlip>
     widget.onTurnStart?.call();
     final base = _position.round();
     _dragStartStep = base;
+    _nextGrip = _actionGrip;
     final target = _geometry.clampPosition((base + by).toDouble());
     _animateTo(target);
   }
@@ -484,10 +518,11 @@ class _BookFlipState extends State<BookFlip>
                     progress: f,
                     front: _front!,
                     back: _back,
-                    vanishX: half * (spread ? 1 : 2),
                     pixelRatio: _pixelRatio,
                     paper: paper,
-                    lead: _lead,
+                    shadow: shade,
+                    fromRight: _fromRight,
+                    grip: _grip,
                   ),
                   size: Size(spread ? half : width, height),
                 ),
@@ -497,25 +532,18 @@ class _BookFlipState extends State<BookFlip>
         }
 
         // In single mode the view follows the sheet as it lands, so the page
-        // on its back ends up in front of the reader.
-        // The view follows the sheet once it has crossed the spine. Going
-        // back is the mirror image of going forward: the book is seen from
-        // the other side, so the view stays where it is while the sheet
-        // lifts, and pans only after the sheet is upright. Between the two,
-        // as the direction changes, the shifts blend.
+        // on its back ends up in front of the reader. It pans once the fold
+        // is well under way. Going back is the mirror image of going
+        // forward: the leaf was lifted off the right-hand side, so the view
+        // stays where it is while that edge lifts and pans as it folds over.
         double followed(double turned) =>
             width *
             Curves.easeInOutCubic.transform(
               ((turned - 0.25) / 0.75).clamp(0.0, 1.0),
             );
-        double shiftFor() {
-          final forward = followed(f);
-          final back = width - followed(1 - f);
-          final backWeight = ((1 - _lead) / 2).clamp(0.0, 1.0);
-          return forward + (back - forward) * backWeight;
-        }
-
-        final shift = turning && !spread ? shiftFor() : 0.0;
+        final shift = turning && !spread
+            ? (_fromRight ? width - followed(1 - f) : followed(f))
+            : 0.0;
 
         final Widget content = widget.realistic
             ? Transform.translate(
@@ -539,7 +567,7 @@ class _BookFlipState extends State<BookFlip>
           },
           child: GestureDetector(
             behavior: HitTestBehavior.translucent,
-            onHorizontalDragStart: _dragStart,
+            onHorizontalDragStart: (d) => _dragStart(d, height),
             onHorizontalDragUpdate: (d) => _dragUpdate(d, width),
             onHorizontalDragEnd: (d) => _dragEnd(d, width),
             // The book opens right to left in every app language.
@@ -607,8 +635,9 @@ class _BookFlipState extends State<BookFlip>
   }
 }
 
-/// Clips the sides of the book but not its top and bottom, so a sheet that
-/// lifts toward the reader and grows a little is not cut off.
+/// Clips the sides of the book but not its top and bottom, so a leaf folded
+/// over from a corner, whose flap rises a little past the page, is not cut
+/// off.
 class _SideClip extends CustomClipper<Rect> {
   const _SideClip();
 

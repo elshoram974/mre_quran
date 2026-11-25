@@ -5,30 +5,33 @@ import 'package:flutter/widgets.dart';
 
 import 'curl_mesh.dart';
 
-/// Paints a bent sheet from two page snapshots, with the shadow it casts.
+/// Paints a turning leaf from snapshots of its two pages, with the shadows it
+/// casts.
+///
+/// Mushaf geometry: the canvas is physical in every app language, with the
+/// spine on the right edge of the leaf's own page (see [CurlFold]).
 class PageCurlPainter extends CustomPainter {
   /// Creates a painter.
   PageCurlPainter({
     required this.progress,
     required this.front,
     required this.back,
-    required this.vanishX,
     required this.pixelRatio,
     required this.paper,
-    this.lead = 1,
+    required this.shadow,
+    this.fromRight = false,
+    this.grip = 0,
   });
 
-  /// 0 flat on its page, 1 turned over.
+  /// 0 lying on the left, 1 turned over onto the right.
   final double progress;
 
-  /// Snapshot of the page on the front of the sheet.
+  /// Snapshot of the leaf's front: its left-hand page.
   final ui.Image front;
 
-  /// Snapshot of the page on the back of the sheet, or null for blank paper.
+  /// Snapshot of the leaf's back, its right-hand page, or null for blank
+  /// paper.
   final ui.Image? back;
-
-  /// Eye position, in the sheet's local space.
-  final double vanishX;
 
   /// Snapshot scale.
   final double pixelRatio;
@@ -36,48 +39,94 @@ class PageCurlPainter extends CustomPainter {
   /// Colour of blank paper.
   final Color paper;
 
-  /// 1 turning forward, -1 turning back: the bend of the sheet mirrors.
-  final double lead;
+  /// Colour of the shadows, from the theme.
+  final Color shadow;
+
+  /// Whether the hand lifted the leaf off the right-hand side, turning back.
+  final bool fromRight;
+
+  /// Where along the free edge the hand holds the leaf: -1 top corner, 0
+  /// middle, 1 bottom corner.
+  final double grip;
+
+  /// The fold this painter draws, for its size.
+  CurlFold foldFor(Size size) => CurlFold(
+    progress: progress,
+    size: size,
+    fromRight: fromRight,
+    grip: grip,
+  );
 
   @override
   void paint(Canvas canvas, Size size) {
-    final mesh = buildCurlMesh(
-      progress: progress,
-      size: size,
-      vanishX: vanishX,
-      pixelRatio: pixelRatio,
-      lead: lead,
-    );
+    final mesh = buildCurlMesh(fold: foldFor(size), pixelRatio: pixelRatio);
+    final lift = mesh.lift;
+    final w = size.width;
+    final h = size.height;
 
-    // The shadow on the page below: the sheet's footprint, blurred.
-    final shadow = Path()..moveTo(size.width, 0);
-    for (final point in mesh.outline) {
-      shadow.lineTo(point.x, point.top);
+    // The roll's shadow on the page it uncovers, beyond the fold on the free
+    // side, cut to that page.
+    final edge = mesh.silhouette;
+    if (edge != null && lift > 0.01) {
+      final reach = mesh.outward * (w * 0.08 * lift + 6);
+      canvas
+        ..save()
+        ..clipRect(Rect.fromLTWH(fromRight ? w : 0, 0, w, h))
+        ..drawPath(
+          Path()
+            ..moveTo(edge.start.dx, edge.start.dy)
+            ..lineTo(edge.end.dx, edge.end.dy)
+            ..lineTo(edge.end.dx + reach.dx, edge.end.dy + reach.dy)
+            ..lineTo(edge.start.dx + reach.dx, edge.start.dy + reach.dy)
+            ..close(),
+          Paint()
+            ..shader = ui.Gradient.linear(edge.start, edge.start + reach, [
+              shadow.withValues(alpha: 0.32 * lift),
+              shadow.withValues(alpha: 0),
+            ]),
+        )
+        ..restore();
     }
-    for (final point in mesh.outline.reversed) {
-      shadow.lineTo(point.x, point.bottom);
-    }
-    shadow.close();
-    canvas.drawPath(
-      shadow.shift(Offset(-4 * mesh.lift, 6 * mesh.lift)),
-      Paint()
-        ..color = const Color(0xFF000000).withValues(alpha: 0.3 * mesh.lift)
-        ..maskFilter = MaskFilter.blur(BlurStyle.normal, 10 + 12 * mesh.lift),
-    );
 
-    _drawFace(canvas, mesh.front, front);
-    if (!mesh.back.isEmpty) {
-      final image = back;
-      if (image != null) {
-        _drawFace(canvas, mesh.back, image);
-      } else {
-        _drawBlank(canvas, mesh.back);
+    final (lower, lowerImage, upper, upperImage) = mesh.frontOnTop
+        ? (mesh.back, back, mesh.front, front)
+        : (mesh.front, front, mesh.back, back);
+    _drawFace(canvas, lower, lowerImage);
+
+    // The flap's shadow on the leaf under it and the facing page, falling
+    // past the flap's free edge, toward the spine.
+    if (!upper.isEmpty && lift > 0.01) {
+      final flap = Path();
+      final p = upper.positions;
+      for (var i = 0; i + 5 < p.length; i += 6) {
+        flap
+          ..moveTo(p[i], p[i + 1])
+          ..lineTo(p[i + 2], p[i + 3])
+          ..lineTo(p[i + 4], p[i + 5])
+          ..close();
       }
+      final offset = -mesh.outward * (2 + 6 * lift) + Offset(0, 3 * lift);
+      canvas
+        ..save()
+        ..clipRect(Rect.fromLTWH(0, 0, 2 * w, h))
+        ..translate(offset.dx, offset.dy)
+        ..drawPath(
+          flap,
+          Paint()
+            ..color = shadow.withValues(alpha: 0.3 * lift)
+            ..maskFilter = MaskFilter.blur(BlurStyle.normal, 3 + 7 * lift),
+        )
+        ..restore();
     }
+    _drawFace(canvas, upper, upperImage);
   }
 
-  void _drawFace(Canvas canvas, CurlFace face, ui.Image image) {
+  void _drawFace(Canvas canvas, CurlFace face, ui.Image? image) {
     if (face.isEmpty) return;
+    if (image == null) {
+      _drawBlank(canvas, face);
+      return;
+    }
     final vertices = ui.Vertices.raw(
       ui.VertexMode.triangles,
       face.positions,
@@ -122,8 +171,9 @@ class PageCurlPainter extends CustomPainter {
       old.progress != progress ||
       old.front != front ||
       old.back != back ||
-      old.vanishX != vanishX ||
       old.pixelRatio != pixelRatio ||
       old.paper != paper ||
-      old.lead != lead;
+      old.shadow != shadow ||
+      old.fromRight != fromRight ||
+      old.grip != grip;
 }
