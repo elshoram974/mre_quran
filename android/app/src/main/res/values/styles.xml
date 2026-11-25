@@ -2,12 +2,18 @@
 <resources>
     <!-- Theme applied to the Android Window while the process is starting when the OS's Dark Mode setting is off -->
     <style name="LaunchTheme" parent="Theme.SplashScreen">
-        <!-- The native screen hands over to Flutter's loading overlay on the
-             first frame. -->
+        <!-- The launch screen (androidx core-splashscreen), the only one: the
+             sepia paper (AppPaper.sepia, the app's first paper by day and by
+             night, as on iOS) and the emblem. It stays until Flutter's first
+             frame, which main holds back until the first screen is ready
+             (LaunchHold, at most AppTokens.launchMost from main). -->
         <item name="windowSplashScreenBackground">@color/launch_paper</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/splash_star</item>
-        <!-- Android 12 and later animate the native icon during launch. -->
-        <item name="windowSplashScreenAnimationDuration">720</item>
+        <!-- Android 12 and 13 stop the emblem's animation after this time, so
+             it covers the longest the launch screen stays (the hold's 4 s
+             from main, and the start before main); the emblem is at rest at
+             this moment (splash_star.xml), so it stops without a jump. -->
+        <item name="windowSplashScreenAnimationDuration">4500</item>
         <!-- Before Android 12 the launch window is this picture: the paper,
              the star and the maker's mark (Android 12 and later draw their own
              from the items above and values-v31). -->

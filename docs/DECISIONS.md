@@ -286,8 +286,10 @@
   started.
 - **The emblem keeps moving until the screen goes** (Android 12+, `splash_star.xml`): the contours draw once,
   then the emblem hops on a loop, so the launch screen is never still while the app is not ready. It stops
-  when the first frame is shown, or at the hold's limit (`AppTokens.launchMost`, 4 s), whichever comes
-  first. Older Android and iOS draw a still launch screen; they cannot animate it.
+  when the first frame is shown; Android 12 and 13 also stop it after `windowSplashScreenAnimationDuration`,
+  4.5 s (the hold's 4 s from `main` and the start before it), a moment when the emblem is at rest, so it
+  stops without a jump. (It was 720 ms, which stopped the first hop as it began.) Older Android and iOS draw
+  a still launch screen: iOS allows no animation in a launch storyboard.
 - **Start-up must not end before `runApp`** (2026-11-19, found on a Xiaomi POCO X3 NFC, Android 12, from the
   hung process's own log): the launch screen waits for the first frame, so `main` ending early leaves it up for
   good, with no crash and no ANR. A launch opened from the adhan's notice stopped in `main` with
@@ -326,8 +328,8 @@
   the second only when the person turns it on in the settings (Android `Chronometer`, iOS
   `Text(_:style: .timer)`, both counted by the system without waking the app); the app's own countdown
   always shows seconds. The tasbih widget is two cells by one at the least.
-- **Splash:** `windowSplashScreenAnimationDuration` is 4000 ms, the longest the launch screen stays, as
-  Android 12 and 13 stop the turning star after it.
+- **Splash:** `windowSplashScreenAnimationDuration` is 4500 ms, the longest the launch screen stays, as
+  Android 12 and 13 stop the emblem's animation after it (D-032).
 
 ## D-037: Al-Tafsir Al-Muyassar from an ayah's actions
 

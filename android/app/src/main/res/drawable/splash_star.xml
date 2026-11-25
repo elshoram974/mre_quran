@@ -32,7 +32,10 @@
     </target>
     <!-- The emblem hops again and again while the app opens: it starts when
          the contours are drawn and goes on until the launch screen goes, so
-         the screen is never still while the app is not ready. -->
+         the screen is never still while the app is not ready. Each hop is the
+         first 53% of its 1.4 s and the emblem rests for the rest, so it rests
+         from 4062 to 4720 ms, where Android 12 and 13 stop it
+         (windowSplashScreenAnimationDuration, 4500 ms, in styles.xml). -->
     <target android:name="emblem">
         <aapt:attr name="android:animation">
             <objectAnimator android:duration="1400" android:startOffset="520"
