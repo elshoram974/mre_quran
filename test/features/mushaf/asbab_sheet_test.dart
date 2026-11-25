@@ -105,4 +105,31 @@ void main() {
       findsOneWidget,
     );
   });
+
+  testWidgets('a long ayah glides through itself on the sheet, and a finger '
+      'stops it', (tester) async {
+    // The longest ayah: far longer than one line.
+    await _open(tester, const AyahRef(2, 282));
+    final line = find.byWidgetPredicate(
+      (widget) =>
+          widget is SingleChildScrollView &&
+          widget.scrollDirection == Axis.horizontal,
+    );
+    expect(line, findsOneWidget);
+    ScrollPosition position() => tester
+        .state<ScrollableState>(
+          find.descendant(of: line, matching: find.byType(Scrollable)),
+        )
+        .position;
+    expect(position().pixels, 0);
+    await tester.pump(const Duration(milliseconds: 1500));
+    await tester.pump(const Duration(seconds: 2));
+    expect(position().pixels, greaterThan(0));
+    // A finger on it: it stays where it is taken.
+    await tester.drag(line, const Offset(40, 0));
+    await tester.pump(const Duration(milliseconds: 100));
+    final held = position().pixels;
+    await tester.pump(const Duration(seconds: 5));
+    expect(position().pixels, held);
+  });
 }

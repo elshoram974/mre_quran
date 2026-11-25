@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import '../../../core/widgets/app_snack_bar.dart';
 
 import 'package:material_ui/material_ui.dart';
@@ -47,8 +49,8 @@ Future<void> showAyahActions(
 );
 
 /// The ayah on one line in its Mushaf script, over where it is. A long ayah
-/// fades out at its end rather than taking more room: it is a reminder of
-/// what was pressed, the Mushaf behind shows it whole.
+/// keeps to one line and glides through itself, from its first word to its
+/// last and back, and can be scrolled by hand.
 class AyahPreview extends ConsumerWidget {
   /// Creates the preview of [ayah].
   const AyahPreview({super.key, required this.text, required this.ayah});
@@ -75,31 +77,28 @@ class AyahPreview extends ConsumerWidget {
               // The Quran reads right to left in every app language.
               Directionality(
                 textDirection: TextDirection.rtl,
-                child: Text.rich(
-                  TextSpan(
-                    children: [
-                      TextSpan(text: text.display(ayah)),
-                      TextSpan(
-                        text: switch (text.mark(ayah)) {
-                          final String mark => ' $mark',
-                          null => ' ﴿${digits(ayah.ayah)}﴾',
-                        },
-                        style: TextStyle(color: colors.ayahNumber),
-                      ),
-                    ],
-                  ),
-                  maxLines: 1,
-                  softWrap: false,
-                  overflow: TextOverflow.fade,
-                  // From its first word: a short ayah is centred by the
-                  // column, a long one shows its beginning and fades at its
-                  // end.
-                  textAlign: TextAlign.start,
-                  style: TextStyle(
-                    fontFamily: text.fontFamily,
-                    fontSize: 22,
-                    height: 1.7,
-                    color: colors.ink,
+                child: _AyahMarquee(
+                  child: Text.rich(
+                    TextSpan(
+                      children: [
+                        TextSpan(text: text.display(ayah)),
+                        TextSpan(
+                          text: switch (text.mark(ayah)) {
+                            final String mark => ' $mark',
+                            null => ' ﴿${digits(ayah.ayah)}﴾',
+                          },
+                          style: TextStyle(color: colors.ayahNumber),
+                        ),
+                      ],
+                    ),
+                    maxLines: 1,
+                    softWrap: false,
+                    style: TextStyle(
+                      fontFamily: text.fontFamily,
+                      fontSize: 22,
+                      height: 1.7,
+                      color: colors.ink,
+                    ),
                   ),
                 ),
               ),
@@ -242,6 +241,118 @@ class _AyahActions extends ConsumerWidget {
               },
             ),
         ],
+      ),
+    );
+  }
+}
+
+/// One line that is longer than its room: after a pause it glides to its end,
+/// rests, and comes back to its start, again and again; a finger on it stops
+/// that and scrolls it by hand. A line that fits stays still, centred. Still
+/// too when animations are off. The ends fade, so it reads as more.
+class _AyahMarquee extends StatefulWidget {
+  const _AyahMarquee({required this.child});
+
+  final Widget child;
+
+  @override
+  State<_AyahMarquee> createState() => _AyahMarqueeState();
+}
+
+class _AyahMarqueeState extends State<_AyahMarquee> {
+  final ScrollController _scroll = ScrollController();
+  Timer? _next;
+  bool _touched = false;
+
+  /// How fast it glides, in logical pixels a second: slow enough to read.
+  static const double _speed = 36;
+
+  @override
+  void initState() {
+    super.initState();
+    _wait(_rest, _forward);
+  }
+
+  @override
+  void dispose() {
+    _next?.cancel();
+    _scroll.dispose();
+    super.dispose();
+  }
+
+  static const Duration _rest = Duration(milliseconds: 1400);
+
+  void _wait(Duration delay, Future<void> Function() then) {
+    _next?.cancel();
+    _next = Timer(delay, () => unawaited(then()));
+  }
+
+  bool get _still =>
+      !mounted ||
+      _touched ||
+      !_scroll.hasClients ||
+      _scroll.position.maxScrollExtent <= 0 ||
+      MediaQuery.disableAnimationsOf(context);
+
+  Future<void> _forward() async {
+    if (_still) return;
+    final end = _scroll.position.maxScrollExtent;
+    final millis = (end / _speed * 1000).round();
+    await _scroll.animateTo(
+      end,
+      duration: Duration(milliseconds: millis),
+      curve: Curves.linear,
+    );
+    if (!_still) _wait(_rest, _back);
+  }
+
+  Future<void> _back() async {
+    if (_still) return;
+    await _scroll.animateTo(
+      0,
+      duration: const Duration(milliseconds: 700),
+      curve: Curves.easeOutCubic,
+    );
+    if (!_still) _wait(_rest, _forward);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return LayoutBuilder(
+      builder: (context, constraints) => ShaderMask(
+        // Only the mask's opacity counts: the line fades at both ends.
+        shaderCallback: (bounds) => LinearGradient(
+          colors: [
+            scheme.surface.withValues(alpha: 0),
+            scheme.surface,
+            scheme.surface,
+            scheme.surface.withValues(alpha: 0),
+          ],
+          stops: const [0, 0.06, 0.94, 1],
+        ).createShader(bounds),
+        blendMode: BlendMode.dstIn,
+        child: NotificationListener<ScrollStartNotification>(
+          onNotification: (notification) {
+            // A finger on it: it stays where the person takes it.
+            if (notification.dragDetails != null) {
+              _touched = true;
+              _next?.cancel();
+            }
+            return false;
+          },
+          child: SingleChildScrollView(
+            controller: _scroll,
+            scrollDirection: Axis.horizontal,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minWidth: constraints.maxWidth),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: Center(widthFactor: 1, child: widget.child),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
