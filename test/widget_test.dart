@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mre_quran/app/shell/expanding_nav_rail.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:mre_quran/app/quran_app.dart';
 import 'package:mre_quran/app/shell/expanding_nav_bar.dart';
@@ -70,7 +71,7 @@ void main() {
         width < 840 ? findsOneWidget : findsNothing,
       );
       expect(
-        find.byType(NavigationRail),
+        find.byType(ExpandingNavRail),
         width < 840 ? findsNothing : findsOneWidget,
       );
 

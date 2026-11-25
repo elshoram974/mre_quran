@@ -2,9 +2,10 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../core/layout/adaptive_layout.dart';
 import 'expanding_nav_bar.dart';
+import 'expanding_nav_rail.dart';
 import 'shell_destination.dart';
 
-/// Android chrome: Material 3 top app bar, navigation bar, and rail.
+/// Android chrome: Material 3 top app bar, and the floating bar or rail.
 class MaterialShell extends StatelessWidget {
   /// Creates the Material shell around [child].
   const MaterialShell({
@@ -16,6 +17,7 @@ class MaterialShell extends StatelessWidget {
     required this.child,
     this.showAppBar = true,
     this.showNavigation = true,
+    this.overContent = false,
   });
 
   /// Current window size class.
@@ -39,12 +41,12 @@ class MaterialShell extends StatelessWidget {
   /// Whether the tab bar or rail is shown. False in immersive reading.
   final bool showNavigation;
 
+  /// Whether the rail lies over the page (the Mushaf) instead of beside it.
+  final bool overContent;
+
   @override
   Widget build(BuildContext context) {
     final bottomBar = size.usesBottomBar;
-    final extended =
-        MediaQuery.sizeOf(context).width >=
-        ShellNavigation.extendedRailMinWidth;
     return Scaffold(
       // The tab bar floats; every page runs under it and keeps clear of it
       // through the bottom padding the Scaffold publishes.
@@ -52,42 +54,36 @@ class MaterialShell extends StatelessWidget {
       appBar: showAppBar
           ? AppBar(title: Text(destinations[index].label))
           : null,
-      body: bottomBar || !showNavigation
+      body: bottomBar
           ? ContentContainer(child: child)
-          : Row(
-              children: [
-                NavigationRail(
-                  indicatorShape: const StadiumBorder(),
-                  backgroundColor: Theme.of(context).colorScheme.surface,
-                  extended: extended,
-                  selectedIndex: index,
-                  onDestinationSelected: onSelected,
-                  labelType: extended
-                      ? NavigationRailLabelType.none
-                      : NavigationRailLabelType.all,
-                  destinations: [
-                    for (final item in destinations)
-                      NavigationRailDestination(
-                        icon: Icon(item.icon),
-                        selectedIcon: Icon(item.activeIcon),
-                        label: Text(item.label),
-                      ),
-                  ],
-                ),
-                Expanded(child: ContentContainer(child: child)),
-              ],
+          : RailLayout(
+              rail: ExpandingNavRail(
+                index: index,
+                onSelected: onSelected,
+                destinations: destinations,
+              ),
+              railWidth: ExpandingNavRail.widthOf(context, destinations),
+              shown: showNavigation,
+              overContent: overContent,
+              child: ContentContainer(child: child),
             ),
-      bottomNavigationBar: bottomBar && showNavigation
+      // Kept while the reader hides its bars, and slid away instead, so it
+      // comes and goes with them.
+      bottomNavigationBar: bottomBar
           ? Center(
               heightFactor: 1,
               child: ConstrainedBox(
                 constraints: const BoxConstraints(
                   maxWidth: ShellNavigation.bottomBarMaxWidth,
                 ),
-                child: ExpandingNavBar(
-                  index: index,
-                  onSelected: onSelected,
-                  destinations: destinations,
+                child: NavigationAppear(
+                  shown: showNavigation,
+                  from: const Offset(0, 1.3),
+                  child: ExpandingNavBar(
+                    index: index,
+                    onSelected: onSelected,
+                    destinations: destinations,
+                  ),
                 ),
               ),
             )

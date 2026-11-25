@@ -1,7 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/gestures.dart' show kDoubleTapTimeout;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mre_quran/features/mushaf/presentation/flip/book_flip.dart';
+import 'package:mre_quran/app/shell/expanding_nav_rail.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:mre_quran/app/shell/expanding_nav_bar.dart';
 import 'package:mre_quran/app/quran_app.dart';
@@ -119,14 +122,14 @@ void main() {
   testWidgets('a phone gets the floating bar', (tester) async {
     await _pump(tester, const Size(390, 844));
     expect(find.byType(ExpandingNavBar), findsOneWidget);
-    expect(find.byType(NavigationRail), findsNothing);
+    expect(find.byType(ExpandingNavRail), findsNothing);
   });
 
   testWidgets('a portrait iPad keeps the bar, centred and not stretched', (
     tester,
   ) async {
     await _pump(tester, const Size(820, 1180));
-    expect(find.byType(NavigationRail), findsNothing);
+    expect(find.byType(ExpandingNavRail), findsNothing);
     final bar = tester.getSize(find.byType(ExpandingNavBar));
     expect(bar.width, lessThanOrEqualTo(560));
     expect(tester.getCenter(find.byType(ExpandingNavBar)).dx, closeTo(410, 1));
@@ -135,7 +138,7 @@ void main() {
 
   testWidgets('a wide window moves the tabs into a rail', (tester) async {
     await _pump(tester, const Size(1194, 834));
-    expect(find.byType(NavigationRail), findsOneWidget);
+    expect(find.byType(ExpandingNavRail), findsOneWidget);
     expect(find.byType(ExpandingNavBar), findsNothing);
     expect(tester.takeException(), isNull);
   });
@@ -147,7 +150,7 @@ void main() {
 
     await _pump(tester, const Size(820, 1180));
     expect(find.byType(GlassTabBar), findsOneWidget);
-    expect(find.byType(NavigationRail), findsNothing);
+    expect(find.byType(ExpandingNavRail), findsNothing);
     expect(
       tester.getSize(find.byType(GlassTabBar)).width,
       lessThanOrEqualTo(560),
@@ -156,9 +159,73 @@ void main() {
 
     await tester.pumpWidget(const SizedBox());
     await _pump(tester, const Size(1194, 834));
-    expect(find.byType(NavigationRail), findsOneWidget);
+    expect(find.byType(ExpandingNavRail), findsOneWidget);
     expect(find.byType(GlassTabBar), findsNothing);
+    // The rail itself is liquid glass.
+    expect(
+      find.ancestor(
+        of: find.byIcon(Icons.settings_outlined),
+        matching: find.byType(GlassContainer),
+      ),
+      findsWidgets,
+    );
     expect(tester.takeException(), isNull);
     debugDefaultTargetPlatformOverride = null;
+  });
+
+  testWidgets('the rail names only the chosen tab, beside its icon', (
+    tester,
+  ) async {
+    await _pump(tester, const Size(1194, 834));
+    final rail = find.byType(ExpandingNavRail);
+    expect(
+      find.descendant(of: rail, matching: find.text('المصحف')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: rail, matching: find.text('الإعدادات')),
+      findsNothing,
+    );
+    final icon = tester.getCenter(
+      find.descendant(
+        of: rail,
+        matching: find.byIcon(Icons.auto_stories_rounded),
+      ),
+    );
+    final label = tester.getCenter(
+      find.descendant(of: rail, matching: find.text('المصحف')),
+    );
+    expect(label.dy, closeTo(icon.dy, 4));
+  });
+
+  testWidgets('on a wide window the rail lies over the Mushaf and never moves '
+      'it', (tester) async {
+    await _pump(tester, const Size(1194, 834));
+    final page = tester.getRect(find.byType(BookFlip).first);
+    // The bars go away: the rail slides out, the page stays where it was.
+    await tester.tapAt(page.center);
+    await tester.pumpAndSettle();
+    expect(tester.getRect(find.byType(BookFlip).first), page);
+    expect(find.byType(ExpandingNavRail).hitTestable(), findsNothing);
+    await tester.tapAt(page.center);
+    await tester.pumpAndSettle();
+    expect(tester.getRect(find.byType(BookFlip).first), page);
+    expect(find.byType(ExpandingNavRail).hitTestable(), findsOneWidget);
+  });
+
+  testWidgets('on a phone the bar slides away with the reader\'s bars', (
+    tester,
+  ) async {
+    await _pump(tester, const Size(390, 844));
+    final bar = tester.getRect(find.byType(ExpandingNavBar));
+    await tester.tapAt(const Offset(195, 400));
+    // A single tap counts once a double tap can no longer come.
+    await tester.pump(kDoubleTapTimeout + const Duration(milliseconds: 20));
+    await tester.pump(const Duration(milliseconds: 100));
+    // Midway it is still there, sliding down.
+    final moving = tester.getRect(find.byType(ExpandingNavBar));
+    expect(moving.top, greaterThan(bar.top));
+    await tester.pumpAndSettle();
+    expect(find.byType(ExpandingNavBar).hitTestable(), findsNothing);
   });
 }

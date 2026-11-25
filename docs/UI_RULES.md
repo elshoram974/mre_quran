@@ -7,7 +7,7 @@ The single rule file for UI/UX. `AGENTS.md` points here. The design plan is in
 
 1. Decide the platform with `context.isCupertino`, which reads `Theme.of(context).platform`. Never read `defaultTargetPlatform` directly.
 2. iOS/macOS use liquid glass (`liquid_glass_widgets`) for chrome: app bar, tab bar, rail, sheets, and cards.
-3. Android and other platforms use Material 3: `AppBar`, `NavigationRail`, `Card`, Material sheets. No glass. The compact tab bar is `ExpandingNavBar`: a floating rounded pill above the system navigation bar where the selected destination grows into a labelled chip and the others show only their icon (owner's decision, 2026-10-06; redesigned 2026-10-08).
+3. Android and other platforms use Material 3: `AppBar`, `NavigationRail`, `Card`, Material sheets. No glass. The compact tab bar is `ExpandingNavBar`: a floating rounded pill above the system navigation bar where the selected destination grows into a labelled chip and the others show only their icon (owner's decision, 2026-10-06; redesigned 2026-10-08). A wide window gets `ExpandingNavRail`, the same pill stood on end: the chosen destination a chip with its label beside its icon, the others icon-only, liquid glass on iOS. It floats: over the Mushaf it lies on the page and never moves it; on other pages the content keeps clear of it. The bar and the rail slide away with the reader's bars instead of popping (2026-11-25).
 4. Branch only inside shared widgets (`AppShell`, `AppCard`, `AppSheet`, `AppSelectField`, `AppSwitchTile`). Feature screens never check the platform.
 5. Glass never goes over Quran text. The reading surface is opaque paper.
 6. Judge glass on a real iOS simulator or device, not only in a scaled preview, which can distort glass sampling.
@@ -37,7 +37,7 @@ The single rule file for UI/UX. `AGENTS.md` points here. The design plan is in
 ## 4. Layout
 
 1. Use window size classes: compact `<600`, medium `600–839`, expanded `>=840`. Branch on constraints, never device names.
-2. Compact uses the bottom tab bar. Medium and expanded use the rail and a constrained content column.
+2. Compact and medium use the bottom tab bar; expanded uses the floating rail (`ExpandingNavRail`) and a constrained content column. Chrome that comes and goes over the Mushaf floats over it and never resizes the page.
 3. Use directional APIs only (`EdgeInsetsDirectional`, `AlignmentDirectional`, `TextAlign.start`/`end`).
 
 ## 5. Loading and state

@@ -26,9 +26,6 @@ extension ShellNavigation on WindowSize {
 
   /// Widest a floating bar grows; wider windows centre it instead of stretching.
   static const double bottomBarMaxWidth = 560;
-
-  /// Window width from which the rail shows a label beside each icon.
-  static const double extendedRailMinWidth = 1100;
 }
 
 class ContentContainer extends StatelessWidget {

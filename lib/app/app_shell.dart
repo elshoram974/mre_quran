@@ -38,6 +38,7 @@ class AppShell extends ConsumerWidget {
               onSelected: (index) => _goBranch(ref, index),
               showAppBar: !reader,
               showNavigation: !immersive,
+              overContent: reader,
               child: navigationShell,
             )
           : MaterialShell(
@@ -47,6 +48,7 @@ class AppShell extends ConsumerWidget {
               onSelected: (index) => _goBranch(ref, index),
               showAppBar: !reader,
               showNavigation: !immersive,
+              overContent: reader,
               child: navigationShell,
             );
 
