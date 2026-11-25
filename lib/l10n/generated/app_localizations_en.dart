@@ -1537,6 +1537,50 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tafsirTitle => 'Al-Tafsir Al-Muyassar';
 
   @override
+  String get asbabAction => 'Occasion of revelation';
+
+  @override
+  String get asbabTitle => 'Occasions of revelation';
+
+  @override
+  String asbabAyah(String ayah) {
+    return 'Ayah $ayah';
+  }
+
+  @override
+  String asbabAyahRange(String from, String to) {
+    return 'Ayahs $from–$to';
+  }
+
+  @override
+  String asbabAyahList(String ayahs) {
+    return 'Ayahs $ayahs';
+  }
+
+  @override
+  String asbabSource(String version) {
+    return 'From Imam Al-Wahidi\'s «أسباب نزول القرآن», by way of Quranpedia (quranpedia.net), version $version.';
+  }
+
+  @override
+  String get surahAsbab => 'Occasions of revelation';
+
+  @override
+  String surahAsbabCount(int count, String formatted) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'For $formatted of its ayahs',
+      one: 'For 1 of its ayahs',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get creditsAsbab =>
+      'Occasions of revelation: Imam Abu al-Hasan Al-Wahidi\'s «أسباب نزول القرآن» (d. 468 AH), from Quranpedia\'s data (quranpedia.net, version 2026-08-10), under its data licence: free to use inside apps. The text is as given, only its formatting removed, and is checked by its checksum.';
+
+  @override
   String tafsirOfHafsAyah(String number) {
     return 'Tafsir of ayah $number as Hafs numbers it';
   }

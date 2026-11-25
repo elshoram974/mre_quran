@@ -81,6 +81,7 @@ flutter:
     - assets/quran/quran-simple-clean.txt
     - assets/quran/kfgqpc/tafseerMouaser_v03.txt
     - assets/quran/kfgqpc/read.me
+    - assets/quran/asbab/wahidi.json.gz
     - assets/quran/svg/hafs_kfqc_manifest.json
     - assets/quran/svg/shubah_kfqc_manifest.json
     - assets/quran/svg/warsh_kfqc_manifest.json

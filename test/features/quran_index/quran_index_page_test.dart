@@ -9,7 +9,9 @@ import 'package:mre_quran/features/quran_index/application/quran_metadata_provid
 import 'package:mre_quran/features/quran_index/domain/quran_metadata.dart';
 import 'package:mre_quran/features/quran_index/domain/reader_destination.dart';
 import 'package:mre_quran/features/quran_index/presentation/quran_index_page.dart';
+import 'package:mre_quran/features/quran_text/application/asbab_provider.dart';
 import 'package:mre_quran/features/quran_text/application/quran_text_providers.dart';
+import 'package:mre_quran/features/quran_text/domain/asbab.dart';
 import 'package:mre_quran/features/settings/application/settings_provider.dart';
 import 'package:mre_quran/features/settings/domain/app_settings.dart';
 import 'package:mre_quran/l10n/generated/app_localizations.dart';
@@ -29,6 +31,7 @@ Future<ProviderContainer> _pumpIndex(
   double textScale = 1,
   bool reduceMotion = false,
   List<Bookmark> bookmarks = const [],
+  Asbab? asbab,
 }) async {
   _chosen = null;
   tester.view.physicalSize = Size(width, 844);
@@ -60,6 +63,7 @@ Future<ProviderContainer> _pumpIndex(
       bookmarksRepositoryProvider.overrideWithValue(
         MemoryBookmarksRepository()..items = [...bookmarks],
       ),
+      if (asbab != null) asbabProvider.overrideWith((ref) async => asbab),
       settingsRepositoryProvider.overrideWithValue(
         MemorySettingsRepository()..settings = AppSettings(localeCode: locale),
       ),
@@ -376,5 +380,43 @@ void main() {
     await _pumpIndex(tester, width: 320, textScale: 2);
     expect(find.text('الفاتحة'), findsOneWidget);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('a surah with occasions of revelation opens them from its '
+      'sheet', (tester) async {
+    await _pumpIndex(
+      tester,
+      asbab: Asbab(
+        version: 'v',
+        texts: const ['نزلت في قوم.'],
+        index: {
+          const AyahRef(2, 6): [0],
+          const AyahRef(2, 7): [0],
+        },
+      ),
+    );
+    await tester.tap(find.byTooltip('عن سورة البقرة'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('أسباب النزول'));
+    await tester.pumpAndSettle();
+    expect(find.text('لآيتين منها'), findsOneWidget);
+    await tester.tap(find.text('أسباب النزول'));
+    await tester.pumpAndSettle();
+    // One passage, about both ayahs.
+    expect(find.text('الآيات ٦–٧'), findsOneWidget);
+    expect(
+      find.textContaining('نزلت في قوم', findRichText: true),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('a surah with none shows no occasions', (tester) async {
+    await _pumpIndex(
+      tester,
+      asbab: Asbab(version: 'v', texts: const [], index: const {}),
+    );
+    await tester.tap(find.byTooltip('عن سورة الفاتحة'));
+    await tester.pumpAndSettle();
+    expect(find.text('أسباب النزول'), findsNothing);
   });
 }

@@ -1525,6 +1525,52 @@ class AppLocalizationsAr extends AppLocalizations {
   String get tafsirTitle => 'التفسير الميسر';
 
   @override
+  String get asbabAction => 'سبب النزول';
+
+  @override
+  String get asbabTitle => 'أسباب النزول';
+
+  @override
+  String asbabAyah(String ayah) {
+    return 'الآية $ayah';
+  }
+
+  @override
+  String asbabAyahRange(String from, String to) {
+    return 'الآيات $from–$to';
+  }
+
+  @override
+  String asbabAyahList(String ayahs) {
+    return 'الآيات $ayahs';
+  }
+
+  @override
+  String asbabSource(String version) {
+    return 'من كتاب «أسباب نزول القرآن» للإمام الواحدي، عن الموسوعة القرآنية (quranpedia.net)، نسخة $version.';
+  }
+
+  @override
+  String get surahAsbab => 'أسباب النزول';
+
+  @override
+  String surahAsbabCount(int count, String formatted) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'لـ$formatted آية منها',
+      few: 'لـ$formatted آيات منها',
+      two: 'لآيتين منها',
+      one: 'لآية واحدة منها',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get creditsAsbab =>
+      'أسباب النزول: كتاب «أسباب نزول القرآن» للإمام أبي الحسن الواحدي (ت 468هـ)، من بيانات الموسوعة القرآنية (quranpedia.net، نسخة 2026-08-10)، برخصة بياناتها: الاستعمال مجاني داخل التطبيقات. النص كما هو، حُذف منه التنسيق فقط، ويُتحقق منه بالبصمة.';
+
+  @override
   String tafsirOfHafsAyah(String number) {
     return 'تفسير الآية $number بترقيم حفص';
   }

@@ -10,13 +10,17 @@ import '../../../core/theme/quran_colors.dart';
 import '../../../core/widgets/app_sheet.dart';
 import '../../../core/widgets/app_surface_card.dart';
 import '../../bookmarks/application/bookmarks_provider.dart';
+import '../../quran_index/application/quran_metadata_provider.dart';
 import '../../quran_index/domain/quran_metadata.dart';
+import '../../quran_text/application/asbab_provider.dart';
+import '../../quran_text/application/tafsir_provider.dart';
 import '../../quran_text/domain/ayah_range.dart';
 import '../../quran_text/domain/ayah_texts.dart';
 import '../../settings/application/digits_provider.dart';
 import '../domain/mushaf_edition.dart';
 import 'ayah_share_format.dart';
 import 'ayah_share_sheet.dart';
+import 'asbab_sheet.dart';
 import 'tafsir_sheet.dart';
 
 /// Opens the actions for [target]: copy with its reference, read its tafsir
@@ -183,6 +187,10 @@ class _AyahActions extends ConsumerWidget {
                 showTafsir(root.context, edition, text, target);
               },
             ),
+          // Only where Al-Wahidi records an occasion for the ayah (as Hafs
+          // numbers it).
+          if (tafsir case final edition?)
+            _AsbabAction(edition: edition, target: target),
           ListTile(
             leading: const Icon(Icons.share_outlined),
             title: Text(l10n.shareAyah),
@@ -230,6 +238,45 @@ class _AyahActions extends ConsumerWidget {
             ),
         ],
       ),
+    );
+  }
+}
+
+/// "Occasion of revelation", for an ayah that has one: nothing otherwise.
+class _AsbabAction extends ConsumerWidget {
+  const _AsbabAction({required this.edition, required this.target});
+
+  final MushafEdition edition;
+  final AyahRef target;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final asbab = ref.watch(asbabProvider).value;
+    final hafs = ref.watch(hafsAyahsProvider((edition, target))).value;
+    if (asbab == null || hafs == null) return const SizedBox.shrink();
+    final ayahs = [
+      for (final ayah in hafs)
+        if (asbab.has(ayah)) ayah,
+    ];
+    if (ayahs.isEmpty) return const SizedBox.shrink();
+    final l10n = context.l10n;
+    return ListTile(
+      leading: const Icon(Icons.history_edu_outlined),
+      title: Text(l10n.asbabAction),
+      onTap: () {
+        final root = Navigator.of(context, rootNavigator: true);
+        final name = ref
+            .read(quranMetadataProvider)
+            .value
+            ?.surah(ayahs.first.surah)
+            .arabicName;
+        Navigator.of(context).pop();
+        showAsbab(
+          root.context,
+          ayahs: ayahs,
+          place: name == null ? '' : l10n.surahTitle(name),
+        );
+      },
     );
   }
 }

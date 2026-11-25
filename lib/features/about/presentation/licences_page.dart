@@ -78,6 +78,7 @@ class LicencesPage extends ConsumerWidget {
                 entries: [
                   _Entry(l10n.creditsTanzil, _Terms.open, 'CC BY 3.0'),
                   _Entry(l10n.creditsMushafScript, _Terms.publisher),
+                  _Entry(l10n.creditsAsbab, _Terms.publisher),
                 ],
               ),
               _Section(

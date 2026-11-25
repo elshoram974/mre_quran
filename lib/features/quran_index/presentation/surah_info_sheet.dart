@@ -1,10 +1,14 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_tokens.dart';
+import '../../../core/widgets/app_directional_icon.dart';
 import '../../../core/widgets/app_group_card.dart';
 import '../../../core/widgets/app_sheet.dart';
 import '../../../core/widgets/app_tag.dart';
+import '../../mushaf/presentation/asbab_sheet.dart';
+import '../../quran_text/application/asbab_provider.dart';
 import '../domain/quran_metadata.dart';
 import 'index_tiles.dart';
 
@@ -26,7 +30,7 @@ Future<bool> showSurahInfo(
     false;
 
 /// The content of the surah sheet.
-class SurahInfo extends StatelessWidget {
+class SurahInfo extends ConsumerWidget {
   /// Creates the facts of [surah].
   const SurahInfo({
     super.key,
@@ -57,8 +61,10 @@ class SurahInfo extends StatelessWidget {
       : context.l10n.surahInfoRange(digits(from), digits(to));
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
+    final withOccasions =
+        ref.watch(asbabProvider).value?.inSurah(surah.number) ?? const [];
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final last = AyahRef(surah.number, surah.ayahCount);
@@ -152,6 +158,30 @@ class SurahInfo extends StatelessWidget {
                 fact(l10n.surahInfoBefore, l10n.surahTitle(after.arabicName)),
             ],
           ),
+          // The occasions of revelation of its ayahs that have one.
+          if (withOccasions.isNotEmpty) ...[
+            const SizedBox(height: AppTokens.spaceMedium),
+            AppGroupCard(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.history_edu_outlined),
+                  title: Text(l10n.surahAsbab),
+                  subtitle: Text(
+                    l10n.surahAsbabCount(
+                      withOccasions.length,
+                      digits(withOccasions.length),
+                    ),
+                  ),
+                  trailing: const AppForwardChevron(),
+                  onTap: () => showAsbab(
+                    context,
+                    ayahs: withOccasions,
+                    place: l10n.surahTitle(surah.arabicName),
+                  ),
+                ),
+              ],
+            ),
+          ],
           const SizedBox(height: AppTokens.spaceSmall),
           Text(
             l10n.surahInfoOrderNote,

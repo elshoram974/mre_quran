@@ -762,3 +762,15 @@
   is about as wide as a phone's single page.
 - **Limits:** Flutter does not yet report the iPhone Duo's fold on iOS (flutter/flutter#193025), so there the screen's
   proportions decide; a hinge with a gap of its own (a dual-screen device) is not yet kept clear between the pages.
+
+## D-069: The occasions of revelation, like the tafsir
+
+- **Decision:** The app bundles Al-Wahidi's «أسباب نزول القرآن» (234 KB, from Quranpedia's data, `docs/QURAN_SOURCES.md`)
+  and shows it as the tafsir is shown: *Occasion of revelation* in an ayah's actions, only where the ayah (as Hafs
+  numbers it) has one, opens a sheet with the passage, the ayahs it quotes coloured, the words pinched larger or
+  smaller as in the tafsir and the adhkar, and the source with its version at the end; a surah's sheet of facts opens
+  all of its occasions. A passage about several ayahs shows once, under the ayahs it is about. The file is read and
+  checked on another isolate the first time it is asked for, never at start-up.
+- **Why:** the owner asked for the occasions of revelation beside the tafsir. Quranpedia's dump is the one source
+  found that is keyed to ayahs and free to use in an app; Al-Wahidi's text is the classical reference for them.
+

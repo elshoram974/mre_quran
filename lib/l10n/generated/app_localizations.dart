@@ -2707,6 +2707,60 @@ abstract class AppLocalizations {
   /// **'Al-Tafsir Al-Muyassar'**
   String get tafsirTitle;
 
+  /// No description provided for @asbabAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Occasion of revelation'**
+  String get asbabAction;
+
+  /// No description provided for @asbabTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Occasions of revelation'**
+  String get asbabTitle;
+
+  /// No description provided for @asbabAyah.
+  ///
+  /// In en, this message translates to:
+  /// **'Ayah {ayah}'**
+  String asbabAyah(String ayah);
+
+  /// No description provided for @asbabAyahRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Ayahs {from}–{to}'**
+  String asbabAyahRange(String from, String to);
+
+  /// No description provided for @asbabAyahList.
+  ///
+  /// In en, this message translates to:
+  /// **'Ayahs {ayahs}'**
+  String asbabAyahList(String ayahs);
+
+  /// No description provided for @asbabSource.
+  ///
+  /// In en, this message translates to:
+  /// **'From Imam Al-Wahidi\'s «أسباب نزول القرآن», by way of Quranpedia (quranpedia.net), version {version}.'**
+  String asbabSource(String version);
+
+  /// No description provided for @surahAsbab.
+  ///
+  /// In en, this message translates to:
+  /// **'Occasions of revelation'**
+  String get surahAsbab;
+
+  /// No description provided for @surahAsbabCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{For 1 of its ayahs} other{For {formatted} of its ayahs}}'**
+  String surahAsbabCount(int count, String formatted);
+
+  /// No description provided for @creditsAsbab.
+  ///
+  /// In en, this message translates to:
+  /// **'Occasions of revelation: Imam Abu al-Hasan Al-Wahidi\'s «أسباب نزول القرآن» (d. 468 AH), from Quranpedia\'s data (quranpedia.net, version 2026-08-10), under its data licence: free to use inside apps. The text is as given, only its formatting removed, and is checked by its checksum.'**
+  String get creditsAsbab;
+
   /// No description provided for @tafsirOfHafsAyah.
   ///
   /// In en, this message translates to:
