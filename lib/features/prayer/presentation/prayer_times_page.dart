@@ -13,6 +13,7 @@ import '../../adhan/application/adhan_providers.dart';
 import '../../../core/layout/adaptive_layout.dart';
 import '../../../core/notifications/reminder_scheduler_provider.dart';
 import '../../../core/theme/app_tokens.dart';
+import '../../../core/time/ticking_clock.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_hero_card.dart';
 import '../../../core/widgets/app_icon_badge.dart';
@@ -203,6 +204,7 @@ class _Content extends ConsumerWidget {
     final formatDisplayDigits = ref.watch(displayDigitsFormatterProvider);
     final day = ref.watch(prayerDayProvider);
     final next = ref.watch(nextPrayerProvider);
+    final iqama = ref.watch(iqamaWaitProvider);
     final notifier = ref.read(prayerProvider.notifier);
     final settings = state.settings;
     final method = state.method!;
@@ -212,6 +214,11 @@ class _Content extends ConsumerWidget {
     return ListView(
       padding: pagePadding(context),
       children: [
+        // After the adhan, until the iqama: how long is left to it.
+        if (iqama != null) ...[
+          _IqamaCard(wait: iqama),
+          const SizedBox(height: 12),
+        ],
         if (next != null) _NextCard(next: next),
         const SizedBox(height: 12),
         if (day != null)
@@ -498,7 +505,12 @@ class _NextCard extends ConsumerWidget {
           const SizedBox(height: AppTokens.spaceMedium),
           Text(prayerName(l10n, next.prayer), style: text.headlineMedium),
           const SizedBox(height: 4),
-          _Countdown(to: next.at, digits: digits, style: text.titleMedium),
+          _Countdown(
+            to: next.at,
+            digits: digits,
+            format: context.l10n.prayerIn,
+            style: text.titleMedium,
+          ),
           const SizedBox(height: 2),
           Text(
             formatPrayerTime(context, next.at, formatDisplayDigits),
@@ -510,20 +522,82 @@ class _NextCard extends ConsumerWidget {
   }
 }
 
-/// The time left until [to], to the second: `بعد ٢:٠٥:٠٩`. It ticks only
-/// while it is on screen.
-class _Countdown extends StatefulWidget {
-  const _Countdown({required this.to, required this.digits, this.style});
+/// The iqama being waited for: its prayer, the time left to it to the second,
+/// and when it comes. Shown from the adhan until the iqama.
+class _IqamaCard extends ConsumerWidget {
+  const _IqamaCard({required this.wait});
+
+  final IqamaWait wait;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final text = Theme.of(context).textTheme;
+    final digits = ref.watch(digitsFormatterProvider);
+    final formatDisplayDigits = ref.watch(displayDigitsFormatterProvider);
+    return AppHeroCard(
+      watermark: Icons.record_voice_over_outlined,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const AppIconBadge(
+                Icons.record_voice_over_outlined,
+                size: AppIconBadgeSize.small,
+                emphasized: true,
+              ),
+              const SizedBox(width: AppTokens.spaceMedium),
+              Expanded(
+                child: Text(l10n.iqamaCardLabel, style: text.labelLarge),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppTokens.spaceMedium),
+          Text(
+            prayerNameOn(l10n, wait.prayer, wait.adhan),
+            style: text.headlineMedium,
+          ),
+          const SizedBox(height: 4),
+          _Countdown(
+            to: wait.at,
+            digits: digits,
+            format: l10n.iqamaIn,
+            style: text.titleMedium,
+          ),
+          const SizedBox(height: 2),
+          Text(
+            l10n.iqamaCardWhen(
+              formatPrayerTime(context, wait.at, formatDisplayDigits),
+            ),
+            style: text.bodyMedium,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The time left until [to], to the second: `بعد ٢:٠٥:٠٩`, worded by
+/// [format]. It ticks only while it is on screen.
+class _Countdown extends ConsumerStatefulWidget {
+  const _Countdown({
+    required this.to,
+    required this.digits,
+    required this.format,
+    this.style,
+  });
 
   final DateTime to;
   final String Function(int) digits;
+  final String Function(String) format;
   final TextStyle? style;
 
   @override
-  State<_Countdown> createState() => _CountdownState();
+  ConsumerState<_Countdown> createState() => _CountdownState();
 }
 
-class _CountdownState extends State<_Countdown> {
+class _CountdownState extends ConsumerState<_Countdown> {
   late final Timer _tick;
 
   @override
@@ -540,7 +614,7 @@ class _CountdownState extends State<_Countdown> {
 
   @override
   Widget build(BuildContext context) {
-    final left = widget.to.difference(DateTime.now());
+    final left = widget.to.difference(ref.read(clockProvider)());
     final seconds = left.isNegative ? 0 : left.inSeconds;
     String two(int value) =>
         '${widget.digits(value ~/ 10)}${widget.digits(value % 10)}';
@@ -551,7 +625,7 @@ class _CountdownState extends State<_Countdown> {
       two(seconds % 60),
     ].join(':');
     return Text(
-      context.l10n.prayerIn(clock),
+      widget.format(clock),
       // Digits keep their width, so the line does not shake each second.
       style: widget.style?.copyWith(
         fontFeatures: const [FontFeature.tabularFigures()],

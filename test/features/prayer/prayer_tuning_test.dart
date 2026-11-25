@@ -302,6 +302,81 @@ void main() {
     });
   });
 
+  group('waiting for the iqama', () {
+    final day = PrayerDay.compute(_cairo, PrayerMethod.egyptian, _day);
+    IqamaWait? at(DateTime now, {PrayerSettings? settings}) =>
+        IqamaClock.waiting(
+          place: _cairo,
+          method: PrayerMethod.egyptian,
+          settings: settings ?? const PrayerSettings(iqamaReminder: true),
+          now: now,
+        );
+
+    test('from the adhan until the iqama, for that prayer', () {
+      final wait = at(day.dhuhr.add(const Duration(minutes: 3)))!;
+      expect(wait.prayer, DailyPrayer.dhuhr);
+      expect(wait.adhan, day.dhuhr);
+      expect(wait.at, day.dhuhr.add(const Duration(minutes: 15)));
+      // The first instant of the adhan counts; the instant of the iqama does not.
+      expect(at(day.dhuhr)?.prayer, DailyPrayer.dhuhr);
+      expect(at(wait.at), isNull);
+      expect(at(wait.at.subtract(const Duration(seconds: 1))), isNotNull);
+    });
+
+    test('at no other time, and never with the notice off', () {
+      expect(at(day.dhuhr.subtract(const Duration(minutes: 1))), isNull);
+      expect(at(day.dhuhr.add(const Duration(minutes: 40))), isNull);
+      expect(
+        at(
+          day.dhuhr.add(const Duration(minutes: 3)),
+          settings: const PrayerSettings(),
+        ),
+        isNull,
+      );
+    });
+
+    test('follows the gap the person chose and the minutes they moved', () {
+      const settings = PrayerSettings(
+        iqamaReminder: true,
+        iqamaMinutes: {DailyPrayer.asr: 40},
+        offsets: {DailyPrayer.asr: 5},
+      );
+      final moved = PrayerDay.compute(
+        _cairo,
+        PrayerMethod.egyptian,
+        _day,
+        tuning: settings.tuningAt(_cairo),
+      );
+      final wait = at(
+        moved.asr.add(const Duration(minutes: 30)),
+        settings: settings,
+      )!;
+      expect(wait.prayer, DailyPrayer.asr);
+      expect(wait.at, moved.asr.add(const Duration(minutes: 40)));
+    });
+
+    test('an Isha whose iqama is after midnight is still waited for', () {
+      // 15 minutes after an Isha that is called at 23:50.
+      final late = PrayerSettings(
+        iqamaReminder: true,
+        offsets: {
+          DailyPrayer.isha: DateTime(2026, 10, 8, 23, 50)
+              .difference(day.isha)
+              .inMinutes
+              .clamp(-PrayerTuning.maxOffset, PrayerTuning.maxOffset),
+        },
+      );
+      final isha = PrayerDay.compute(
+        _cairo,
+        PrayerMethod.egyptian,
+        _day,
+        tuning: late.tuningAt(_cairo),
+      ).isha;
+      final wait = at(isha.add(const Duration(minutes: 10)), settings: late);
+      expect(wait?.prayer, DailyPrayer.isha);
+    });
+  });
+
   test('the alerts follow the minutes the person added', () {
     final now = DateTime(2026, 10, 8, 3);
     List<PrayerAlert> plan(PrayerSettings settings) => PrayerAlertPlan.compute(

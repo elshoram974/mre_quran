@@ -1409,7 +1409,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get textSizeMushaf => 'Mushaf text size';
 
   @override
-  String get textSizeAdhkar => 'Adhkar and evidence text size';
+  String get textSizeAdhkar => 'Adhkar, evidence and tafsir text size';
 
   @override
   String get textSizeHint =>
@@ -2435,4 +2435,22 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get creditsAudioNear =>
       'The sound of the reminder «اقتربت صلاة …» (the prayer is near): short clips by Mohamed M. Gowaida, from a copy on archive.org (https://archive.org/details/20261002_20261002_2012), and the Friday prayer\'s clip from another archive.org copy (https://archive.org/details/20260909_20260909_2244) whose author is not known. They were trimmed and their volume set. Permission is being asked for.';
+
+  @override
+  String get iqamaCardLabel => 'The iqama';
+
+  @override
+  String iqamaIn(String time) {
+    return 'in $time';
+  }
+
+  @override
+  String iqamaCardWhen(String time) {
+    return 'Iqama at $time';
+  }
+
+  @override
+  String iqamaCardSubtitle(String prayer, String left) {
+    return '$prayer · iqama in $left';
+  }
 }

@@ -1400,7 +1400,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get textSizeMushaf => 'حجم خط المصحف';
 
   @override
-  String get textSizeAdhkar => 'حجم خط الأذكار والدليل';
+  String get textSizeAdhkar => 'حجم خط الأذكار والدليل والتفسير';
 
   @override
   String get textSizeHint => 'يمكنك أيضًا تغييره بإصبعين على النص.';
@@ -2417,4 +2417,22 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get creditsAudioNear =>
       'صوت تذكير «اقتربت صلاة …»: مقاطع قصيرة لمحمد م. جويدة من نسخة على archive.org (https://archive.org/details/20261002_20261002_2012)، ومقطع صلاة الجمعة من نسخة أخرى على archive.org (https://archive.org/details/20260909_20260909_2244) لا يُعرف صاحبها. قُصّت وضُبط صوتها. الإذن قيد الطلب.';
+
+  @override
+  String get iqamaCardLabel => 'الإقامة';
+
+  @override
+  String iqamaIn(String time) {
+    return 'بعد $time';
+  }
+
+  @override
+  String iqamaCardWhen(String time) {
+    return 'الإقامة $time';
+  }
+
+  @override
+  String iqamaCardSubtitle(String prayer, String left) {
+    return '$prayer · الإقامة بعد $left';
+  }
 }

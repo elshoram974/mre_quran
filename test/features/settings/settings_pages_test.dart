@@ -218,7 +218,7 @@ void main() {
         'text, and each keeps its own size', (tester) async {
       final repository = await _pump(tester, const ViewSettingsPage());
       await _reveal(tester, find.text('حجم خط المصحف'));
-      expect(find.text('حجم خط الأذكار والدليل'), findsOneWidget);
+      expect(find.text('حجم خط الأذكار والدليل والتفسير'), findsOneWidget);
       final sliders = find.byType(Slider);
       expect(sliders, findsNWidgets(2));
       // Drag the adhkar slider to its far end (the larger size).

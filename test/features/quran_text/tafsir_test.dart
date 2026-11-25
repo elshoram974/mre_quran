@@ -5,7 +5,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:mre_quran/core/l10n/l10n.dart';
 import 'package:mre_quran/core/theme/app_theme.dart';
-import 'package:mre_quran/features/mushaf/domain/mushaf_edition.dart';
 import 'package:mre_quran/features/mushaf/presentation/ayah_actions_sheet.dart';
 import 'package:mre_quran/features/mushaf/presentation/tafsir_sheet.dart';
 import 'package:mre_quran/features/quran_index/application/quran_metadata_provider.dart';
@@ -17,13 +16,20 @@ import 'package:mre_quran/features/quran_text/data/quran_text_source.dart';
 import 'package:mre_quran/features/quran_text/domain/ayah_texts.dart';
 import 'package:mre_quran/features/quran_text/domain/quran_text.dart';
 import 'package:mre_quran/features/quran_text/domain/tafsir.dart';
+import 'package:mre_quran/features/settings/application/settings_provider.dart';
+import 'package:mre_quran/features/settings/domain/app_settings.dart';
 import 'package:mre_quran/l10n/generated/app_localizations.dart';
 
 import '../../helpers/fake_quran_metadata_source.dart';
 import '../../helpers/fake_quran_text_source.dart';
+import '../../helpers/memory_settings_repository.dart';
 
-ProviderContainer _container() => ProviderContainer(
+ProviderContainer _container({double adhkarScale = 1}) => ProviderContainer(
   overrides: [
+    settingsRepositoryProvider.overrideWithValue(
+      MemorySettingsRepository()
+        ..settings = const AppSettings().copyWith(adhkarFontScale: adhkarScale),
+    ),
     quranMetadataSourceProvider.overrideWithValue(FakeQuranMetadataSource()),
     quranTextSourceProvider.overrideWithValue(FakeQuranTextSource()),
     tafsirBytesProvider.overrideWithValue(
@@ -273,5 +279,94 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.textContaining('٢٥٧'), findsWidgets);
     expect(tester.takeException(), isNull);
+  });
+
+  group('the size of the words', () {
+    Future<(ProviderContainer, ScrollController)> open(
+      WidgetTester tester,
+      double scale,
+    ) async {
+      // Tall, so the whole tafsir is built at the larger sizes too.
+      tester.view.physicalSize = const Size(390, 3000);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final container = _container(adhkarScale: scale);
+      addTearDown(container.dispose);
+      final text = await tester.runAsync(
+        () => container.read(quranTextProvider.future),
+      ) as QuranText;
+      await tester.runAsync(() async {
+        await container.read(settingsProvider.future);
+        await container.read(
+          readingTafsirProvider((MushafEditions.hafs, const AyahRef(2, 256)))
+              .future,
+        );
+      });
+      final scroll = ScrollController();
+      addTearDown(scroll.dispose);
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp(
+            theme: AppTheme.light,
+            locale: const Locale('ar'),
+            supportedLocales: AppLocalizations.supportedLocales,
+            localizationsDelegates: appLocalizationsDelegates,
+            home: Scaffold(
+              body: TafsirSheet(
+                edition: MushafEditions.hafs,
+                text: HafsAyahTexts(text, fontFamily: 'KfgqpcHafs'),
+                initial: const AyahRef(2, 256),
+                scroll: scroll,
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      return (container, scroll);
+    }
+
+    double tafsirSize(WidgetTester tester) {
+      final found = find.textContaining('[256]', findRichText: true);
+      final rich = tester.widget<RichText>(found);
+      return rich.text.style!.fontSize!;
+    }
+
+    testWidgets('the tafsir is set at the size chosen for the adhkar', (
+      tester,
+    ) async {
+      await open(tester, 1.5);
+      final theme = Theme.of(tester.element(find.byType(TafsirSheet)));
+      expect(
+        tafsirSize(tester),
+        closeTo(theme.textTheme.bodyLarge!.fontSize! * 1.5, 0.01),
+      );
+    });
+
+    testWidgets('two fingers change it, as in the adhkar, and it is kept', (
+      tester,
+    ) async {
+      final (container, _) = await open(tester, 1);
+      final before = tafsirSize(tester);
+      final centre = tester.getCenter(find.byType(PageView));
+      final a = await tester.startGesture(centre - const Offset(50, 0));
+      final b = await tester.startGesture(centre + const Offset(50, 0));
+      for (var step = 1; step <= 5; step++) {
+        await a.moveTo(centre - Offset(50 + 12.0 * step, 0));
+        await b.moveTo(centre + Offset(50 + 12.0 * step, 0));
+        await tester.pump();
+      }
+      await a.up();
+      await b.up();
+      await tester.pump();
+      final after = tafsirSize(tester);
+      expect(after, greaterThan(before));
+      expect(
+        container.read(settingsProvider).value!.adhkarFontScale,
+        closeTo(after / before, 0.05),
+      );
+      expect(tester.takeException(), isNull);
+    });
   });
 }

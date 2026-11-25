@@ -144,6 +144,21 @@ final nextPrayerProvider = Provider<NextPrayer?>((ref) {
   );
 });
 
+/// The iqama being waited for now, or null: its notice is on, and a prayer's
+/// adhan has been called but not its iqama. Read again as the clock moves.
+final iqamaWaitProvider = Provider<IqamaWait?>((ref) {
+  final state = ref.watch(prayerProvider).value;
+  final method = state?.method;
+  final place = state?.place;
+  if (place == null || method == null) return null;
+  return IqamaClock.waiting(
+    place: place,
+    method: method,
+    settings: state!.settings,
+    now: ref.watch(tickingNowProvider),
+  );
+});
+
 /// Days the person moved the Hijri date: the calendar's tables can differ by a
 /// day or two from the moon sighting where they are. Zero until it is loaded.
 final hijriShiftProvider = Provider<int>(
@@ -755,6 +770,12 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
   static String _alertName(AppLocalizations l10n, PrayerAlert alert) =>
       _isJumuah(alert) ? l10n.prayerJumuah : prayerName(l10n, alert.prayer);
 }
+
+/// The name of [prayer] on [day]: Dhuhr on a Friday is the Friday prayer.
+String prayerNameOn(AppLocalizations l10n, DailyPrayer prayer, DateTime day) =>
+    prayer == DailyPrayer.dhuhr && day.weekday == DateTime.friday
+    ? l10n.prayerJumuah
+    : prayerName(l10n, prayer);
 
 /// The localized name of [prayer].
 String prayerName(AppLocalizations l10n, DailyPrayer prayer) =>

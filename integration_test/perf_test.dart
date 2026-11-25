@@ -1,8 +1,12 @@
+import 'dart:async';
+
+import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:mre_quran/app/router.dart';
 import 'package:mre_quran/app/shell/expanding_nav_bar.dart';
 import 'package:mre_quran/app/quran_app.dart';
 import 'package:mre_quran/core/hints/hints.dart';
@@ -60,7 +64,29 @@ void main() {
       );
     }
 
+    // The pages reached from the prayer times and the settings, opened by
+    // their routes, as a tap on their tile does.
+    GoRouter router() =>
+        GoRouter.of(tester.element(find.byType(Scaffold).first));
+    Future<void> openPage(AppRoute route, {bool scroll = false}) async {
+      unawaited(router().push<void>(route.path));
+      await tester.pumpAndSettle();
+      if (scroll) {
+        final list = find.byType(Scrollable).last;
+        await tester.fling(list, const Offset(0, -1500), 3000);
+        await tester.pumpAndSettle();
+        await tester.fling(list, const Offset(0, 1500), 3000);
+        await tester.pumpAndSettle();
+      }
+      router().pop();
+      await tester.pumpAndSettle();
+    }
+
     final phases = <String, Future<void> Function()>{
+      'adhan_page': () => openPage(AppRoute.adhan, scroll: true),
+      'tuning_page': () => openPage(AppRoute.prayerTuning, scroll: true),
+      'iqama_page': () => openPage(AppRoute.iqama),
+      'reminders_page': () => openPage(AppRoute.reminders, scroll: true),
       'tabs': () async {
         for (final tab in [1, 2, 3, 0]) {
           await tapTab(tab);

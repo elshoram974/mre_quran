@@ -223,20 +223,8 @@ class LocalReminderScheduler implements ReminderScheduler {
             if (payload != null && payload.isNotEmpty) deliver(payload);
           },
         );
-        // The old channel of the reminder before a prayer has no chime and
-        // cannot be given one; the new one has. Remove it so the settings
-        // show one.
-        try {
-          await plugin
-              .resolvePlatformSpecificImplementation<
-                AndroidFlutterLocalNotificationsPlugin
-              >()
-              ?.deleteNotificationChannel(
-                channelId: ReminderChannel.legacyPrayerSoonId,
-              );
-        } on Object catch (error) {
-          AppLogger.debug('Old channel not removed: ${error.runtimeType}');
-        }
+        // Not waited for: the first frame must not wait for a clean-up.
+        unawaited(_removeOldChannel(plugin));
         final launch = await plugin.getNotificationAppLaunchDetails();
         if (launch != null && launch.didNotificationLaunchApp) {
           final response = launch.notificationResponse;
@@ -258,6 +246,25 @@ class LocalReminderScheduler implements ReminderScheduler {
       AppLogger.debug('Notifications unavailable: ${error.runtimeType}');
     }
     return LocalReminderScheduler._(plugin, taps, launchPayload);
+  }
+
+  /// The old channel of the reminder before a prayer has no voice and cannot
+  /// be given one; each prayer's own has. It is removed so the phone's
+  /// settings show the new ones only.
+  static Future<void> _removeOldChannel(
+    FlutterLocalNotificationsPlugin plugin,
+  ) async {
+    try {
+      await plugin
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >()
+          ?.deleteNotificationChannel(
+            channelId: ReminderChannel.legacyPrayerSoonId,
+          );
+    } on Object catch (error) {
+      AppLogger.debug('Old channel not removed: ${error.runtimeType}');
+    }
   }
 
   /// What a tap opens: the settings, for the settings button; else what

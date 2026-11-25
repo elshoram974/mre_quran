@@ -2,9 +2,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:mre_quran/core/notifications/reminder_scheduler.dart';
 import 'package:mre_quran/core/theme/app_theme.dart';
+import 'package:mre_quran/core/widgets/app_hero_card.dart';
 import 'package:mre_quran/features/prayer/domain/prayer_alerts.dart';
 import 'package:mre_quran/features/prayer/domain/prayer_times.dart';
 import 'package:mre_quran/features/prayer/presentation/iqama_page.dart';
+import 'package:mre_quran/features/prayer/presentation/prayer_times_card.dart';
 import 'package:mre_quran/features/prayer/presentation/prayer_times_page.dart';
 
 import '../../helpers/prayer_pages.dart';
@@ -181,6 +183,81 @@ void main() {
       await revealOnPage(tester, find.text('Iqama notice'));
       await revealOnPage(tester, find.text('How long after the adhan?'));
       expect(tester.takeException(), isNull);
+    });
+  });
+
+  group('the countdown to the iqama in the app', () {
+    final place = PrayerPlace(30.04, 31.24);
+    // Dhuhr of Thursday 8 October 2026, and of Friday the 9th.
+    final thursday = PrayerDay.compute(
+      place,
+      PrayerMethod.egyptian,
+      DateTime(2026, 10, 8),
+    );
+    final friday = PrayerDay.compute(
+      place,
+      PrayerMethod.egyptian,
+      DateTime(2026, 10, 9),
+    );
+
+    Future<PrayerPageHarness> prayerPage(
+      WidgetTester tester,
+      DateTime now, {
+      bool iqama = true,
+      Widget home = const Scaffold(body: PrayerTimesPage()),
+    }) => pumpPrayerPage(
+      tester,
+      home: home,
+      now: now,
+      place: place,
+      settings: PrayerSettings(iqamaReminder: iqama),
+    );
+
+    testWidgets('is not shown before the adhan, nor with the notice off', (
+      tester,
+    ) async {
+      await prayerPage(
+        tester,
+        thursday.dhuhr.subtract(const Duration(minutes: 1)),
+      );
+      // Only the next prayer's card.
+      expect(find.byType(AppHeroCard), findsOneWidget);
+      await tester.pumpWidget(const SizedBox());
+      await prayerPage(
+        tester,
+        thursday.dhuhr.add(const Duration(minutes: 3)),
+        iqama: false,
+      );
+      expect(find.byType(AppHeroCard), findsOneWidget);
+    });
+
+    testWidgets('from the adhan, it counts down to the iqama, and says when '
+        'it comes', (tester) async {
+      await prayerPage(tester, thursday.dhuhr.add(const Duration(minutes: 3)));
+      // Fifteen minutes after the adhan, three gone: twelve left.
+      expect(find.text('بعد ١٢:٠٠'), findsOneWidget);
+      // Its card comes with the next prayer's, and says when the iqama is.
+      expect(find.byType(AppHeroCard), findsNWidgets(2));
+      expect(find.textContaining('الإقامة '), findsOneWidget);
+      expect(find.text('الظهر'), findsWidgets);
+    });
+
+    testWidgets('names the Friday prayer as it is', (tester) async {
+      await prayerPage(tester, friday.dhuhr.add(const Duration(minutes: 2)));
+      // Fifteen minutes after the adhan, two gone.
+      expect(find.text('بعد ١٣:٠٠'), findsOneWidget);
+      expect(find.text('الجمعة'), findsWidgets);
+    });
+
+    testWidgets('the shortcut on the adhkar tab says it too, in minutes', (
+      tester,
+    ) async {
+      await prayerPage(
+        tester,
+        thursday.dhuhr.add(const Duration(minutes: 3)),
+        home: const Scaffold(body: PrayerTimesCard()),
+      );
+      expect(find.textContaining('الظهر · الإقامة بعد'), findsOneWidget);
     });
   });
 }

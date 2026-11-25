@@ -396,3 +396,57 @@ abstract final class PrayerAlertPlan {
     return alerts;
   }
 }
+
+/// The iqama being waited for: a prayer's adhan has been called and its iqama
+/// has not come yet.
+@immutable
+class IqamaWait {
+  /// Creates the wait.
+  const IqamaWait({
+    required this.prayer,
+    required this.adhan,
+    required this.at,
+  });
+
+  /// The prayer.
+  final DailyPrayer prayer;
+
+  /// When its adhan was called.
+  final DateTime adhan;
+
+  /// When its iqama comes.
+  final DateTime at;
+}
+
+/// Which iqama, if any, is being waited for at a moment.
+abstract final class IqamaClock {
+  /// The iqama [now] falls before, with its adhan already called, at [place]:
+  /// null when the iqama's notice is off, or when no prayer is between its
+  /// adhan and its iqama. The window of yesterday's Isha is looked at too, for
+  /// one that ends after midnight.
+  static IqamaWait? waiting({
+    required PrayerPlace place,
+    required PrayerMethod method,
+    required PrayerSettings settings,
+    required DateTime now,
+  }) {
+    if (!settings.iqamaReminder) return null;
+    final tuning = settings.tuningAt(place);
+    for (final offset in const [-1, 0]) {
+      final times = PrayerDay.compute(
+        place,
+        method,
+        DateTime(now.year, now.month, now.day + offset),
+        tuning: tuning,
+      );
+      for (final prayer in DailyPrayer.values) {
+        final adhan = times.of(prayer);
+        final at = adhan.add(Duration(minutes: settings.iqamaAfter(prayer)));
+        if (!now.isBefore(adhan) && now.isBefore(at)) {
+          return IqamaWait(prayer: prayer, adhan: adhan, at: at);
+        }
+      }
+    }
+    return null;
+  }
+}

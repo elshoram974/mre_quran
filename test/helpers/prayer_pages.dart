@@ -41,8 +41,8 @@ class PrayerPageHarness {
   final FakePrayerSoonPlatform soon;
 }
 
-/// Pumps [home] (the tuning page unless given) over fake stores at nine in the
-/// morning on a fixed day, with the pages that lead from the prayer times
+/// Pumps [home] (the tuning page unless given) over fake stores at [now] (nine
+/// in the morning of 8 October 2026 unless given), with the pages that lead from the prayer times
 /// routed too.
 Future<PrayerPageHarness> pumpPrayerPage(
   WidgetTester tester, {
@@ -54,6 +54,7 @@ Future<PrayerPageHarness> pumpPrayerPage(
   Size size = const Size(390, 844),
   double textScale = 1,
   ThemeData? theme,
+  DateTime? now,
 }) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
@@ -85,7 +86,7 @@ Future<PrayerPageHarness> pumpPrayerPage(
         prayerSoonPlatformProvider.overrideWithValue(harness.soon),
         locationSourceProvider.overrideWithValue(FakeLocationSource()),
         prayerRepositoryProvider.overrideWithValue(harness.repository),
-        clockProvider.overrideWithValue(() => DateTime(2026, 10, 8, 9)),
+        clockProvider.overrideWithValue(() => now ?? DateTime(2026, 10, 8, 9)),
         settingsRepositoryProvider.overrideWithValue(
           MemorySettingsRepository()
             ..settings = AppSettings(localeCode: locale),

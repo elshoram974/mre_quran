@@ -22,7 +22,14 @@ class PrayerTimesCard extends ConsumerWidget {
     final formatDisplayDigits = ref.watch(displayDigitsFormatterProvider);
     final next = ref.watch(nextPrayerProvider);
     final now = ref.watch(tickingNowProvider);
-    final subtitle = next == null
+    final iqama = ref.watch(iqamaWaitProvider);
+    // From the adhan to the iqama, what the person waits for is the iqama.
+    final subtitle = iqama != null
+        ? l10n.iqamaCardSubtitle(
+            prayerNameOn(l10n, iqama.prayer, iqama.adhan),
+            formatUntil(l10n, iqama.at.difference(now), digits),
+          )
+        : next == null
         ? l10n.prayerNoPlaceTitle
         : '${prayerName(l10n, next.prayer)} · '
               '${formatPrayerTime(context, next.at, formatDisplayDigits)} · '

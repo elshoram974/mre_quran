@@ -2500,7 +2500,7 @@ abstract class AppLocalizations {
   /// No description provided for @textSizeAdhkar.
   ///
   /// In en, this message translates to:
-  /// **'Adhkar and evidence text size'**
+  /// **'Adhkar, evidence and tafsir text size'**
   String get textSizeAdhkar;
 
   /// No description provided for @textSizeHint.
@@ -4140,6 +4140,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The sound of the reminder «اقتربت صلاة …» (the prayer is near): short clips by Mohamed M. Gowaida, from a copy on archive.org (https://archive.org/details/20261002_20261002_2012), and the Friday prayer\'s clip from another archive.org copy (https://archive.org/details/20260909_20260909_2244) whose author is not known. They were trimmed and their volume set. Permission is being asked for.'**
   String get creditsAudioNear;
+
+  /// No description provided for @iqamaCardLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'The iqama'**
+  String get iqamaCardLabel;
+
+  /// No description provided for @iqamaIn.
+  ///
+  /// In en, this message translates to:
+  /// **'in {time}'**
+  String iqamaIn(String time);
+
+  /// No description provided for @iqamaCardWhen.
+  ///
+  /// In en, this message translates to:
+  /// **'Iqama at {time}'**
+  String iqamaCardWhen(String time);
+
+  /// No description provided for @iqamaCardSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{prayer} · iqama in {left}'**
+  String iqamaCardSubtitle(String prayer, String left);
 }
 
 class _AppLocalizationsDelegate
