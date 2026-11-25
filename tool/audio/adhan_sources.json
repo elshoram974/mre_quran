@@ -41,12 +41,20 @@
     {
       "id": "dua_after_adhan_shaarawy",
       "kind": "dua",
-      "bundled": "dua_after_adhan_shaarawy",
+      "title": {
+        "ar": "محمد متولي الشعراوي",
+        "en": "Muhammad Metwalli Al-Shaarawy"
+      },
+      "place": {
+        "ar": "الدعاء بعد الأذان",
+        "en": "The dua after the adhan"
+      },
       "credit": "Sheikh Muhammad Metwalli Al-Shaarawy (supplication)",
       "source": "https://archive.org/details/AD3YA---SHEKH---METOLLYAL---SHA3RAWY---MP3---Qass--nabwy--MP3",
       "url": "https://archive.org/download/AD3YA---SHEKH---METOLLYAL---SHA3RAWY---MP3---Qass--nabwy--MP3/1.MP3",
       "sha256": "e23caaf95d88e0db22541bb1e8c2e05c0943377c6597ee4f7f31ef62bbaefb49",
-      "checked": "Whisper transcript: «اللهم رب هذه الدعوة التامة والصلاة القائمة آت سيدنا محمدًا الوسيلة والفضيلة والدرجة الرفيعة وابعثه اللهم المقام المحمود الذي وعدته», then his own praise and salat on the Prophet. «والدرجة الرفيعة» is not in the narration of Bukhari 614."
+      "checked": "Whisper transcript: «اللهم رب هذه الدعوة التامة والصلاة القائمة آت سيدنا محمدًا الوسيلة والفضيلة والدرجة الرفيعة وابعثه اللهم المقام المحمود الذي وعدته», then his own praise and salat on the Prophet. «والدرجة الرفيعة» is not in the narration of Bukhari 614.",
+      "bitrate": "64k"
     },
     {
       "id": "default_fajr",

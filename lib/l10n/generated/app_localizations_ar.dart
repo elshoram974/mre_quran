@@ -397,7 +397,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get creditsAudioDuaShaarawy =>
-      'الدعاء بعد الأذان بصوت الشيخ محمد متولي الشعراوي: archive.org (أدعية الشيخ الشعراوي، الملف الأول). الإذن قيد الطلب.';
+      'الدعاء بعد الأذان بصوت الشيخ محمد متولي الشعراوي (يُنزَّل عند اختياره): archive.org (أدعية الشيخ الشعراوي، الملف الأول). الإذن قيد الطلب.';
 
   @override
   String get creditsAudioIntro =>
@@ -969,6 +969,16 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get adhanDuaMishary => 'بصوت الشيخ مشاري العفاسي';
+
+  @override
+  String adhanDuaToDownload(String size) {
+    return 'يُنزَّل عند اختياره ($size)';
+  }
+
+  @override
+  String adhanDuaOnPhone(String size) {
+    return 'على الهاتف ($size)';
+  }
 
   @override
   String get adhanFajrVoices => 'أذان الفجر';

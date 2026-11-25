@@ -6,9 +6,11 @@ What plays at prayer time, in order (Android, `AdhanAudio.steps`):
    `announce_jumuah` on Fridays). **No recording yet** (see the licence list below). The Adhan page offers the
    choice only once all six are in the app; until then the step is skipped.
 2. **The adhan**: the chosen voice, and at Fajr the chosen *Fajr* voice, which says "الصلاة خير من النوم".
-3. **The dua after the adhan**, "اللهم رب هذه الدعوة التامة…" (Bukhari 614), in Sheikh Al-Shaarawy's voice
-   (`res/raw/dua_after_adhan_shaarawy.m4a`, the default) or Sheikh Mishary Alafasy's
-   (`res/raw/dua_after_adhan_mishary.m4a`). Each can be heard on the Adhan page.
+3. **The dua after the adhan**, "اللهم رب هذه الدعوة التامة…" (Bukhari 614), in Sheikh Mishary Alafasy's voice
+   (`res/raw/dua_after_adhan_mishary.m4a`, bundled, the default) or Sheikh Al-Shaarawy's
+   (`dua_after_adhan_shaarawy`, downloaded from the media repository when it is chosen, `docs/DECISIONS.md` D-064).
+   Each can be heard on the Adhan page, the second from the network before it is downloaded. If the chosen one's
+   file is gone, the bundled one plays.
 
 Each part can be turned off on the Adhan page. iOS cannot play an adhan by itself: there the alert at prayer
 time rings with the first 29.5 seconds of the bundled adhan (`assets/adhan/ios/adhan_regular.caf`), or of the
@@ -22,7 +24,7 @@ which part of it is used. `tool/audio/build_adhan_audio.py` downloads each once,
 differs, and then cuts and cleans every one the same way: rumble below 80 Hz removed, silence at both ends
 removed (the adhan starts at once), loudness set to -16 LUFS with a true peak of -1.5 dBTP (measured, then
 applied linearly), a short fade at each end, mono AAC without the source's tags. It writes the bundled
-files to `android/app/src/main/res/raw` and the others to `app_assets/media`, then
+files to `android/app/src/main/res/raw` and the others to the media repository (`--media`), then
 `assets/adhan/voices.json` with each file's size and SHA-256. Never edit those outputs by hand.
 
 **Checked by listening by machine.** Each recording was transcribed with Whisper (`ggml-small`, Arabic) to
@@ -90,7 +92,7 @@ repository (branch `global`); every new media file goes there; see its `README.m
 | `default` (bundled, `adhan_default.m4a`) | Adhan | Nasser Al-Qatami, [abodehq/Athan-MP3](https://github.com/abodehq/Athan-MP3/tree/cf1a9dd4f1e5e10009439099c5af74479ad332c0/Sounds); original `b30f4e2c…6b92fbe` | `d275029f…74cad298` | 1,080,038 |
 | `default_fajr` (bundled, `adhan_fajr.m4a`) | Fajr | Mishary Rashid Alafasy, Maqam Hijaz, [archive.org](https://archive.org/details/adhan-call-to-prayer-mishary-rashid-alafasy-fajr-maqam-hijaz-hd-320-kbps-1) | `12dc0334…50ffea2` | 1,818,143 |
 | dua (bundled, `dua_after_adhan_mishary.m4a`) | Dua | The same Mishary recording as `mishary_alafasy`, from 3:55 | `9fada8bd…f89647f4` | 143,511 |
-| dua (bundled, `dua_after_adhan_shaarawy.m4a`) | Dua | Sheikh Al-Shaarawy, the whole first file of [his duas on archive.org](https://archive.org/details/AD3YA---SHEKH---METOLLYAL---SHA3RAWY---MP3---Qass--nabwy--MP3) (68 s) | `d03e57bf…e268bc2` | 562,360 |
+| `dua_after_adhan_shaarawy` (downloaded) | Dua | Sheikh Al-Shaarawy, the whole first file of [his duas on archive.org](https://archive.org/details/AD3YA---SHEKH---METOLLYAL---SHA3RAWY---MP3---Qass--nabwy--MP3) (68 s, kept at 64 kb/s) | `d03e57bf…e268bc2` (562,360 B, cleaned); original `e23caaf9…bbaefb49` | 1,092,127 |
 | `egypt_harak` | Adhan | Abdulnasser Harak, Egypt, [archive.org](https://archive.org/details/adhan-from-egypt-abdulnasser-harak) | `8183c49c…c14590b` (2,616,292 B, cleaned); original `38a60f60…0d4c648` | 4,323,885 |
 | `mishary_alafasy` | Adhan | Mishary Rashid Alafasy, [archive.org](https://archive.org/details/VeryBeautifulAdhaanByMisharyAlAfasy), up to 3:51 | `fbacac1c…c889ca6` (2,828,271 B, cleaned); original `abba1e6a…b086a627` | 4,124,871 |
 | `makkah_ali_mullah_fajr` | Fajr | Ali Mullah, the Grand Mosque, 6 Sep 2013, [archive.org](https://archive.org/details/MakkahFajrAdhan6913SheikhAliMullah) | `644c3b8a…817c25d` (2,936,610 B, cleaned); original `da68a481…b67a9ec` | 2,911,537 |
@@ -120,7 +122,7 @@ Domain Mark 1.0 by its uploader, which does not prove the muezzin agreed).
 | Ali Mullah, live from the Grand Mosque | The General Authority for the Affairs of the Two Holy Mosques (it broadcasts the adhan), and the person who recorded it | Downloadable |
 | Abdulnasser Harak | Abdulnasser Harak; confirm the Public Domain Mark | Downloadable |
 | **Announcements** "حان الآن موعد أذان …" (fajr, dhuhr, asr, maghrib, isha, jumuah) | Whoever records them: best recorded for the app, by a voice artist who signs the rights over | Not found anywhere usable. Add as `res/raw/announce_<name>.m4a` through the build tool |
-| **Sheikh Al-Shaarawy's dua after the adhan** (bundled) | The rights holder of the recording (the broadcaster that produced it, or the Sheikh's heirs) | Taken from an archive.org upload with no licence. Its wording adds «والدرجة الرفيعة», which is not in Bukhari 614 |
+| **Sheikh Al-Shaarawy's dua after the adhan** (downloadable) | The rights holder of the recording (the broadcaster that produced it, or the Sheikh's heirs) | Taken from an archive.org upload with no licence. Its wording adds «والدرجة الرفيعة», which is not in Bukhari 614 |
 
 When a licence arrives: put its name and link in the recording's entry in `tool/audio/adhan_sources.json`
 (the build tool then writes it into the catalogue), and record the permission in `docs/PERMISSION_REQUESTS.md`.

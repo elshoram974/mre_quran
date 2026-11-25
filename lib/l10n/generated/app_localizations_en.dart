@@ -403,7 +403,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get creditsAudioDuaShaarawy =>
-      'The dua after the adhan by Sheikh Muhammad Metwalli Al-Shaarawy: archive.org (Sheikh Al-Shaarawy\'s duas, first file). Permission is being asked for.';
+      'The dua after the adhan by Sheikh Muhammad Metwalli Al-Shaarawy (downloaded when chosen): archive.org (Sheikh Al-Shaarawy\'s duas, first file). Permission is being asked for.';
 
   @override
   String get creditsAudioIntro =>
@@ -977,6 +977,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get adhanDuaMishary => 'Sheikh Mishary Rashid Alafasy';
+
+  @override
+  String adhanDuaToDownload(String size) {
+    return 'Downloaded when chosen ($size)';
+  }
+
+  @override
+  String adhanDuaOnPhone(String size) {
+    return 'On the phone ($size)';
+  }
 
   @override
   String get adhanFajrVoices => 'Fajr adhan';

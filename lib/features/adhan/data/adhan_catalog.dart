@@ -94,6 +94,7 @@ AdhanVoice _voice(Map<String, Object?> map) {
     kind: switch (map['kind']) {
       null || 'regular' => AdhanKind.regular,
       'fajr' => AdhanKind.fajr,
+      'dua' => AdhanKind.dua,
       final other => throw FormatException('Voice $id has kind $other'),
     },
   );

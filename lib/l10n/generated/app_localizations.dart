@@ -802,7 +802,7 @@ abstract class AppLocalizations {
   /// No description provided for @creditsAudioDuaShaarawy.
   ///
   /// In en, this message translates to:
-  /// **'The dua after the adhan by Sheikh Muhammad Metwalli Al-Shaarawy: archive.org (Sheikh Al-Shaarawy\'s duas, first file). Permission is being asked for.'**
+  /// **'The dua after the adhan by Sheikh Muhammad Metwalli Al-Shaarawy (downloaded when chosen): archive.org (Sheikh Al-Shaarawy\'s duas, first file). Permission is being asked for.'**
   String get creditsAudioDuaShaarawy;
 
   /// No description provided for @creditsAudioIntro.
@@ -1794,6 +1794,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sheikh Mishary Rashid Alafasy'**
   String get adhanDuaMishary;
+
+  /// No description provided for @adhanDuaToDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloaded when chosen ({size})'**
+  String adhanDuaToDownload(String size);
+
+  /// No description provided for @adhanDuaOnPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'On the phone ({size})'**
+  String adhanDuaOnPhone(String size);
 
   /// No description provided for @adhanFajrVoices.
   ///

@@ -87,15 +87,32 @@ void main() {
       }
     });
 
-    test('every dua after the adhan the settings offer ships beside them', () {
+    test('the dua after the adhan: one ships beside them, the other is in '
+        'the catalogue to download', () {
       for (final dua in AdhanDua.values) {
-        expect(
-          File('android/app/src/main/res/raw/${dua.recording}.m4a')
-              .existsSync(),
-          isTrue,
-          reason: dua.name,
-        );
+        final recording = dua.recording;
+        final voiceId = dua.voiceId;
+        expect((recording == null) != (voiceId == null), isTrue);
+        if (recording != null) {
+          expect(
+            File('android/app/src/main/res/raw/$recording.m4a').existsSync(),
+            isTrue,
+            reason: dua.name,
+          );
+        } else {
+          final voice = voices.singleWhere((voice) => voice.id == voiceId);
+          expect(voice.isDua, isTrue);
+          expect(voice.builtIn, isFalse);
+          expect(voice.url, startsWith('https://elshoram974.github.io/'));
+          // Not in the app as well: it is downloaded.
+          expect(
+            File('android/app/src/main/res/raw/$voiceId.m4a').existsSync(),
+            isFalse,
+          );
+        }
       }
+      expect(AdhanDua.bundled.recording, isNotNull);
+      expect(AdhanDua.parse(null), AdhanDua.bundled);
     });
 
     test('every voice is written up in docs/AUDIO_SOURCES.md', () {

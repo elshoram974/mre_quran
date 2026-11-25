@@ -154,7 +154,11 @@ Future<AdhanAlertConfig> buildAdhanConfig({
     fajrVoicePath: await pathOf(settings.fajrVoiceId),
     announce: settings.announce,
     duaAfter: settings.duaAfter,
-    duaRecording: settings.dua.recording,
+    duaRecording: AdhanDua.bundledRecording,
+    duaPath: switch (settings.dua.voiceId) {
+      final id? => await pathOf(id),
+      null => null,
+    },
     stopWhenFlipped: settings.stopWhenFlipped,
     stopLabel: l10n.adhanStopAction,
     settingsLabel: l10n.notificationSettings,
@@ -397,21 +401,50 @@ class AdhanVoicesNotifier extends AsyncNotifier<VoicesState> {
             fajrVoiceId: value.fajrVoiceId == voice.id
                 ? AdhanVoice.defaultFajrId
                 : null,
+            dua: value.dua.voiceId == voice.id ? AdhanDua.bundled : null,
           ),
         );
   }
 
   /// Chooses [voice] for the alert: for Fajr when it is a Fajr recording,
-  /// for the other prayers otherwise. It must be on the phone.
+  /// as the dua when it is a dua, for the other prayers otherwise. It must be
+  /// on the phone.
   Future<void> choose(AdhanVoice voice) async {
     if (state.value?.statusOf(voice.id) is! VoiceReady) return;
     await ref
         .read(adhanSettingsProvider.notifier)
         .change(
-          (value) => voice.isFajr
-              ? value.copyWith(fajrVoiceId: voice.id)
-              : value.copyWith(voiceId: voice.id),
+          (value) => switch (voice.kind) {
+            AdhanKind.fajr => value.copyWith(fajrVoiceId: voice.id),
+            AdhanKind.regular => value.copyWith(voiceId: voice.id),
+            AdhanKind.dua => value.copyWith(
+              dua: AdhanDua.parse(_duaName(voice)),
+            ),
+          },
         );
+  }
+
+  static String? _duaName(AdhanVoice voice) =>
+      AdhanDua.values.where((dua) => dua.voiceId == voice.id).firstOrNull?.name;
+
+  /// The catalogue voice of [dua], when it is one that is downloaded.
+  AdhanVoice? duaVoice(AdhanDua dua) =>
+      state.value?.voices.where((voice) => voice.id == dua.voiceId).firstOrNull;
+
+  /// Chooses [dua] for after the adhan. One that is not on the phone yet is
+  /// downloaded first and chosen once it is there.
+  Future<void> chooseDua(AdhanDua dua) async {
+    if (dua.voiceId != null) {
+      final voice = duaVoice(dua);
+      if (voice == null) return;
+      if (state.value?.statusOf(voice.id) is! VoiceReady) {
+        await download(voice);
+      }
+      return choose(voice);
+    }
+    await ref
+        .read(adhanSettingsProvider.notifier)
+        .change((value) => value.copyWith(dua: dua));
   }
 
   /// Plays [voice], from the phone if it is there and from the network if not,
@@ -492,15 +525,26 @@ class AdhanVoicesNotifier extends AsyncNotifier<VoicesState> {
         );
   }
 
-  /// Plays the dua after the adhan in [dua]'s voice, or stops it when it is
-  /// already playing.
+  /// What [VoicesState.listening] is while [dua] is heard.
+  static String listeningId(AdhanDua dua) => dua.voiceId ?? 'dua:${dua.name}';
+
+  /// Plays the dua after the adhan in [dua]'s voice (one that is downloaded
+  /// from the phone if it is there, else from the network), or stops it when
+  /// it is already playing.
   Future<void> toggleListeningDua(AdhanDua dua) async {
     final current = state.value;
     if (current == null) return;
-    final id = 'dua:${dua.name}';
-    if (current.listening == id) return stopListening();
-    _update((state) => state.copyWith(listening: id));
-    await _platform.preview(RawPreview(dua.recording));
+    if (dua.recording case final recording?) {
+      final id = listeningId(dua);
+      if (current.listening == id) return stopListening();
+      _update(
+        (state) => state.copyWith(listening: id, clearPreviewFailed: true),
+      );
+      await _platform.preview(RawPreview(recording));
+      return;
+    }
+    final voice = duaVoice(dua);
+    if (voice != null) await toggleListening(voice);
   }
 
   /// Plays the picked file, or stops it when it is already playing.

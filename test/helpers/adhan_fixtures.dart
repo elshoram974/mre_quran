@@ -99,6 +99,24 @@ const AdhanVoice kFallbackVoice = AdhanVoice(
   ),
 );
 
+/// The dua after the adhan that is downloaded (Sheikh Al-Shaarawy's).
+const AdhanVoice kShaarawyDuaVoice = AdhanVoice(
+  id: 'dua_after_adhan_shaarawy',
+  titles: {'ar': 'محمد متولي الشعراوي', 'en': 'Muhammad Metwalli Al-Shaarawy'},
+  places: {'ar': 'الدعاء بعد الأذان', 'en': 'The dua after the adhan'},
+  bytes: 562360,
+  sha256: kVoiceSha256,
+  url: 'https://example.test/global/dua_after_adhan_shaarawy.m4a',
+  extension: 'm4a',
+  sourceUrl: 'https://example.test/shaarawy',
+  license: AdhanLicense(
+    name: 'Permission pending',
+    url: 'https://example.test',
+  ),
+  credit: 'Sheikh Al-Shaarawy',
+  kind: AdhanKind.dua,
+);
+
 /// The bytes a fake download delivers, and their SHA-256.
 const List<int> kVoiceBytes = [1, 2, 3, 4, 5, 6, 7, 8];
 const String kVoiceSha256 =
@@ -113,6 +131,7 @@ class FakeAdhanCatalog implements AdhanCatalogSource {
       kMadinahVoice,
       kMakkahVoice,
       kFajrVoice,
+      kShaarawyDuaVoice,
     ],
   ]);
 

@@ -12,7 +12,9 @@ import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/widgets/app_switch_tile.dart';
 import '../../../core/widgets/app_tile_card.dart';
 import '../../../core/widgets/empty_state.dart';
+import '../../settings/application/digits_provider.dart';
 import '../application/adhan_providers.dart';
+import '../data/voice_store.dart';
 import '../domain/adhan_settings.dart';
 import '../domain/adhan_voice.dart';
 import '../../home_widgets/presentation/widget_hint.dart';
@@ -38,7 +40,13 @@ class AdhanPage extends ConsumerWidget {
     final l10n = context.l10n;
     final supported = ref.watch(adhanSupportedProvider);
     final settings = ref.watch(adhanSettingsProvider);
-    final voices = ref.watch(adhanVoicesProvider);
+    // Only the list and whether it failed: each card watches its own state,
+    // so a download's progress does not rebuild the page.
+    final voices = ref.watch(
+      adhanVoicesProvider.select(
+        (state) => (hasError: state.hasError, voices: state.value?.voices),
+      ),
+    );
     return AppPageScaffold(
       title: l10n.adhanTitle,
       body: Builder(
@@ -84,8 +92,8 @@ class AdhanPage extends ConsumerWidget {
             );
           }
           final current = settings.value;
-          final state = voices.value;
-          if (current == null || state == null) {
+          final list = voices.voices;
+          if (current == null || list == null) {
             return Padding(
               padding: padding,
               child: const AppShimmer(
@@ -110,34 +118,35 @@ class AdhanPage extends ConsumerWidget {
                   title: l10n.adhanVoices,
                   subtitle: l10n.adhanVoicesHint,
                 ),
-                for (final voice in state.voices)
-                  if (!voice.isFajr) ...[
-                    VoiceCard(
+                for (final voice in list)
+                  if (voice.kind == AdhanKind.regular) ...[
+                    _VoiceTile(
                       voice: voice,
-                      status: state.statusOf(voice.id),
                       chosen: voice.id == current.voiceId,
-                      listening: voice.id == state.listening,
-                      previewFailed: voice.id == state.previewFailed,
                     ),
                     const SizedBox(height: 12),
                   ],
-                CustomVoiceCard(
-                  settings: current,
-                  listening: state.listening == AdhanVoice.customId,
+                Consumer(
+                  builder: (context, ref, _) => CustomVoiceCard(
+                    settings: current,
+                    listening: ref.watch(
+                      adhanVoicesProvider.select(
+                        (state) =>
+                            state.value?.listening == AdhanVoice.customId,
+                      ),
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 24),
                 AppSectionHeader(
                   title: l10n.adhanFajrVoices,
                   subtitle: l10n.adhanFajrVoicesHint,
                 ),
-                for (final voice in state.voices)
+                for (final voice in list)
                   if (voice.isFajr) ...[
-                    VoiceCard(
+                    _VoiceTile(
                       voice: voice,
-                      status: state.statusOf(voice.id),
                       chosen: voice.id == current.fajrVoiceId,
-                      listening: voice.id == state.listening,
-                      previewFailed: voice.id == state.previewFailed,
                     ),
                     const SizedBox(height: 12),
                   ],
@@ -163,7 +172,16 @@ class _AlertSection extends ConsumerWidget {
     final notifier = ref.read(adhanSettingsProvider.notifier);
     final exact = ref.watch(adhanExactAllowedProvider).value ?? true;
     final announcements = ref.watch(adhanAnnouncementsProvider).value ?? false;
-    final listening = ref.watch(adhanVoicesProvider).value?.listening;
+    // A chosen dua that is not on the phone (its file deleted) is not what
+    // plays: the bundled one is, and is shown as in use.
+    final chosenId = settings.dua.voiceId;
+    final chosenReady = ref.watch(
+      adhanVoicesProvider.select(
+        (state) =>
+            chosenId == null || state.value?.statusOf(chosenId) is VoiceReady,
+      ),
+    );
+    final inUse = chosenReady ? settings.dua : AdhanDua.bundled;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -213,11 +231,7 @@ class _AlertSection extends ConsumerWidget {
             ),
             if (settings.playAdhan && settings.duaAfter)
               for (final dua in AdhanDua.values)
-                _DuaChoice(
-                  dua: dua,
-                  chosen: settings.dua == dua,
-                  listening: listening == 'dua:${dua.name}',
-                ),
+                _DuaChoice(dua: dua, chosen: inUse == dua),
           ],
         ),
         if (settings.playAdhan && !exact) ...[
@@ -264,44 +278,145 @@ class _AlertSection extends ConsumerWidget {
   }
 }
 
+/// A [VoiceCard] that watches only its own voice's state.
+class _VoiceTile extends ConsumerWidget {
+  const _VoiceTile({required this.voice, required this.chosen});
+
+  final AdhanVoice voice;
+  final bool chosen;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final (status, listening, failed) = ref.watch(
+      adhanVoicesProvider.select((state) {
+        final value = state.value;
+        return (
+          value?.statusOf(voice.id) ?? const VoiceAvailable(),
+          value?.listening == voice.id,
+          value?.previewFailed == voice.id,
+        );
+      }),
+    );
+    return VoiceCard(
+      voice: voice,
+      status: status,
+      chosen: chosen,
+      listening: listening,
+      previewFailed: failed,
+    );
+  }
+}
+
 /// One voice for the dua after the adhan: chosen with a tap, heard with its
-/// play button.
+/// play button. The bundled one is always there; the other is downloaded
+/// when it is chosen (or with its download button), and can be heard from
+/// the network first.
 class _DuaChoice extends ConsumerWidget {
-  const _DuaChoice({
-    required this.dua,
-    required this.chosen,
-    required this.listening,
-  });
+  const _DuaChoice({required this.dua, required this.chosen});
 
   final AdhanDua dua;
   final bool chosen;
-  final bool listening;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final scheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final digits = ref.watch(displayDigitsFormatterProvider);
+    final notifier = ref.read(adhanVoicesProvider.notifier);
+    final listenId = AdhanVoicesNotifier.listeningId(dua);
+    final (voice, status, listening, failed) = ref.watch(
+      adhanVoicesProvider.select((state) {
+        final value = state.value;
+        final voice = value?.voices
+            .where((voice) => voice.id == dua.voiceId)
+            .firstOrNull;
+        return (
+          voice,
+          voice == null ? const VoiceReady() : value!.statusOf(voice.id),
+          value?.listening == listenId,
+          value?.previewFailed == listenId,
+        );
+      }),
+    );
+    // A dua to download that the catalogue does not list is not offered.
+    if (dua.voiceId != null && voice == null) return const SizedBox.shrink();
+    final size = voice == null
+        ? ''
+        : l10n.adhanSizeMb(digits((voice.bytes / 1000000).toStringAsFixed(1)));
+    final failure = status is VoiceAvailable ? status.failure : null;
+    final error = failed || failure != null;
+    final subtitle = switch (status) {
+      _ when failed => l10n.adhanPreviewFailed,
+      VoiceAvailable(failure: VoiceDownloadFailure.integrity) =>
+        l10n.adhanDownloadIntegrity,
+      VoiceAvailable(failure: VoiceDownloadFailure.busy) =>
+        l10n.adhanDownloadBusy,
+      VoiceAvailable(failure: _?) => l10n.adhanDownloadNetwork,
+      VoiceAvailable() => l10n.adhanDuaToDownload(size),
+      VoiceDownloading(:final progress) => l10n.adhanDownloading(
+        digits('${(progress * 100).round()}%'),
+      ),
+      VoiceReady() when voice == null => l10n.adhanBuiltIn,
+      VoiceReady() => l10n.adhanDuaOnPhone(size),
+    };
+    final downloading = status is VoiceDownloading;
     return ListTile(
       contentPadding: const EdgeInsetsDirectional.only(start: 56, end: 8),
       selected: chosen,
-      leading: Icon(
-        chosen ? Icons.check_circle_rounded : Icons.circle_outlined,
-        color: chosen ? scheme.primary : scheme.outline,
-      ),
+      leading: switch (status) {
+        VoiceDownloading(:final progress) => SizedBox.square(
+          dimension: 24,
+          child: CircularProgressIndicator(
+            value: progress == 0 ? null : progress,
+            strokeWidth: 3,
+          ),
+        ),
+        _ => Icon(
+          chosen ? Icons.check_circle_rounded : Icons.circle_outlined,
+          color: chosen ? scheme.primary : scheme.outline,
+        ),
+      },
       title: Text(switch (dua) {
         AdhanDua.shaarawy => l10n.adhanDuaShaarawy,
         AdhanDua.mishary => l10n.adhanDuaMishary,
       }),
-      onTap: () => ref
-          .read(adhanSettingsProvider.notifier)
-          .change((value) => value.copyWith(dua: dua)),
-      trailing: IconButton(
-        tooltip: listening ? l10n.adhanStopListening : l10n.adhanListen,
-        icon: Icon(
-          listening ? Icons.stop_circle_outlined : Icons.play_circle_outline,
-        ),
-        onPressed: () =>
-            ref.read(adhanVoicesProvider.notifier).toggleListeningDua(dua),
+      subtitle: Text(
+        subtitle,
+        style: error ? TextStyle(color: scheme.error) : null,
+      ),
+      onTap: downloading ? null : () => notifier.chooseDua(dua),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            tooltip: listening ? l10n.adhanStopListening : l10n.adhanListen,
+            icon: Icon(
+              listening
+                  ? Icons.stop_circle_outlined
+                  : Icons.play_circle_outline,
+            ),
+            onPressed: () => notifier.toggleListeningDua(dua),
+          ),
+          if (voice != null)
+            switch (status) {
+              VoiceDownloading() => IconButton(
+                tooltip: l10n.adhanCancel,
+                icon: const Icon(Icons.close),
+                onPressed: () => notifier.cancel(voice),
+              ),
+              VoiceAvailable() => IconButton(
+                tooltip: l10n.adhanDownload(size),
+                icon: const Icon(Icons.download_outlined),
+                onPressed: () => notifier.download(voice),
+              ),
+              VoiceReady() => IconButton(
+                tooltip: l10n.adhanDelete,
+                icon: const Icon(Icons.delete_outline),
+                onPressed: () => notifier.delete(voice),
+              ),
+            },
+        ],
       ),
     );
   }

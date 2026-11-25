@@ -53,7 +53,8 @@ class AdhanAlertConfig {
     this.fajrVoicePath,
     this.announce = true,
     this.duaAfter = true,
-    this.duaRecording = 'dua_after_adhan_shaarawy',
+    this.duaRecording = 'dua_after_adhan_mishary',
+    this.duaPath,
     required this.stopWhenFlipped,
     required this.stopLabel,
     this.settingsLabel,
@@ -73,8 +74,12 @@ class AdhanAlertConfig {
   /// Whether the dua after the adhan follows it.
   final bool duaAfter;
 
-  /// The bundled recording of that dua.
+  /// The bundled recording of that dua: it plays when [duaPath] is null or
+  /// its file is gone.
   final String duaRecording;
+
+  /// The downloaded dua to play instead, if one is chosen and on the phone.
+  final String? duaPath;
 
   /// Whether turning the phone face down stops the adhan.
   final bool stopWhenFlipped;
@@ -98,6 +103,7 @@ class AdhanAlertConfig {
     'announce': announce,
     'duaAfter': duaAfter,
     'duaRecording': duaRecording,
+    'duaPath': duaPath,
     'stopWhenFlipped': stopWhenFlipped,
     'stopLabel': stopLabel,
     'settingsLabel': settingsLabel,

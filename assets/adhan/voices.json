@@ -23,6 +23,34 @@
       "builtIn": true
     },
     {
+      "id": "dua_after_adhan_shaarawy",
+      "kind": "dua",
+      "title": {
+        "ar": "محمد متولي الشعراوي",
+        "en": "Muhammad Metwalli Al-Shaarawy"
+      },
+      "place": {
+        "ar": "الدعاء بعد الأذان",
+        "en": "The dua after the adhan"
+      },
+      "bytes": 562360,
+      "sha256": "d03e57bf88adab8d92bc1502dac5a809aec52d1c931b1a13ac3fb61a3e268bc2",
+      "source": "https://archive.org/details/AD3YA---SHEKH---METOLLYAL---SHA3RAWY---MP3---Qass--nabwy--MP3",
+      "license": {
+        "name": "Permission pending",
+        "url": "https://archive.org/details/AD3YA---SHEKH---METOLLYAL---SHA3RAWY---MP3---Qass--nabwy--MP3"
+      },
+      "credit": "Sheikh Muhammad Metwalli Al-Shaarawy (supplication)",
+      "url": "https://elshoram974.github.io/mre_quran_global/adhan/dua_after_adhan_shaarawy.m4a",
+      "extension": "m4a",
+      "fallback": {
+        "url": "https://archive.org/download/AD3YA---SHEKH---METOLLYAL---SHA3RAWY---MP3---Qass--nabwy--MP3/1.MP3",
+        "bytes": 1092127,
+        "sha256": "e23caaf95d88e0db22541bb1e8c2e05c0943377c6597ee4f7f31ef62bbaefb49",
+        "extension": "mp3"
+      }
+    },
+    {
       "id": "default_fajr",
       "kind": "fajr",
       "title": {

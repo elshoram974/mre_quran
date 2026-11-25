@@ -44,6 +44,9 @@ enum AdhanKind {
 
   /// The Fajr adhan, which says "الصلاة خير من النوم" twice.
   fajr,
+
+  /// The dua after the adhan, not an adhan: chosen among the duas.
+  dua,
 }
 
 /// One adhan recording the person can choose.
@@ -127,6 +130,9 @@ class AdhanVoice {
 
   /// Whether it is a Fajr adhan.
   bool get isFajr => kind == AdhanKind.fajr;
+
+  /// Whether it is the dua after the adhan rather than an adhan.
+  bool get isDua => kind == AdhanKind.dua;
 
   /// The title in [language], else Arabic, else the id.
   String title(String language) => titles[language] ?? titles['ar'] ?? id;

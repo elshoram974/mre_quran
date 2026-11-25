@@ -45,6 +45,7 @@ Future<_Harness> _pump(
   Set<String> recordings = const {},
   bool hints = false,
   bool placed = false,
+  AdhanSettings settings = const AdhanSettings(),
 }) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
@@ -54,7 +55,7 @@ Future<_Harness> _pump(
     FakeAdhanPlatform(supported: supported)
       ..recordings = recordings
       ..unrestricted = unrestricted,
-    MemoryAdhanRepository(),
+    MemoryAdhanRepository()..settings = settings,
     FakeVoiceStore(saved: saved),
     FakeReminderScheduler()..exactAllowed = exact,
   );
@@ -94,13 +95,28 @@ Future<_Harness> _pump(
   return harness;
 }
 
-/// Scrolls until [finder] is on screen, as a person would.
-Future<void> _reveal(WidgetTester tester, Finder finder) async {
+/// Scrolls until [finder] is on screen, as a person would: down the page, or
+/// back up it when [up].
+Future<void> _reveal(
+  WidgetTester tester,
+  Finder finder, {
+  bool up = false,
+}) async {
   await tester.scrollUntilVisible(
     finder,
-    200,
+    up ? -200 : 200,
     scrollable: find.byType(Scrollable).first,
   );
+  await tester.pumpAndSettle();
+}
+
+/// Tries the alert, which hands the platform what it would play.
+Future<void> _tryAlert(WidgetTester tester) async {
+  await _reveal(tester, find.text('جرّب التنبيه الآن'));
+  await tester.tap(find.text('جرّب التنبيه الآن'));
+  await tester.pumpAndSettle();
+  // The home-screen widgets are offered a few seconds later.
+  await tester.pump(const Duration(seconds: 7));
   await tester.pumpAndSettle();
 }
 
@@ -320,6 +336,7 @@ void main() {
     tester,
   ) async {
     final h = await _pump(tester);
+    await _reveal(tester, find.text('جرّب التنبيه الآن'));
     await tester.tap(find.text('جرّب التنبيه الآن'));
     await tester.pumpAndSettle();
     expect(h.platform.tests, hasLength(1));
@@ -334,6 +351,7 @@ void main() {
     tester,
   ) async {
     await _pump(tester, hints: true);
+    await _reveal(tester, find.text('جرّب التنبيه الآن'));
     await tester.tap(find.text('جرّب التنبيه الآن'));
     await tester.pump(const Duration(seconds: 7));
     await tester.pumpAndSettle();
@@ -345,6 +363,7 @@ void main() {
     tester,
   ) async {
     await _pump(tester, hints: true, placed: true);
+    await _reveal(tester, find.text('جرّب التنبيه الآن'));
     await tester.tap(find.text('جرّب التنبيه الآن'));
     await tester.pump(const Duration(seconds: 7));
     await tester.pumpAndSettle();
@@ -443,27 +462,141 @@ void main() {
     expect(find.text('إعلان الصلاة قبل الأذان'), findsOneWidget);
   });
 
-  testWidgets('the dua after the adhan: chosen by voice, heard before', (
+  /// The row of the dua in [name]'s voice.
+  Finder duaRow(String name) =>
+      find.ancestor(of: find.text(name), matching: find.byType(ListTile));
+
+  Future<void> tapInDuaRow(
+    WidgetTester tester,
+    String name,
+    String tooltip,
+  ) async {
+    await tester.tap(
+      find.descendant(of: duaRow(name), matching: find.byTooltip(tooltip)),
+    );
+    await tester.pumpAndSettle();
+  }
+
+  const mishary = 'بصوت الشيخ مشاري العفاسي';
+  const shaarawy = 'بصوت الشيخ محمد متولي الشعراوي';
+
+  testWidgets('the dua after the adhan: the bundled one plays, heard before', (
     tester,
   ) async {
     final h = await _pump(tester);
-    expect(h.adhan.settings.dua, AdhanDua.shaarawy);
-    await _reveal(tester, find.text('بصوت الشيخ مشاري العفاسي'));
-    await tester.tap(
-      find.descendant(
-        of: find.ancestor(
-          of: find.text('بصوت الشيخ مشاري العفاسي'),
-          matching: find.byType(ListTile),
-        ),
-        matching: find.byTooltip('استماع'),
-      ),
+    expect(h.adhan.settings.dua, AdhanDua.mishary);
+    await _reveal(tester, find.text(mishary));
+    expect(
+      find.descendant(of: duaRow(mishary), matching: find.text('مدمج')),
+      findsOneWidget,
     );
-    await tester.pumpAndSettle();
+    expect(
+      find.descendant(
+        of: duaRow(mishary),
+        matching: find.byIcon(Icons.check_circle_rounded),
+      ),
+      findsOneWidget,
+    );
+    await tapInDuaRow(tester, mishary, 'استماع');
     final heard = h.platform.previews.single as RawPreview;
     expect(heard.name, 'dua_after_adhan_mishary');
-    await tester.tap(find.text('بصوت الشيخ مشاري العفاسي'));
-    await tester.pumpAndSettle();
+  });
+
+  testWidgets('the other dua is heard from the network, and downloaded and '
+      'chosen with a tap', (tester) async {
+    final h = await _pump(tester);
+    await _reveal(tester, find.text(shaarawy));
+    // Not on the phone: says so, with its size.
+    expect(
+      find.descendant(
+        of: duaRow(shaarawy),
+        matching: find.textContaining('يُنزَّل عند اختياره'),
+      ),
+      findsOneWidget,
+    );
+    await tapInDuaRow(tester, shaarawy, 'استماع');
+    expect(h.platform.previews.single, isA<StreamPreview>());
+
+    final gate = h.store.gate = Completer<void>();
+    await tester.tap(find.text(shaarawy));
+    await tester.pump();
+    expect(
+      find.descendant(
+        of: duaRow(shaarawy),
+        matching: find.byType(CircularProgressIndicator),
+      ),
+      findsOneWidget,
+    );
+    // Still the bundled one until it is on the phone.
     expect(h.adhan.settings.dua, AdhanDua.mishary);
+    gate.complete();
+    await tester.pumpAndSettle();
+    expect(h.store.saved, contains(kShaarawyDuaVoice.id));
+    expect(h.adhan.settings.dua, AdhanDua.shaarawy);
+    expect(
+      find.descendant(
+        of: duaRow(shaarawy),
+        matching: find.byIcon(Icons.check_circle_rounded),
+      ),
+      findsOneWidget,
+    );
+    // The alert plays the downloaded file.
+    await _tryAlert(tester);
+    expect(
+      h.platform.config!.duaPath,
+      endsWith('dua_after_adhan_shaarawy.audio'),
+    );
+    expect(h.platform.config!.duaRecording, 'dua_after_adhan_mishary');
+
+    // Deleted: the bundled one is chosen again.
+    await _reveal(tester, find.text(shaarawy), up: true);
+    await tapInDuaRow(tester, shaarawy, 'حذف التنزيل');
+    expect(h.store.saved, isNot(contains(kShaarawyDuaVoice.id)));
+    expect(h.adhan.settings.dua, AdhanDua.mishary);
+  });
+
+  testWidgets('a chosen dua whose file is gone: the bundled one is shown in '
+      'use, and plays', (tester) async {
+    final h = await _pump(
+      tester,
+      settings: const AdhanSettings(dua: AdhanDua.shaarawy),
+    );
+    await _reveal(tester, find.text(shaarawy));
+    expect(
+      find.descendant(
+        of: duaRow(mishary),
+        matching: find.byIcon(Icons.check_circle_rounded),
+      ),
+      findsOneWidget,
+    );
+    await _tryAlert(tester);
+    expect(h.platform.config!.duaPath, isNull);
+  });
+
+  testWidgets('a failed download of the dua says why on its row', (
+    tester,
+  ) async {
+    final h = await _pump(tester);
+    h.store.failWith = VoiceDownloadFailure.network;
+    await _reveal(tester, find.text(shaarawy));
+    await tester.tap(find.text(shaarawy));
+    await tester.pumpAndSettle();
+    expect(
+      find.descendant(
+        of: duaRow(shaarawy),
+        matching: find.text('تعذّر التنزيل. تحقق من الاتصال وأعد المحاولة.'),
+      ),
+      findsOneWidget,
+    );
+    expect(h.adhan.settings.dua, AdhanDua.mishary);
+  });
+
+  testWidgets('the dua rows fit with large text on a narrow phone', (
+    tester,
+  ) async {
+    await _pump(tester, size: const Size(320, 700), textScale: 2);
+    await _reveal(tester, find.text(shaarawy));
+    expect(tester.takeException(), isNull);
   });
 }
 

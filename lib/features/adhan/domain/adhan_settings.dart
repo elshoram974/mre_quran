@@ -2,24 +2,35 @@ import 'package:flutter/foundation.dart';
 
 import 'adhan_voice.dart';
 
-/// Whose voice says the dua after the adhan.
+/// Whose voice says the dua after the adhan. One ships with the app and
+/// plays unless another is chosen; the other is a catalogue voice
+/// ([AdhanKind.dua]), heard from the network or downloaded first.
 enum AdhanDua {
-  /// Sheikh Muhammad Metwalli Al-Shaarawy.
-  shaarawy('dua_after_adhan_shaarawy'),
-
   /// Sheikh Mishary Rashid Alafasy, the voice of the bundled Fajr adhan.
-  mishary('dua_after_adhan_mishary');
+  /// Ships with the app.
+  mishary(recording: 'dua_after_adhan_mishary'),
 
-  const AdhanDua(this.recording);
+  /// Sheikh Muhammad Metwalli Al-Shaarawy. Downloaded on demand.
+  shaarawy(voiceId: 'dua_after_adhan_shaarawy');
 
-  /// The bundled recording's name.
-  final String recording;
+  const AdhanDua({this.recording, this.voiceId});
 
-  /// The dua stored as [name], or the default.
-  static AdhanDua parse(String? name) => values.firstWhere(
-    (dua) => dua.name == name,
-    orElse: () => AdhanDua.shaarawy,
-  );
+  /// The bundled recording's name, for the one that ships with the app.
+  final String? recording;
+
+  /// The catalogue id of a dua that is downloaded.
+  final String? voiceId;
+
+  /// The one that ships with the app: it plays when the chosen one is not on
+  /// the phone.
+  static const AdhanDua bundled = mishary;
+
+  /// The bundled recording that plays when nothing else can.
+  static String get bundledRecording => bundled.recording!;
+
+  /// The dua stored as [name], or the bundled one.
+  static AdhanDua parse(String? name) =>
+      values.firstWhere((dua) => dua.name == name, orElse: () => bundled);
 }
 
 /// How the alert at prayer time sounds and behaves.
@@ -31,7 +42,7 @@ class AdhanSettings {
     this.fajrVoiceId = AdhanVoice.defaultFajrId,
     this.announce = true,
     this.duaAfter = true,
-    this.dua = AdhanDua.shaarawy,
+    this.dua = AdhanDua.bundled,
     this.playAdhan = true,
     this.stopWhenFlipped = true,
     this.customPath,

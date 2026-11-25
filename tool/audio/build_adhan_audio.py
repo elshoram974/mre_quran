@@ -15,9 +15,11 @@ Then it is cut, cleaned, and evened out the same way:
 
 Besides the adhan voices, the file lists the short sounds of the reminders:
 the iqama phrase ("iqama") and the voice that says «اقتربت صلاة …» before each
-prayer ("nearPrayer"). They are bundled like the dua, may take their own
-"loudness", "bitrate", "iosRate" and "fadeOut", and are not part of the voices
-catalogue. A recording that is one file inside a zip names it in "zipEntry"
+prayer ("nearPrayer"). They are bundled, may take their own "loudness",
+"bitrate", "iosRate" and "fadeOut", and are not part of the voices catalogue.
+One dua after the adhan ("dua") is bundled and is not in the catalogue
+either; another, with no "bundled", goes to --media and is listed in the
+catalogue with kind "dua", so the app can download it. A recording that is one file inside a zip names it in "zipEntry"
 and gives that file's own "entrySha256".
 
 A recording with an "iosClip" also gives iOS its notification sound: its
@@ -26,7 +28,8 @@ in assets/adhan/ios (bundled for iOS only).
 
 Bundled recordings go to android/app/src/main/res/raw at 64 kb/s (a short
 sound may give a lower "bitrate", and its iOS sound a lower "iosRate"); the others
-go to --media (the files of the media repository) at 96 kb/s. The catalogue
+go to --media (the files of the media repository) at 96 kb/s, or their own
+"bitrate". The catalogue
 assets/adhan/voices.json is written from the results, with each file's size
 and SHA-256, so the app checks every download.
 
@@ -37,7 +40,7 @@ fallback when that fails), "media"
 (the cleaned files only) or "source" (originals for uncut recordings; edited recordings always use the hosted edit).
 
 --only builds just the recordings with the given ids (comma separated) and
-leaves the catalogue as it is.
+updates only their entries in the catalogue.
 
 Needs ffmpeg and ffprobe. Run from the repository root:
 
@@ -147,7 +150,7 @@ def main() -> None:
     parser.add_argument("--serve", choices=["global", "media", "source"],
                         default="global")
     parser.add_argument("--only", default="",
-                        help="comma separated ids to build; the catalogue is kept")
+                        help="comma separated ids to build; only their catalogue entries change")
     options = parser.parse_args()
     if not options.base.startswith("https://"):
         sys.exit(f"--serve {options.serve} needs an https --base")
@@ -184,7 +187,8 @@ def main() -> None:
                   recording.get("bitrate", "64k"), work)
         else:
             target = options.media / "adhan" / f"{recording['id']}.m4a"
-            build(source, recording, spec["loudness"], target, "96k", work)
+            build(source, recording, spec["loudness"], target,
+                  recording.get("bitrate", "96k"), work)
         cropped = "start" in recording or "end" in recording
         clip = recording.get("iosClip")
         if clip:
@@ -200,7 +204,8 @@ def main() -> None:
         print(f"{target.relative_to(ROOT) if target.is_relative_to(ROOT) else target}"
               f"  {target.stat().st_size:>9,} bytes  {duration(target):6.1f} s"
               f"  {sha256(target)}")
-        if recording["kind"] in ("dua", "iqama", "nearPrayer"):
+        if recording["kind"] in ("iqama", "nearPrayer") or (
+                recording["kind"] == "dua" and bundled):
             continue
         voice = {
             "id": recording["id"],
@@ -239,7 +244,13 @@ def main() -> None:
         voices.append(voice)
 
     if only:
-        return
+        # Keep the other entries; put the rebuilt ones in the sources' order.
+        built = {voice["id"]: voice for voice in voices}
+        kept = {voice["id"]: voice
+                for voice in json.loads(CATALOG.read_text())["voices"]}
+        kept.update(built)
+        voices = [kept[recording["id"]] for recording in spec["recordings"]
+                  if recording["id"] in kept]
     CATALOG.write_text(
         json.dumps({"schema": 2, "voices": voices}, ensure_ascii=False,
                    indent=2) + "\n")

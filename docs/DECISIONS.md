@@ -698,3 +698,18 @@
   earlier set in Egyptian pronunciation was dropped); permission is asked for (`AUDIO_PENDING_LICENCES.md`, W6).
 - **Limit:** with the iqama's notices Android is now given up to 300 notifications at once (it was 150), well below the
   alarms a phone allows an app; the plan still covers 30 days and is made again at each start.
+
+## D-064: One dua after the adhan ships with the app; the other is downloaded
+
+- **Decision:** Of the two voices of the dua after the adhan, Sheikh Mishary Alafasy's ships with the app (143 KB) and
+  is the default; Sheikh Al-Shaarawy's (562 KB) is served from the media repository (`mre_quran_global`,
+  `adhan/dua_after_adhan_shaarawy.m4a`, its archive.org original as the fallback) as a catalogue voice of kind `dua`.
+  On the Adhan page, under the dua switch, each has a row: the bundled one is chosen with a tap; the other can be
+  heard from the network, is downloaded with its button or by choosing it (and is chosen once it is on the phone),
+  shows its progress and why a download failed, and can be deleted. The alert plays the downloaded file
+  (`duaPath`); when it is missing, or another is chosen, the bundled one plays (`duaRecording`).
+- **Why:** the owner asked for one of them inside the app and the other on demand, to keep the app light. The
+  smaller one is the one bundled; a person who chose the other before this change keeps the bundled one playing
+  until they download it.
+- **Also:** each voice card on the Adhan page now watches only its own state, so a download's progress no longer
+  rebuilds the whole page.
