@@ -56,6 +56,7 @@ class AdhanAlertConfig {
     this.duaRecording = 'dua_after_adhan_mishary',
     this.duaPath,
     required this.stopWhenFlipped,
+    this.stopWithVolumeKeys = true,
     required this.stopLabel,
     this.settingsLabel,
     required this.channelName,
@@ -84,6 +85,9 @@ class AdhanAlertConfig {
   /// Whether turning the phone face down stops the adhan.
   final bool stopWhenFlipped;
 
+  /// Whether a press of a volume button stops the adhan.
+  final bool stopWithVolumeKeys;
+
   /// The text of the notice's stop button.
   final String stopLabel;
 
@@ -105,6 +109,7 @@ class AdhanAlertConfig {
     'duaRecording': duaRecording,
     'duaPath': duaPath,
     'stopWhenFlipped': stopWhenFlipped,
+    'stopWithVolumeKeys': stopWithVolumeKeys,
     'stopLabel': stopLabel,
     'settingsLabel': settingsLabel,
     'channelName': channelName,

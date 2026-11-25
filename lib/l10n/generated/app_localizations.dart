@@ -1777,6 +1777,18 @@ abstract class AppLocalizations {
   /// **'Put the screen against the table to silence it.'**
   String get adhanFlipHint;
 
+  /// No description provided for @adhanVolumeKeysSwitch.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop the adhan with the volume buttons'**
+  String get adhanVolumeKeysSwitch;
+
+  /// No description provided for @adhanVolumeKeysHint.
+  ///
+  /// In en, this message translates to:
+  /// **'A press of volume up or down stops the adhan, as it silences a ringing call.'**
+  String get adhanVolumeKeysHint;
+
   /// No description provided for @adhanAnnounceSwitch.
   ///
   /// In en, this message translates to:

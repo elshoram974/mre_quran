@@ -45,6 +45,7 @@ class AdhanSettings {
     this.dua = AdhanDua.bundled,
     this.playAdhan = true,
     this.stopWhenFlipped = true,
+    this.stopWithVolumeKeys = true,
     this.customPath,
     this.customName,
   });
@@ -73,6 +74,10 @@ class AdhanSettings {
   /// Whether turning the phone face down stops the adhan.
   final bool stopWhenFlipped;
 
+  /// Whether a press of a volume button stops the adhan, as it silences a
+  /// ringing call.
+  final bool stopWithVolumeKeys;
+
   /// Where the file the person picked from their phone was copied to.
   final String? customPath;
 
@@ -91,6 +96,7 @@ class AdhanSettings {
     AdhanDua? dua,
     bool? playAdhan,
     bool? stopWhenFlipped,
+    bool? stopWithVolumeKeys,
     String? customPath,
     String? customName,
     bool clearCustom = false,
@@ -102,6 +108,7 @@ class AdhanSettings {
     dua: dua ?? this.dua,
     playAdhan: playAdhan ?? this.playAdhan,
     stopWhenFlipped: stopWhenFlipped ?? this.stopWhenFlipped,
+    stopWithVolumeKeys: stopWithVolumeKeys ?? this.stopWithVolumeKeys,
     customPath: clearCustom ? null : (customPath ?? this.customPath),
     customName: clearCustom ? null : (customName ?? this.customName),
   );
@@ -116,6 +123,7 @@ class AdhanSettings {
       other.dua == dua &&
       other.playAdhan == playAdhan &&
       other.stopWhenFlipped == stopWhenFlipped &&
+      other.stopWithVolumeKeys == stopWithVolumeKeys &&
       other.customPath == customPath &&
       other.customName == customName;
 
@@ -128,6 +136,7 @@ class AdhanSettings {
     dua,
     playAdhan,
     stopWhenFlipped,
+    stopWithVolumeKeys,
     customPath,
     customName,
   );

@@ -970,6 +970,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adhanFlipHint => 'Put the screen against the table to silence it.';
 
   @override
+  String get adhanVolumeKeysSwitch => 'Stop the adhan with the volume buttons';
+
+  @override
+  String get adhanVolumeKeysHint =>
+      'A press of volume up or down stops the adhan, as it silences a ringing call.';
+
+  @override
   String get adhanAnnounceSwitch => 'Announce the prayer before the adhan';
 
   @override

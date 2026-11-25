@@ -160,6 +160,7 @@ Future<AdhanAlertConfig> buildAdhanConfig({
       null => null,
     },
     stopWhenFlipped: settings.stopWhenFlipped,
+    stopWithVolumeKeys: settings.stopWithVolumeKeys,
     stopLabel: l10n.adhanStopAction,
     settingsLabel: l10n.notificationSettings,
     channelName: l10n.adhanChannelName,

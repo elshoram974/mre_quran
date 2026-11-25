@@ -25,6 +25,7 @@ class LocalAdhanRepository implements AdhanRepository {
   static const _duaVoiceKey = 'adhan.duaVoice';
   static const _playKey = 'adhan.play';
   static const _flipKey = 'adhan.flip';
+  static const _volumeKeysKey = 'adhan.volumeKeys';
   static const _customPathKey = 'adhan.customPath';
   static const _customNameKey = 'adhan.customName';
 
@@ -42,6 +43,9 @@ class LocalAdhanRepository implements AdhanRepository {
       playAdhan: await _preferences.getBool(_playKey) ?? defaults.playAdhan,
       stopWhenFlipped:
           await _preferences.getBool(_flipKey) ?? defaults.stopWhenFlipped,
+      stopWithVolumeKeys:
+          await _preferences.getBool(_volumeKeysKey) ??
+          defaults.stopWithVolumeKeys,
       customPath: await _preferences.getString(_customPathKey),
       customName: await _preferences.getString(_customNameKey),
     );
@@ -56,6 +60,7 @@ class LocalAdhanRepository implements AdhanRepository {
     await _preferences.setString(_duaVoiceKey, settings.dua.name);
     await _preferences.setBool(_playKey, settings.playAdhan);
     await _preferences.setBool(_flipKey, settings.stopWhenFlipped);
+    await _preferences.setBool(_volumeKeysKey, settings.stopWithVolumeKeys);
     final path = settings.customPath;
     final name = settings.customName;
     if (path == null) {

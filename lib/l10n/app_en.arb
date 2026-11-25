@@ -302,6 +302,8 @@
   "adhanPlayHint": "It starts by itself, with a notice that stays on screen until you stop it, like a call.",
   "adhanFlipSwitch": "Stop when the phone is turned face down",
   "adhanFlipHint": "Put the screen against the table to silence it.",
+  "adhanVolumeKeysSwitch": "Stop the adhan with the volume buttons",
+  "adhanVolumeKeysHint": "A press of volume up or down stops the adhan, as it silences a ringing call.",
   "adhanAnnounceSwitch": "Announce the prayer before the adhan",
   "adhanAnnounceHint": "\"It is now time for the Dhuhr adhan\", then the adhan.",
   "adhanDuaSwitch": "Dua after the adhan",

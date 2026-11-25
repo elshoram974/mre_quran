@@ -24,11 +24,12 @@ import org.json.JSONObject
  * incoming call does: the announcement of the prayer, the adhan, and the
  * dua after it, one after another (see [AdhanAudio.steps]). It stops when
  * the last ends, when the person taps Stop, and (if chosen) when the phone
- * is turned face down.
+ * is turned face down or a volume button is pressed.
  */
 class AdhanService : Service() {
     private var player: MediaPlayer? = null
     private var flip: FlipDetector? = null
+    private var volumeKeys: VolumeKeyStopper? = null
     private var focus: AudioFocusRequest? = null
     private var legacyFocusAcquired = false
     private val legacyFocusListener = AudioManager.OnAudioFocusChangeListener { }
@@ -50,6 +51,9 @@ class AdhanService : Service() {
         play(AdhanAudio.steps(this, alarm, config))
         if (config.optBoolean("stopWhenFlipped", true)) {
             flip = FlipDetector(this) { finish() }.also { it.start() }
+        }
+        if (config.optBoolean("stopWithVolumeKeys", true)) {
+            volumeKeys = VolumeKeyStopper(this) { main.post { finish() } }.also { it.start() }
         }
         return START_NOT_STICKY
     }
@@ -111,6 +115,8 @@ class AdhanService : Service() {
         steps.clear()
         flip?.stop()
         flip = null
+        volumeKeys?.stop()
+        volumeKeys = null
         player?.let {
             try {
                 it.stop()

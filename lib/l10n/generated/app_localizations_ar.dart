@@ -963,6 +963,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get adhanFlipHint => 'ضع الشاشة على السطح ليسكت الصوت.';
 
   @override
+  String get adhanVolumeKeysSwitch => 'إيقاف الأذان بأزرار الصوت';
+
+  @override
+  String get adhanVolumeKeysHint =>
+      'ضغطة على رفع الصوت أو خفضه توقف الأذان، كما تُسكت رنين المكالمة.';
+
+  @override
   String get adhanAnnounceSwitch => 'إعلان الصلاة قبل الأذان';
 
   @override

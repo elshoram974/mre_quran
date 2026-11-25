@@ -462,6 +462,18 @@ void main() {
     expect(find.text('إعلان الصلاة قبل الأذان'), findsOneWidget);
   });
 
+  testWidgets('the volume buttons can stop the adhan, or not', (tester) async {
+    final h = await _pump(tester);
+    expect(h.adhan.settings.stopWithVolumeKeys, isTrue);
+    await _reveal(tester, find.text('إيقاف الأذان بأزرار الصوت'));
+    await tester.tap(find.text('إيقاف الأذان بأزرار الصوت'));
+    await tester.pumpAndSettle();
+    expect(h.adhan.settings.stopWithVolumeKeys, isFalse);
+    await _tryAlert(tester);
+    expect(h.platform.config!.stopWithVolumeKeys, isFalse);
+    expect(h.platform.config!.toMap()['stopWithVolumeKeys'], isFalse);
+  });
+
   /// The row of the dua in [name]'s voice.
   Finder duaRow(String name) =>
       find.ancestor(of: find.text(name), matching: find.byType(ListTile));

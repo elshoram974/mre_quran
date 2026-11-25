@@ -212,6 +212,17 @@ class _AlertSection extends ConsumerWidget {
               subtitle: l10n.adhanFlipHint,
               icon: Icons.screen_rotation_alt_outlined,
             ),
+            AppSwitchTile(
+              value: settings.stopWithVolumeKeys,
+              onChanged: settings.playAdhan
+                  ? (on) => notifier.change(
+                      (value) => value.copyWith(stopWithVolumeKeys: on),
+                    )
+                  : null,
+              title: l10n.adhanVolumeKeysSwitch,
+              subtitle: l10n.adhanVolumeKeysHint,
+              icon: Icons.volume_off_outlined,
+            ),
             // Offered once the app carries the announcement recordings.
             if (announcements)
               AppSwitchTile(
