@@ -15,6 +15,7 @@ import '../../settings/application/settings_provider.dart';
 import '../../settings/application/digits_provider.dart';
 import '../../settings/domain/app_settings.dart';
 import '../application/reader_immersive_provider.dart';
+import '../application/reader_orientation_provider.dart';
 import '../application/reading_position_provider.dart';
 import '../../../core/l10n/l10n.dart';
 import '../application/ayah_selection_provider.dart';
@@ -359,8 +360,10 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
   DateTime? _suggestedAt;
 
   /// Two fingers spread on a printed page, which cannot be enlarged: suggest
-  /// what does read bigger. Held upright, turning the phone sideways gives
-  /// the page its wider side; held sideways, the typeset text does.
+  /// what does read bigger. A phone held upright turns sideways to give the
+  /// page its wider side; held sideways, or on a tablet, which the app cannot
+  /// turn ([readerCanTurn]) and where sideways shows two smaller pages, the
+  /// typeset text does.
   void _suggestBiggerText() {
     final now = DateTime.now();
     final last = _suggestedAt;
@@ -368,20 +371,21 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
       return;
     }
     final l10n = context.l10n;
-    final landscape =
-        MediaQuery.orientationOf(context) == Orientation.landscape;
+    final rotate =
+        MediaQuery.orientationOf(context) == Orientation.portrait &&
+        readerCanTurn(context);
     final canUseText =
         widget.text != null && ref.read(printedEditionProvider).matchesAppText;
-    if (landscape && !canUseText) return;
+    if (!rotate && !canUseText) return;
     _suggestedAt = now;
     ScaffoldMessenger.maybeOf(context)
       ?..hideCurrentSnackBar()
       ..showSnackBar(
         AppSnackBar(
-          landscape ? l10n.pinchTextHint : l10n.pinchLandscapeHint,
+          rotate ? l10n.pinchLandscapeHint : l10n.pinchTextHint,
           action: SnackBarAction(
-            label: landscape ? l10n.pinchTextAction : l10n.pinchLandscapeAction,
-            onPressed: landscape ? _showAsText : turnReaderLandscape,
+            label: rotate ? l10n.pinchLandscapeAction : l10n.pinchTextAction,
+            onPressed: rotate ? _turnLandscape : _showAsText,
           ),
         ),
       );
@@ -389,6 +393,10 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
 
   void _showAsText() =>
       ref.read(settingsProvider.notifier).chooseReaderMode(ReaderMode.text);
+
+  void _turnLandscape() => ref
+      .read(readerOrientationProvider.notifier)
+      .hold(ReaderOrientation.landscape);
 
   void _onTap() {
     ref.read(highlightedAyahProvider.notifier).clear();

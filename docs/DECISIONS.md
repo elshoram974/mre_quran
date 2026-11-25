@@ -785,3 +785,16 @@
 - **Why:** the owner wants the realistic turn by default where two pages show, and on a tablet's wide single page
   instead of a slide.
 
+## D-071: The reader turns sideways only where the system lets it
+
+- **Decision:** How the reader is held (as the device turns, upright, or sideways) is reader state, applied only while
+  the reader is the screen in sight. Leaving it for another tab, or covering it with another page, gives the app back
+  its own orientations (an empty list: the Info.plist on iOS, the manifest on Android); coming back holds it again.
+  The *Landscape/Portrait reading* button, and the *Rotate* action of the hint after a pinch, show only on a screen
+  whose shortest side is under 600 (a phone); a tablet gets no button and the pinch hint offers the typeset text
+  instead. Upright asks iOS only for portrait, the one upright orientation the iPhone's Info.plist lists.
+- **Why:** the owner found the button wrong on iOS. iPadOS ignores the orientation an app asks for when the app can
+  share the screen (this one can, and every app can from iPadOS 26), so the button did nothing on an iPad; Android 16
+  does the same on screens 600 dp across and wider for apps targeting it. The reader is a tab kept alive behind the
+  others, so its lock was released only if the reader was destroyed, which leaving the tab never does: once turned,
+  the whole app stayed held that way.

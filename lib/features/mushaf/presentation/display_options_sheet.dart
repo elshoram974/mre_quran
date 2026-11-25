@@ -86,7 +86,7 @@ class _DisplayOptions extends ConsumerWidget {
           const SurahFrameField(),
           const SizedBox(height: 12),
           const PageTurnField(),
-          const SizedBox(height: 12),
+          // On a phone only; it brings its own gap.
           const ReaderOrientationTile(),
           const SizedBox(height: 12),
           const ThemePickers(),

@@ -51,7 +51,10 @@ Future<Set<int>> _pump(
   _stretches.clear();
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
+  // The window fills the screen, as an app's does on a phone.
+  tester.view.display.size = size;
   addTearDown(tester.view.reset);
+  addTearDown(tester.view.display.reset);
   final asked = <int>{};
   final storage = Directory.systemTemp.createTempSync('warm');
   addTearDown(() => storage.deleteSync(recursive: true));
@@ -285,7 +288,9 @@ void main() {
   });
 
   Future<void> pinchOut(WidgetTester tester) async {
-    final center = tester.getCenter(find.byType(PinchOut));
+    // Turning like paper, as on a tablet, the pages either side are built
+    // too, out of sight.
+    final center = tester.getCenter(find.byType(PinchOut).hitTestable());
     final first = await tester.startGesture(center - const Offset(50, 0));
     final second = await tester.startGesture(center + const Offset(50, 0));
     await first.moveTo(center - const Offset(90, 0));
@@ -325,6 +330,31 @@ void main() {
     expect(orientations, [
       ['DeviceOrientation.landscapeLeft', 'DeviceOrientation.landscapeRight'],
     ]);
+  });
+
+  testWidgets('on a tablet, which the app cannot turn, the suggestion is '
+      'the typeset text', (tester) async {
+    final orientations = <Object?>[];
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      SystemChannels.platform,
+      (call) async {
+        if (call.method == 'SystemChrome.setPreferredOrientations') {
+          orientations.add(call.arguments);
+        }
+        return null;
+      },
+    );
+    addTearDown(
+      () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        null,
+      ),
+    );
+    await _pump(tester, page: 10, size: const Size(820, 1180));
+    await pinchOut(tester);
+    expect(find.text('لتكبير الخط أكثر، أدر الهاتف بالعرض'), findsNothing);
+    expect(find.text('للقراءة بخط أكبر، اعرض الصفحة كنص'), findsOneWidget);
+    expect(orientations, isEmpty);
   });
 
   testWidgets('held sideways, the suggestion is the typeset text, and it '
