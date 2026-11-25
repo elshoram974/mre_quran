@@ -166,6 +166,8 @@ class _ReaderControlsState extends ConsumerState<ReaderControls>
               child: IconButton(
                 onPressed: widget.onDisplayOptions,
                 tooltip: l10n.displayOptions,
+                // The reader's buttons take the accent, as the toolbar's do.
+                color: Theme.of(context).colorScheme.primary,
                 icon: const Icon(Icons.tune_rounded),
               ),
             ),

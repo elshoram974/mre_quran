@@ -306,6 +306,14 @@ void main() {
     expect(tester.getRect(find.byType(ReaderPlacePill)), pill);
   });
 
+  testWidgets('the toolbar keeps the bookmarks at hand: they open the index '
+      'on its bookmarks', (tester) async {
+    await _pump(tester);
+    await tester.tap(find.byTooltip('العلامات'));
+    await tester.pumpAndSettle();
+    expect(find.text('لا توجد علامات بعد'), findsOneWidget);
+  });
+
   testWidgets('the bookmark button marks the page and unmarks it', (
     tester,
   ) async {

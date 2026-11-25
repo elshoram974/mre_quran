@@ -1550,6 +1550,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get asbabTitle => 'أسباب النزول';
 
   @override
+  String get asbabNone => 'لا يوجد لدينا سبب نزول مسجَّل لهذه الآية.';
+
+  @override
+  String get tafsirNone => 'لا يوجد لدينا تفسير مسجَّل لهذه الآية.';
+
+  @override
   String asbabAyah(String ayah) {
     return 'الآية $ayah';
   }

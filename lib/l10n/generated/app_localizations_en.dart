@@ -1562,6 +1562,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get asbabTitle => 'Occasions of revelation';
 
   @override
+  String get asbabNone =>
+      'No occasion of revelation is recorded here for this ayah.';
+
+  @override
+  String get tafsirNone => 'No tafsir is recorded here for this ayah.';
+
+  @override
   String asbabAyah(String ayah) {
     return 'Ayah $ayah';
   }

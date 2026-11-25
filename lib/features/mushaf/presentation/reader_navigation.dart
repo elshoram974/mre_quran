@@ -26,6 +26,23 @@ Future<void> openReaderRoute(
         )
       : await context.push<ReaderDestination>(route.path);
   if (chosen == null || !context.mounted) return;
+  await _go(ref, chosen);
+}
+
+/// Opens the index on the bookmarks, over the reader, and goes where the
+/// person picks.
+Future<void> openReaderBookmarks(BuildContext context, WidgetRef ref) async {
+  final chosen = await AppSheet.showFilling<ReaderDestination>(
+    context: context,
+    initialSize: 1,
+    builder: (_, scroll) =>
+        QuranIndexPage(sheetScroll: scroll, openOnBookmarks: true),
+  );
+  if (chosen == null || !context.mounted) return;
+  await _go(ref, chosen);
+}
+
+Future<void> _go(WidgetRef ref, ReaderDestination chosen) async {
   final highlight = ref.read(highlightedAyahProvider.notifier);
   if (chosen.ayah == null) {
     highlight.clear();

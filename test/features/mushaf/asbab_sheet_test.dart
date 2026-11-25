@@ -22,7 +22,7 @@ final _asbab = Asbab(
     'قال ابن عباس: نزلت ﴿ٱللَّهُ لَآ إِلَٰهَ إِلَّا هُوَ﴾ في سبب معروف.',
   ],
   index: {
-    const AyahRef(2, 255): [0],
+    const AyahRef(112, 1): [0],
   },
 );
 
@@ -68,27 +68,41 @@ Future<void> _open(WidgetTester tester, AyahRef ayah) async {
 }
 
 void main() {
-  testWidgets('an ayah with an occasion offers it, and its sheet reads it', (
+  testWidgets('an ayah\'s occasion opens as its tafsir does, and steps on', (
     tester,
   ) async {
-    await _open(tester, const AyahRef(2, 255));
+    await _open(tester, const AyahRef(112, 1));
     await tester.ensureVisible(find.text('سبب النزول'));
     await tester.tap(find.text('سبب النزول'));
     await tester.pumpAndSettle();
     expect(find.text('أسباب النزول'), findsOneWidget);
-    expect(find.text('سورة البقرة'), findsOneWidget);
-    expect(find.text('الآية ٢٥٥'), findsOneWidget);
+    expect(find.textContaining('الإخلاص'), findsWidgets);
     expect(
       find.textContaining('قال ابن عباس', findRichText: true),
       findsOneWidget,
     );
     expect(find.textContaining('quranpedia.net'), findsOneWidget);
+    // The next ayah has none: said plainly.
+    await tester.tap(find.byTooltip('الآية التالية'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('لا يوجد لدينا سبب نزول مسجَّل لهذه الآية.'),
+      findsOneWidget,
+    );
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('an ayah with none does not offer it', (tester) async {
+  testWidgets('an ayah with none still offers it, and says none is recorded', (
+    tester,
+  ) async {
     await _open(tester, const AyahRef(2, 254));
-    expect(find.text('سبب النزول'), findsNothing);
     expect(find.text('التفسير'), findsOneWidget);
+    await tester.ensureVisible(find.text('سبب النزول'));
+    await tester.tap(find.text('سبب النزول'));
+    await tester.pumpAndSettle();
+    expect(
+      find.text('لا يوجد لدينا سبب نزول مسجَّل لهذه الآية.'),
+      findsOneWidget,
+    );
   });
 }

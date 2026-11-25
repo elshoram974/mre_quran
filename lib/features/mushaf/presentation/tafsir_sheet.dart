@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/theme/quran_colors.dart';
+import '../../../core/widgets/app_notice.dart';
 import '../../../core/widgets/app_sheet.dart';
 import '../../../core/widgets/app_surface_card.dart';
 import '../../adhkar/application/adhkar_font_scale_provider.dart';
@@ -219,6 +220,15 @@ class _TafsirSheetState extends ConsumerState<TafsirSheet> {
                         ),
                         const SizedBox(height: AppTokens.spaceMedium),
                         switch (tafsir) {
+                          // Said plainly when the source has nothing for it.
+                          AsyncValue(:final value?)
+                              when value.every(
+                                (entry) => entry.tafsir.plain.trim().isEmpty,
+                              ) =>
+                            AppNotice(
+                              l10n.tafsirNone,
+                              icon: Icons.info_outline,
+                            ),
                           AsyncValue(:final value?) => Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [

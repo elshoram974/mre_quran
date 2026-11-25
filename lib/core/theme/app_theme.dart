@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:cupertino_ui/cupertino_ui.dart' show CupertinoThemeData;
 import 'package:material_ui/material_ui.dart';
 import 'package:mre_fields/mre_fields.dart';
 
@@ -60,6 +61,15 @@ abstract final class AppTheme {
       useMaterial3: true,
       colorScheme: scheme,
       textTheme: text,
+      // Cupertino widgets and the glass ones read their accent from here; left
+      // alone, some fall back to the system blue.
+      cupertinoOverrideTheme: CupertinoThemeData(
+        brightness: scheme.brightness,
+        primaryColor: scheme.primary,
+        primaryContrastingColor: scheme.onPrimary,
+        barBackgroundColor: surfaces.raised,
+        scaffoldBackgroundColor: scheme.surface,
+      ),
       scaffoldBackgroundColor: scheme.surface,
       visualDensity: VisualDensity.standard,
       appBarTheme: AppBarTheme(

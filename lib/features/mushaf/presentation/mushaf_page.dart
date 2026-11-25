@@ -133,9 +133,12 @@ class MushafPage extends ConsumerWidget {
         ),
       ],
       actions: [
-        // icon(Icons.settings_outlined, l10n.settings, () {
-        //   context.go(AppRoute.settings.path);
-        // }),
+        // The bookmarks, where they are kept: the index's last list.
+        icon(
+          Icons.bookmarks_outlined,
+          l10n.bookmarks,
+          () => openReaderBookmarks(context, ref),
+        ),
       ],
     );
     // Where the reader is (a tap opens the page scrubber) and the display

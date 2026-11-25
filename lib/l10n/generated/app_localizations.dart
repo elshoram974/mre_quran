@@ -2743,6 +2743,18 @@ abstract class AppLocalizations {
   /// **'Occasions of revelation'**
   String get asbabTitle;
 
+  /// No description provided for @asbabNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No occasion of revelation is recorded here for this ayah.'**
+  String get asbabNone;
+
+  /// No description provided for @tafsirNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No tafsir is recorded here for this ayah.'**
+  String get tafsirNone;
+
   /// No description provided for @asbabAyah.
   ///
   /// In en, this message translates to:

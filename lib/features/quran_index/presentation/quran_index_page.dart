@@ -36,10 +36,18 @@ enum _SurahFilter { all, meccan, medinan }
 /// Medinan ones and put in the order of revelation, and each has a sheet of
 /// facts about it.
 class QuranIndexPage extends ConsumerStatefulWidget {
-  const QuranIndexPage({super.key, this.sheetScroll});
+  const QuranIndexPage({
+    super.key,
+    this.sheetScroll,
+    this.openOnBookmarks = false,
+  });
 
   /// Controller supplied when the index is displayed in a draggable sheet.
   final ScrollController? sheetScroll;
+
+  /// Whether the index opens on the bookmarks, as the reader's bookmarks
+  /// button asks.
+  final bool openOnBookmarks;
 
   @override
   ConsumerState<QuranIndexPage> createState() => _QuranIndexPageState();
@@ -53,6 +61,7 @@ class _QuranIndexPageState extends ConsumerState<QuranIndexPage>
   late final TabController _tabs = TabController(
     length: _IndexTab.values.length,
     vsync: this,
+    initialIndex: widget.openOnBookmarks ? _IndexTab.bookmarks.index : 0,
   )..addListener(_onTab);
 
   void _onTab() {

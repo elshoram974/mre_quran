@@ -579,6 +579,8 @@
   "tafsirTitle": "Al-Tafsir Al-Muyassar",
   "asbabAction": "Occasion of revelation",
   "asbabTitle": "Occasions of revelation",
+  "asbabNone": "No occasion of revelation is recorded here for this ayah.",
+  "tafsirNone": "No tafsir is recorded here for this ayah.",
   "asbabAyah": "Ayah {ayah}",
   "@asbabAyah": {"placeholders": {"ayah": {"type": "String"}}},
   "asbabAyahRange": "Ayahs {from}–{to}",
