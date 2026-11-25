@@ -238,7 +238,15 @@ void main() {
     await fallback().retry(1);
     expect(current().readerMode, ReaderMode.text);
     server.offline = false;
-    await Future<void>.delayed(const Duration(milliseconds: 120));
+    // A retry comes every 20 ms; on a busy machine the page may take longer
+    // to come down and be checked, so wait for the switch, up to a limit.
+    for (
+      var i = 0;
+      i < 100 && current().readerMode != ReaderMode.printed;
+      i++
+    ) {
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+    }
     expect(current().readerMode, ReaderMode.printed);
   });
 
