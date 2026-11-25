@@ -2416,7 +2416,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get creditsAudioNear =>
-      'صوت تذكير «اقتربت صلاة …»: مقاطع قصيرة لمحمد م. جويدة من نسخة على archive.org (https://archive.org/details/20261002_20261002_2012)، ومقطع صلاة الجمعة من نسخة أخرى على archive.org (https://archive.org/details/20260909_20260909_2244) لا يُعرف صاحبها. قُصّت وضُبط صوتها. الإذن قيد الطلب.';
+      'صوت تذكير «اقتربت صلاة …»: مقاطع من نسخة على archive.org (https://archive.org/details/20260909_20260909_2244، «تنبيه قبل الصلاة») لا يُعرف صاحبها. قُصّت وضُبط صوتها. الإذن قيد الطلب.';
 
   @override
   String get iqamaCardLabel => 'الإقامة';

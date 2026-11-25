@@ -175,55 +175,7 @@
       "id": "near_fajr",
       "kind": "nearPrayer",
       "bundled": "prayer_near_fajr",
-      "credit": "Mohamed M. Gowaida (clip «اقتربت صلاة …», copy on archive.org item 20261002_20261002_2012)",
-      "source": "https://archive.org/details/20261002_20261002_2012",
-      "url": "https://archive.org/download/20261002_20261002_2012/%D8%A7%D9%82%D8%AA%D8%B1%D8%A8%D8%AA_%D8%B5%D9%84%D8%A7%D8%A9_%D8%A7%D9%84%D9%81%D8%AC%D8%B1_.mp3",
-      "sha256": "3d1bb7c917866407f18d6ba08ec667439f7e45e0f1c4243fd73c934d0b83fedc",
-      "license": {
-        "name": "Permission pending",
-        "url": "https://archive.org/details/20261002_20261002_2012"
-      },
-      "checked": "Whisper: «اقتربت صلاة الفجر», clean in two runs.",
-      "start": 0.08,
-      "end": 1.82,
-      "fadeOut": 0.1,
-      "bitrate": "40k",
-      "iosRate": 16000,
-      "iosClip": "prayer_near_fajr",
-      "loudness": {
-        "integrated": -18,
-        "truePeak": -3
-      }
-    },
-    {
-      "id": "near_dhuhr",
-      "kind": "nearPrayer",
-      "bundled": "prayer_near_dhuhr",
-      "credit": "Mohamed M. Gowaida (clip «اقتربت صلاة …», copy on archive.org item 20261002_20261002_2012)",
-      "source": "https://archive.org/details/20261002_20261002_2012",
-      "url": "https://archive.org/download/20261002_20261002_2012/%D8%A7%D9%82%D8%AA%D8%B1%D8%A8%D8%AA_%D8%B5%D9%84%D8%A7%D8%A9_%D8%A7%D9%84%D8%B8%D9%87%D8%B1_.mp3",
-      "sha256": "41e3e469a05142e935ba2656dd357e8a3d5e76f2708b2bd8155decbb8ee820de",
-      "license": {
-        "name": "Permission pending",
-        "url": "https://archive.org/details/20261002_20261002_2012"
-      },
-      "checked": "Whisper: «اقتربت صلاة» clear; the last word was heard as «وفهر» / «الفهر» (the Egyptian «الضهر»): listen to it once.",
-      "start": 0.08,
-      "end": 1.8,
-      "fadeOut": 0.1,
-      "bitrate": "40k",
-      "iosRate": 16000,
-      "iosClip": "prayer_near_dhuhr",
-      "loudness": {
-        "integrated": -18,
-        "truePeak": -3
-      }
-    },
-    {
-      "id": "near_jumuah",
-      "kind": "nearPrayer",
-      "bundled": "prayer_near_jumuah",
-      "credit": "Unknown (clip «اقتربت صلاة الجمعة», archive.org item 20260909_20260909_2244, uploaded by aymangacem.k)",
+      "credit": "Unknown (clips «اقتربت صلاة …», archive.org item 20260909_20260909_2244 «تنبيه قبل الصلاة», uploaded by aymangacem.k)",
       "source": "https://archive.org/details/20260909_20260909_2244",
       "url": "https://archive.org/download/20260909_20260909_2244/%D8%AA%D9%86%D8%A8%D9%8A%D9%87%20%D9%82%D8%A8%D9%84%20%D8%A7%D9%84%D8%B5%D9%84%D8%A7%D8%A9.zip",
       "sha256": "eff9fa0bf4248ab62732d2c71725fc7656910b1c04e71ed25cdd95f4af85c1a7",
@@ -231,7 +183,59 @@
         "name": "Permission pending",
         "url": "https://archive.org/details/20260909_20260909_2244"
       },
-      "checked": "Whisper: «اقتربت صلاة الجمعة» after loudness normalisation, «اليومع» on the raw file: listen to it once. The file starts at once, so the cut starts at 0.",
+      "checked": "Whisper: «اقتربت صلاة الفجر».",
+      "start": 1.17,
+      "end": 4.65,
+      "fadeOut": 0.1,
+      "bitrate": "40k",
+      "iosRate": 16000,
+      "iosClip": "prayer_near_fajr",
+      "loudness": {
+        "integrated": -21,
+        "truePeak": -3
+      },
+      "zipEntry": "fajrsoon.wav",
+      "entrySha256": "4363b709d445f2cdac28d00010a66a23de69f5978e98e947ada37483fdeced5d"
+    },
+    {
+      "id": "near_dhuhr",
+      "kind": "nearPrayer",
+      "bundled": "prayer_near_dhuhr",
+      "credit": "Unknown (clips «اقتربت صلاة …», archive.org item 20260909_20260909_2244 «تنبيه قبل الصلاة», uploaded by aymangacem.k)",
+      "source": "https://archive.org/details/20260909_20260909_2244",
+      "url": "https://archive.org/download/20260909_20260909_2244/%D8%AA%D9%86%D8%A8%D9%8A%D9%87%20%D9%82%D8%A8%D9%84%20%D8%A7%D9%84%D8%B5%D9%84%D8%A7%D8%A9.zip",
+      "sha256": "eff9fa0bf4248ab62732d2c71725fc7656910b1c04e71ed25cdd95f4af85c1a7",
+      "license": {
+        "name": "Permission pending",
+        "url": "https://archive.org/details/20260909_20260909_2244"
+      },
+      "checked": "Whisper: «اقتربت صلاة الظهر» (the first word heard as «اختربت» in some runs; listen to it once).",
+      "start": 0.93,
+      "end": 4.7,
+      "fadeOut": 0.1,
+      "bitrate": "40k",
+      "iosRate": 16000,
+      "iosClip": "prayer_near_dhuhr",
+      "loudness": {
+        "integrated": -21,
+        "truePeak": -3
+      },
+      "zipEntry": "zohrsoon.wav",
+      "entrySha256": "3cfcf25fee0a1df0d5231bb7a42f65a9f4470d32aee73a52c4298bc89dbf4e5c"
+    },
+    {
+      "id": "near_jumuah",
+      "kind": "nearPrayer",
+      "bundled": "prayer_near_jumuah",
+      "credit": "Unknown (clips «اقتربت صلاة …», archive.org item 20260909_20260909_2244 «تنبيه قبل الصلاة», uploaded by aymangacem.k)",
+      "source": "https://archive.org/details/20260909_20260909_2244",
+      "url": "https://archive.org/download/20260909_20260909_2244/%D8%AA%D9%86%D8%A8%D9%8A%D9%87%20%D9%82%D8%A8%D9%84%20%D8%A7%D9%84%D8%B5%D9%84%D8%A7%D8%A9.zip",
+      "sha256": "eff9fa0bf4248ab62732d2c71725fc7656910b1c04e71ed25cdd95f4af85c1a7",
+      "license": {
+        "name": "Permission pending",
+        "url": "https://archive.org/details/20260909_20260909_2244"
+      },
+      "checked": "Whisper: «اقتربت صلاة الجمعة» after loudness normalisation. The file starts at once, so the cut starts at 0.",
       "start": 0.0,
       "end": 3.55,
       "fadeOut": 0.1,
@@ -249,73 +253,79 @@
       "id": "near_asr",
       "kind": "nearPrayer",
       "bundled": "prayer_near_asr",
-      "credit": "Mohamed M. Gowaida (clip «اقتربت صلاة …», copy on archive.org item 20261002_20261002_2012)",
-      "source": "https://archive.org/details/20261002_20261002_2012",
-      "url": "https://archive.org/download/20261002_20261002_2012/%D8%A7%D9%82%D8%AA%D8%B1%D8%A8%D8%AA_%D8%B5%D9%84%D8%A7%D8%A9_%D8%A7%D9%84%D8%B9%D8%B5%D8%B1_.mp3",
-      "sha256": "b3075ba2a83f7e6a4052627aebdb7b1e30a3f51087c738c0739425111cfa6486",
+      "credit": "Unknown (clips «اقتربت صلاة …», archive.org item 20260909_20260909_2244 «تنبيه قبل الصلاة», uploaded by aymangacem.k)",
+      "source": "https://archive.org/details/20260909_20260909_2244",
+      "url": "https://archive.org/download/20260909_20260909_2244/%D8%AA%D9%86%D8%A8%D9%8A%D9%87%20%D9%82%D8%A8%D9%84%20%D8%A7%D9%84%D8%B5%D9%84%D8%A7%D8%A9.zip",
+      "sha256": "eff9fa0bf4248ab62732d2c71725fc7656910b1c04e71ed25cdd95f4af85c1a7",
       "license": {
         "name": "Permission pending",
-        "url": "https://archive.org/details/20261002_20261002_2012"
+        "url": "https://archive.org/details/20260909_20260909_2244"
       },
       "checked": "Whisper: «اقتربت صلاة العصر».",
-      "start": 0.08,
-      "end": 1.84,
+      "start": 0.78,
+      "end": 4.45,
       "fadeOut": 0.1,
       "bitrate": "40k",
       "iosRate": 16000,
       "iosClip": "prayer_near_asr",
       "loudness": {
-        "integrated": -18,
+        "integrated": -21,
         "truePeak": -3
-      }
+      },
+      "zipEntry": "asrsoon.wav",
+      "entrySha256": "db6472ee98dee810da8e6cb07aa9bef16408c5e6207606aa009bdcd591ac866a"
     },
     {
       "id": "near_maghrib",
       "kind": "nearPrayer",
       "bundled": "prayer_near_maghrib",
-      "credit": "Mohamed M. Gowaida (clip «اقتربت صلاة …», copy on archive.org item 20261002_20261002_2012)",
-      "source": "https://archive.org/details/20261002_20261002_2012",
-      "url": "https://archive.org/download/20261002_20261002_2012/%D8%A7%D9%82%D8%AA%D8%B1%D8%A8%D8%AA_%D8%B5%D9%84%D8%A7%D8%A9_%D8%A7%D9%84%D9%85%D8%BA%D8%B1%D8%A8_.mp3",
-      "sha256": "a1377f44efe10db6400befa59c7328bbff27c8fada560dae2de5ddddcf6ad3ba",
+      "credit": "Unknown (clips «اقتربت صلاة …», archive.org item 20260909_20260909_2244 «تنبيه قبل الصلاة», uploaded by aymangacem.k)",
+      "source": "https://archive.org/details/20260909_20260909_2244",
+      "url": "https://archive.org/download/20260909_20260909_2244/%D8%AA%D9%86%D8%A8%D9%8A%D9%87%20%D9%82%D8%A8%D9%84%20%D8%A7%D9%84%D8%B5%D9%84%D8%A7%D8%A9.zip",
+      "sha256": "eff9fa0bf4248ab62732d2c71725fc7656910b1c04e71ed25cdd95f4af85c1a7",
       "license": {
         "name": "Permission pending",
-        "url": "https://archive.org/details/20261002_20261002_2012"
+        "url": "https://archive.org/details/20260909_20260909_2244"
       },
       "checked": "Whisper: «اقتربت صلاة المغرب».",
-      "start": 0.08,
-      "end": 1.85,
+      "start": 0.77,
+      "end": 4.5,
       "fadeOut": 0.1,
       "bitrate": "40k",
       "iosRate": 16000,
       "iosClip": "prayer_near_maghrib",
       "loudness": {
-        "integrated": -18,
+        "integrated": -21,
         "truePeak": -3
-      }
+      },
+      "zipEntry": "maghribsoon.wav",
+      "entrySha256": "f02f21dc88eedd574a96818a47a403b712d40720eb45c7bc7c2a7864249c478b"
     },
     {
       "id": "near_isha",
       "kind": "nearPrayer",
       "bundled": "prayer_near_isha",
-      "credit": "Mohamed M. Gowaida (clip «اقتربت صلاة …», copy on archive.org item 20261002_20261002_2012)",
-      "source": "https://archive.org/details/20261002_20261002_2012",
-      "url": "https://archive.org/download/20261002_20261002_2012/%D8%A7%D9%82%D8%AA%D8%B1%D8%A8%D8%AA_%D8%B5%D9%84%D8%A7%D8%A9_%D8%A7%D9%84%D8%B9%D8%B4%D8%A7%D8%A1_.mp3",
-      "sha256": "d880c0cef7e25d341348765642483329730ca35f8839bc1ba10851b779a0719c",
+      "credit": "Unknown (clips «اقتربت صلاة …», archive.org item 20260909_20260909_2244 «تنبيه قبل الصلاة», uploaded by aymangacem.k)",
+      "source": "https://archive.org/details/20260909_20260909_2244",
+      "url": "https://archive.org/download/20260909_20260909_2244/%D8%AA%D9%86%D8%A8%D9%8A%D9%87%20%D9%82%D8%A8%D9%84%20%D8%A7%D9%84%D8%B5%D9%84%D8%A7%D8%A9.zip",
+      "sha256": "eff9fa0bf4248ab62732d2c71725fc7656910b1c04e71ed25cdd95f4af85c1a7",
       "license": {
         "name": "Permission pending",
-        "url": "https://archive.org/details/20261002_20261002_2012"
+        "url": "https://archive.org/details/20260909_20260909_2244"
       },
       "checked": "Whisper: «اقتربت صلاة العشاء».",
-      "start": 0.08,
-      "end": 1.92,
+      "start": 0.67,
+      "end": 4.15,
       "fadeOut": 0.1,
       "bitrate": "40k",
       "iosRate": 16000,
       "iosClip": "prayer_near_isha",
       "loudness": {
-        "integrated": -18,
+        "integrated": -21,
         "truePeak": -3
-      }
+      },
+      "zipEntry": "eshasoon.wav",
+      "entrySha256": "a0ce9edeed870c1882f2517ced5e877accd54f79931e3b65fd87476dd8e63b56"
     }
   ]
 }

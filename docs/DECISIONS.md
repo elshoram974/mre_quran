@@ -694,7 +694,7 @@
   small (a few seconds each at 40 to 48 kb/s; iOS 16 kHz), so they cost the app a few hundred kilobytes at most. Source,
   licence and checksums are in `docs/AUDIO_SOURCES.md`; the rights are being asked for. iOS installs the sounds in
   `Library/Sounds`. They were checked by machine only: listen to each before a release. **Not proved human:** no page
-  says a person recorded the six «اقتربت صلاة …» clips (five by one author, the Friday prayer's by another voice); if
-  they sound synthetic they are to be replaced by the author's own or by a recording (`AUDIO_PENDING_LICENCES.md`, W6).
+  says who recorded the six «اقتربت صلاة …» clips (one voice, the owner's choice after hearing the Friday clip; an
+  earlier set in Egyptian pronunciation was dropped); permission is asked for (`AUDIO_PENDING_LICENCES.md`, W6).
 - **Limit:** with the iqama's notices Android is now given up to 300 notifications at once (it was 150), well below the
   alarms a phone allows an app; the plan still covers 30 days and is made again at each start.

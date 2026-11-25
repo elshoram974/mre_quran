@@ -103,7 +103,7 @@ obtain before a release"; they are not repeated here. When a reply arrives, reco
 | W3 | **Provenance of `Iqamah.ogg` and `Adhan.ogg`** (CC0 above): who recorded them, where, in which words, and whether the reciter or mosque agrees to a CC0 release | The uploader, Aishatu98, on the Commons talk page `User_talk:Aishatu98` | Link to the reply; the names of the reciter and the place |
 | W4 | A 2 s «اقتربت الصلاة» tone (`eqtrabt_elsalat_2.mp3`, 48,992 bytes, SHA-256 `169c77e1749bf89c22719ee3846b25dbe580a0e2d55923a1689a88f85cc391fd`) and a 15 s «حان الآن وقت الصلاة» clip (`eqtrabt_elsalat_1_01.mp3`, 401,971 bytes, not downloaded) in archive.org item `eqtrabt_elsalat_2_202508`, uploaded 8 Aug 2025, described as "نغمة صوتية اقتربت الصلاة" (a ringtone). **No licence, and the voice is not named.** Machine transcript of the 2 s file was unintelligible, so its wording is unconfirmed. Page: https://archive.org/details/eqtrabt_elsalat_2_202508 | The uploader (shown as Al3osemy) for the licence and for who the voice is; then that voice | Licence, voice's name, credit wording |
 | W5 | **Record both for the app** (the fallback that settles everything): the iqama phrase and the five «اقتربت صلاة …» lines | A voice artist (a muezzin or reciter) with a signed rights assignment; best done in the same session as the announcements «حان الآن موعد أذان …» already listed in `docs/AUDIO_SOURCES.md` | Contract or signed release, the artist's name and credit wording, SHA-256 of the delivered masters |
-| W6 | **The six «اقتربت صلاة X» clips now in the app** (see `docs/AUDIO_SOURCES.md`): five by Mohamed M. Gowaida (Egypt) from his SoundCloud playlist «تنبيهات إقتراب الصلاة» (public `soundcloud.com/m_gowaida`, a YouTube channel and a Telegram channel of the same name; they reached archive.org as `20261002_20261002_2012`, marked CC0 by someone else), and the Friday prayer's from archive.org item `20260909_20260909_2244` (uploader `aymangacem.k`, author unknown). His SoundCloud licence says "all rights reserved", but his posts say the clips are for prayer apps | Mohamed M. Gowaida: written permission, confirmation that the voice is his own (the owner wants real voices only), and his Friday clip (the playlist hints at three tracks whose titles are private); for the Friday clip now in the app, its unknown author through the uploader | His reply and the date, the credit he wants, his Friday clip (then replace set B's) |
+| W6 | **The six «اقتربت صلاة X» clips now in the app** (see `docs/AUDIO_SOURCES.md`): all from archive.org item `20260909_20260909_2244` («تنبيه قبل الصلاة», a zip uploaded by `aymangacem.k`), author and licence not stated | The uploader, through archive.org, to learn who the voice is and get written permission; then that person | Their reply and the date, the voice's name, the credit wording |
 
 Ready-to-send wording. Fill the `[brackets]`; keep every reply.
 
@@ -137,10 +137,9 @@ all-media assignment or a CC0 release, including app stores, with the right to t
 confirm the voice is yours and that the recording is not taken from a broadcast or another recording, and tell us
 the credit line you want, if any. [Name, contact]"
 
-**W6.** "السلام عليكم. أنا أطوّر [اسم التطبيق]، تطبيق مواقيت صلاة ومصحف للأندرويد والآيفون. استخدمتُ في التطبيق مقاطعك
-«اقتربت صلاة الفجر / الظهر / العصر / المغرب / العشاء» التي نشرتها للاستخدام في برامج الصلاة (نسخة منها على archive.org:
-https://archive.org/details/20261002_20261002_2012)، كتنبيه قبل الأذان. هل تأذن لي كتابةً بنشرها داخل التطبيق ومتاجره؟ وهل
-الصوت صوتك أنت؟ وما صيغة النسب التي تريدها؟ وهل عندك مقطع «اقتربت صلاة الجمعة» بالصوت نفسه؟ [الاسم، وسيلة التواصل]"
+**W6.** "السلام عليكم. استخدمتُ في [اسم التطبيق]، تطبيق مواقيت صلاة ومصحف للأندرويد والآيفون، مقاطع «اقتربت صلاة …» التي
+رفعتها على archive.org (https://archive.org/details/20260909_20260909_2244) كتنبيه قبل الأذان. هل تأذن لي كتابةً بنشرها داخل
+التطبيق ومتاجره؟ ومَن صاحب الصوت، وهل أذِن بذلك؟ وما صيغة النسب التي تريدها؟ [الاسم، وسيلة التواصل]"
 
 ## Not recommended
 
