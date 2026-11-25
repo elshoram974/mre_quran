@@ -145,7 +145,6 @@ class MushafPage extends ConsumerWidget {
       metadata: structure,
       page: page,
       digits: digits,
-      shown: !immersive,
       onPage: goTo,
       onEnterNumber: goToPage,
       onDisplayOptions: () => showDisplayOptions(context),

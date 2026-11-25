@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:flutter/rendering.dart' show RenderClipRRect;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mre_quran/core/l10n/l10n.dart';
@@ -235,6 +236,72 @@ void main() {
     container.read(readerImmersiveProvider.notifier).toggle();
     await tester.pumpAndSettle();
     expect(find.byType(PageScrubber), findsNothing);
+  });
+
+  testWidgets('a tap on the page closes only the scrubber; the bars stay', (
+    tester,
+  ) async {
+    final (container, _) = await _pump(tester, savedPage: 10);
+    await tester.tap(find.byType(ReaderPlacePill));
+    await tester.pumpAndSettle();
+    expect(find.byType(PageScrubber), findsOneWidget);
+    await tester.tapAt(const Offset(195, 300));
+    await tester.pumpAndSettle();
+    expect(find.byType(PageScrubber), findsNothing);
+    expect(find.byType(ReaderPlacePill).hitTestable(), findsOneWidget);
+    expect(container.read(readerImmersiveProvider), isFalse);
+    // The next tap puts the bars away, as before.
+    await tester.tapAt(const Offset(195, 300));
+    await tester.pumpAndSettle();
+    expect(container.read(readerImmersiveProvider), isTrue);
+  });
+
+  testWidgets('back closes the scrubber before it leaves the reader', (
+    tester,
+  ) async {
+    await _pump(tester, savedPage: 10);
+    await tester.tap(find.byType(ReaderPlacePill));
+    await tester.pumpAndSettle();
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.byType(PageScrubber), findsNothing);
+    expect(find.byType(ReaderPlacePill).hitTestable(), findsOneWidget);
+  });
+
+  testWidgets('the scrubber grows out of the page pill and shrinks back into '
+      'it', (tester) async {
+    await _pump(tester, savedPage: 10);
+    final pill = tester.getRect(find.byType(ReaderPlacePill));
+    await tester.tap(find.byType(ReaderPlacePill));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 40));
+    // Early on, the scrubber shows only through a box near the pill's.
+    final early = tester.renderObject<RenderClipRRect>(
+      find
+          .ancestor(
+            of: find.byType(PageScrubber),
+            matching: find.byType(ClipRRect),
+          )
+          .first,
+    );
+    final clip = early.clipper!.getClip(early.size);
+    final box = clip.outerRect.shift(early.localToGlobal(Offset.zero));
+    expect(box.width, lessThan(early.size.width));
+    expect((box.center.dx - pill.center.dx).abs(), lessThan(pill.width / 2));
+    await tester.pumpAndSettle();
+    // Open, it is whole: no clip left.
+    expect(
+      find.ancestor(
+        of: find.byType(PageScrubber),
+        matching: find.byWidgetPredicate(
+          (widget) => widget is ClipRRect && widget.clipper != null,
+        ),
+      ),
+      findsNothing,
+    );
+    await tester.tap(find.byTooltip('إغلاق شريط الصفحات'));
+    await tester.pumpAndSettle();
+    expect(tester.getRect(find.byType(ReaderPlacePill)), pill);
   });
 
   testWidgets('the bookmark button marks the page and unmarks it', (

@@ -341,6 +341,11 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
 
   void _onTap() {
     ref.read(highlightedAyahProvider.notifier).clear();
+    // An open page scrubber closes first; the bars stay.
+    if (ref.read(readerScrubberProvider)) {
+      ref.read(readerScrubberProvider.notifier).close();
+      return;
+    }
     ref.read(readerImmersiveProvider.notifier).toggle();
   }
 
