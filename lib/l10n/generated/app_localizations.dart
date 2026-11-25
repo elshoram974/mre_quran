@@ -1189,6 +1189,30 @@ abstract class AppLocalizations {
   /// **'Next prayer'**
   String get prayerNext;
 
+  /// No description provided for @prayerTimeLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'left'**
+  String get prayerTimeLeft;
+
+  /// No description provided for @prayerSunriseIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Sunrise in {left} ({time}), when Fajr\'s time ends'**
+  String prayerSunriseIn(String left, String time);
+
+  /// No description provided for @prayerMidnightIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Middle of the night in {left} ({time})'**
+  String prayerMidnightIn(String left, String time);
+
+  /// No description provided for @prayerLastThirdIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Last third of the night in {left} ({time})'**
+  String prayerLastThirdIn(String left, String time);
+
   /// No description provided for @prayerIn.
   ///
   /// In en, this message translates to:

@@ -51,6 +51,53 @@ void main() {
     });
   });
 
+  group('the moments besides the prayers', () {
+    const method = PrayerMethod.egyptian;
+    final day = PrayerDay.compute(_cairo, method, _now);
+
+    test('between Fajr and sunrise: sunrise, when Fajr\'s time ends', () {
+      final marks = DayMarks.at(
+        _cairo,
+        method,
+        day.fajr.add(const Duration(minutes: 5)),
+      );
+      expect(marks.sunrise, day.sunrise);
+      expect(marks.midnight, isNull);
+    });
+
+    test('in the day: nothing', () {
+      final marks = DayMarks.at(
+        _cairo,
+        method,
+        day.dhuhr.add(const Duration(minutes: 5)),
+      );
+      expect(marks.isEmpty, isTrue);
+    });
+
+    test('from Maghrib: the middle of the night and its last third, before '
+        'the next Fajr', () {
+      final evening = day.maghrib.add(const Duration(minutes: 1));
+      final marks = DayMarks.at(_cairo, method, evening);
+      final next = PrayerDay.compute(
+        _cairo,
+        method,
+        DateTime(_now.year, _now.month, _now.day + 1),
+      );
+      final night = next.fajr.difference(day.maghrib);
+      expect(marks.midnight, day.maghrib.add(night ~/ 2));
+      expect(marks.lastThird, day.maghrib.add(night * 2 ~/ 3));
+      expect(marks.lastThird!.isBefore(next.fajr), isTrue);
+      // After midnight the same night is still counted, from yesterday's
+      // Maghrib.
+      final late = DayMarks.at(
+        _cairo,
+        method,
+        next.fajr.subtract(const Duration(hours: 1)),
+      );
+      expect(late.lastThird, marks.lastThird);
+    });
+  });
+
   group('method for a place', () {
     final cases = <String, (double, double, PrayerMethod)>{
       'Cairo': (30.04, 31.24, PrayerMethod.egyptian),

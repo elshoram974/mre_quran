@@ -21,6 +21,7 @@ import 'package:mre_quran/core/hints/hints.dart';
 import '../../helpers/no_hints_repository.dart';
 import '../../helpers/adhkar_fixtures.dart';
 import '../../helpers/memory_settings_repository.dart';
+import '../../helpers/prayer_pages.dart';
 import '../../helpers/prayer_soon_fixtures.dart';
 import '../../helpers/adhan_fixtures.dart';
 
@@ -123,6 +124,34 @@ Future<_Harness> _pump(
 }
 
 void main() {
+  testWidgets('the next prayer counts down large, and at night the middle of '
+      'the night and its last third count down under it', (tester) async {
+    await pumpPrayerPage(
+      tester,
+      home: const Scaffold(body: PrayerTimesPage()),
+      place: _cairo,
+      now: DateTime(2026, 10, 8, 22, 10),
+    );
+    expect(find.text('متبقٍ'), findsOneWidget);
+    expect(find.textContaining('منتصف الليل بعد'), findsOneWidget);
+    expect(find.textContaining('الثلث الأخير من الليل بعد'), findsOneWidget);
+    expect(find.textContaining('الشروق بعد'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('after Fajr, sunrise counts down: Fajr\'s time ends then', (
+    tester,
+  ) async {
+    await pumpPrayerPage(
+      tester,
+      home: const Scaffold(body: PrayerTimesPage()),
+      place: _cairo,
+      now: DateTime(2026, 10, 8, 5, 40),
+    );
+    expect(find.textContaining('الشروق بعد'), findsOneWidget);
+    expect(find.textContaining('منتصف الليل بعد'), findsNothing);
+  });
+
   group('the place and what stops it', () {
     testWidgets('a named place shows its name, not its numbers', (
       tester,

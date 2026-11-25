@@ -146,6 +146,21 @@ final nextPrayerProvider = Provider<NextPrayer?>((ref) {
   );
 });
 
+/// The moments besides the prayers for the hour the person is in (sunrise,
+/// the middle of the night, its last third), or null while there is no place.
+final dayMarksProvider = Provider<DayMarks?>((ref) {
+  final state = ref.watch(prayerProvider).value;
+  final method = state?.method;
+  final place = state?.place;
+  if (place == null || method == null) return null;
+  return DayMarks.at(
+    place,
+    method,
+    ref.watch(tickingNowProvider),
+    tuning: state!.tuning,
+  );
+});
+
 /// The iqama being waited for now, or null: its notice is on, and a prayer's
 /// adhan has been called but not its iqama. Read again as the clock moves.
 final iqamaWaitProvider = Provider<IqamaWait?>((ref) {

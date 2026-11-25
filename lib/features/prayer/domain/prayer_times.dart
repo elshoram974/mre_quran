@@ -348,3 +348,68 @@ NextPrayer nextPrayer(
   );
   return NextPrayer(DailyPrayer.fajr, tomorrow.fajr);
 }
+
+/// The moments of the day the app works out besides the five prayers, for
+/// the hour the person is in: sunrise, while Fajr's time runs, and the middle
+/// of the night and the start of its last third, from Maghrib to Fajr.
+@immutable
+class DayMarks {
+  /// Creates the marks.
+  const DayMarks({this.sunrise, this.midnight, this.lastThird});
+
+  /// When Fajr's time ends, while it runs; null otherwise.
+  final DateTime? sunrise;
+
+  /// The middle of the night (between Maghrib and Fajr), while the night
+  /// runs; null otherwise.
+  final DateTime? midnight;
+
+  /// The start of the night's last third, while the night runs; null
+  /// otherwise.
+  final DateTime? lastThird;
+
+  /// Whether there is nothing to show.
+  bool get isEmpty => sunrise == null && midnight == null && lastThird == null;
+
+  /// The marks at [place] at [now]: the night is Maghrib to the next Fajr,
+  /// yesterday's when [now] is before today's Fajr.
+  static DayMarks at(
+    PrayerPlace place,
+    PrayerMethod method,
+    DateTime now, {
+    PrayerTuning tuning = PrayerTuning.none,
+  }) {
+    PrayerDay day(int offset) => PrayerDay.compute(
+      place,
+      method,
+      DateTime(now.year, now.month, now.day + offset),
+      tuning: tuning,
+    );
+    final today = day(0);
+    if (!now.isBefore(today.fajr) && now.isBefore(today.sunrise)) {
+      return DayMarks(sunrise: today.sunrise);
+    }
+    final (DateTime, DateTime)? night = now.isBefore(today.fajr)
+        ? (day(-1).maghrib, today.fajr)
+        : !now.isBefore(today.maghrib)
+        ? (today.maghrib, day(1).fajr)
+        : null;
+    if (night == null) return const DayMarks();
+    final (start, end) = night;
+    final length = end.difference(start);
+    return DayMarks(
+      midnight: start.add(length ~/ 2),
+      lastThird: start.add(length * 2 ~/ 3),
+    );
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      other is DayMarks &&
+      other.sunrise == sunrise &&
+      other.midnight == midnight &&
+      other.lastThird == lastThird;
+
+  @override
+  int get hashCode => Object.hash(sunrise, midnight, lastThird);
+}

@@ -617,6 +617,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get prayerNext => 'Next prayer';
 
   @override
+  String get prayerTimeLeft => 'left';
+
+  @override
+  String prayerSunriseIn(String left, String time) {
+    return 'Sunrise in $left ($time), when Fajr\'s time ends';
+  }
+
+  @override
+  String prayerMidnightIn(String left, String time) {
+    return 'Middle of the night in $left ($time)';
+  }
+
+  @override
+  String prayerLastThirdIn(String left, String time) {
+    return 'Last third of the night in $left ($time)';
+  }
+
+  @override
   String prayerIn(String duration) {
     return 'in $duration';
   }

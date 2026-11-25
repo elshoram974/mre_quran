@@ -608,6 +608,24 @@ class AppLocalizationsAr extends AppLocalizations {
   String get prayerNext => 'الصلاة القادمة';
 
   @override
+  String get prayerTimeLeft => 'متبقٍ';
+
+  @override
+  String prayerSunriseIn(String left, String time) {
+    return 'الشروق بعد $left ($time)، وبه ينتهي وقت الفجر';
+  }
+
+  @override
+  String prayerMidnightIn(String left, String time) {
+    return 'منتصف الليل بعد $left ($time)';
+  }
+
+  @override
+  String prayerLastThirdIn(String left, String time) {
+    return 'الثلث الأخير من الليل بعد $left ($time)';
+  }
+
+  @override
   String prayerIn(String duration) {
     return 'بعد $duration';
   }

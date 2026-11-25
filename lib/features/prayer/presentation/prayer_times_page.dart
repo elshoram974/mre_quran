@@ -490,40 +490,133 @@ class _NextCard extends ConsumerWidget {
     final text = Theme.of(context).textTheme;
     final digits = ref.watch(digitsFormatterProvider);
     final formatDisplayDigits = ref.watch(displayDigitsFormatterProvider);
+    final marks = ref.watch(dayMarksProvider);
+    final scale = MediaQuery.textScalerOf(context).scale(1);
+    final what = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            AppIconBadge(
+              prayerIcon(next.prayer),
+              size: AppIconBadgeSize.small,
+              emphasized: true,
+            ),
+            const SizedBox(width: AppTokens.spaceMedium),
+            Flexible(child: Text(l10n.prayerNext, style: text.labelLarge)),
+          ],
+        ),
+        const SizedBox(height: AppTokens.spaceMedium),
+        Text(prayerName(l10n, next.prayer), style: text.headlineMedium),
+        const SizedBox(height: 2),
+        Text(
+          formatPrayerTime(context, next.at, formatDisplayDigits),
+          style: text.bodyMedium,
+        ),
+      ],
+    );
+    // The time left, to the second, large, in the card's empty side.
+    Widget count(bool stacked) => Column(
+      crossAxisAlignment: stacked
+          ? CrossAxisAlignment.start
+          : CrossAxisAlignment.end,
+      children: [
+        _Countdown(
+          to: next.at,
+          digits: digits,
+          format: (clock) => clock,
+          style: text.displaySmall?.copyWith(fontWeight: FontWeight.w700),
+        ),
+        Text(l10n.prayerTimeLeft, style: text.labelMedium),
+      ],
+    );
     return AppHeroCard(
       watermark: Icons.mosque_outlined,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          // The count goes beside the name, in the card's empty side, when it
+          // fits there and leaves the name its room; under it otherwise (large
+          // text, a narrow card).
+          final painter = TextPainter(
+            text: TextSpan(
+              text: '${digits(88)}:${digits(88)}:${digits(88)}',
+              style: text.displaySmall?.copyWith(fontWeight: FontWeight.w700),
+            ),
+            textDirection: Directionality.of(context),
+            textScaler: MediaQuery.textScalerOf(context),
+            maxLines: 1,
+          )..layout();
+          final countWidth = painter.width;
+          painter.dispose();
+          final stacked =
+              scale >= AppTokens.stackTextScale ||
+              constraints.maxWidth - countWidth - AppTokens.spaceMedium <
+                  _nameRoom;
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              AppIconBadge(
-                prayerIcon(next.prayer),
-                size: AppIconBadgeSize.small,
-                emphasized: true,
-              ),
-              const SizedBox(width: AppTokens.spaceMedium),
-              Expanded(child: Text(l10n.prayerNext, style: text.labelLarge)),
+              if (stacked) ...[
+                what,
+                const SizedBox(height: AppTokens.spaceSmall),
+                count(true),
+              ] else
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Expanded(child: what),
+                    const SizedBox(width: AppTokens.spaceMedium),
+                    count(false),
+                  ],
+                ),
+              // What the app knows besides the prayers, for this hour: what no
+              // widget or notice shows.
+              if (marks != null && !marks.isEmpty) ...[
+                const SizedBox(height: AppTokens.spaceMedium),
+                const Divider(height: 1),
+                const SizedBox(height: AppTokens.spaceSmall),
+                for (final (icon, at, format) in [
+                  if (marks.sunrise case final at?)
+                    (sunriseIcon, at, l10n.prayerSunriseIn),
+                  if (marks.midnight case final at?)
+                    (Icons.bedtime_outlined, at, l10n.prayerMidnightIn),
+                  if (marks.lastThird case final at?)
+                    (Icons.nights_stay_outlined, at, l10n.prayerLastThirdIn),
+                ])
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 2),
+                    child: Row(
+                      children: [
+                        Icon(icon, size: 18),
+                        const SizedBox(width: AppTokens.spaceSmall),
+                        Expanded(
+                          child: _Countdown(
+                            to: at,
+                            digits: digits,
+                            format: (clock) => format(
+                              clock,
+                              formatPrayerTime(
+                                context,
+                                at,
+                                formatDisplayDigits,
+                              ),
+                            ),
+                            style: text.bodyMedium,
+                            hideWhenPast: true,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
             ],
-          ),
-          const SizedBox(height: AppTokens.spaceMedium),
-          Text(prayerName(l10n, next.prayer), style: text.headlineMedium),
-          const SizedBox(height: 4),
-          _Countdown(
-            to: next.at,
-            digits: digits,
-            format: context.l10n.prayerIn,
-            style: text.titleMedium,
-          ),
-          const SizedBox(height: 2),
-          Text(
-            formatPrayerTime(context, next.at, formatDisplayDigits),
-            style: text.bodyMedium,
-          ),
-        ],
+          );
+        },
       ),
     );
   }
+
+  /// The least room the prayer's name keeps beside the count.
+  static const double _nameRoom = 140;
 }
 
 /// The iqama being waited for: its prayer, the time left to it to the second,
@@ -590,12 +683,17 @@ class _Countdown extends ConsumerStatefulWidget {
     required this.digits,
     required this.format,
     this.style,
+    this.hideWhenPast = false,
   });
 
   final DateTime to;
   final String Function(int) digits;
   final String Function(String) format;
   final TextStyle? style;
+
+  /// Whether nothing shows once [to] has passed (a moment of the night that
+  /// has gone) instead of a zero.
+  final bool hideWhenPast;
 
   @override
   ConsumerState<_Countdown> createState() => _CountdownState();
@@ -619,6 +717,7 @@ class _CountdownState extends ConsumerState<_Countdown> {
   @override
   Widget build(BuildContext context) {
     final left = widget.to.difference(ref.read(clockProvider)());
+    if (left.isNegative && widget.hideWhenPast) return const SizedBox.shrink();
     final seconds = left.isNegative ? 0 : left.inSeconds;
     String two(int value) =>
         '${widget.digits(value ~/ 10)}${widget.digits(value % 10)}';
