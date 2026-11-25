@@ -36,6 +36,46 @@ void main() {
     expect(find.text('Duas'), findsOneWidget);
   });
 
+  testWidgets('a sheet left open goes before what the tap opens; a foreign '
+      'payload leaves it', (tester) async {
+    final router = GoRouter(
+      initialLocation: AppRoute.reader.path,
+      routes: [
+        GoRoute(
+          path: AppRoute.reader.path,
+          builder: (_, _) => const Scaffold(body: Text('Reader')),
+        ),
+        GoRoute(
+          path: AppRoute.duas.path,
+          builder: (_, _) => const Scaffold(body: Text('Duas')),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
+    await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+    final context = router.routerDelegate.navigatorKey.currentContext!;
+    for (final name in ['First sheet', 'Second sheet']) {
+      unawaited(
+        showModalBottomSheet<void>(
+          context: context,
+          builder: (_) => Text(name),
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+    expect(find.text('Second sheet'), findsOneWidget);
+
+    await openReminder(router, 'not:ours');
+    await tester.pumpAndSettle();
+    expect(find.text('Second sheet'), findsOneWidget);
+
+    await openReminder(router, ReminderPayload.adhkarHome);
+    await tester.pumpAndSettle();
+    expect(find.text('First sheet'), findsNothing);
+    expect(find.text('Second sheet'), findsNothing);
+    expect(find.text('Duas'), findsOneWidget);
+  });
+
   testWidgets('a prayer-widget tap opens the Adhan settings', (tester) async {
     final router = GoRouter(
       initialLocation: AppRoute.reader.path,

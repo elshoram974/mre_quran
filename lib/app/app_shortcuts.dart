@@ -8,6 +8,7 @@ import 'package:quick_actions/quick_actions.dart';
 import '../core/l10n/l10n.dart';
 import '../features/startup/application/startup_providers.dart';
 import '../l10n/generated/app_localizations.dart';
+import 'reminder_opener.dart';
 import 'router.dart';
 
 /// The shortcuts a long press on the app's icon offers.
@@ -38,8 +39,9 @@ enum AppShortcut {
     AppShortcut.reader => l10n.shortcutReader,
   };
 
-  /// Opens the shortcut's screen with [router].
+  /// Opens the shortcut's screen with [router], over no sheet left open.
   Future<void> open(GoRouter router) async {
+    closeOpenSheets(router);
     switch (this) {
       case AppShortcut.prayerTimes:
         router.go(AppRoute.prayerTimes.path);
