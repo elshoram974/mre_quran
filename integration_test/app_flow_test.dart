@@ -73,7 +73,7 @@ void main() {
       await settings(
         (s) => s.copyWith(
           readerMode: ReaderMode.printed,
-          realisticPageTurn: false,
+          pageTurn: PageTurnStyle.slide,
           mushafEdition: MushafEditions.hafs,
         ),
       );
@@ -117,7 +117,7 @@ void main() {
       expect(page(), startPage);
 
       // Realistic turning turns the same way.
-      await settings((s) => s.copyWith(realisticPageTurn: true));
+      await settings((s) => s.copyWith(pageTurn: PageTurnStyle.realistic));
       await tester.timedDrag(
         book,
         const Offset(320, 0),

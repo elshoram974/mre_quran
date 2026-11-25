@@ -69,7 +69,11 @@ void main() {
       final settings = container.read(settingsProvider).value!;
       await container
           .read(settingsProvider.notifier)
-          .save(settings.copyWith(realisticPageTurn: on));
+          .save(
+            settings.copyWith(
+              pageTurn: on ? PageTurnStyle.realistic : PageTurnStyle.slide,
+            ),
+          );
       await run(const Duration(seconds: 1));
     }
 

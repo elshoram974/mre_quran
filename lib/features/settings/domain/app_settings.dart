@@ -19,7 +19,7 @@ class AppSettings {
     this.startupBehavior = StartupBehavior.reader,
     this.readerFontScale = 1,
     this.adhkarFontScale = 1,
-    this.realisticPageTurn = false,
+    this.pageTurn = PageTurnStyle.auto,
     this.readerMode = ReaderMode.printed,
     this.textUntilOnline = false,
     this.readerPageLayout = ReaderPageLayout.auto,
@@ -81,8 +81,9 @@ class AppSettings {
   /// same bounds as [readerFontScale].
   final double adhkarFontScale;
 
-  /// Whether Mushaf pages bend and turn like paper instead of sliding.
-  final bool realisticPageTurn;
+  /// Whether Mushaf pages bend and turn like paper or slide. Automatic until
+  /// the person chooses.
+  final PageTurnStyle pageTurn;
 
   /// Whether the Mushaf shows typeset text or printed page images.
   final ReaderMode readerMode;
@@ -116,7 +117,7 @@ class AppSettings {
     StartupBehavior? startupBehavior,
     double? readerFontScale,
     double? adhkarFontScale,
-    bool? realisticPageTurn,
+    PageTurnStyle? pageTurn,
     ReaderMode? readerMode,
     bool? textUntilOnline,
     ReaderPageLayout? readerPageLayout,
@@ -135,7 +136,7 @@ class AppSettings {
     startupBehavior: startupBehavior ?? this.startupBehavior,
     readerFontScale: readerFontScale ?? this.readerFontScale,
     adhkarFontScale: adhkarFontScale ?? this.adhkarFontScale,
-    realisticPageTurn: realisticPageTurn ?? this.realisticPageTurn,
+    pageTurn: pageTurn ?? this.pageTurn,
     readerMode: readerMode ?? this.readerMode,
     textUntilOnline: textUntilOnline ?? this.textUntilOnline,
     readerPageLayout: readerPageLayout ?? this.readerPageLayout,
@@ -213,6 +214,20 @@ enum ReaderMode {
 
   /// Images of the printed Madinah Mushaf, downloaded page by page.
   printed,
+}
+
+/// How the Mushaf turns its pages.
+enum PageTurnStyle {
+  /// Like paper where the Mushaf reads like a book (two facing pages, or one
+  /// page on a screen as large as a tablet's), and a plain slide on a phone.
+  /// What the app does until the person chooses.
+  auto,
+
+  /// Pages always bend and turn like paper.
+  realistic,
+
+  /// Pages always slide.
+  slide,
 }
 
 /// The arrangement of pages in the printed Mushaf reader.

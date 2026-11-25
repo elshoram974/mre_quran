@@ -14,6 +14,7 @@ import '../../../core/widgets/app_section_header.dart';
 import '../../../core/widgets/app_select_field.dart';
 import '../../../core/widgets/app_switch_tile.dart';
 import '../../../core/widgets/text_size_slider.dart';
+import '../../mushaf/presentation/page_turn_field.dart';
 import '../../mushaf/presentation/reader_page_layout_field.dart';
 import '../../mushaf/presentation/surah_frame_field.dart';
 import '../application/settings_provider.dart';
@@ -157,19 +158,7 @@ class ViewSettingsPage extends ConsumerWidget {
             const SizedBox(height: settingsGap),
             const SurahFrameField(),
             const SizedBox(height: settingsGap),
-            AppGroupCard(
-              children: [
-                AppSwitchTile(
-                  value: settings.realisticPageTurn,
-                  onChanged: (value) => notifier.save(
-                    settings.copyWith(realisticPageTurn: value),
-                  ),
-                  icon: Icons.auto_stories_outlined,
-                  title: l10n.realisticPageTurn,
-                  subtitle: l10n.realisticPageTurnDescription,
-                ),
-              ],
-            ),
+            const PageTurnField(),
             const SizedBox(height: _sectionGap),
             AppSectionHeader(title: l10n.settingsFeel),
             AppGroupCard(

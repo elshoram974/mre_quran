@@ -103,6 +103,41 @@ void main() {
       },
     );
 
+    test('turns pages automatically until the person chooses, and keeps '
+        'the choice', () async {
+      final repository = LocalSettingsRepository(SharedPreferencesAsync());
+      expect((await repository.load()).pageTurn, PageTurnStyle.auto);
+      for (final style in [
+        PageTurnStyle.realistic,
+        PageTurnStyle.slide,
+        PageTurnStyle.auto,
+      ]) {
+        await repository.save(AppSettings(pageTurn: style));
+        expect((await repository.load()).pageTurn, style);
+      }
+    });
+
+    test('keeps realistic turning switched on before there was an automatic '
+        'choice; the old switch left off becomes automatic', () async {
+      final preferences = SharedPreferencesAsync();
+      const legacyKey = 'settings.realistic_page_turn';
+      await preferences.setBool(legacyKey, true);
+      final repository = LocalSettingsRepository(preferences);
+      var loaded = await repository.load();
+      expect(loaded.pageTurn, PageTurnStyle.realistic);
+      // Saved again, the choice is kept under the new key and the old one
+      // goes.
+      await repository.save(loaded);
+      expect(await preferences.containsKey(legacyKey), isFalse);
+      expect((await repository.load()).pageTurn, PageTurnStyle.realistic);
+
+      await preferences.clear();
+      // Every save wrote the old switch, so "off" was seldom a choice.
+      await preferences.setBool(legacyKey, false);
+      loaded = await repository.load();
+      expect(loaded.pageTurn, PageTurnStyle.auto);
+    });
+
     test('opens on the Mushaf until the person chooses otherwise', () async {
       final repository = LocalSettingsRepository(SharedPreferencesAsync());
       expect((await repository.load()).startupBehavior, StartupBehavior.reader);

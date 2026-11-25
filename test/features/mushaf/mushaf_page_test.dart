@@ -43,7 +43,7 @@ Future<(ProviderContainer, MemoryReadingPositionRepository)> _pump(
   double width = 390,
   double height = 844,
   double textScale = 1,
-  bool realistic = false,
+  PageTurnStyle pageTurn = PageTurnStyle.auto,
   ReaderPageLayout layout = ReaderPageLayout.auto,
 }) async {
   tester.view.physicalSize = Size(width, height);
@@ -64,7 +64,7 @@ Future<(ProviderContainer, MemoryReadingPositionRepository)> _pump(
         MemorySettingsRepository()
           ..settings = AppSettings(
             localeCode: locale,
-            realisticPageTurn: realistic,
+            pageTurn: pageTurn,
             readerMode: ReaderMode.text,
             readerPageLayout: layout,
           ),
@@ -152,7 +152,7 @@ void main() {
   testWidgets('the surah, juz, and page number are part of the page itself', (
     tester,
   ) async {
-    await _pump(tester, savedPage: 5, realistic: true);
+    await _pump(tester, savedPage: 5, pageTurn: PageTurnStyle.realistic);
     // Inside each page's own subtree, so the turning sheet carries them.
     // The neighbours are built but not painted until a turn needs them.
     for (final number in [4, 5, 6]) {
@@ -477,6 +477,65 @@ void main() {
     );
   });
 
+  test('automatic page turning is like paper with two pages or on a '
+      'tablet, and a slide on a phone', () {
+    bool auto(Size size, {bool spread = false}) =>
+        resolveRealisticPageTurn(PageTurnStyle.auto, size, spread: spread);
+    expect(auto(const Size(390, 844)), isFalse, reason: 'phone');
+    expect(auto(const Size(932, 430)), isFalse, reason: 'phone on its side');
+    expect(auto(const Size(834, 1194)), isTrue, reason: 'tablet, one page');
+    expect(auto(const Size(744, 1133)), isTrue, reason: 'small tablet');
+    expect(
+      auto(const Size(1194, 834), spread: true),
+      isTrue,
+      reason: 'two facing pages',
+    );
+    expect(
+      auto(const Size(390, 844), spread: true),
+      isTrue,
+      reason: 'two pages asked for on a phone',
+    );
+    // The person's own choice always wins.
+    for (final spread in [true, false]) {
+      for (final size in const [Size(390, 844), Size(1194, 834)]) {
+        expect(
+          resolveRealisticPageTurn(
+            PageTurnStyle.realistic,
+            size,
+            spread: spread,
+          ),
+          isTrue,
+        );
+        expect(
+          resolveRealisticPageTurn(PageTurnStyle.slide, size, spread: spread),
+          isFalse,
+        );
+      }
+    }
+  });
+
+  testWidgets('the Mushaf turns like paper on a tablet and slides on a '
+      'phone until the person chooses', (tester) async {
+    bool realistic() =>
+        tester.widget<BookFlip>(find.byType(BookFlip)).realistic;
+    await _pump(tester, savedPage: 3);
+    expect(realistic(), isFalse, reason: 'phone');
+    await _pump(tester, savedPage: 3, width: 834, height: 1194);
+    expect(realistic(), isTrue, reason: 'tablet held tall, one page');
+    await _pump(tester, savedPage: 3, width: 1194, height: 834);
+    expect(realistic(), isTrue, reason: 'tablet held wide, two pages');
+    await _pump(
+      tester,
+      savedPage: 3,
+      width: 1194,
+      height: 834,
+      pageTurn: PageTurnStyle.slide,
+    );
+    expect(realistic(), isFalse, reason: 'turned off by the person');
+    await _pump(tester, savedPage: 3, pageTurn: PageTurnStyle.realistic);
+    expect(realistic(), isTrue, reason: 'turned on by the person');
+  });
+
   testWidgets('a tall tablet shows one page, a wide one two', (tester) async {
     await _pump(tester, width: 834, height: 1194, savedPage: 3);
     expect(find.byKey(const ValueKey<int>(3)).hitTestable(), findsOneWidget);
@@ -503,7 +562,14 @@ void main() {
       ),
       matching: find.byIcon(icon),
     );
-    expect(find.byType(ReaderPageLabels), findsNWidgets(2));
+    // Pages 3 and 4 face each other. Turning like paper, the default on a
+    // tablet, the spreads either side are built too, ready for a turn.
+    for (final page in [3, 4]) {
+      expect(
+        find.byWidgetPredicate((w) => w is ReaderPageLabels && w.page == page),
+        findsOneWidget,
+      );
+    }
     // Page 3 is on the right: "back" stays, "onward" (towards page 4) goes.
     expect(arrow(3, Icons.chevron_right_rounded), findsOneWidget);
     expect(arrow(3, Icons.chevron_left_rounded), findsNothing);

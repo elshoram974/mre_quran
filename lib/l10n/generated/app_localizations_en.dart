@@ -1785,8 +1785,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get realisticPageTurn => 'Realistic page turning';
 
   @override
-  String get realisticPageTurnDescription =>
-      'Pages bend and turn like paper. Turn it off for a simple slide.';
+  String get pageTurnAuto => 'Automatic';
+
+  @override
+  String get pageTurnAutoDescription =>
+      'Like paper with two facing pages or on a tablet; a simple slide on a phone.';
+
+  @override
+  String get pageTurnOn => 'On';
+
+  @override
+  String get pageTurnOnDescription => 'Pages always bend and turn like paper.';
+
+  @override
+  String get pageTurnOff => 'Off';
+
+  @override
+  String get pageTurnOffDescription => 'Pages always slide simply.';
 
   @override
   String get readerMode => 'Display';

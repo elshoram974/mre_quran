@@ -302,10 +302,27 @@ void main() {
       tester,
     ) async {
       final repository = await _pump(tester, const ViewSettingsPage());
+      expect(repository.settings.pageTurn, PageTurnStyle.auto);
       await _reveal(tester, find.text('تقليب واقعي للصفحات'));
+      // Automatic until the person chooses.
+      expect(find.text('تلقائي'), findsWidgets);
       await tester.tap(find.text('تقليب واقعي للصفحات'));
       await tester.pumpAndSettle();
-      expect(repository.settings.realisticPageTurn, isTrue);
+      expect(
+        find.text(
+          'كالورق مع الصفحتين المتقابلتين وعلى الجهاز اللوحي، '
+          'وانزلاق بسيط على الهاتف.',
+        ),
+        findsOneWidget,
+      );
+      await tester.tap(find.text('مفعّل').last);
+      await tester.pumpAndSettle();
+      expect(repository.settings.pageTurn, PageTurnStyle.realistic);
+      await tester.tap(find.text('تقليب واقعي للصفحات'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('متوقف').last);
+      await tester.pumpAndSettle();
+      expect(repository.settings.pageTurn, PageTurnStyle.slide);
       await _reveal(tester, find.text('تقليل الحركة'));
       await tester.tap(find.text('تقليل الحركة'));
       await tester.pumpAndSettle();

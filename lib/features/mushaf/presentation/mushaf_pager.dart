@@ -72,6 +72,25 @@ bool resolveMushafSpread(
   ReaderPageLayout.spread => true,
 };
 
+/// Whether the Mushaf turns its pages like paper ([BookFlip.realistic]) in a
+/// window of [size] that shows two facing pages when [spread] is true.
+///
+/// Automatic turns them like paper where the Mushaf reads like a book: two
+/// facing pages, and a single page on a screen as large as a tablet's (its
+/// shortest side at least [mushafSpreadMinShortestSide], the same line the
+/// automatic spread draws). A phone slides its pages. A person's own choice
+/// always wins.
+bool resolveRealisticPageTurn(
+  PageTurnStyle style,
+  Size size, {
+  required bool spread,
+}) => switch (style) {
+  PageTurnStyle.auto =>
+    spread || size.shortestSide >= mushafSpreadMinShortestSide,
+  PageTurnStyle.realistic => true,
+  PageTurnStyle.slide => false,
+};
+
 /// Whether a fold or hinge runs top to bottom near the middle of [size].
 bool _uprightFold(List<DisplayFeature> features, Size size) {
   for (final feature in features) {
@@ -394,8 +413,8 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
         (s) => s.value?.surahFrame ?? SurahFrameStyle.cartouche,
       ),
     );
-    final realistic = ref.watch(
-      settingsProvider.select((s) => s.value?.realisticPageTurn ?? false),
+    final pageTurn = ref.watch(
+      settingsProvider.select((s) => s.value?.pageTurn ?? PageTurnStyle.auto),
     );
     final mode = ref.watch(
       settingsProvider.select((s) => s.value?.readerMode ?? ReaderMode.printed),
@@ -407,10 +426,16 @@ class _PagerBodyState extends ConsumerState<_PagerBody> {
     );
     // Decided on the whole window, as the toolbar's toggle is, so the two
     // never disagree; the rail or bar beside the pages does not change it.
+    final window = MediaQuery.sizeOf(context);
     final spread = resolveMushafSpread(
       layout,
-      MediaQuery.sizeOf(context),
+      window,
       features: MediaQuery.displayFeaturesOf(context),
+    );
+    final realistic = resolveRealisticPageTurn(
+      pageTurn,
+      window,
+      spread: spread,
     );
     // At start-up the page on screen comes first; the pages around it are
     // fetched and prepared once it is drawn, so they never slow it down.

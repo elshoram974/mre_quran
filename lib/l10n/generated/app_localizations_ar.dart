@@ -1775,8 +1775,23 @@ class AppLocalizationsAr extends AppLocalizations {
   String get realisticPageTurn => 'تقليب واقعي للصفحات';
 
   @override
-  String get realisticPageTurnDescription =>
-      'تنثني الصفحة وتنقلب كالورق. أوقفه لتنزلق الصفحات ببساطة.';
+  String get pageTurnAuto => 'تلقائي';
+
+  @override
+  String get pageTurnAutoDescription =>
+      'كالورق مع الصفحتين المتقابلتين وعلى الجهاز اللوحي، وانزلاق بسيط على الهاتف.';
+
+  @override
+  String get pageTurnOn => 'مفعّل';
+
+  @override
+  String get pageTurnOnDescription => 'تنثني الصفحة وتنقلب كالورق دائمًا.';
+
+  @override
+  String get pageTurnOff => 'متوقف';
+
+  @override
+  String get pageTurnOffDescription => 'تنزلق الصفحات ببساطة دائمًا.';
 
   @override
   String get readerMode => 'طريقة العرض';

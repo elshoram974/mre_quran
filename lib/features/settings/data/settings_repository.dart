@@ -24,7 +24,11 @@ class LocalSettingsRepository implements SettingsRepository {
   static const _crashReportsKey = 'settings.crash_reports';
   static const _startupKey = 'settings.startup_behavior';
   static const _readerFontScaleKey = 'settings.reader_font_scale';
-  static const _realisticTurnKey = 'settings.realistic_page_turn';
+  static const _pageTurnKey = 'settings.page_turn';
+
+  /// Where an on/off switch for realistic turning was kept before
+  /// [PageTurnStyle.auto]; read once, to keep a choice made with it.
+  static const _legacyRealisticTurnKey = 'settings.realistic_page_turn';
   static const _readerModeKey = 'settings.reader_mode';
   static const _readerPageLayoutKey = 'settings.reader_page_layout';
   static const _surahFrameKey = 'settings.surah_frame';
@@ -44,7 +48,7 @@ class LocalSettingsRepository implements SettingsRepository {
         _preferences.getBool(_crashReportsKey),
         _preferences.getString(_startupKey),
         _preferences.getDouble(_readerFontScaleKey),
-        _preferences.getBool(_realisticTurnKey),
+        _loadPageTurn(),
         _preferences.getString(_readerModeKey),
       ).wait,
       (
@@ -67,7 +71,7 @@ class LocalSettingsRepository implements SettingsRepository {
       crashReports,
       startup,
       fontScale,
-      realisticTurn,
+      pageTurn,
       readerMode,
     ) = basic;
     final (
@@ -105,7 +109,7 @@ class LocalSettingsRepository implements SettingsRepository {
       adhkarFontScale: (adhkarFontScale ?? 1)
           .clamp(AppSettings.minReaderFontScale, AppSettings.maxReaderFontScale)
           .toDouble(),
-      realisticPageTurn: realisticTurn ?? false,
+      pageTurn: pageTurn,
       readerMode: ReaderMode.values.firstWhere(
         (item) => item.name == readerMode,
         orElse: () => ReaderMode.printed,
@@ -127,6 +131,20 @@ class LocalSettingsRepository implements SettingsRepository {
     );
   }
 
+  /// The page turn the person chose, or [PageTurnStyle.auto].
+  ///
+  /// Before the automatic choice, realistic turning was a switch that every
+  /// save wrote, off unless turned on: a saved "off" cannot be told from a
+  /// switch never touched, so only a saved "on" is kept as the person's own.
+  Future<PageTurnStyle> _loadPageTurn() async {
+    final stored = PageTurnStyle.values
+        .asNameMap()[await _preferences.getString(_pageTurnKey)];
+    if (stored != null) return stored;
+    return await _preferences.getBool(_legacyRealisticTurnKey) == true
+        ? PageTurnStyle.realistic
+        : PageTurnStyle.auto;
+  }
+
   @override
   Future<void> save(AppSettings settings) async {
     await Future.wait([
@@ -143,7 +161,8 @@ class LocalSettingsRepository implements SettingsRepository {
       _preferences.setString(_startupKey, settings.startupBehavior.name),
       _preferences.setDouble(_readerFontScaleKey, settings.readerFontScale),
       _preferences.setDouble(_adhkarFontScaleKey, settings.adhkarFontScale),
-      _preferences.setBool(_realisticTurnKey, settings.realisticPageTurn),
+      _preferences.setString(_pageTurnKey, settings.pageTurn.name),
+      _preferences.remove(_legacyRealisticTurnKey),
       _preferences.setString(_readerModeKey, settings.readerMode.name),
       _preferences.setBool(_textUntilOnlineKey, settings.textUntilOnline),
       _preferences.setString(

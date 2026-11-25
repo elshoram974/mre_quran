@@ -774,3 +774,14 @@
 - **Why:** the owner asked for the occasions of revelation beside the tafsir. Quranpedia's dump is the one source
   found that is keyed to ayahs and free to use in an app; Al-Wahidi's text is the classical reference for them.
 
+
+## D-070: Pages turn like paper by themselves where the Mushaf reads like a book
+
+- **Decision:** *Realistic page turning* has three choices: *Automatic* (the default), *On* and *Off*. Automatic turns
+  the pages like paper wherever two facing pages show, and on a screen as large as a tablet's (shortest side at least
+  600, the same line the automatic spread draws) even with one page; a phone slides its pages. The person's own *On* or
+  *Off* always wins and is kept. The old switch was saved with every setting, off unless turned on, so a saved *on* is
+  kept as *On* and a saved *off*, which cannot be told from the switch never touched, becomes *Automatic*.
+- **Why:** the owner wants the realistic turn by default where two pages show, and on a tablet's wide single page
+  instead of a slide.
+

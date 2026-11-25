@@ -3091,11 +3091,41 @@ abstract class AppLocalizations {
   /// **'Realistic page turning'**
   String get realisticPageTurn;
 
-  /// No description provided for @realisticPageTurnDescription.
+  /// No description provided for @pageTurnAuto.
   ///
   /// In en, this message translates to:
-  /// **'Pages bend and turn like paper. Turn it off for a simple slide.'**
-  String get realisticPageTurnDescription;
+  /// **'Automatic'**
+  String get pageTurnAuto;
+
+  /// No description provided for @pageTurnAutoDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Like paper with two facing pages or on a tablet; a simple slide on a phone.'**
+  String get pageTurnAutoDescription;
+
+  /// No description provided for @pageTurnOn.
+  ///
+  /// In en, this message translates to:
+  /// **'On'**
+  String get pageTurnOn;
+
+  /// No description provided for @pageTurnOnDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Pages always bend and turn like paper.'**
+  String get pageTurnOnDescription;
+
+  /// No description provided for @pageTurnOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get pageTurnOff;
+
+  /// No description provided for @pageTurnOffDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Pages always slide simply.'**
+  String get pageTurnOffDescription;
 
   /// No description provided for @readerMode.
   ///
