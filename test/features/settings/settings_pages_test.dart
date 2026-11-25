@@ -155,7 +155,9 @@ void main() {
       }
     });
 
-    testWidgets('the contact and about tiles stay at the end', (tester) async {
+    testWidgets('the contact tiles and the version stay at the end', (
+      tester,
+    ) async {
       await _pump(tester, const SettingsPage());
       await _reveal(tester, find.text('تواصل معنا'));
       expect(find.text('واتساب'), findsOneWidget);
@@ -339,6 +341,25 @@ void main() {
     ) async {
       await _pump(tester, const PrivacySettingsPage());
       expect(find.text('سياسة الخصوصية'), findsNothing);
+    });
+
+    testWidgets('holds the licences and sources, beside the policy', (
+      tester,
+    ) async {
+      final visited = <String>[];
+      await _pump(
+        tester,
+        const PrivacySettingsPage(),
+        policy: Uri.parse('https://example.test/privacy'),
+        visited: visited,
+      );
+      expect(
+        tester.getTopLeft(find.text('سياسة الخصوصية')).dy,
+        lessThan(tester.getTopLeft(find.text('التراخيص والمصادر')).dy),
+      );
+      await tester.tap(find.text('التراخيص والمصادر'));
+      await tester.pumpAndSettle();
+      expect(visited, ['/licences']);
     });
   });
 

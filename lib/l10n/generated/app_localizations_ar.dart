@@ -132,16 +132,10 @@ class AppLocalizationsAr extends AppLocalizations {
       'تُرسَل تقارير أعطال تقنية لا تحتوي على بياناتك الشخصية، لنصلح الأخطاء بسرعة. يمكنك إيقافها.';
 
   @override
-  String get about => 'عن التطبيق والنسب';
-
-  @override
   String get retry => 'إعادة المحاولة';
 
   @override
   String get settingsLoadError => 'تعذّر تحميل الإعدادات. حاول مرة أخرى.';
-
-  @override
-  String get creditsTitle => 'النسب والمصادر';
 
   @override
   String get contactUs => 'تواصل معنا';
@@ -365,6 +359,22 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get creditsPermissionPending => 'الإذن قيد الطلب';
+
+  @override
+  String get licencesTitle => 'التراخيص والمصادر';
+
+  @override
+  String get licencesTileHint => 'من أين جاء كل نص وصفحة وصوت وخط، وبأي ترخيص';
+
+  @override
+  String get licencesLegend =>
+      'على كل مصدر وسم بحاله: رخصة مفتوحة باسمها، أو «بشروط الناشر» لما يتيحه ناشره للاستخدام الرقمي مع ذكره، أو «الإذن قيد الطلب» لما طُلب إذن أصحابه ولم يصل بعد.';
+
+  @override
+  String get licenceOpen => 'رخصة مفتوحة';
+
+  @override
+  String get licencePublisher => 'بشروط الناشر';
 
   @override
   String get creditsLibraries => 'تراخيص المكتبات البرمجية';
@@ -1157,7 +1167,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get settingsFeel => 'الحركة واللمس';
 
   @override
-  String get settingsPrivacyHint => 'تقارير الأعطال وسياسة الخصوصية';
+  String get settingsPrivacyHint => 'تقارير الأعطال وسياسة الخصوصية والتراخيص';
 
   @override
   String get settingsHapticsUnsupported => 'هذا الجهاز لا يدعم الاهتزاز.';
@@ -1299,6 +1309,69 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get revelationMedinan => 'مدنية';
+
+  @override
+  String revelationOrderTag(String order) {
+    return 'ترتيب النزول $order';
+  }
+
+  @override
+  String surahInfo(String surah) {
+    return 'عن سورة $surah';
+  }
+
+  @override
+  String get indexFilterAll => 'الكل';
+
+  @override
+  String indexFilterCount(String label, String count) {
+    return '$label $count';
+  }
+
+  @override
+  String get indexSortRevelation => 'حسب النزول';
+
+  @override
+  String get surahInfoMushafOrder => 'ترتيبها في المصحف';
+
+  @override
+  String get surahInfoRevelationOrder => 'ترتيبها في النزول';
+
+  @override
+  String get surahInfoPlace => 'مكان النزول';
+
+  @override
+  String get surahInfoAyahs => 'عدد الآيات';
+
+  @override
+  String get surahInfoPages => 'الصفحات';
+
+  @override
+  String get surahInfoJuz => 'الجزء';
+
+  @override
+  String surahInfoRange(String from, String to) {
+    return '$from – $to';
+  }
+
+  @override
+  String get surahInfoAfter => 'نزلت بعد';
+
+  @override
+  String get surahInfoBefore => 'ونزلت بعدها';
+
+  @override
+  String get surahInfoFirst => 'أول ما نزل من القرآن';
+
+  @override
+  String get surahInfoLast => 'آخر سورة نزلت كاملة';
+
+  @override
+  String get surahInfoOpen => 'اقرأ السورة';
+
+  @override
+  String get surahInfoOrderNote =>
+      'ترتيب النزول كما يذكره ملف Tanzil (quran-data)، وهو ترتيب تقريبي اختلف فيه العلماء.';
 
   @override
   String ayahCount(int count, String formatted) {

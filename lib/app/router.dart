@@ -6,13 +6,12 @@ import 'dart:async';
 import 'package:flutter/widgets.dart';
 
 import '../core/theme/app_tokens.dart';
-import '../features/about/presentation/about_page.dart';
+import '../features/about/presentation/licences_page.dart';
 import '../features/home_widgets/presentation/home_widgets_page.dart';
 import '../features/adhkar/presentation/adhkar_group_page.dart';
 import '../features/adhkar/presentation/adhkar_search_page.dart';
 import '../features/adhkar/presentation/adhkar_session_page.dart';
 import '../features/adhkar/presentation/duas_page.dart';
-import '../features/bookmarks/presentation/bookmarks_page.dart';
 import '../features/mushaf/presentation/mushaf_page.dart';
 import '../features/adhan/presentation/adhan_page.dart';
 import '../features/prayer/presentation/prayer_times_page.dart';
@@ -64,14 +63,6 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: AppRoute.prayerTimes.path,
                 builder: (context, state) => const PrayerTimesPage(),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: AppRoute.bookmarks.path,
-                builder: (context, state) => const BookmarksPage(),
               ),
             ],
           ),
@@ -176,9 +167,9 @@ final routerProvider = Provider<GoRouter>((ref) {
             _page(context, state, const PrivacySettingsPage()),
       ),
       GoRoute(
-        path: AppRoute.about.path,
+        path: AppRoute.licences.path,
         pageBuilder: (context, state) =>
-            _page(context, state, const AboutPage()),
+            _page(context, state, const LicencesPage()),
       ),
       GoRoute(
         path: AppRoute.widgets.path,
@@ -322,12 +313,11 @@ Page<void> _page(BuildContext context, GoRouterState state, Widget child) {
 enum AppRoute {
   reader('/reader'),
   duas('/duas'),
-  bookmarks('/bookmarks'),
   settings('/settings'),
   settingsView('/settings/view'),
   settingsOffline('/settings/offline'),
   settingsPrivacy('/settings/privacy'),
-  about('/about'),
+  licences('/licences'),
   widgets('/widgets'),
   quranIndex('/quran-index'),
   quranSearch('/quran-search'),
@@ -358,11 +348,5 @@ enum AppRoute {
   static String adhkarGroupPath(String id) => '/adhkar-group/$id';
 
   /// Top-level tabs in navigation order. Must match the shell branches.
-  static const List<AppRoute> tabs = [
-    reader,
-    duas,
-    prayerTimes,
-    bookmarks,
-    settings,
-  ];
+  static const List<AppRoute> tabs = [reader, duas, prayerTimes, settings];
 }

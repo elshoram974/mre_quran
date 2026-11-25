@@ -338,12 +338,6 @@ abstract class AppLocalizations {
   /// **'Technical crash reports, with none of your personal data, are sent so we can fix bugs quickly. You can turn them off.'**
   String get crashReportsDescription;
 
-  /// No description provided for @about.
-  ///
-  /// In en, this message translates to:
-  /// **'About and credits'**
-  String get about;
-
   /// No description provided for @retry.
   ///
   /// In en, this message translates to:
@@ -355,12 +349,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not load settings. Try again.'**
   String get settingsLoadError;
-
-  /// No description provided for @creditsTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Credits'**
-  String get creditsTitle;
 
   /// No description provided for @contactUs.
   ///
@@ -757,6 +745,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Permission being asked for'**
   String get creditsPermissionPending;
+
+  /// No description provided for @licencesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Licences and sources'**
+  String get licencesTitle;
+
+  /// No description provided for @licencesTileHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Where every text, page, sound and font comes from, and under what licence'**
+  String get licencesTileHint;
+
+  /// No description provided for @licencesLegend.
+  ///
+  /// In en, this message translates to:
+  /// **'Each source carries a tag: an open licence by name; «Publisher\'s terms» for what its publisher allows in digital use with credit; or «Permission pending» where its owners have been asked and have not answered yet.'**
+  String get licencesLegend;
+
+  /// No description provided for @licenceOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open licence'**
+  String get licenceOpen;
+
+  /// No description provided for @licencePublisher.
+  ///
+  /// In en, this message translates to:
+  /// **'Publisher\'s terms'**
+  String get licencePublisher;
 
   /// No description provided for @creditsLibraries.
   ///
@@ -2104,7 +2122,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsPrivacyHint.
   ///
   /// In en, this message translates to:
-  /// **'Crash reports and the privacy policy'**
+  /// **'Crash reports and the privacy policy, licences'**
   String get settingsPrivacyHint;
 
   /// No description provided for @settingsHapticsUnsupported.
@@ -2364,6 +2382,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Medinan'**
   String get revelationMedinan;
+
+  /// No description provided for @revelationOrderTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Revealed {order}th'**
+  String revelationOrderTag(String order);
+
+  /// No description provided for @surahInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'About surah {surah}'**
+  String surahInfo(String surah);
+
+  /// No description provided for @indexFilterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get indexFilterAll;
+
+  /// No description provided for @indexFilterCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{label} {count}'**
+  String indexFilterCount(String label, String count);
+
+  /// No description provided for @indexSortRevelation.
+  ///
+  /// In en, this message translates to:
+  /// **'By revelation'**
+  String get indexSortRevelation;
+
+  /// No description provided for @surahInfoMushafOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Place in the Mushaf'**
+  String get surahInfoMushafOrder;
+
+  /// No description provided for @surahInfoRevelationOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Place in the revelation'**
+  String get surahInfoRevelationOrder;
+
+  /// No description provided for @surahInfoPlace.
+  ///
+  /// In en, this message translates to:
+  /// **'Revealed in'**
+  String get surahInfoPlace;
+
+  /// No description provided for @surahInfoAyahs.
+  ///
+  /// In en, this message translates to:
+  /// **'Ayahs'**
+  String get surahInfoAyahs;
+
+  /// No description provided for @surahInfoPages.
+  ///
+  /// In en, this message translates to:
+  /// **'Pages'**
+  String get surahInfoPages;
+
+  /// No description provided for @surahInfoJuz.
+  ///
+  /// In en, this message translates to:
+  /// **'Juz'**
+  String get surahInfoJuz;
+
+  /// No description provided for @surahInfoRange.
+  ///
+  /// In en, this message translates to:
+  /// **'{from} – {to}'**
+  String surahInfoRange(String from, String to);
+
+  /// No description provided for @surahInfoAfter.
+  ///
+  /// In en, this message translates to:
+  /// **'Revealed after'**
+  String get surahInfoAfter;
+
+  /// No description provided for @surahInfoBefore.
+  ///
+  /// In en, this message translates to:
+  /// **'Followed by'**
+  String get surahInfoBefore;
+
+  /// No description provided for @surahInfoFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'The first of the Quran revealed'**
+  String get surahInfoFirst;
+
+  /// No description provided for @surahInfoLast.
+  ///
+  /// In en, this message translates to:
+  /// **'The last surah revealed whole'**
+  String get surahInfoLast;
+
+  /// No description provided for @surahInfoOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Read the surah'**
+  String get surahInfoOpen;
+
+  /// No description provided for @surahInfoOrderNote.
+  ///
+  /// In en, this message translates to:
+  /// **'The order of revelation as Tanzil\'s quran-data file gives it; scholars differ on it, so read it as approximate.'**
+  String get surahInfoOrderNote;
 
   /// No description provided for @ayahCount.
   ///

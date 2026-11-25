@@ -74,12 +74,7 @@ void main() {
     expect(find.byType(PinchZoom), findsWidgets);
   });
 
-  for (final tab in [
-    AppRoute.duas,
-    AppRoute.prayerTimes,
-    AppRoute.bookmarks,
-    AppRoute.settings,
-  ]) {
+  for (final tab in [AppRoute.duas, AppRoute.prayerTimes, AppRoute.settings]) {
     testWidgets('the ${tab.name} tab has nothing to pinch, and two fingers '
         'change no text on it', (tester) async {
       final container = await _pump(tester, tab.path);

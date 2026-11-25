@@ -46,6 +46,15 @@ void main() {
     expect(metadata.juzs[2].startPage, 42);
   });
 
+  test('orders the surahs by revelation, each once', () {
+    final orders = [for (final surah in metadata.surahs) surah.revelationOrder];
+    expect(orders.toSet(), {for (var i = 1; i <= 114; i++) i});
+    // Al-Alaq was revealed first, Al-Fatihah fifth, An-Nasr last.
+    expect(metadata.surah(96).revelationOrder, 1);
+    expect(metadata.surah(1).revelationOrder, 5);
+    expect(metadata.surah(110).revelationOrder, 114);
+  });
+
   test('has 240 quarters, 60 hizb, starting at the first ayah', () {
     expect(metadata.rubStarts, hasLength(240));
     expect(metadata.rubStarts.first, const AyahRef(1, 1));

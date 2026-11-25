@@ -41,6 +41,7 @@ class Surah {
     required this.transliteration,
     required this.englishName,
     required this.revelation,
+    required this.revelationOrder,
     required this.startPage,
   });
 
@@ -61,6 +62,9 @@ class Surah {
 
   /// Place of revelation.
   final Revelation revelation;
+
+  /// Its place in the order of revelation, 1–114, as the source records it.
+  final int revelationOrder;
 
   /// Page of the Madinah Mushaf that contains the first ayah.
   final int startPage;

@@ -1,23 +1,38 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../../app/router.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/layout/adaptive_layout.dart';
 import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/widgets/empty_state.dart';
-import '../../mushaf/application/highlighted_ayah_provider.dart';
-import '../../mushaf/application/reading_position_provider.dart';
+import '../../quran_index/domain/quran_metadata.dart';
+import '../../quran_index/domain/reader_destination.dart';
 import '../../quran_text/application/ayah_texts_provider.dart';
 import '../../quran_text/application/quran_text_providers.dart';
 import '../../quran_text/presentation/ayah_result_tile.dart';
 import '../../settings/application/digits_provider.dart';
 import '../application/bookmarks_provider.dart';
 
-/// The reader's bookmarks, newest first. Tapping one opens its page.
-class BookmarksPage extends ConsumerWidget {
-  const BookmarksPage({super.key});
+/// The bookmarked ayahs, newest first, as a section of the index. A tap opens
+/// one where it is in the Mushaf; a swipe removes it.
+class BookmarksList extends ConsumerWidget {
+  /// Creates the list. [surahs], when given, keeps only the bookmarks in those
+  /// surahs (what the index's search found).
+  const BookmarksList({
+    super.key,
+    required this.onOpen,
+    this.surahs,
+    this.scroll,
+  });
+
+  /// Called with where the chosen bookmark is.
+  final ValueChanged<ReaderDestination> onOpen;
+
+  /// The surahs to keep, by number; all when null.
+  final Set<int>? surahs;
+
+  /// The sheet's scroll controller, when the index is in a sheet.
+  final ScrollController? scroll;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -25,6 +40,7 @@ class BookmarksPage extends ConsumerWidget {
     final bookmarks = ref.watch(bookmarksProvider);
     final text = ref.watch(quranTextProvider);
     final digits = ref.watch(digitsFormatterProvider);
+    final padding = pagePadding(context);
 
     final items = bookmarks.value;
     final quran = text.value;
@@ -43,11 +59,11 @@ class BookmarksPage extends ConsumerWidget {
     }
     if (items == null || quran == null) {
       return Padding(
-        padding: pagePadding(context),
+        padding: padding,
         child: AppShimmer(
           child: Column(
             children: [
-              for (var i = 0; i < 4; i++) ...[
+              for (var i = 0; i < 3; i++) ...[
                 const SkeletonBox(height: 110),
                 const SizedBox(height: 6),
               ],
@@ -56,7 +72,12 @@ class BookmarksPage extends ConsumerWidget {
         ),
       );
     }
-    if (items.isEmpty) {
+    final kept = [
+      for (final bookmark in items)
+        if (surahs?.contains(bookmark.ref.surah) ?? true) bookmark,
+    ]..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    if (kept.isEmpty) {
+      if (surahs != null) return Center(child: Text(l10n.noResults));
       return EmptyState(
         icon: Icons.bookmark_border,
         title: l10n.noBookmarksTitle,
@@ -64,36 +85,37 @@ class BookmarksPage extends ConsumerWidget {
       );
     }
 
-    final sorted = [...items]
-      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
     final metadata = quran.metadata;
     return ListView.builder(
-      padding: pagePadding(context),
-      itemCount: sorted.length,
+      controller: scroll,
+      primary: false,
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+      padding: EdgeInsetsDirectional.fromSTEB(
+        padding.start,
+        4,
+        padding.end,
+        padding.bottom,
+      ),
+      itemCount: kept.length,
       itemBuilder: (context, index) {
-        final bookmark = sorted[index];
-        final ref0 = bookmark.ref;
-        final page = metadata.pageOf(ref0.surah, ref0.ayah);
+        final AyahRef ayah = kept[index].ref;
+        final page = metadata.pageOf(ayah.surah, ayah.ayah);
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 3),
           child: Dismissible(
-            key: ValueKey(ref0),
+            key: ValueKey(ayah),
             background: ColoredBox(
               color: Theme.of(context).colorScheme.errorContainer,
             ),
             onDismissed: (_) =>
-                ref.read(bookmarksProvider.notifier).remove(ref0),
+                ref.read(bookmarksProvider.notifier).remove(ayah),
             child: AyahResultTile(
-              surahName: metadata.surah(ref0.surah).arabicName,
-              ayahNumber: digits(ref0.ayah),
+              surahName: metadata.surah(ayah.surah).arabicName,
+              ayahNumber: digits(ayah.ayah),
               page: digits(page),
-              text: quran.mushaf(ref0),
+              text: quran.mushaf(ayah),
               fontFamily: appQuranFont(quran),
-              onTap: () async {
-                ref.read(highlightedAyahProvider.notifier).show(ref0);
-                await ref.read(readingPositionProvider.notifier).setPage(page);
-                if (context.mounted) context.go(AppRoute.reader.path);
-              },
+              onTap: () => onOpen(ReaderDestination(page: page, ayah: ayah)),
             ),
           ),
         );

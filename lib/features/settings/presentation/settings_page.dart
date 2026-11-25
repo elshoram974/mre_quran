@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/router.dart';
 import '../../../core/config/app_config.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/layout/adaptive_layout.dart';
 import '../../../core/config/store_links.dart';
@@ -99,11 +100,17 @@ class SettingsPage extends ConsumerWidget {
           ),
           const SizedBox(height: settingsGap),
         ],
-        AppTileCard(
-          icon: Icons.info_outline,
-          title: l10n.about,
-          subtitle: l10n.appVersion(AppConfig.version),
-          onTap: () => context.push(AppRoute.about.path),
+        // The version, to quote when writing to us. The licences and sources
+        // are under Privacy.
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: AppTokens.spaceSmall),
+          child: Text(
+            '${l10n.appTitle} · ${l10n.appVersion(AppConfig.version)}',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
         ),
       ],
     );

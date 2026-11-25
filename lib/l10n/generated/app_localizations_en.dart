@@ -134,16 +134,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Technical crash reports, with none of your personal data, are sent so we can fix bugs quickly. You can turn them off.';
 
   @override
-  String get about => 'About and credits';
-
-  @override
   String get retry => 'Retry';
 
   @override
   String get settingsLoadError => 'Could not load settings. Try again.';
-
-  @override
-  String get creditsTitle => 'Credits';
 
   @override
   String get contactUs => 'Contact us';
@@ -371,6 +365,23 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get creditsPermissionPending => 'Permission being asked for';
+
+  @override
+  String get licencesTitle => 'Licences and sources';
+
+  @override
+  String get licencesTileHint =>
+      'Where every text, page, sound and font comes from, and under what licence';
+
+  @override
+  String get licencesLegend =>
+      'Each source carries a tag: an open licence by name; «Publisher\'s terms» for what its publisher allows in digital use with credit; or «Permission pending» where its owners have been asked and have not answered yet.';
+
+  @override
+  String get licenceOpen => 'Open licence';
+
+  @override
+  String get licencePublisher => 'Publisher\'s terms';
 
   @override
   String get creditsLibraries => 'Licences of the software libraries';
@@ -1170,7 +1181,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsFeel => 'Motion and touch';
 
   @override
-  String get settingsPrivacyHint => 'Crash reports and the privacy policy';
+  String get settingsPrivacyHint =>
+      'Crash reports and the privacy policy, licences';
 
   @override
   String get settingsHapticsUnsupported => 'This device cannot vibrate.';
@@ -1312,6 +1324,69 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get revelationMedinan => 'Medinan';
+
+  @override
+  String revelationOrderTag(String order) {
+    return 'Revealed ${order}th';
+  }
+
+  @override
+  String surahInfo(String surah) {
+    return 'About surah $surah';
+  }
+
+  @override
+  String get indexFilterAll => 'All';
+
+  @override
+  String indexFilterCount(String label, String count) {
+    return '$label $count';
+  }
+
+  @override
+  String get indexSortRevelation => 'By revelation';
+
+  @override
+  String get surahInfoMushafOrder => 'Place in the Mushaf';
+
+  @override
+  String get surahInfoRevelationOrder => 'Place in the revelation';
+
+  @override
+  String get surahInfoPlace => 'Revealed in';
+
+  @override
+  String get surahInfoAyahs => 'Ayahs';
+
+  @override
+  String get surahInfoPages => 'Pages';
+
+  @override
+  String get surahInfoJuz => 'Juz';
+
+  @override
+  String surahInfoRange(String from, String to) {
+    return '$from – $to';
+  }
+
+  @override
+  String get surahInfoAfter => 'Revealed after';
+
+  @override
+  String get surahInfoBefore => 'Followed by';
+
+  @override
+  String get surahInfoFirst => 'The first of the Quran revealed';
+
+  @override
+  String get surahInfoLast => 'The last surah revealed whole';
+
+  @override
+  String get surahInfoOpen => 'Read the surah';
+
+  @override
+  String get surahInfoOrderNote =>
+      'The order of revelation as Tanzil\'s quran-data file gives it; scholars differ on it, so read it as approximate.';
 
   @override
   String ayahCount(int count, String formatted) {

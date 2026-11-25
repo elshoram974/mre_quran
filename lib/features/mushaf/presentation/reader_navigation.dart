@@ -17,8 +17,11 @@ Future<void> openReaderRoute(
   AppRoute route,
 ) async {
   final chosen = route == AppRoute.quranIndex
+      // The index rises all the way, under the status bar, from the surah's
+      // name: it is a long list, read better whole.
       ? await AppSheet.showFilling<ReaderDestination>(
           context: context,
+          initialSize: 1,
           builder: (_, scroll) => QuranIndexPage(sheetScroll: scroll),
         )
       : await context.push<ReaderDestination>(route.path);

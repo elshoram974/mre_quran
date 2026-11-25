@@ -13,6 +13,7 @@ import 'package:mre_quran/features/bookmarks/application/bookmarks_provider.dart
 import 'package:mre_quran/features/quran_text/application/quran_text_providers.dart';
 import 'package:mre_quran/features/settings/application/settings_provider.dart';
 import 'package:mre_quran/features/settings/domain/app_settings.dart';
+import 'package:mre_quran/features/prayer/presentation/prayer_times_page.dart';
 import 'package:mre_quran/features/settings/presentation/settings_page.dart';
 import 'package:mre_quran/features/startup/application/startup_providers.dart';
 
@@ -73,9 +74,9 @@ void main() {
         width < 840 ? findsNothing : findsOneWidget,
       );
 
-      await tester.tap(find.byIcon(Icons.bookmarks_outlined).first);
+      await tester.tap(find.byIcon(Icons.mosque_outlined).first);
       await tester.pumpAndSettle();
-      expect(find.text('لا توجد علامات بعد'), findsOneWidget);
+      expect(find.byType(PrayerTimesPage), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   }

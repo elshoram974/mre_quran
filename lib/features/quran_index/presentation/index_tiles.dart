@@ -1,11 +1,41 @@
+import 'dart:math' as math;
+
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_tokens.dart';
+import '../../../core/widgets/app_tag.dart';
 import '../../../core/widgets/press_scale.dart';
 import '../domain/quran_metadata.dart';
 
-/// A row of the surah list.
+/// The tag that says where [surah] was revealed: one colour for Meccan, another
+/// for Medinan, so the two kinds tell apart at a glance down the list.
+class RevelationTag extends StatelessWidget {
+  /// Creates the tag of [surah].
+  const RevelationTag(this.surah, {super.key});
+
+  /// The surah.
+  final Surah surah;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    return switch (surah.revelation) {
+      Revelation.meccan => AppTag(
+        l10n.revelationMeccan,
+        tone: AppTagTone.primary,
+      ),
+      Revelation.medinan => AppTag(
+        l10n.revelationMedinan,
+        tone: AppTagTone.accent,
+      ),
+    };
+  }
+}
+
+/// A row of the surah list: its number, its name, where it was revealed, how
+/// many ayahs it has and its place in the order of revelation, the page it
+/// begins on, and a button for more about it.
 class SurahTile extends StatelessWidget {
   /// Creates a row for [surah].
   const SurahTile({
@@ -13,6 +43,7 @@ class SurahTile extends StatelessWidget {
     required this.surah,
     required this.digits,
     required this.onTap,
+    this.onInfo,
   });
 
   /// Surah to show.
@@ -24,24 +55,40 @@ class SurahTile extends StatelessWidget {
   /// Called when the row is tapped.
   final VoidCallback onTap;
 
+  /// Opens more about the surah; no button when null.
+  final VoidCallback? onInfo;
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final revelation = surah.revelation == Revelation.meccan
-        ? l10n.revelationMeccan
-        : l10n.revelationMedinan;
     return IndexRow(
       number: digits(surah.number),
       title: surah.arabicName,
-      subtitle:
-          '${l10n.ayahCount(surah.ayahCount, digits(surah.ayahCount))} · $revelation',
+      tags: [
+        RevelationTag(surah),
+        AppTag(
+          l10n.ayahCount(surah.ayahCount, digits(surah.ayahCount)),
+          tone: AppTagTone.neutral,
+        ),
+        AppTag(
+          l10n.revelationOrderTag(digits(surah.revelationOrder)),
+          tone: AppTagTone.neutral,
+        ),
+      ],
       page: l10n.pageNumber(digits(surah.startPage)),
       onTap: onTap,
+      info: onInfo == null
+          ? null
+          : IconButton(
+              tooltip: l10n.surahInfo(surah.arabicName),
+              icon: const Icon(Icons.info_outline_rounded),
+              onPressed: onInfo,
+            ),
     );
   }
 }
 
-/// A row of the juz list.
+/// A row of the juz list: where it begins, and the words it begins with.
 class JuzTile extends StatelessWidget {
   /// Creates a row for [juz] starting in the surah named [surahName].
   const JuzTile({
@@ -50,6 +97,8 @@ class JuzTile extends StatelessWidget {
     required this.surahName,
     required this.digits,
     required this.onTap,
+    this.opening,
+    this.openingFont,
   });
 
   /// Juz to show.
@@ -64,6 +113,12 @@ class JuzTile extends StatelessWidget {
   /// Called when the row is tapped.
   final VoidCallback onTap;
 
+  /// The first words of its first ayah, as the Mushaf prints them.
+  final String? opening;
+
+  /// The font of [opening].
+  final String? openingFont;
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -71,13 +126,15 @@ class JuzTile extends StatelessWidget {
       number: digits(juz.number),
       title: l10n.juzTitle(digits(juz.number)),
       subtitle: l10n.juzStartsAt(surahName, digits(juz.ayah)),
+      opening: opening,
+      openingFont: openingFont,
       page: l10n.pageNumber(digits(juz.startPage)),
       onTap: onTap,
     );
   }
 }
 
-/// A row of the hizb list.
+/// A row of the hizb list: where it begins, and the words it begins with.
 class HizbTile extends StatelessWidget {
   /// Creates a row for [hizb] starting in the surah named [surahName].
   const HizbTile({
@@ -86,6 +143,8 @@ class HizbTile extends StatelessWidget {
     required this.surahName,
     required this.digits,
     required this.onTap,
+    this.opening,
+    this.openingFont,
   });
 
   /// Hizb to show.
@@ -100,6 +159,12 @@ class HizbTile extends StatelessWidget {
   /// Called when the row is tapped.
   final VoidCallback onTap;
 
+  /// The first words of its first ayah, as the Mushaf prints them.
+  final String? opening;
+
+  /// The font of [opening].
+  final String? openingFont;
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -107,6 +172,8 @@ class HizbTile extends StatelessWidget {
       number: digits(hizb.number),
       title: l10n.hizbTitle(digits(hizb.number)),
       subtitle: l10n.juzStartsAt(surahName, digits(hizb.ayah)),
+      opening: opening,
+      openingFont: openingFont,
       page: l10n.pageNumber(digits(hizb.startPage)),
       onTap: onTap,
     );
@@ -187,16 +254,22 @@ class IndexSectionHeader extends StatelessWidget {
   }
 }
 
-/// A numbered row of the index and of search results.
+/// A numbered row of the index and of search results: the number in a star,
+/// the title, then a line of text, the opening words of the place, or tags,
+/// and the page at the end.
 class IndexRow extends StatelessWidget {
   /// Creates a row.
   const IndexRow({
     super.key,
     required this.number,
     required this.title,
-    required this.subtitle,
+    this.subtitle,
+    this.opening,
+    this.openingFont,
+    this.tags = const [],
     required this.page,
     required this.onTap,
+    this.info,
   });
 
   /// Number in the badge, already formatted.
@@ -206,7 +279,16 @@ class IndexRow extends StatelessWidget {
   final String title;
 
   /// Second line.
-  final String subtitle;
+  final String? subtitle;
+
+  /// The first words of the place, in the Mushaf's script.
+  final String? opening;
+
+  /// The font of [opening].
+  final String? openingFont;
+
+  /// Small facts under the title.
+  final List<Widget> tags;
 
   /// Page label at the end.
   final String page;
@@ -214,10 +296,25 @@ class IndexRow extends StatelessWidget {
   /// Called when the row is tapped.
   final VoidCallback onTap;
 
+  /// A button before the page label, such as one for more about the row.
+  final Widget? info;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+    final subtitle = this.subtitle;
+    final opening = this.opening;
+    // With large text the page goes under the title, so the title keeps the
+    // row's width.
+    final stacked =
+        MediaQuery.textScalerOf(context).scale(1) >= AppTokens.stackTextScale;
+    final pageLabel = Text(
+      page,
+      style: theme.textTheme.labelMedium?.copyWith(
+        color: scheme.onSurfaceVariant,
+      ),
+    );
     return PressScale(
       child: Material(
         color: scheme.surfaceContainerLow,
@@ -226,57 +323,114 @@ class IndexRow extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: 64),
+            constraints: const BoxConstraints(minHeight: 72),
             child: Padding(
-              padding: const EdgeInsetsDirectional.symmetric(
-                horizontal: 14,
-                vertical: 10,
-              ),
+              padding: const EdgeInsetsDirectional.fromSTEB(12, 10, 8, 10),
               child: Row(
                 children: [
-                  Container(
-                    width: 42,
-                    height: 42,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: scheme.secondaryContainer,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Text(
-                      number,
-                      style: theme.textTheme.labelLarge?.copyWith(
-                        color: scheme.onSecondaryContainer,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 14),
+                  _NumberStar(number),
+                  const SizedBox(width: AppTokens.spaceMedium),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(title, style: theme.textTheme.titleMedium),
-                        const SizedBox(height: 2),
                         Text(
-                          subtitle,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: scheme.onSurfaceVariant,
+                          title,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
+                        if (subtitle != null) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            subtitle,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: scheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                        if (opening != null) ...[
+                          const SizedBox(height: AppTokens.spaceTiny),
+                          Text(
+                            opening,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontFamily: openingFont,
+                              fontSize: theme.textTheme.titleMedium?.fontSize,
+                              color: scheme.primary,
+                              height: 1.6,
+                            ),
+                          ),
+                        ],
+                        if (tags.isNotEmpty) ...[
+                          const SizedBox(height: 6),
+                          Wrap(spacing: 6, runSpacing: 6, children: tags),
+                        ],
+                        if (stacked) ...[
+                          const SizedBox(height: AppTokens.spaceTiny),
+                          pageLabel,
+                        ],
                       ],
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  Text(
-                    page,
-                    style: theme.textTheme.labelMedium?.copyWith(
-                      color: scheme.onSurfaceVariant,
+                  const SizedBox(width: AppTokens.spaceSmall),
+                  if (stacked)
+                    ?info
+                  else
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [?info, pageLabel],
                     ),
-                  ),
                 ],
               ),
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// A number in an eight-pointed star, as Mushafs number their surahs. It grows
+/// with the text, up to half as large again, so a three-digit number fits.
+class _NumberStar extends StatelessWidget {
+  const _NumberStar(this.number);
+
+  final String number;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final scale = MediaQuery.textScalerOf(context).scale(1).clamp(1.0, 1.5);
+    final side = 30.0 * scale;
+    Widget square(double angle) => Transform.rotate(
+      angle: angle,
+      child: Container(
+        width: side,
+        height: side,
+        decoration: BoxDecoration(
+          color: scheme.primaryContainer,
+          borderRadius: BorderRadius.circular(side / 6),
+        ),
+      ),
+    );
+    return SizedBox.square(
+      dimension: side * math.sqrt2,
+      child: Stack(
+        alignment: AlignmentDirectional.center,
+        children: [
+          square(0),
+          square(math.pi / 4),
+          Text(
+            number,
+            style: theme.textTheme.labelLarge?.copyWith(
+              color: scheme.onPrimaryContainer,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
       ),
     );
   }

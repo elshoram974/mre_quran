@@ -728,3 +728,25 @@
   saved list for each, on the main thread, which also runs the app's UI: with up to 300 notices, the start was held
   for seconds. One call costs one write. The plugin's 300 limit no longer applies on Android, so the iqama and the
   adhkar after the prayers cover the whole month too.
+
+## D-066: The bookmarks live in the index; the index says more about each surah
+
+- **Decision:** The bookmarks are no longer a tab: they are the fifth list of the index (Surahs, Juz, Hizb, Sajdas,
+  Bookmarks), which opens from the surah's name in the reader at the full height of the screen. The bar has four tabs.
+  Each surah row shows, on tags, Meccan (gold) or Medinan (green), its ayahs, and its place in the order of
+  revelation; the list can be narrowed to Meccan or Medinan surahs and put in the order of revelation. Each surah has
+  a sheet of facts (its place in the Mushaf and in the revelation, the surahs revealed just before and after it, its
+  pages and juz) with a button to read it. Each juz and hizb row shows the words it begins with, in the Mushaf's
+  script. The order of revelation is Tanzil's `order` attribute in the bundled `quran-data.xml` (CC BY 3.0); the sheet
+  says it is approximate, as scholars differ on it.
+- **Why:** the owner found the bookmarks did not earn a tab, the index lists hard to read (the Meccan or Medinan note
+  was a grey line), and the chosen tab of the index unclear. `AppSegmentedControl` and the chips now fill what is
+  chosen (`docs/UI_RULES.md`, section 2).
+
+## D-067: The licences are under Privacy, each source tagged with its terms
+
+- **Decision:** The page of sources (formerly *About and credits*) is *Licences and sources*, opened from the Privacy
+  settings beside the privacy policy. Every entry carries a tag: an open licence by name, the publisher's terms, or
+  permission pending. The app's version shows at the end of the settings.
+- **Why:** the owner asked that every licence be stated plainly and that the licences sit with the privacy policy.
+

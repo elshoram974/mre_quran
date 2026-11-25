@@ -3,22 +3,34 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mre_quran/core/l10n/l10n.dart';
+import 'package:mre_quran/features/bookmarks/application/bookmarks_provider.dart';
+import 'package:mre_quran/features/bookmarks/domain/bookmark.dart';
 import 'package:mre_quran/features/quran_index/application/quran_metadata_provider.dart';
+import 'package:mre_quran/features/quran_index/domain/quran_metadata.dart';
+import 'package:mre_quran/features/quran_index/domain/reader_destination.dart';
 import 'package:mre_quran/features/quran_index/presentation/quran_index_page.dart';
+import 'package:mre_quran/features/quran_text/application/quran_text_providers.dart';
 import 'package:mre_quran/features/settings/application/settings_provider.dart';
 import 'package:mre_quran/features/settings/domain/app_settings.dart';
 import 'package:mre_quran/l10n/generated/app_localizations.dart';
 
 import '../../helpers/fake_quran_metadata_source.dart';
+import '../../helpers/fake_quran_text_source.dart';
+import '../../helpers/memory_bookmarks_repository.dart';
 import '../../helpers/memory_settings_repository.dart';
 
-Future<void> _pumpIndex(
+/// What the index was closed with, by the last [_pumpIndex].
+Object? _chosen;
+
+Future<ProviderContainer> _pumpIndex(
   WidgetTester tester, {
   String locale = 'ar',
   double width = 390,
   double textScale = 1,
   bool reduceMotion = false,
+  List<Bookmark> bookmarks = const [],
 }) async {
+  _chosen = null;
   tester.view.physicalSize = Size(width, 844);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.resetPhysicalSize);
@@ -29,7 +41,8 @@ Future<void> _pumpIndex(
         path: '/',
         builder: (context, state) => Scaffold(
           body: TextButton(
-            onPressed: () => context.push<int>('/index'),
+            onPressed: () async =>
+                _chosen = await context.push<Object?>('/index'),
             child: const Text('open'),
           ),
         ),
@@ -43,6 +56,10 @@ Future<void> _pumpIndex(
   final container = ProviderContainer(
     overrides: [
       quranMetadataSourceProvider.overrideWithValue(FakeQuranMetadataSource()),
+      quranTextSourceProvider.overrideWithValue(FakeQuranTextSource()),
+      bookmarksRepositoryProvider.overrideWithValue(
+        MemoryBookmarksRepository()..items = [...bookmarks],
+      ),
       settingsRepositoryProvider.overrideWithValue(
         MemorySettingsRepository()..settings = AppSettings(localeCode: locale),
       ),
@@ -53,7 +70,7 @@ Future<void> _pumpIndex(
     UncontrolledProviderScope(
       container: container,
       child: MediaQuery(
-        data: MediaQueryData(
+        data: MediaQueryData.fromView(tester.view).copyWith(
           textScaler: TextScaler.linear(textScale),
           disableAnimations: reduceMotion,
         ),
@@ -68,6 +85,15 @@ Future<void> _pumpIndex(
   );
   await tester.pumpAndSettle();
   await tester.tap(find.text('open'));
+  await tester.pumpAndSettle();
+  return container;
+}
+
+/// Brings the tab [label] into view and opens it.
+Future<void> _openTab(WidgetTester tester, String label) async {
+  await tester.ensureVisible(find.text(label));
+  await tester.pumpAndSettle();
+  await tester.tap(find.text(label));
   await tester.pumpAndSettle();
 }
 
@@ -133,6 +159,8 @@ void main() {
     tester,
   ) async {
     await _pumpIndex(tester);
+    await tester.ensureVisible(find.text('السجدات'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('السجدات'));
     await tester.pumpAndSettle();
     expect(find.text('سجدة الأعراف'), findsOneWidget);
@@ -149,8 +177,11 @@ void main() {
     expect(find.text('سجدة الأعراف'), findsNothing);
   });
 
-  testWidgets('four tabs fit a narrow screen at 2x text', (tester) async {
+  testWidgets('on a narrow screen at 2x text the tabs scroll, and each can '
+      'be reached', (tester) async {
     await _pumpIndex(tester, locale: 'en', width: 320, textScale: 2);
+    await tester.ensureVisible(find.text('Sajdas'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Sajdas'));
     await tester.pumpAndSettle();
     expect(find.text('Sajda in الأعراف'), findsOneWidget);
@@ -202,6 +233,8 @@ void main() {
     tester,
   ) async {
     await _pumpIndex(tester, locale: 'en', width: 320, textScale: 2);
+    await tester.ensureVisible(find.text('Hizb'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Hizb'));
     await tester.pumpAndSettle();
     // The numbers keep the app's digit style, here the default Arabic-Indic.
@@ -246,5 +279,102 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('الجزء ٢'), findsOneWidget);
     expect(find.text('الفاتحة'), findsNothing);
+  });
+
+  testWidgets('the bookmarks are a section of the index; one opens at its '
+      'ayah', (tester) async {
+    await _pumpIndex(
+      tester,
+      bookmarks: [
+        Bookmark(ref: const AyahRef(2, 255), createdAt: DateTime(2026, 11)),
+      ],
+    );
+    await _openTab(tester, 'العلامات');
+    expect(find.text('البقرة · آية ٢٥٥'), findsOneWidget);
+    await tester.tap(find.text('البقرة · آية ٢٥٥'));
+    await tester.pumpAndSettle();
+    expect(_chosen, const ReaderDestination(page: 42, ayah: AyahRef(2, 255)));
+  });
+
+  testWidgets('with no bookmarks, the section says how to add one', (
+    tester,
+  ) async {
+    await _pumpIndex(tester);
+    await _openTab(tester, 'العلامات');
+    expect(find.text('لا توجد علامات بعد'), findsOneWidget);
+  });
+
+  testWidgets('every surah says Meccan or Medinan, and the list narrows to '
+      'either', (tester) async {
+    await _pumpIndex(tester);
+    expect(find.text('مكية'), findsWidgets);
+    await tester.tap(find.text('مدنية ٢٨'));
+    await tester.pumpAndSettle();
+    expect(find.text('البقرة'), findsOneWidget);
+    expect(find.text('الفاتحة'), findsNothing);
+    await tester.tap(find.text('مكية ٨٦'));
+    await tester.pumpAndSettle();
+    expect(find.text('الفاتحة'), findsOneWidget);
+    expect(find.text('البقرة'), findsNothing);
+    await tester.tap(find.text('الكل'));
+    await tester.pumpAndSettle();
+    expect(find.text('البقرة'), findsOneWidget);
+  });
+
+  testWidgets('by revelation, the surah revealed first leads', (tester) async {
+    await _pumpIndex(tester);
+    await tester.tap(find.text('حسب النزول'));
+    await tester.pumpAndSettle();
+    expect(find.text('العلق'), findsOneWidget);
+    expect(find.text('ترتيب النزول ١'), findsOneWidget);
+    expect(
+      tester.getTopLeft(find.text('العلق')).dy,
+      lessThan(tester.getTopLeft(find.text('الفاتحة')).dy),
+    );
+    // No juz headings: the juz do not follow each other in this order.
+    expect(find.text('الجزء ٣٠'), findsNothing);
+  });
+
+  testWidgets(
+    'the sheet of a surah tells its place in the revelation, and reads '
+    'it',
+    (tester) async {
+      final container = await _pumpIndex(tester);
+      final metadata = await container.read(quranMetadataProvider.future);
+      final fatiha = metadata.surah(1);
+      String nameAt(int order) => metadata.surahs
+          .firstWhere((surah) => surah.revelationOrder == order)
+          .arabicName;
+      await tester.tap(find.byTooltip('عن سورة الفاتحة'));
+      await tester.pumpAndSettle();
+      expect(find.text('ترتيبها في النزول'), findsOneWidget);
+      expect(
+        find.text('سورة ${nameAt(fatiha.revelationOrder - 1)}'),
+        findsOneWidget,
+      );
+      expect(
+        find.text('سورة ${nameAt(fatiha.revelationOrder + 1)}'),
+        findsOneWidget,
+      );
+      await tester.ensureVisible(find.text('اقرأ السورة'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('اقرأ السورة'));
+      await tester.pumpAndSettle();
+      expect(_chosen, const ReaderDestination(page: 1));
+    },
+  );
+
+  testWidgets('each juz shows the words it begins with', (tester) async {
+    final container = await _pumpIndex(tester);
+    final text = await container.read(quranTextProvider.future);
+    await _openTab(tester, 'الأجزاء');
+    final words = text.mushaf(const AyahRef(2, 142)).split(' ');
+    expect(find.text('${words.take(4).join(' ')} …'), findsOneWidget);
+  });
+
+  testWidgets('the surah rows fit a narrow screen at 2x text', (tester) async {
+    await _pumpIndex(tester, width: 320, textScale: 2);
+    expect(find.text('الفاتحة'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 }

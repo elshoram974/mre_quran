@@ -67,6 +67,7 @@ abstract final class QuranMetadataParser {
           revelation: _text(node, 'type') == 'Medinan'
               ? Revelation.medinan
               : Revelation.meccan,
+          revelationOrder: _int(node, 'order'),
           startPage: pageOf(_int(node, 'index'), 1),
         ),
     ];

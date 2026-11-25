@@ -67,12 +67,11 @@ Future<ProviderContainer> _pump(
 }
 
 void main() {
-  test('the Adhan tab sits between the Adhkar and the bookmarks', () {
+  test('the Adhan tab sits between the Adhkar and the settings', () {
     expect(AppRoute.tabs, [
       AppRoute.reader,
       AppRoute.duas,
       AppRoute.prayerTimes,
-      AppRoute.bookmarks,
       AppRoute.settings,
     ]);
   });

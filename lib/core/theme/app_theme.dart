@@ -190,18 +190,21 @@ abstract final class AppTheme {
         linearTrackColor: scheme.surfaceContainerHighest,
         circularTrackColor: scheme.surfaceContainerHighest,
       ),
+      // A chosen chip is filled with the accent and ticked, so what is chosen
+      // never has to be guessed from a pale tint.
       chipTheme: ChipThemeData(
         backgroundColor: scheme.surfaceContainerLow,
-        selectedColor: scheme.secondaryContainer,
+        selectedColor: scheme.primary,
+        checkmarkColor: scheme.onPrimary,
+        labelStyle: text.labelLarge?.copyWith(
+          color: WidgetStateColor.resolveWith(
+            (states) => states.contains(WidgetState.selected)
+                ? scheme.onPrimary
+                : scheme.onSurfaceVariant,
+          ),
+        ),
         side: BorderSide(color: scheme.outlineVariant),
         shape: RoundedRectangleBorder(borderRadius: fieldRadius),
-      ),
-      segmentedButtonTheme: SegmentedButtonThemeData(
-        style: SegmentedButton.styleFrom(
-          selectedBackgroundColor: scheme.secondaryContainer,
-          selectedForegroundColor: scheme.onSecondaryContainer,
-          side: BorderSide(color: scheme.outlineVariant),
-        ),
       ),
       // Dialogs, pickers and menus: the same raised paper, the same hairline
       // edge and the same corners as the cards and sheets, with the accent for

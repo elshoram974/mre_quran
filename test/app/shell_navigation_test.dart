@@ -6,7 +6,7 @@ import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:mre_quran/app/shell/expanding_nav_bar.dart';
 import 'package:mre_quran/app/quran_app.dart';
 import 'package:mre_quran/features/bookmarks/application/bookmarks_provider.dart';
-import 'package:mre_quran/features/bookmarks/presentation/bookmarks_page.dart';
+import 'package:mre_quran/features/settings/presentation/settings_page.dart';
 import 'package:mre_quran/features/mushaf/application/reading_position_provider.dart';
 import 'package:mre_quran/features/quran_index/application/quran_metadata_provider.dart';
 import 'package:mre_quran/features/quran_text/application/quran_text_providers.dart';
@@ -60,9 +60,9 @@ void main() {
     tester,
   ) async {
     await _pump(tester, const Size(390, 844));
-    await tester.tap(find.byIcon(Icons.bookmarks_outlined).first);
+    await tester.tap(find.byIcon(Icons.settings_outlined).first);
     await tester.pump();
-    final page = find.byType(BookmarksPage);
+    final page = find.byType(SettingsPage);
     final opacity = find
         .ancestor(of: page, matching: find.byType(AnimatedOpacity))
         .first;
@@ -77,7 +77,7 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(tester.widget<FadeTransition>(fade).opacity.value, 1);
-    expect(find.text('لا توجد علامات بعد').hitTestable(), findsOneWidget);
+    expect(find.text('الخصوصية').hitTestable(), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -87,14 +87,14 @@ void main() {
     await _pump(tester, const Size(390, 844), reduceMotion: true);
     await tester.pump(const Duration(seconds: 5));
     await tester.pumpAndSettle();
-    await tester.tap(find.byIcon(Icons.bookmarks_outlined).first);
+    await tester.tap(find.byIcon(Icons.settings_outlined).first);
     await tester.pumpAndSettle();
-    final page = find.byType(BookmarksPage);
+    final page = find.byType(SettingsPage);
     final opacity = find
         .ancestor(of: page, matching: find.byType(AnimatedOpacity))
         .first;
     expect(tester.widget<AnimatedOpacity>(opacity).duration, Duration.zero);
-    expect(find.text('لا توجد علامات بعد').hitTestable(), findsOneWidget);
+    expect(find.text('الخصوصية').hitTestable(), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -103,16 +103,16 @@ void main() {
   ) async {
     final semantics = tester.ensureSemantics();
     await _pump(tester, const Size(390, 844));
-    for (final label in ['المصحف', 'العلامات']) {
+    for (final label in ['المصحف', 'الإعدادات']) {
       expect(
         tester.getSemantics(find.bySemanticsLabel(label)),
         isSemantics(isButton: true, hasTapAction: true),
       );
     }
     // Activating a tab through its semantics, not a pointer, switches to it.
-    tester.semantics.tap(find.semantics.byLabel('العلامات'));
+    tester.semantics.tap(find.semantics.byLabel('الإعدادات'));
     await tester.pumpAndSettle();
-    expect(find.text('لا توجد علامات بعد').hitTestable(), findsOneWidget);
+    expect(find.text('الخصوصية').hitTestable(), findsOneWidget);
     semantics.dispose();
   });
 

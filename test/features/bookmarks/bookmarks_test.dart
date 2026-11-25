@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mre_quran/core/l10n/l10n.dart';
 import 'package:mre_quran/features/bookmarks/application/bookmarks_provider.dart';
 import 'package:mre_quran/features/bookmarks/domain/bookmark.dart';
-import 'package:mre_quran/features/bookmarks/presentation/bookmarks_page.dart';
+import 'package:mre_quran/features/bookmarks/presentation/bookmarks_list.dart';
 import 'package:mre_quran/features/mushaf/application/reading_position_provider.dart';
 import 'package:mre_quran/features/mushaf/presentation/ayah_actions_sheet.dart';
 import 'package:mre_quran/features/quran_index/application/quran_metadata_provider.dart';
@@ -137,7 +137,7 @@ void main() {
     expect(find.text('تم نسخ الآية'), findsOneWidget);
   });
 
-  testWidgets('bookmarking from the sheet shows it on the bookmarks page', (
+  testWidgets('bookmarking from the sheet shows it in the index\'s bookmarks', (
     tester,
   ) async {
     final repo = MemoryBookmarksRepository();
@@ -162,7 +162,7 @@ void main() {
                     ),
                     child: const Text('open'),
                   ),
-                  const Expanded(child: BookmarksPage()),
+                  Expanded(child: BookmarksList(onOpen: (_) {})),
                 ],
               ),
             ),

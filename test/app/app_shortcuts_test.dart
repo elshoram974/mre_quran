@@ -34,12 +34,12 @@ void main() {
   }) async {
     final quick = _FakeQuickActions();
     final router = GoRouter(
-      initialLocation: AppRoute.bookmarks.path,
+      initialLocation: AppRoute.settings.path,
       routes: [
         for (final route in [
           AppRoute.reader,
           AppRoute.duas,
-          AppRoute.bookmarks,
+          AppRoute.settings,
           AppRoute.prayerTimes,
           AppRoute.qibla,
         ])

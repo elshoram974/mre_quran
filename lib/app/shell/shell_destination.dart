@@ -37,11 +37,6 @@ class ShellDestination {
         Icons.mosque_rounded,
       ),
       ShellDestination(
-        l10n.bookmarks,
-        Icons.bookmarks_outlined,
-        Icons.bookmarks_rounded,
-      ),
-      ShellDestination(
         l10n.settings,
         Icons.settings_outlined,
         Icons.settings_rounded,

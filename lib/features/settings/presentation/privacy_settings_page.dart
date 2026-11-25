@@ -1,5 +1,8 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../../app/router.dart';
 
 import '../../../core/l10n/l10n.dart';
 import '../../../core/layout/adaptive_layout.dart';
@@ -11,7 +14,8 @@ import '../../../core/widgets/app_tile_card.dart';
 import '../application/settings_provider.dart';
 import 'settings_body.dart';
 
-/// What the app sends, and the policy that says so.
+/// What the app sends, the policy that says so, and the licences of what it
+/// holds.
 class PrivacySettingsPage extends ConsumerWidget {
   /// Creates the page.
   const PrivacySettingsPage({super.key});
@@ -48,6 +52,15 @@ class PrivacySettingsPage extends ConsumerWidget {
                 onTap: () => ref.read(linkOpenerProvider).open(policy),
               ),
             ],
+            // The licences sit with the policy: both say on what terms the
+            // app holds what it holds.
+            const SizedBox(height: settingsGap),
+            AppTileCard(
+              icon: Icons.verified_outlined,
+              title: l10n.licencesTitle,
+              subtitle: l10n.licencesTileHint,
+              onTap: () => context.push(AppRoute.licences.path),
+            ),
           ],
         ),
       ),

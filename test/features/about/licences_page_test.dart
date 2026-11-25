@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:mre_quran/core/l10n/l10n.dart';
 import 'package:mre_quran/core/theme/app_theme.dart';
-import 'package:mre_quran/features/about/presentation/about_page.dart';
+import 'package:mre_quran/features/about/presentation/licences_page.dart';
 import 'package:mre_quran/features/adhan/data/adhan_catalog.dart';
 import 'package:mre_quran/l10n/generated/app_localizations.dart';
 
@@ -36,7 +36,7 @@ void main() {
                 .copyWith(textScaler: TextScaler.linear(textScale)),
             child: child!,
           ),
-          home: const AboutPage(),
+          home: const LicencesPage(),
         ),
       ),
     );
@@ -72,6 +72,10 @@ void main() {
     expect(all, contains('الشعراوي'));
     expect(all, contains('الإذن قيد الطلب'));
     expect(find.text('تراخيص المكتبات البرمجية'), findsOneWidget);
+    // Every entry carries its terms on a tag.
+    expect(find.text('CC BY 3.0'), findsOneWidget);
+    expect(find.text('بشروط الناشر'), findsWidgets);
+    expect(find.text('OFL 1.1'), findsNWidgets(2));
   });
 
   for (final (name, locale, theme, scale) in [

@@ -61,13 +61,13 @@ void main() {
         null,
       ),
     );
-    await _pump(tester, lastTab: '/bookmarks');
-    expect(find.text('لا توجد علامات بعد'), findsOneWidget);
+    await _pump(tester, lastTab: '/settings');
+    expect(find.text('الخصوصية'), findsOneWidget);
 
     await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
 
-    expect(find.text('لا توجد علامات بعد'), findsNothing);
+    expect(find.text('الخصوصية'), findsNothing);
     expect(find.text('إغلاق التطبيق؟'), findsNothing);
     expect(exited, isFalse);
   });

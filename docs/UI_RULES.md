@@ -17,6 +17,11 @@ The single rule file for UI/UX. `AGENTS.md` points here. The design plan is in
 
 1. Reusable widgets live in `lib/core/widgets`. Look there before writing one. Extend instead of copying. A pattern used twice becomes a shared widget.
 2. Single choice: `AppSelectField` (search field above 5 options). Never `DropdownButton`, `DropdownButtonFormField`, or `DropdownMenu`.
+   Choosing among a few places or modes (the index's lists, the reader mode): `AppSegmentedControl`. The chosen one sits
+   on a filled accent pill with a bold label; the segments share the width when every label fits and scroll sideways
+   otherwise; on iOS it is the glass segmented control, its order kept right to left. Chips (`ChoiceChip`,
+   `FilterChip`) take the theme: a chosen chip is filled with the accent and ticked. What is chosen is never told by a
+   pale tint alone (owner's request, 2026-11-25).
 3. Bottom sheets: `AppSheet` only. A tall one is draggable and rests wherever it is let go, from a third of the screen to the full height under the status bar (no snapping; a flick up takes it to the top, a pull below a third or a quick flick down closes it), and it always sits above the keyboard and clear of the system navigation bar. Never `showModalBottomSheet`, `GlassModalSheet`, or a hand-built sheet in a screen. Yes/no questions use `AppConfirmSheet`; times use `AppTimePicker`.
 4. Switches: `AppSwitchTile`. Cards: `AppCard` (pass `onTap`, never wrap it in your own `InkWell`); a card holding Quran text: `AppSurfaceCard`; the top highlight of a screen: `AppHeroCard`; a leading icon: `AppIconBadge`; a card that is one row: `AppTileCard`; a card of rows: `AppGroupCard`; headings between groups: `AppSectionHeader`; small labels: `AppTag`; a hint or error line: `AppNotice`. Text inputs: `MRETextField` / `MRETextFormField` from `mre_fields`.
 5. Do not restyle a field, button, or card per screen. Change the theme or the shared widget.
