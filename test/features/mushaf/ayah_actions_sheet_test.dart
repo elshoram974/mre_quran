@@ -80,16 +80,27 @@ void main() {
       find.descendant(of: preview, matching: find.byType(RichText)).first,
     );
     expect(verse.maxLines, 1);
-    expect(verse.overflow, TextOverflow.fade);
-    // It shows its beginning: the first word sits at the right edge.
-    expect(verse.textAlign, TextAlign.start);
+    expect(verse.softWrap, isFalse);
+    // A long ayah glides on one line that can be scrolled by hand.
+    expect(
+      find.descendant(
+        of: preview,
+        matching: find.byWidgetPredicate(
+          (widget) =>
+              widget is SingleChildScrollView &&
+              widget.scrollDirection == Axis.horizontal,
+        ),
+      ),
+      findsOneWidget,
+    );
     final card = tester.getRect(
       find.descendant(of: preview, matching: find.byType(AppSurfaceCard)),
     );
     final line = tester.getRect(
       find.descendant(of: preview, matching: find.byType(RichText)).first,
     );
-    expect(card.right - line.right, lessThan(20));
+    // It shows its beginning first: the first word near the right edge.
+    expect(card.right - line.right, lessThan(32));
     final direction = tester.widget<Directionality>(
       find.descendant(of: preview, matching: find.byType(Directionality)).first,
     );

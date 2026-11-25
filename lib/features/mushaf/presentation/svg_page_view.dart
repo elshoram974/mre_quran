@@ -24,6 +24,7 @@ import '../../settings/application/settings_provider.dart';
 import '../../settings/domain/app_settings.dart';
 import '../../startup/application/startup_providers.dart';
 import '../../startup/presentation/reader_painted_mark.dart';
+import '../application/highlighted_ayah_provider.dart';
 import '../application/svg_page_providers.dart';
 import '../data/svg_page_store.dart';
 import '../domain/svg_page.dart';
@@ -744,21 +745,28 @@ class _SvgArtwork extends StatelessWidget {
       container: true,
       image: true,
       label: label,
-      child: GestureDetector(
-        onTap: ayahTap == null ? onTap : null,
-        onTapUp: ayahTap == null
-            ? null
-            : (details) => switch (ayahAt(details.localPosition)) {
-                final ayah? => ayahTap(ayah),
-                null => onTap(),
-              },
-        onLongPressStart: longPress == null
-            ? null
-            : (details) {
-                final ayah = ayahAt(details.localPosition);
-                if (ayah == null) return;
-                longPress(ayah);
-              },
+      child: Consumer(
+        builder: (context, ref, child) => GestureDetector(
+          onTapUp: (details) {
+            final ayah = ayahAt(details.localPosition);
+            // The ayah under the finger flashes, as a pressed button shows
+            // it was pressed; then the tap does what it does.
+            if (ayah != null) ref.read(ayahTouchProvider.notifier).touch(ayah);
+            if (ayah != null && ayahTap != null) {
+              ayahTap(ayah);
+            } else {
+              onTap();
+            }
+          },
+          onLongPressStart: longPress == null
+              ? null
+              : (details) {
+                  final ayah = ayahAt(details.localPosition);
+                  if (ayah == null) return;
+                  longPress(ayah);
+                },
+          child: child,
+        ),
         child: ClipRect(
           child: Stack(
             children: [
@@ -786,6 +794,16 @@ class _SvgArtwork extends StatelessWidget {
                   ),
                 ),
               ),
+              // The ayah a tap just touched, flashed for a moment.
+              Positioned.fill(
+                child: _TouchFlash(
+                  layout: layout,
+                  basmalaOf: _basmalaOf,
+                  scale: scale,
+                  stretch: stretch,
+                  origin: (x: content.left, y: content.top),
+                ),
+              ),
               // A frame under each surah's name, as printed Mushafs set
               // it. The name itself is the page's own calligraphy, drawn
               // over the frame.
@@ -796,6 +814,85 @@ class _SvgArtwork extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Flashes the ayah a single tap touched, if it is on this page: the
+/// selection's colour rises quickly and fades, under the ink. Nothing when
+/// animations are off.
+class _TouchFlash extends ConsumerStatefulWidget {
+  const _TouchFlash({
+    required this.layout,
+    required this.basmalaOf,
+    required this.scale,
+    required this.stretch,
+    required this.origin,
+  });
+
+  final SvgPageLayout layout;
+  final AyahRegion? Function(AyahRegion region) basmalaOf;
+  final double scale;
+  final double stretch;
+  final PagePoint origin;
+
+  @override
+  ConsumerState<_TouchFlash> createState() => _TouchFlashState();
+}
+
+class _TouchFlashState extends ConsumerState<_TouchFlash>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _flash = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 520),
+  );
+  List<AyahRegion> _regions = const [];
+
+  @override
+  void dispose() {
+    _flash.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    ref.listen(ayahTouchProvider, (_, touch) {
+      if (touch == null || MediaQuery.disableAnimationsOf(context)) return;
+      final region = widget.layout.regionOf(touch.ayah);
+      if (region == null) return;
+      setState(() {
+        _regions = [region, ?widget.basmalaOf(region)];
+      });
+      unawaited(_flash.forward(from: 0));
+    });
+    final colors = QuranColors.of(context);
+    return IgnorePointer(
+      child: AnimatedBuilder(
+        animation: _flash,
+        builder: (context, _) {
+          final t = _flash.value;
+          if (t == 0 || t == 1 || _regions.isEmpty) {
+            return const SizedBox.expand();
+          }
+          // Up in the first quarter, then a slow fade.
+          final strength = t < 0.25
+              ? Curves.easeOut.transform(t / 0.25)
+              : 1 - Curves.easeIn.transform((t - 0.25) / 0.75);
+          final color = colors.highlight.withValues(
+            alpha: colors.highlight.a * strength,
+          );
+          return CustomPaint(
+            painter: _RegionPainter(
+              scale: widget.scale,
+              stretch: widget.stretch,
+              origin: widget.origin,
+              washes: [
+                for (final region in _regions) (region: region, color: color),
+              ],
+            ),
+          );
+        },
       ),
     );
   }

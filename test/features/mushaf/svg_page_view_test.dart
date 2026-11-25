@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mre_quran/features/mushaf/application/highlighted_ayah_provider.dart';
 import 'package:mre_quran/core/l10n/l10n.dart';
 import 'package:mre_quran/core/theme/app_palette.dart';
 import 'package:mre_quran/core/theme/app_theme.dart';
@@ -182,6 +183,26 @@ void main() {
     await tester.tapAt(tester.getCenter(find.byType(SvgPicture).first));
     await tester.pump();
     expect(taps, 1);
+
+    // A tap on an ayah also says which ayah it touched, so its page flashes
+    // it, and is still passed on.
+    final region = page.layout.regions[3];
+    final ring = region.rings.first;
+    await tester.tapAt(
+      onScreen(
+        tester,
+        page,
+        (ring[0].x + ring[2].x) / 2,
+        (ring[0].y + ring[2].y) / 2,
+      ),
+    );
+    await tester.pump();
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(SvgPicture).first),
+    );
+    expect(container.read(ayahTouchProvider)?.ayah, region.ref);
+    expect(taps, 2);
+    await tester.pumpAndSettle();
   });
 
   testWidgets('while ayahs are being chosen, a tap on one reports it; a tap '
