@@ -2419,6 +2419,12 @@ abstract class AppLocalizations {
   /// **'Medinan'**
   String get revelationMedinan;
 
+  /// Tag on the index row of the surah, juz or hizb the reader is in now.
+  ///
+  /// In en, this message translates to:
+  /// **'You are here'**
+  String get indexYouAreHere;
+
   /// No description provided for @revelationOrderTag.
   ///
   /// In en, this message translates to:

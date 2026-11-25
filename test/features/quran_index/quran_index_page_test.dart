@@ -8,6 +8,7 @@ import 'package:mre_quran/features/bookmarks/domain/bookmark.dart';
 import 'package:mre_quran/features/quran_index/application/quran_metadata_provider.dart';
 import 'package:mre_quran/features/quran_index/domain/quran_metadata.dart';
 import 'package:mre_quran/features/quran_index/domain/reader_destination.dart';
+import 'package:mre_quran/features/quran_index/presentation/index_tiles.dart';
 import 'package:mre_quran/features/quran_index/presentation/quran_index_page.dart';
 import 'package:mre_quran/features/quran_text/application/asbab_provider.dart';
 import 'package:mre_quran/features/quran_text/application/quran_text_providers.dart';
@@ -32,6 +33,7 @@ Future<ProviderContainer> _pumpIndex(
   bool reduceMotion = false,
   List<Bookmark> bookmarks = const [],
   Asbab? asbab,
+  QuranIndexPage index = const QuranIndexPage(),
 }) async {
   _chosen = null;
   tester.view.physicalSize = Size(width, 844);
@@ -50,10 +52,7 @@ Future<ProviderContainer> _pumpIndex(
           ),
         ),
       ),
-      GoRoute(
-        path: '/index',
-        builder: (context, state) => const QuranIndexPage(),
-      ),
+      GoRoute(path: '/index', builder: (context, state) => index),
     ],
   );
   final container = ProviderContainer(
@@ -102,6 +101,67 @@ Future<void> _openTab(WidgetTester tester, String label) async {
 }
 
 void main() {
+  group('opened from the reader', () {
+    // Page 467 is in Surat Ghafir (40), juz 24, hizb 47.
+    const page = 467;
+
+    bool marked(WidgetTester tester, String title) {
+      final row = find.ancestor(
+        of: find.text(title),
+        matching: find.byType(IndexRow),
+      );
+      return tester.widget<IndexRow>(row.first).current;
+    }
+
+    testWidgets('from the surah\'s name it opens at that surah, marked', (
+      tester,
+    ) async {
+      await _pumpIndex(
+        tester,
+        index: const QuranIndexPage(
+          readerPage: page,
+          opening: IndexOpening.surah,
+        ),
+      );
+      expect(find.text('غافر'), findsOneWidget);
+      expect(tester.getTopLeft(find.text('غافر')).dy, lessThan(844));
+      expect(marked(tester, 'غافر'), isTrue);
+      expect(find.text('أنت هنا'), findsOneWidget);
+      // The first surahs are far above it, not built.
+      expect(find.text('الفاتحة'), findsNothing);
+    });
+
+    testWidgets('from the juz it opens on the juz list at that juz', (
+      tester,
+    ) async {
+      await _pumpIndex(
+        tester,
+        index: const QuranIndexPage(
+          readerPage: page,
+          opening: IndexOpening.juz,
+        ),
+      );
+      final tabs = tester.widget<TabBarView>(find.byType(TabBarView));
+      expect(tabs.controller!.index, 1);
+      expect(find.text('الجزء ٢٤'), findsWidgets);
+      expect(marked(tester, 'الجزء ٢٤'), isTrue);
+    });
+
+    testWidgets('from the menu it opens at the top, the surah still marked', (
+      tester,
+    ) async {
+      await _pumpIndex(tester, index: const QuranIndexPage(readerPage: page));
+      expect(find.text('الفاتحة'), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.text('غافر'),
+        600,
+        scrollable: find.byType(Scrollable).last,
+      );
+      expect(marked(tester, 'غافر'), isTrue);
+      expect(marked(tester, 'الزمر'), isFalse);
+    });
+  });
+
   testWidgets('changing index tabs respects reduced motion', (tester) async {
     await _pumpIndex(tester, reduceMotion: true);
     await tester.tap(find.text('الأجزاء'));

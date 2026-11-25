@@ -410,6 +410,7 @@
   "indexSearchHint": "ابحث بالاسم أو الرقم",
   "revelationMeccan": "مكية",
   "revelationMedinan": "مدنية",
+  "indexYouAreHere": "أنت هنا",
   "revelationOrderTag": "ترتيب النزول {order}",
   "@revelationOrderTag": {"placeholders": {"order": {"type": "String"}}},
   "surahInfo": "عن سورة {surah}",

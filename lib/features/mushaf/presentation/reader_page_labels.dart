@@ -78,8 +78,12 @@ class ReaderPageLabels extends ConsumerWidget {
                 ReaderChip(
                   label: surah.arabicName,
                   tooltip: l10n.quranIndex,
-                  onPressed: () =>
-                      openReaderRoute(context, ref, AppRoute.quranIndex),
+                  onPressed: () => openReaderRoute(
+                    context,
+                    ref,
+                    AppRoute.quranIndex,
+                    opening: IndexOpening.surah,
+                  ),
                 ),
                 if (surah.number < metadata.surahs.length)
                   ReaderChip(
@@ -97,8 +101,12 @@ class ReaderPageLabels extends ConsumerWidget {
                 ReaderChip(
                   label: l10n.juzTitle(digits(juz.number)),
                   tooltip: l10n.quranIndex,
-                  onPressed: () =>
-                      openReaderRoute(context, ref, AppRoute.quranIndex),
+                  onPressed: () => openReaderRoute(
+                    context,
+                    ref,
+                    AppRoute.quranIndex,
+                    opening: IndexOpening.juz,
+                  ),
                 ),
               ],
             ),

@@ -44,6 +44,7 @@ class SurahTile extends StatelessWidget {
     required this.digits,
     required this.onTap,
     this.onInfo,
+    this.current = false,
   });
 
   /// Surah to show.
@@ -57,6 +58,9 @@ class SurahTile extends StatelessWidget {
 
   /// Opens more about the surah; no button when null.
   final VoidCallback? onInfo;
+
+  /// Whether the reader is in this surah now.
+  final bool current;
 
   @override
   Widget build(BuildContext context) {
@@ -77,6 +81,7 @@ class SurahTile extends StatelessWidget {
       ],
       page: l10n.pageNumber(digits(surah.startPage)),
       onTap: onTap,
+      current: current,
       info: onInfo == null
           ? null
           : IconButton(
@@ -99,6 +104,7 @@ class JuzTile extends StatelessWidget {
     required this.onTap,
     this.opening,
     this.openingFont,
+    this.current = false,
   });
 
   /// Juz to show.
@@ -119,6 +125,9 @@ class JuzTile extends StatelessWidget {
   /// The font of [opening].
   final String? openingFont;
 
+  /// Whether the reader is in this juz now.
+  final bool current;
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -130,6 +139,7 @@ class JuzTile extends StatelessWidget {
       openingFont: openingFont,
       page: l10n.pageNumber(digits(juz.startPage)),
       onTap: onTap,
+      current: current,
     );
   }
 }
@@ -145,6 +155,7 @@ class HizbTile extends StatelessWidget {
     required this.onTap,
     this.opening,
     this.openingFont,
+    this.current = false,
   });
 
   /// Hizb to show.
@@ -165,6 +176,9 @@ class HizbTile extends StatelessWidget {
   /// The font of [opening].
   final String? openingFont;
 
+  /// Whether the reader is in this hizb now.
+  final bool current;
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
@@ -176,6 +190,7 @@ class HizbTile extends StatelessWidget {
       openingFont: openingFont,
       page: l10n.pageNumber(digits(hizb.startPage)),
       onTap: onTap,
+      current: current,
     );
   }
 }
@@ -270,6 +285,7 @@ class IndexRow extends StatelessWidget {
     required this.page,
     required this.onTap,
     this.info,
+    this.current = false,
   });
 
   /// Number in the badge, already formatted.
@@ -299,6 +315,9 @@ class IndexRow extends StatelessWidget {
   /// A button before the page label, such as one for more about the row.
   final Widget? info;
 
+  /// Whether the reader is here now: the row is marked, and says so.
+  final bool current;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -315,74 +334,92 @@ class IndexRow extends StatelessWidget {
         color: scheme.onSurfaceVariant,
       ),
     );
+    final tags = [
+      if (current)
+        AppTag(
+          context.l10n.indexYouAreHere,
+          icon: Icons.my_location_rounded,
+          tone: AppTagTone.primary,
+        ),
+      ...this.tags,
+    ];
+    final radius = BorderRadius.circular(AppTokens.radiusField);
     return PressScale(
       child: Material(
-        color: scheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(AppTokens.radiusField),
+        color: current ? scheme.secondaryContainer : scheme.surfaceContainerLow,
+        shape: RoundedRectangleBorder(
+          borderRadius: radius,
+          side: current
+              ? BorderSide(color: scheme.primary, width: 1.5)
+              : BorderSide.none,
+        ),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(minHeight: 72),
-            child: Padding(
-              padding: const EdgeInsetsDirectional.fromSTEB(12, 10, 8, 10),
-              child: Row(
-                children: [
-                  _NumberStar(number),
-                  const SizedBox(width: AppTokens.spaceMedium),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          title,
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        if (subtitle != null) ...[
-                          const SizedBox(height: 2),
+          child: Semantics(
+            selected: current,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 72),
+              child: Padding(
+                padding: const EdgeInsetsDirectional.fromSTEB(12, 10, 8, 10),
+                child: Row(
+                  children: [
+                    _NumberStar(number),
+                    const SizedBox(width: AppTokens.spaceMedium),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
                           Text(
-                            subtitle,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: scheme.onSurfaceVariant,
+                            title,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
-                        ],
-                        if (opening != null) ...[
-                          const SizedBox(height: AppTokens.spaceTiny),
-                          Text(
-                            opening,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontFamily: openingFont,
-                              fontSize: theme.textTheme.titleMedium?.fontSize,
-                              color: scheme.primary,
-                              height: 1.6,
+                          if (subtitle != null) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              subtitle,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: scheme.onSurfaceVariant,
+                              ),
                             ),
-                          ),
+                          ],
+                          if (opening != null) ...[
+                            const SizedBox(height: AppTokens.spaceTiny),
+                            Text(
+                              opening,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontFamily: openingFont,
+                                fontSize: theme.textTheme.titleMedium?.fontSize,
+                                color: scheme.primary,
+                                height: 1.6,
+                              ),
+                            ),
+                          ],
+                          if (tags.isNotEmpty) ...[
+                            const SizedBox(height: 6),
+                            Wrap(spacing: 6, runSpacing: 6, children: tags),
+                          ],
+                          if (stacked) ...[
+                            const SizedBox(height: AppTokens.spaceTiny),
+                            pageLabel,
+                          ],
                         ],
-                        if (tags.isNotEmpty) ...[
-                          const SizedBox(height: 6),
-                          Wrap(spacing: 6, runSpacing: 6, children: tags),
-                        ],
-                        if (stacked) ...[
-                          const SizedBox(height: AppTokens.spaceTiny),
-                          pageLabel,
-                        ],
-                      ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: AppTokens.spaceSmall),
-                  if (stacked)
-                    ?info
-                  else
-                    Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [?info, pageLabel],
-                    ),
-                ],
+                    const SizedBox(width: AppTokens.spaceSmall),
+                    if (stacked)
+                      ?info
+                    else
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [?info, pageLabel],
+                      ),
+                  ],
+                ),
               ),
             ),
           ),

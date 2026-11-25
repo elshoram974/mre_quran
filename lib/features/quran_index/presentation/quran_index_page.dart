@@ -25,6 +25,21 @@ import 'surah_info_sheet.dart';
 
 enum _IndexTab { surahs, juz, hizb, sajda, bookmarks }
 
+/// Where the index opens when the reader opens it.
+enum IndexOpening {
+  /// At the top of the surah list.
+  top,
+
+  /// On the surah list, at the surah being read.
+  surah,
+
+  /// On the juz list, at the juz being read.
+  juz,
+}
+
+/// The surah, juz and hizb of the page being read, which the index marks.
+typedef _Here = ({int surah, int juz, int hizb});
+
 /// Which surahs the surah list shows.
 enum _SurahFilter { all, meccan, medinan }
 
@@ -40,6 +55,8 @@ class QuranIndexPage extends ConsumerStatefulWidget {
     super.key,
     this.sheetScroll,
     this.openOnBookmarks = false,
+    this.readerPage,
+    this.opening = IndexOpening.top,
   });
 
   /// Controller supplied when the index is displayed in a draggable sheet.
@@ -48,6 +65,13 @@ class QuranIndexPage extends ConsumerStatefulWidget {
   /// Whether the index opens on the bookmarks, as the reader's bookmarks
   /// button asks.
   final bool openOnBookmarks;
+
+  /// The page being read: its surah, juz and hizb are marked in the lists.
+  final int? readerPage;
+
+  /// Where the index opens: at the top, or at the reader's surah or juz,
+  /// scrolled to it. Only with [readerPage].
+  final IndexOpening opening;
 
   @override
   ConsumerState<QuranIndexPage> createState() => _QuranIndexPageState();
@@ -61,8 +85,15 @@ class _QuranIndexPageState extends ConsumerState<QuranIndexPage>
   late final TabController _tabs = TabController(
     length: _IndexTab.values.length,
     vsync: this,
-    initialIndex: widget.openOnBookmarks ? _IndexTab.bookmarks.index : 0,
+    initialIndex: widget.openOnBookmarks
+        ? _IndexTab.bookmarks.index
+        : widget.opening == IndexOpening.juz
+        ? _IndexTab.juz.index
+        : _IndexTab.surahs.index,
   )..addListener(_onTab);
+
+  /// The tab the index opened on, the only one scrolled to the reader's place.
+  late final int _openedOn = _tabs.index;
 
   void _onTab() {
     // Rebuild once the tab settles, so the selector follows a swipe.
@@ -94,60 +125,75 @@ class _QuranIndexPageState extends ConsumerState<QuranIndexPage>
             onAction: () => ref.invalidate(quranMetadataProvider),
           ),
         ),
-        data: (data) => Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            if (widget.sheetScroll != null)
-              AppSheetDragArea(
-                child: ListTile(
-                  title: Text(l10n.quranIndex),
-                  trailing: IconButton(
-                    tooltip: MaterialLocalizations.of(context)
-                        .closeButtonTooltip,
-                    icon: const Icon(Icons.close),
-                    onPressed: () =>
-                        Navigator.of(context, rootNavigator: true).pop(),
+        data: (data) {
+          final metadata = data.metadata;
+          final page = widget.readerPage;
+          final _Here? here = page == null
+              ? null
+              : (
+                  surah: metadata.surahAtPage(page).number,
+                  juz: metadata.juzOfPage(page).number,
+                  hizb: metadata.hizbOf(metadata.ayahsOnPage(page).first),
+                );
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (widget.sheetScroll != null)
+                AppSheetDragArea(
+                  child: ListTile(
+                    title: Text(l10n.quranIndex),
+                    trailing: IconButton(
+                      tooltip: MaterialLocalizations.of(context)
+                          .closeButtonTooltip,
+                      icon: const Icon(Icons.close),
+                      onPressed: () =>
+                          Navigator.of(context, rootNavigator: true).pop(),
+                    ),
                   ),
                 ),
-              ),
-            AppSheetDragArea(
-              child: _IndexHeader(
-                tab: _IndexTab.values[_tabs.index],
-                controller: _search,
-                onTab: (tab) => _tabs.animateTo(
-                  tab.index,
-                  duration: MediaQuery.disableAnimationsOf(context)
-                      ? Duration.zero
-                      : null,
+              AppSheetDragArea(
+                child: _IndexHeader(
+                  tab: _IndexTab.values[_tabs.index],
+                  controller: _search,
+                  onTab: (tab) => _tabs.animateTo(
+                    tab.index,
+                    duration: MediaQuery.disableAnimationsOf(context)
+                        ? Duration.zero
+                        : null,
+                  ),
+                  onQuery: () => setState(() {}),
                 ),
-                onQuery: () => setState(() {}),
               ),
-            ),
-            Expanded(
-              child: TabBarView(
-                controller: _tabs,
-                children: [
-                  for (final tab in _IndexTab.values)
-                    _IndexList(
-                      key: PageStorageKey<_IndexTab>(tab),
-                      searcher: data,
-                      tab: tab,
-                      query: _search.text,
-                      filter: _filter,
-                      byRevelation: _byRevelation,
-                      onFilter: (filter) => setState(() => _filter = filter),
-                      onByRevelation: (on) =>
-                          setState(() => _byRevelation = on),
-                      scroll: tab.index == _tabs.index
-                          ? widget.sheetScroll
-                          : null,
-                      inSheet: widget.sheetScroll != null,
-                    ),
-                ],
+              Expanded(
+                child: TabBarView(
+                  controller: _tabs,
+                  children: [
+                    for (final tab in _IndexTab.values)
+                      _IndexList(
+                        key: PageStorageKey<_IndexTab>(tab),
+                        searcher: data,
+                        tab: tab,
+                        query: _search.text,
+                        filter: _filter,
+                        byRevelation: _byRevelation,
+                        onFilter: (filter) => setState(() => _filter = filter),
+                        onByRevelation: (on) =>
+                            setState(() => _byRevelation = on),
+                        scroll: tab.index == _tabs.index
+                            ? widget.sheetScroll
+                            : null,
+                        inSheet: widget.sheetScroll != null,
+                        here: here,
+                        openAtHere:
+                            widget.opening != IndexOpening.top &&
+                            tab.index == _openedOn,
+                      ),
+                  ],
+                ),
               ),
-            ),
-          ],
-        ),
+            ],
+          );
+        },
       ),
     );
     if (widget.sheetScroll != null) return body;
@@ -226,6 +272,8 @@ class _IndexList extends ConsumerWidget {
     required this.onByRevelation,
     required this.scroll,
     required this.inSheet,
+    required this.here,
+    required this.openAtHere,
   });
 
   final IndexSearcher searcher;
@@ -237,6 +285,20 @@ class _IndexList extends ConsumerWidget {
   final ValueChanged<bool> onByRevelation;
   final ScrollController? scroll;
   final bool inSheet;
+
+  /// The reader's place, marked in the list; none when not opened from it.
+  final _Here? here;
+
+  /// Whether the list opens scrolled to the reader's place.
+  final bool openAtHere;
+
+  /// Whether [line] is the reader's place.
+  bool _isHere(_IndexLine line) => switch (line) {
+    _SurahRow(:final surah) => surah.number == here?.surah,
+    _JuzRow(:final juz) => juz.number == here?.juz,
+    _HizbRow(:final hizb) => hizb.number == here?.hizb,
+    _ => false,
+  };
 
   /// The surahs the search and the filter leave, in the Mushaf's order or
   /// the order of revelation.
@@ -350,68 +412,76 @@ class _IndexList extends ConsumerWidget {
         ],
       );
     }
-    return ListView.builder(
-      controller: scroll,
-      primary: false,
-      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-      padding: EdgeInsetsDirectional.fromSTEB(
-        padding.start,
-        4,
-        padding.end,
-        padding.bottom,
+    final target = openAtHere && here != null ? lines.indexWhere(_isHere) : -1;
+    return _OpensAt(
+      scroll: scroll,
+      target: target < 0 ? null : target,
+      builder: (controller, mark) => ListView.builder(
+        controller: controller,
+        primary: false,
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+        padding: EdgeInsetsDirectional.fromSTEB(
+          padding.start,
+          4,
+          padding.end,
+          padding.bottom,
+        ),
+        itemCount: lines.length,
+        itemBuilder: (context, index) => mark(index, switch (lines[index]) {
+          _SurahFilters() => _filterBar(context, metadata, digits),
+          _JuzHeading(:final juz) => IndexSectionHeader(
+            title: l10n.juzTitle(digits(juz)),
+          ),
+          _SurahRow(:final surah) => _rowPadding(
+            SurahTile(
+              surah: surah,
+              current: surah.number == here?.surah,
+              digits: digits,
+              onTap: () => open(surah.startPage),
+              onInfo: () async {
+                final read = await showSurahInfo(
+                  context,
+                  metadata: metadata,
+                  surah: surah,
+                  digits: digits,
+                );
+                if (read) open(surah.startPage);
+              },
+            ),
+          ),
+          _JuzRow(:final juz) => _rowPadding(
+            JuzTile(
+              juz: juz,
+              current: juz.number == here?.juz,
+              surahName: metadata.surah(juz.surah).arabicName,
+              digits: digits,
+              opening: _opening(text, AyahRef(juz.surah, juz.ayah)),
+              openingFont: font,
+              onTap: () => open(juz.startPage),
+            ),
+          ),
+          _HizbRow(:final hizb) => _rowPadding(
+            HizbTile(
+              hizb: hizb,
+              current: hizb.number == here?.hizb,
+              surahName: metadata.surah(hizb.surah).arabicName,
+              digits: digits,
+              opening: _opening(text, AyahRef(hizb.surah, hizb.ayah)),
+              openingFont: font,
+              onTap: () => open(hizb.startPage),
+            ),
+          ),
+          _SajdaRow(:final sajda) => _rowPadding(
+            SajdaTile(
+              sajda: sajda,
+              surahName: metadata.surah(sajda.surah).arabicName,
+              juz: metadata.juzOf(AyahRef(sajda.surah, sajda.ayah)),
+              digits: digits,
+              onTap: () => open(sajda.startPage),
+            ),
+          ),
+        }),
       ),
-      itemCount: lines.length,
-      itemBuilder: (context, index) => switch (lines[index]) {
-        _SurahFilters() => _filterBar(context, metadata, digits),
-        _JuzHeading(:final juz) => IndexSectionHeader(
-          title: l10n.juzTitle(digits(juz)),
-        ),
-        _SurahRow(:final surah) => _rowPadding(
-          SurahTile(
-            surah: surah,
-            digits: digits,
-            onTap: () => open(surah.startPage),
-            onInfo: () async {
-              final read = await showSurahInfo(
-                context,
-                metadata: metadata,
-                surah: surah,
-                digits: digits,
-              );
-              if (read) open(surah.startPage);
-            },
-          ),
-        ),
-        _JuzRow(:final juz) => _rowPadding(
-          JuzTile(
-            juz: juz,
-            surahName: metadata.surah(juz.surah).arabicName,
-            digits: digits,
-            opening: _opening(text, AyahRef(juz.surah, juz.ayah)),
-            openingFont: font,
-            onTap: () => open(juz.startPage),
-          ),
-        ),
-        _HizbRow(:final hizb) => _rowPadding(
-          HizbTile(
-            hizb: hizb,
-            surahName: metadata.surah(hizb.surah).arabicName,
-            digits: digits,
-            opening: _opening(text, AyahRef(hizb.surah, hizb.ayah)),
-            openingFont: font,
-            onTap: () => open(hizb.startPage),
-          ),
-        ),
-        _SajdaRow(:final sajda) => _rowPadding(
-          SajdaTile(
-            sajda: sajda,
-            surahName: metadata.surah(sajda.surah).arabicName,
-            juz: metadata.juzOf(AyahRef(sajda.surah, sajda.ayah)),
-            digits: digits,
-            onTap: () => open(sajda.startPage),
-          ),
-        ),
-      },
     );
   }
 
@@ -525,4 +595,108 @@ List<_IndexLine> _withJuzHeadings<T>(
     lines.add(row(item));
   }
   return lines;
+}
+
+/// A list that opens with line [target] in sight, a little below the top,
+/// instead of at its start. Lines are built lazily and differ in height, so
+/// it jumps to an estimate and steps until the line is built, then brings it
+/// into view.
+class _OpensAt extends StatefulWidget {
+  const _OpensAt({
+    required this.scroll,
+    required this.target,
+    required this.builder,
+  });
+
+  /// The list's controller when it has one (in a sheet); else the list gets
+  /// its own.
+  final ScrollController? scroll;
+
+  /// The line to open at; none opens at the top.
+  final int? target;
+
+  /// Builds the list with its controller; `mark` wraps each line, so the
+  /// target can be found and the built lines are known.
+  final Widget Function(
+    ScrollController? controller,
+    Widget Function(int index, Widget line) mark,
+  )
+  builder;
+
+  @override
+  State<_OpensAt> createState() => _OpensAtState();
+}
+
+class _OpensAtState extends State<_OpensAt> {
+  final GlobalKey _target = GlobalKey();
+  ScrollController? _own;
+  int _last = -1;
+
+  /// A line's usual height, for the first jump only.
+  static const double _estimate = 96;
+
+  /// How many frames it may step before it settles where it is.
+  static const int _steps = 12;
+
+  ScrollController? get _controller => widget.scroll ?? _own;
+
+  @override
+  void initState() {
+    super.initState();
+    final target = widget.target;
+    if (target == null) return;
+    if (widget.scroll == null) {
+      _own = ScrollController(initialScrollOffset: target * _estimate);
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final controller = _controller;
+      if (widget.scroll != null &&
+          controller != null &&
+          controller.hasClients) {
+        final position = controller.position;
+        controller.jumpTo(
+          (target * _estimate).clamp(0, position.maxScrollExtent).toDouble(),
+        );
+      }
+      _settle(_steps);
+    });
+  }
+
+  @override
+  void dispose() {
+    _own?.dispose();
+    super.dispose();
+  }
+
+  void _settle(int left) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final found = _target.currentContext;
+      if (found != null) {
+        Scrollable.ensureVisible(found, alignment: 0.15);
+        return;
+      }
+      final controller = _controller;
+      final target = widget.target;
+      if (left == 0 || target == null || controller == null) return;
+      if (!controller.hasClients) return;
+      final position = controller.position;
+      final step = position.viewportDimension;
+      final next = target > _last
+          ? position.pixels + step
+          : position.pixels - step;
+      controller.jumpTo(next.clamp(0, position.maxScrollExtent).toDouble());
+      _settle(left - 1);
+    });
+  }
+
+  Widget _mark(int index, Widget line) {
+    if (index > _last) _last = index;
+    return index == widget.target
+        ? KeyedSubtree(key: _target, child: line)
+        : line;
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.builder(_controller, _mark);
 }

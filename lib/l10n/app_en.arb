@@ -429,6 +429,8 @@
   "indexSearchHint": "Search by name or number",
   "revelationMeccan": "Meccan",
   "revelationMedinan": "Medinan",
+  "indexYouAreHere": "You are here",
+  "@indexYouAreHere": {"description": "Tag on the index row of the surah, juz or hizb the reader is in now."},
   "revelationOrderTag": "Revealed {order}th",
   "@revelationOrderTag": {"placeholders": {"order": {"type": "String"}}},
   "surahInfo": "About surah {surah}",

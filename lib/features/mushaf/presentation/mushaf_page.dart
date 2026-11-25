@@ -151,7 +151,12 @@ class MushafPage extends ConsumerWidget {
       onPage: goTo,
       onEnterNumber: goToPage,
       onDisplayOptions: () => showDisplayOptions(context),
-      onSurah: () => open(AppRoute.quranIndex),
+      onSurah: () => openReaderRoute(
+        context,
+        ref,
+        AppRoute.quranIndex,
+        opening: IndexOpening.surah,
+      ),
     );
 
     // The page keeps one size: it fills the screen inside the system insets.

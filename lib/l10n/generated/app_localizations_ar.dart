@@ -1337,6 +1337,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get revelationMedinan => 'مدنية';
 
   @override
+  String get indexYouAreHere => 'أنت هنا';
+
+  @override
   String revelationOrderTag(String order) {
     return 'ترتيب النزول $order';
   }

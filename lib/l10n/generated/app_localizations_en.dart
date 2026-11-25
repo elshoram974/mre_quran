@@ -1352,6 +1352,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get revelationMedinan => 'Medinan';
 
   @override
+  String get indexYouAreHere => 'You are here';
+
+  @override
   String revelationOrderTag(String order) {
     return 'Revealed ${order}th';
   }
