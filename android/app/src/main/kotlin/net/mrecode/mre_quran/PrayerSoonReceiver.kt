@@ -6,8 +6,10 @@ import android.content.Context
 import android.content.Intent
 
 /**
- * Shows the reminder before a prayer when its alarm fires, takes it away when
- * its Remove button is pressed, and arms the alarms again after a restart.
+ * Shows a prayer notice when its alarm fires (the reminder before a prayer
+ * with its countdown, or a plain one: see [PrayerSoonNotice]), takes a
+ * countdown away when its Remove button is pressed, and arms the alarms again
+ * after a restart.
  */
 class PrayerSoonReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -32,8 +34,10 @@ class PrayerSoonReceiver : BroadcastReceiver() {
         }
         // Arm the one after it before showing this one.
         PrayerSoonScheduler.armAfter(context, at)
-        // The adhan has come: there is nothing left to count down to.
-        if (now >= alarm.getLong("adhan")) return
+        // Too late to be of use: the adhan has come (nothing left to count
+        // down to), or a plain notice's moment has passed.
+        val until = if (alarm.has("until")) alarm.getLong("until") else alarm.getLong("adhan")
+        if (now >= until) return
         PrayerSoonNotice.post(context, id, alarm, config)
     }
 

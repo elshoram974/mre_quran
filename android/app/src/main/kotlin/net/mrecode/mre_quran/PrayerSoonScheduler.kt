@@ -16,8 +16,13 @@ import org.json.JSONObject
  * holds a single system alarm and they come back after a restart without the
  * app running.
  *
- * Each alarm is `{id, at, adhan, title, body}`: when to show the reminder,
- * when the adhan is (the time its countdown ends), and its words.
+ * Besides those reminders it keeps every other prayer notice on Android (at
+ * the prayer time, at the iqama, the adhkar after a prayer), so a month of
+ * them costs one write instead of hundreds of notifications handed over one
+ * by one. Each alarm is `{id, at, title, body, channel, channelName, sound?}`
+ * with either `adhan` (a countdown to that time) or `until` and
+ * `countdown: false` (a plain notice, not shown after that time); see
+ * [PrayerSoonNotice].
  */
 internal object PrayerSoonScheduler {
     const val ALARM_ACTION = "net.mrecode.mre_quran.PRAYER_SOON_ALARM"
@@ -25,6 +30,9 @@ internal object PrayerSoonScheduler {
 
     private const val PREFERENCES = "prayer_soon_alarms"
     private const val STORED = "stored"
+
+    /** The id of the one alarm armed with the system, so it alone is cancelled. */
+    private const val ARMED = "armed"
 
     /** Replaces every reminder with [alarms] (a JSON array) sharing [config]. */
     fun schedule(context: Context, alarms: JSONArray, config: JSONObject) {
@@ -58,15 +66,22 @@ internal object PrayerSoonScheduler {
 
     /** Removes every stored reminder and the alarm that is armed. */
     fun cancelAll(context: Context) {
-        val stored = read(context)
-        if (stored != null) {
-            val alarms = stored.getJSONArray("alarms")
-            val manager = context.getSystemService(AlarmManager::class.java)
-            for (index in 0 until alarms.length()) {
-                manager.cancel(pending(context, alarms.getJSONObject(index).getInt("id")))
+        val preferences = context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE)
+        val manager = context.getSystemService(AlarmManager::class.java)
+        if (preferences.contains(ARMED)) {
+            // Only the next one is ever armed: one call, not one per alarm,
+            // which kept the app's start waiting.
+            manager.cancel(pending(context, preferences.getInt(ARMED, 0)))
+        } else {
+            // Stored before the armed one was noted: each is cancelled, once.
+            val alarms = read(context)?.getJSONArray("alarms")
+            if (alarms != null) {
+                for (index in 0 until alarms.length()) {
+                    manager.cancel(pending(context, alarms.getJSONObject(index).getInt("id")))
+                }
             }
         }
-        context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE).edit().clear().apply()
+        preferences.edit().clear().apply()
     }
 
     /** The stored reminder [id] and the shared config, or null once it is gone. */
@@ -85,11 +100,17 @@ internal object PrayerSoonScheduler {
         return raw?.let { JSONObject(it) }
     }
 
+    /**
+     * Arms [id] at [at], to the minute when the phone allows it: every one,
+     * even a notice that could come late, because only one is armed at a time
+     * and one held back would hold back the ones after it.
+     */
     private fun arm(context: Context, id: Int, at: Long) {
+        context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE).edit().putInt(ARMED, id).apply()
         val manager = context.getSystemService(AlarmManager::class.java)
         val exact = Build.VERSION.SDK_INT < Build.VERSION_CODES.S || manager.canScheduleExactAlarms()
         val intent = pending(context, id)
-        // Without the permission the reminder may come a few minutes late.
+        // Without the permission the notice may come a few minutes late.
         if (exact) manager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, intent)
         else manager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, intent)
     }

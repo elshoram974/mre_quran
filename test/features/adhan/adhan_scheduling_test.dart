@@ -118,12 +118,12 @@ class _Sounds implements IosAdhanSounds {
 }
 
 Iterable<int> _atTimeNotifications(_Harness h) => [
-  for (final MapEntry(:key, :value) in h.scheduler.once.entries)
+  for (final MapEntry(:key, :value) in handedOver(h.scheduler, h.soon).entries)
     if (value.channel == ReminderChannel.prayer) key,
 ];
 
 Iterable<int> _beforeNotifications(_Harness h) => [
-  for (final MapEntry(:key, :value) in h.scheduler.once.entries)
+  for (final MapEntry(:key, :value) in handedOver(h.scheduler, h.soon).entries)
     if (value.channel.isPrayerSoon) key,
 ];
 
@@ -174,7 +174,10 @@ void main() {
     expect(_atTimeNotifications(h), hasLength(_atTimeWithin));
     // Every notification has a button to its settings.
     expect(
-      h.scheduler.once.values.every((n) => n.settingsLabel == 'الإعدادات'),
+      handedOver(
+        h.scheduler,
+        h.soon,
+      ).values.every((n) => n.settingsLabel == 'الإعدادات'),
       isTrue,
     );
   });
@@ -249,7 +252,7 @@ void main() {
     await h.turnAllOn();
     await h.container.read(prayerProvider.notifier).setAllAlerts(false);
     expect(h.platform.alarms, isEmpty);
-    expect(h.scheduler.once, isEmpty);
+    expect(handedOver(h.scheduler, h.soon), isEmpty);
   });
 
   test('changing the voice or the style schedules again', () async {
@@ -275,12 +278,13 @@ void main() {
     final h = _harness();
     await h.turnAllOn();
     await h.container.read(prayerProvider.notifier).setAdhkarReminder(true);
-    final after = h.scheduler.once.entries.where(
-      (entry) => entry.value.channel == ReminderChannel.adhkar,
-    );
+    final after = handedOver(
+      h.scheduler,
+      h.soon,
+    ).entries.where((entry) => entry.value.channel == ReminderChannel.adhkar);
     expect(after, isNotEmpty);
     expect(
-      after.length + h.soon.alarms.length,
+      after.length + h.soon.countdowns.length,
       PrayerNotifier.notificationLimit,
     );
   });
@@ -292,7 +296,7 @@ void main() {
     // own, which says when the adhan is, and has a button to take it away.
     // None of it is a plugin notification.
     expect(_beforeNotifications(h), isEmpty);
-    final first = h.soon.alarms.first;
+    final first = h.soon.countdowns.first;
     final fajr = h.platform.alarms.first;
     expect(first.id, PrayerAlertPlan.firstBeforeId);
     expect(first.title, 'اقتربت صلاة الفجر');
@@ -304,7 +308,7 @@ void main() {
     expect(first.sound, 'prayer_near_fajr');
     expect(first.channelName, 'تذكير قبل الصلاة · الفجر');
     // And the Friday prayer has a channel and a voice of its own.
-    final friday = h.soon.alarms.firstWhere(
+    final friday = h.soon.countdowns.firstWhere(
       (alarm) => alarm.title == 'اقتربت صلاة الجمعة',
     );
     expect(friday.channel, 'prayer_soon_jumuah');
@@ -319,15 +323,18 @@ void main() {
 
     final notifier = h.container.read(prayerProvider.notifier);
     await notifier.setBeforeMinutes(5);
-    final moved = h.soon.alarms.first;
+    final moved = h.soon.countdowns.first;
     expect(fajr.at.difference(moved.at), const Duration(minutes: 5));
     expect(moved.adhan, fajr.at);
 
     // Without the countdown, it is a notification whose words say how long
     // is left, and the platform keeps none.
     await notifier.setBeforeCountdown(false);
-    expect(h.soon.alarms, isEmpty);
-    final plain = h.scheduler.once[PrayerAlertPlan.firstBeforeId]!;
+    expect(h.soon.countdowns, isEmpty);
+    final plain = handedOver(
+      h.scheduler,
+      h.soon,
+    )[PrayerAlertPlan.firstBeforeId]!;
     expect(plain.body, 'باقي ٥ دقائق على الأذان');
     expect(
       h.container.read(prayerProvider).value!.settings.beforeCountdown,
@@ -336,7 +343,7 @@ void main() {
 
     await notifier.setBeforeReminder(false);
     expect(_beforeNotifications(h), isEmpty);
-    expect(h.soon.alarms, isEmpty);
+    expect(h.soon.countdowns, isEmpty);
     // The adhan itself is untouched.
     expect(h.platform.alarms, hasLength(_allAlarms));
   });
@@ -344,9 +351,9 @@ void main() {
   test('turning the alerts off removes the countdown reminders too', () async {
     final h = _harness();
     await h.turnAllOn();
-    expect(h.soon.alarms, isNotEmpty);
+    expect(h.soon.countdowns, isNotEmpty);
     await h.container.read(prayerProvider.notifier).setAllAlerts(false);
-    expect(h.soon.alarms, isEmpty);
+    expect(h.soon.countdowns, isEmpty);
   });
 
   test('the countdown reminders speak the app\'s language', () async {
@@ -354,8 +361,8 @@ void main() {
     await h.container.read(settingsProvider.future);
     await h.turnAllOn();
     expect(h.soon.config!.rtl, isFalse);
-    expect(h.soon.alarms.first.title, 'Fajr is near');
-    expect(h.soon.alarms.first.body, startsWith('Left until the adhan · '));
+    expect(h.soon.countdowns.first.title, 'Fajr is near');
+    expect(h.soon.countdowns.first.body, startsWith('Left until the adhan · '));
   });
 
   test('Fajr plays the Fajr adhan; every adhan is announced, Friday\'s '
@@ -417,7 +424,7 @@ void main() {
     );
     await h.turnAllOn();
     await h.container.read(prayerProvider.notifier).setAllAlerts(false);
-    expect(h.scheduler.once.keys, [42]);
+    expect(handedOver(h.scheduler, h.soon).keys, [42]);
   });
 
   group('on iOS', () {
@@ -428,8 +435,11 @@ void main() {
         'countdown in a notification', () async {
       final h = _harness(supported: false);
       await h.turnAllOn();
-      final first = h.scheduler.once[PrayerAlertPlan.firstBeforeId]!;
-      expect(h.soon.alarms, isEmpty);
+      final first = handedOver(
+        h.scheduler,
+        h.soon,
+      )[PrayerAlertPlan.firstBeforeId]!;
+      expect(h.soon.countdowns, isEmpty);
       expect(first.body, 'باقي ١٥ دقيقة على الأذان');
     });
 
@@ -449,7 +459,7 @@ void main() {
         );
       }
       expect(
-        h.scheduler.once.length,
+        handedOver(h.scheduler, h.soon).length,
         lessThanOrEqualTo(PrayerNotifier.notificationLimit),
       );
       expect(PrayerNotifier.notificationLimit, lessThan(64));
@@ -482,7 +492,7 @@ void main() {
       );
       // Each is in its prayer's channel, and rings with that channel's voice.
       final before = [
-        for (final entry in h.scheduler.once.entries)
+        for (final entry in handedOver(h.scheduler, h.soon).entries)
           if (entry.value.channel.isPrayerSoon) entry,
       ];
       for (final entry in before) {
@@ -500,9 +510,10 @@ void main() {
         ReminderChannel.prayerSoonMaghrib,
         ReminderChannel.prayerSoonIsha,
       });
-      final iqamas = h.scheduler.once.entries.where(
-        (entry) => entry.value.channel == ReminderChannel.iqama,
-      );
+      final iqamas = handedOver(
+        h.scheduler,
+        h.soon,
+      ).entries.where((entry) => entry.value.channel == ReminderChannel.iqama);
       expect(iqamas, isNotEmpty);
       for (final entry in iqamas) {
         expect(h.scheduler.sounds[entry.key], 'iqama_phrase.caf');

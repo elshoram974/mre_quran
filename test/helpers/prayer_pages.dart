@@ -8,6 +8,7 @@ import 'package:mre_quran/core/l10n/l10n.dart';
 import 'package:mre_quran/core/notifications/reminder_scheduler_provider.dart';
 import 'package:mre_quran/core/theme/app_theme.dart';
 import 'package:mre_quran/core/time/ticking_clock.dart';
+import 'package:mre_quran/features/adhan/application/adhan_providers.dart';
 import 'package:mre_quran/features/prayer/application/prayer_provider.dart';
 import 'package:mre_quran/features/prayer/domain/prayer_alerts.dart';
 import 'package:mre_quran/features/prayer/domain/prayer_times.dart';
@@ -21,6 +22,7 @@ import 'adhkar_fixtures.dart';
 import 'memory_settings_repository.dart';
 import 'no_hints_repository.dart';
 import 'prayer_soon_fixtures.dart';
+import 'adhan_fixtures.dart';
 
 /// What a prayer page test can look at after [pumpPrayerPage].
 class PrayerPageHarness {
@@ -84,6 +86,11 @@ Future<PrayerPageHarness> pumpPrayerPage(
         hintsRepositoryProvider.overrideWithValue(NoHintsRepository()),
         reminderSchedulerProvider.overrideWithValue(harness.scheduler),
         prayerSoonPlatformProvider.overrideWithValue(harness.soon),
+        // A phone that cannot play the adhan by itself: the alerts at the
+        // prayer time stay notices, and no call reaches a real channel.
+        adhanPlatformProvider.overrideWithValue(
+          FakeAdhanPlatform(supported: false),
+        ),
         locationSourceProvider.overrideWithValue(FakeLocationSource()),
         prayerRepositoryProvider.overrideWithValue(harness.repository),
         clockProvider.overrideWithValue(() => now ?? DateTime(2026, 10, 8, 9)),

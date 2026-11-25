@@ -8,6 +8,7 @@ import 'package:mre_quran/core/notifications/reminder_scheduler.dart';
 import 'package:mre_quran/core/notifications/reminder_scheduler_provider.dart';
 import 'package:mre_quran/core/theme/app_theme.dart';
 import 'package:mre_quran/core/time/ticking_clock.dart';
+import 'package:mre_quran/features/adhan/application/adhan_providers.dart';
 import 'package:mre_quran/features/prayer/application/prayer_provider.dart';
 import 'package:mre_quran/features/prayer/data/location_source.dart';
 import 'package:mre_quran/features/prayer/domain/prayer_times.dart';
@@ -21,6 +22,7 @@ import '../../helpers/no_hints_repository.dart';
 import '../../helpers/adhkar_fixtures.dart';
 import '../../helpers/memory_settings_repository.dart';
 import '../../helpers/prayer_soon_fixtures.dart';
+import '../../helpers/adhan_fixtures.dart';
 
 final _cairo = PrayerPlace(30.04, 31.24);
 
@@ -90,6 +92,11 @@ Future<_Harness> _pump(
         hintsRepositoryProvider.overrideWithValue(hints ?? NoHintsRepository()),
         reminderSchedulerProvider.overrideWithValue(harness.scheduler),
         prayerSoonPlatformProvider.overrideWithValue(harness.soon),
+        // A phone that cannot play the adhan by itself: the alerts at the
+        // prayer time stay notices, and no call reaches a real channel.
+        adhanPlatformProvider.overrideWithValue(
+          FakeAdhanPlatform(supported: false),
+        ),
         locationSourceProvider.overrideWithValue(harness.location),
         prayerRepositoryProvider.overrideWithValue(harness.repository),
         clockProvider.overrideWithValue(() => DateTime(2026, 10, 8, 9)),
@@ -247,19 +254,19 @@ void main() {
       // 09:00 on the fixed day: today's Fajr has passed, the rest of the
       // planned days follow, each with its reminder before it.
       final days = PrayerNotifier.planDays - 1;
-      final items = harness.scheduler.once.values;
+      final items = handedOver(harness.scheduler, harness.soon).values;
       expect(
         items.where((i) => i.channel == ReminderChannel.prayer),
         hasLength(days),
       );
       // Each with its reminder before it, which the platform keeps.
-      expect(harness.soon.alarms, hasLength(days));
+      expect(harness.soon.countdowns, hasLength(days));
       expect(items.where((i) => i.channel.isPrayerSoon), isEmpty);
       expect(items.every((item) => item.exact), isTrue);
 
       await tester.tap(find.byTooltip('التنبيه مفعّل'));
       await tester.pumpAndSettle();
-      expect(harness.scheduler.once, isEmpty);
+      expect(handedOver(harness.scheduler, harness.soon), isEmpty);
     });
 
     testWidgets('the first alert says what it asks for first, then offers '
@@ -274,7 +281,7 @@ void main() {
       await tester.tap(find.text('متابعة'));
       await tester.pumpAndSettle();
       expect(harness.scheduler.permissionRequests, 1);
-      expect(harness.scheduler.once, isNotEmpty);
+      expect(handedOver(harness.scheduler, harness.soon), isNotEmpty);
       expect(find.text('جرّب الأذان الآن'), findsOneWidget);
       await tester.tap(find.text('لاحقًا'));
       await tester.pumpAndSettle();
@@ -295,11 +302,13 @@ void main() {
       // each with its reminder before it (which the platform keeps): within
       // what the system is given at once.
       expect(
-        harness.scheduler.once.length + harness.soon.alarms.length,
+        handedOver(harness.scheduler, harness.soon).length +
+            harness.soon.countdowns.length,
         PrayerNotifier.planDays * DailyPrayer.values.length * 2 - 2,
       );
       expect(
-        harness.scheduler.once.length + harness.soon.alarms.length,
+        handedOver(harness.scheduler, harness.soon).length +
+            harness.soon.countdowns.length,
         lessThanOrEqualTo(PrayerNotifier.notificationLimit),
       );
       // The reminder before them can be moved.
@@ -308,14 +317,20 @@ void main() {
       // It counts down to the adhan, until the person turns that off.
       await _reveal(tester, find.text('عدّ تنازلي حتى الأذان'));
       // The reminders are the platform's, with their countdown.
-      expect(harness.soon.alarms, isNotEmpty);
-      final reminder = harness.soon.alarms.first.id;
-      expect(harness.scheduler.once, isNot(contains(reminder)));
+      expect(harness.soon.countdowns, isNotEmpty);
+      final reminder = harness.soon.countdowns.first.id;
+      expect(
+        handedOver(harness.scheduler, harness.soon),
+        isNot(contains(reminder)),
+      );
       await tester.tap(find.text('عدّ تنازلي حتى الأذان'));
       await tester.pumpAndSettle();
       // Off, the first of them is a notification that says how long is left.
-      expect(harness.soon.alarms, isEmpty);
-      expect(harness.scheduler.once[reminder]!.body, startsWith('باقي '));
+      expect(harness.soon.countdowns, isEmpty);
+      expect(
+        handedOver(harness.scheduler, harness.soon)[reminder]!.body,
+        startsWith('باقي '),
+      );
       // Back up to the day's times, which the page scrolled past.
       await tester.drag(find.byType(Scrollable).first, const Offset(0, 1500));
       await tester.pumpAndSettle();
@@ -379,7 +394,7 @@ void main() {
       // Today's Fajr reminder has passed; every other prayer of the planned
       // days has one.
       expect(
-        harness.scheduler.once,
+        handedOver(harness.scheduler, harness.soon),
         hasLength(PrayerNotifier.planDays * 5 - 1),
       );
     });

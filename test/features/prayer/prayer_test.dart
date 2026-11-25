@@ -23,6 +23,34 @@ final _cairo = PrayerPlace(30.0444, 31.2357);
 final _now = DateTime(2026, 10, 8, 3);
 
 void main() {
+  group('values the clock works out again', () {
+    test('the same day\'s times compare equal, a new day\'s do not', () {
+      const method = PrayerMethod.egyptian;
+      final morning = PrayerDay.compute(_cairo, method, _now);
+      expect(
+        PrayerDay.compute(_cairo, method, _now.add(const Duration(hours: 5))),
+        morning,
+      );
+      expect(
+        PrayerDay.compute(_cairo, method, _now.add(const Duration(days: 1))),
+        isNot(morning),
+      );
+    });
+
+    test('the next prayer is equal until it changes', () {
+      const method = PrayerMethod.egyptian;
+      final first = nextPrayer(_cairo, method, _now);
+      expect(
+        nextPrayer(_cairo, method, _now.add(const Duration(seconds: 30))),
+        first,
+      );
+      expect(
+        nextPrayer(_cairo, method, first.at.add(const Duration(minutes: 1))),
+        isNot(first),
+      );
+    });
+  });
+
   group('method for a place', () {
     final cases = <String, (double, double, PrayerMethod)>{
       'Cairo': (30.04, 31.24, PrayerMethod.egyptian),
@@ -416,7 +444,7 @@ void main() {
         expect(state.settings.alerts, DailyPrayer.values.toSet());
         expect(scheduler.permissionRequests, 1);
         // They are planned for the place that was just given.
-        expect(scheduler.once, isNotEmpty);
+        expect(handedOver(scheduler, soon), isNotEmpty);
       });
 
       test('a place chosen on the map does the same', () async {
@@ -611,13 +639,14 @@ void main() {
         expect(result, PrayerResult.ok);
         expect(scheduler.permissionRequests, 1);
         expect(location.requests, 1);
-        final atTime = scheduler.once.values.where(
-          (value) => value.channel == ReminderChannel.prayer,
-        );
+        final atTime = handedOver(
+          scheduler,
+          soon,
+        ).values.where((value) => value.channel == ReminderChannel.prayer);
         expect(atTime, hasLength(PrayerNotifier.planDays));
         // And as many reminders before it, which the platform keeps.
-        expect(scheduler.once, hasLength(PrayerNotifier.planDays));
-        expect(soon.alarms, hasLength(PrayerNotifier.planDays));
+        expect(handedOver(scheduler, soon), hasLength(PrayerNotifier.planDays));
+        expect(soon.countdowns, hasLength(PrayerNotifier.planDays));
         final sample = atTime.first;
         expect(sample.exact, isTrue);
         expect(sample.payload, 'prayer:times');
@@ -656,12 +685,12 @@ void main() {
       // As many as the system is given at once; the rest come on a later
       // start.
       expect(
-        scheduler.once.length + soon.alarms.length,
+        handedOver(scheduler, soon).length + soon.countdowns.length,
         PrayerNotifier.notificationLimit,
       );
       await notifier.setAllAlerts(false);
-      expect(scheduler.once, isEmpty);
-      expect(soon.alarms, isEmpty);
+      expect(handedOver(scheduler, soon), isEmpty);
+      expect(soon.countdowns, isEmpty);
     });
 
     test(
@@ -691,7 +720,7 @@ void main() {
           PrayerResult.locationDenied,
         );
         expect(c2.read(prayerProvider).value!.settings.adhkarReminder, isFalse);
-        expect(scheduler.once, isEmpty);
+        expect(handedOver(scheduler, soon), isEmpty);
       },
     );
 
@@ -703,9 +732,15 @@ void main() {
       );
       await c.read(prayerProvider.future);
       await c.read(prayerProvider.notifier).setAdhkarReminder(true);
-      final sample = scheduler.once.values.first;
+      final sample = handedOver(scheduler, soon).values.first;
       expect(sample.channel, ReminderChannel.adhkar);
-      expect(sample.exact, isFalse);
+      // Android keeps it with the other prayer notices, each armed to the
+      // minute; through the plugin it would be approximate.
+      expect(sample.exact, isTrue);
+      expect(
+        soon.plain.map((alarm) => alarm.channel),
+        contains(ReminderChannel.adhkar.id),
+      );
       expect(sample.payload, 'adhkar:after_prayer');
       expect(sample.title, 'حان وقت أذكار بعد الصلاة');
     });
@@ -721,14 +756,14 @@ void main() {
         await c.read(prayerProvider.future);
         final notifier = c.read(prayerProvider.notifier);
         await notifier.setAlert(DailyPrayer.fajr, true);
-        final before = scheduler.once.values.first.at;
+        final before = handedOver(scheduler, soon).values.first.at;
         await notifier.setMethod(PrayerMethod.karachi);
         expect(c.read(prayerProvider).value!.method, PrayerMethod.karachi);
-        expect(scheduler.once.values.first.at, isNot(before));
+        expect(handedOver(scheduler, soon).values.first.at, isNot(before));
         await notifier.setMethod(null);
         expect(c.read(prayerProvider).value!.settings.method, isNull);
         expect(c.read(prayerProvider).value!.method, PrayerMethod.egyptian);
-        expect(scheduler.once.values.first.at, before);
+        expect(handedOver(scheduler, soon).values.first.at, before);
       },
     );
 
@@ -743,14 +778,14 @@ void main() {
         await c.read(prayerProvider.future);
         final notifier = c.read(prayerProvider.notifier);
         await notifier.setAlert(DailyPrayer.fajr, true);
-        final before = scheduler.once.values.first.at;
+        final before = handedOver(scheduler, soon).values.first.at;
 
         await notifier.setOffset(DailyPrayer.fajr, 4);
         expect(c.read(prayerProvider).value!.settings.offsets, {
           DailyPrayer.fajr: 4,
         });
         expect(
-          scheduler.once.values.first.at,
+          handedOver(scheduler, soon).values.first.at,
           before.add(const Duration(minutes: 4)),
         );
         // The page and the widgets read the same moved times.
@@ -769,7 +804,7 @@ void main() {
         );
         await notifier.setOffset(DailyPrayer.fajr, 0);
         expect(c.read(prayerProvider).value!.settings.offsets, isEmpty);
-        expect(scheduler.once.values.first.at, before);
+        expect(handedOver(scheduler, soon).values.first.at, before);
       },
     );
 
@@ -852,13 +887,13 @@ void main() {
       await c.read(prayerProvider.future);
       final notifier = c.read(prayerProvider.notifier);
       expect(await notifier.setIqamaReminder(true), PrayerResult.ok);
-      final iqamas = scheduler.once.entries
+      final iqamas = handedOver(scheduler, soon).entries
           .where((entry) => entry.value.channel == ReminderChannel.iqama)
           .toList();
       // Five a day, for the days planned; today's gone by three in the morning
       // only for none.
       expect(iqamas, isNotEmpty);
-      final first = scheduler.once[PrayerAlertPlan.firstIqamaId]!;
+      final first = handedOver(scheduler, soon)[PrayerAlertPlan.firstIqamaId]!;
       expect(first.title, 'إقامة صلاة الفجر');
       expect(first.body, 'قد قامت الصلاة، قد قامت الصلاة');
       expect(first.exact, isTrue);
@@ -869,7 +904,7 @@ void main() {
 
       await notifier.setIqamaMinutes(DailyPrayer.fajr, 30);
       expect(
-        scheduler.once[PrayerAlertPlan.firstIqamaId]!.at,
+        handedOver(scheduler, soon)[PrayerAlertPlan.firstIqamaId]!.at,
         day.fajr.add(const Duration(minutes: 30)),
       );
       await notifier.setIqamaMinutes(DailyPrayer.fajr, 500);
@@ -881,13 +916,17 @@ void main() {
       expect(c.read(prayerProvider).value!.settings.iqamaMinutes, isEmpty);
 
       await notifier.setIqamaSound(false);
-      expect(scheduler.once[PrayerAlertPlan.firstIqamaId]!.silent, isTrue);
+      expect(
+        handedOver(scheduler, soon)[PrayerAlertPlan.firstIqamaId]!.silent,
+        isTrue,
+      );
 
       await notifier.setIqamaReminder(false);
       expect(
-        scheduler.once.values.where(
-          (value) => value.channel == ReminderChannel.iqama,
-        ),
+        handedOver(
+          scheduler,
+          soon,
+        ).values.where((value) => value.channel == ReminderChannel.iqama),
         isEmpty,
       );
     });
@@ -906,7 +945,7 @@ void main() {
           PrayerResult.notificationsDenied,
         );
         expect(c.read(prayerProvider).value!.settings.iqamaReminder, isFalse);
-        expect(scheduler.once, isEmpty);
+        expect(handedOver(scheduler, soon), isEmpty);
       },
     );
 
@@ -925,9 +964,15 @@ void main() {
       expect(soon.config!.sound, isFalse);
       // Without the countdown it is a notification, silent the same way.
       await notifier.setBeforeCountdown(false);
-      expect(scheduler.once[PrayerAlertPlan.firstBeforeId]!.silent, isTrue);
+      expect(
+        handedOver(scheduler, soon)[PrayerAlertPlan.firstBeforeId]!.silent,
+        isTrue,
+      );
       await notifier.setBeforeSound(true);
-      expect(scheduler.once[PrayerAlertPlan.firstBeforeId]!.silent, isFalse);
+      expect(
+        handedOver(scheduler, soon)[PrayerAlertPlan.firstBeforeId]!.silent,
+        isFalse,
+      );
     });
 
     test('exact alarms are requested through the scheduler', () async {
@@ -956,7 +1001,7 @@ void main() {
         expect(location.quietReads, 1);
         expect(scheduler.permissionRequests, 0);
         expect(
-          scheduler.once.length + soon.alarms.length,
+          handedOver(scheduler, soon).length + soon.countdowns.length,
           2 * PrayerNotifier.planDays,
         );
       },
@@ -1036,8 +1081,11 @@ void main() {
       await c.read(settingsProvider.future);
       await c.read(prayerProvider.future);
       await Future<void>.delayed(Duration.zero);
-      final titles = scheduler.once.values.map((value) => value.title);
-      expect(soon.alarms.first.title, 'Fajr is near');
+      final titles = handedOver(
+        scheduler,
+        soon,
+      ).values.map((value) => value.title);
+      expect(soon.countdowns.first.title, 'Fajr is near');
       expect(titles, contains('Time for the Fajr prayer'));
     });
   });

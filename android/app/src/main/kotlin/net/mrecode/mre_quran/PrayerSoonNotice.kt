@@ -17,15 +17,21 @@ import androidx.core.app.NotificationManagerCompat
 import org.json.JSONObject
 
 /**
- * The reminder before a prayer, with the voice that says «اقتربت صلاة …»: the
- * prayer's name, when the adhan is, and the time left as a large countdown to
- * the second. The system redraws a
+ * A prayer notice. Most often the reminder before a prayer, with the voice
+ * that says «اقتربت صلاة …»: the prayer's name, when the adhan is, and the
+ * time left as a large countdown to the second. The system redraws a
  * Chronometer itself, so nothing of the app runs while it counts. The notice
  * stays until the adhan and then goes by itself, and has a Remove button.
+ *
+ * An alarm with `countdown: false` is a plain notice instead (at the prayer
+ * time, at the iqama, the adhkar after a prayer, or the reminder before a
+ * prayer without its countdown), made as the notifications plugin makes them
+ * on the same channels (`ReminderScheduler.scheduleOnce` in Dart).
  */
 internal object PrayerSoonNotice {
     @SuppressLint("MissingPermission")
     fun post(context: Context, id: Int, alarm: JSONObject, config: JSONObject) {
+        if (!alarm.optBoolean("countdown", true)) return postPlain(context, id, alarm, config)
         val left = alarm.getLong("adhan") - System.currentTimeMillis()
         val notifications = NotificationManagerCompat.from(context)
         if (left <= 0 || !notifications.areNotificationsEnabled()) return
@@ -33,7 +39,7 @@ internal object PrayerSoonNotice {
         // and a channel keeps the sound it was made with (the ids are
         // ReminderChannel.prayerSoon* in Dart).
         val channel = alarm.getString("channel")
-        ensureChannel(context, channel, alarm.optString("channelName", "Prayer"), alarm.getString("sound"))
+        ensureChannel(context, channel, alarm.optString("channelName", "Prayer"), alarm.optSound(), alarm.optBoolean("urgent"))
         val title = alarm.optString("title")
         val body = alarm.optString("body")
         val view = RemoteViews(context.packageName, R.layout.prayer_soon_notice).apply {
@@ -59,29 +65,88 @@ internal object PrayerSoonNotice {
             .setOngoing(true)
             .setAutoCancel(false)
             .setOnlyAlertOnce(true)
-            .setSilent(!config.optBoolean("sound", true))
+            .setSilent(silent(alarm, config))
             .setTimeoutAfter(left)
-            .setContentIntent(open(context, id, config.optString("payload")))
+            .setContentIntent(open(context, id, payload(alarm, config)))
             .addAction(0, config.optString("dismissLabel", "Remove"), dismiss(context, id))
-        config.optString("settingsLabel").takeIf { it.isNotEmpty() && it != "null" }?.let {
-            builder.addAction(0, it, open(context, id + SETTINGS_OFFSET, config.optString("settingsPayload")))
-        }
+        addSettings(context, id, builder, alarm, config)
         notifications.notify(id, builder.build())
     }
 
-    private fun ensureChannel(context: Context, id: String, name: String, sound: String) {
+    /** A notice that shows and is swiped away like any other. */
+    @SuppressLint("MissingPermission")
+    private fun postPlain(context: Context, id: Int, alarm: JSONObject, config: JSONObject) {
+        val notifications = NotificationManagerCompat.from(context)
+        if (!notifications.areNotificationsEnabled()) return
+        val channel = alarm.getString("channel")
+        val urgent = alarm.optBoolean("urgent")
+        ensureChannel(context, channel, alarm.optString("channelName", "Prayer"), alarm.optSound(), urgent)
+        val body = alarm.optString("body")
+        val builder = NotificationCompat.Builder(context, channel)
+            .setSmallIcon(R.mipmap.ic_launcher)
+            .setContentTitle(alarm.optString("title"))
+            .setContentText(body)
+            // A long body reads whole when the notice is opened.
+            .setStyle(NotificationCompat.BigTextStyle().bigText(body))
+            .setPriority(if (urgent) NotificationCompat.PRIORITY_HIGH else NotificationCompat.PRIORITY_DEFAULT)
+            .setWhen(alarm.getLong("at"))
+            .setAutoCancel(true)
+            .setSilent(silent(alarm, config))
+            .setContentIntent(open(context, id, payload(alarm, config)))
+        addSettings(context, id, builder, alarm, config)
+        notifications.notify(id, builder.build())
+    }
+
+    /** Whether [alarm] comes without its sound: its own say, else the config's. */
+    private fun silent(alarm: JSONObject, config: JSONObject): Boolean =
+        if (alarm.has("silent")) alarm.getBoolean("silent") else !config.optBoolean("sound", true)
+
+    /** What a tap on [alarm] opens: its own payload, else the config's. */
+    private fun payload(alarm: JSONObject, config: JSONObject): String =
+        alarm.optText("payload") ?: config.optString("payload")
+
+    private fun addSettings(
+        context: Context,
+        id: Int,
+        builder: NotificationCompat.Builder,
+        alarm: JSONObject,
+        config: JSONObject,
+    ) {
+        val label = config.optText("settingsLabel") ?: return
+        val target = alarm.optText("settingsPayload") ?: config.optString("settingsPayload")
+        builder.addAction(0, label, open(context, id + SETTINGS_OFFSET, target))
+    }
+
+    /** The text at [key], or null when it is missing, empty or null. */
+    private fun JSONObject.optText(key: String): String? =
+        optString(key).takeIf { it.isNotEmpty() && it != "null" }
+
+    /** The name of the channel's raw sound, or null for the phone's own. */
+    private fun JSONObject.optSound(): String? = optText("sound")
+
+    /**
+     * Makes the channel as the plugin makes the same channel: urgent ones (the
+     * prayer time, the iqama) at high importance, with [sound] (a raw
+     * resource) or the phone's notification sound. A channel that exists keeps
+     * its sound and importance and only takes the new [name], so it follows
+     * the app's language.
+     */
+    private fun ensureChannel(context: Context, id: String, name: String, sound: String?, urgent: Boolean) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
-        val voice = Uri.parse("android.resource://${context.packageName}/raw/$sound")
-        val channel = NotificationChannel(id, name, NotificationManager.IMPORTANCE_DEFAULT).apply {
-            setSound(
-                voice,
-                AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_NOTIFICATION)
-                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                    .build(),
-            )
+        val manager = context.getSystemService(NotificationManager::class.java)
+        val importance = if (urgent) NotificationManager.IMPORTANCE_HIGH else NotificationManager.IMPORTANCE_DEFAULT
+        val channel = NotificationChannel(id, name, importance).apply {
+            if (sound != null) {
+                setSound(
+                    Uri.parse("android.resource://${context.packageName}/raw/$sound"),
+                    AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .build(),
+                )
+            }
         }
-        context.getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
+        manager.createNotificationChannel(channel)
     }
 
     /** Opens the app at what [payload] names (see the reminder payloads in Dart). */

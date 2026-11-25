@@ -31,8 +31,8 @@ final prayerRepositoryProvider = Provider<PrayerRepository>(
   (ref) => LocalPrayerRepository(SharedPreferencesAsync()),
 );
 
-/// Provides the reminder before a prayer that counts down to the adhan, which
-/// only Android shows. `main` overrides it with the platform's; the default
+/// Provides the prayer notices Android keeps itself (the reminder before a
+/// prayer that counts down to the adhan, and the plain ones). `main` overrides it with the platform's; the default
 /// does nothing, which keeps tests off the platform channel.
 final prayerSoonPlatformProvider = Provider<PrayerSoonPlatform>(
   (ref) => const _NoopPrayerSoonPlatform(),
@@ -41,11 +41,12 @@ final prayerSoonPlatformProvider = Provider<PrayerSoonPlatform>(
 class _NoopPrayerSoonPlatform implements PrayerSoonPlatform {
   const _NoopPrayerSoonPlatform();
 
+  /// Takes nothing, so the notifications plugin gets the notices.
   @override
-  Future<void> schedule(
+  Future<bool> schedule(
     List<PrayerSoonAlarm> alarms,
     PrayerSoonConfig config,
-  ) async {}
+  ) async => false;
 
   @override
   Future<void> cancelAll() async {}
@@ -554,17 +555,20 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
     }
   }
 
-  /// Hands the reminders with a countdown to the platform, replacing those it
-  /// had. With none, it removes them. A failure leaves the alerts as they are.
-  Future<void> _scheduleSoon(
+  /// Hands the notices Android keeps itself to the platform, replacing those
+  /// it had. With none, it removes them. Returns whether it took them.
+  Future<bool> _scheduleSoon(
     AppLocalizations l10n, {
     required bool rtl,
     required bool sound,
     required List<PrayerSoonAlarm> alarms,
   }) async {
     final platform = ref.read(prayerSoonPlatformProvider);
-    if (alarms.isEmpty) return platform.cancelAll();
-    await platform.schedule(
+    if (alarms.isEmpty) {
+      await platform.cancelAll();
+      return true;
+    }
+    return platform.schedule(
       alarms,
       PrayerSoonConfig(
         dismissLabel: l10n.prayerSoonDismiss,
@@ -584,11 +588,22 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
   static int get planDays =>
       defaultTargetPlatform == TargetPlatform.android ? 30 : 7;
 
-  /// The most prayer notifications handed to the system at once: on iOS
-  /// within its 64, leaving room for the adhkar reminders; on Android well
-  /// below the alarms a phone allows an app.
+  /// The most prayer notifications handed to the notifications plugin at
+  /// once: on iOS within its 64, leaving room for the adhkar reminders; on
+  /// Android (only when the app's own scheduler did not take them) well below
+  /// the alarms a phone allows an app.
   static int get notificationLimit =>
       defaultTargetPlatform == TargetPlatform.android ? 300 : 48;
+
+  /// How late a plain notice may still be shown on Android, when the phone
+  /// held its alarm back. The reminder before a prayer is shown until the
+  /// adhan.
+  static Duration _lateness(PrayerAlertKind kind) => switch (kind) {
+    PrayerAlertKind.atTime => const Duration(minutes: 30),
+    PrayerAlertKind.iqama => const Duration(minutes: 15),
+    PrayerAlertKind.afterPrayer => const Duration(hours: 1),
+    PrayerAlertKind.beforePrayer => Duration.zero,
+  };
 
   Future<void> _schedule(PrayerSettings settings, PrayerPlace? place) {
     // Replacing a plan cancels and recreates alarms. Serialize replacements so
@@ -628,7 +643,7 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
       final notices = [
         for (final alert in alerts)
           if (!byAdhan || alert.kind != PrayerAlertKind.atTime) alert,
-      ].take(notificationLimit);
+      ];
       // iOS plays no long sound by itself: its alert at prayer time rings
       // with the adhan's opening (the Fajr adhan's at Fajr) when the adhan
       // is on.
@@ -645,15 +660,16 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
       // language's dates.
       await initializeDateFormatting(language);
       String clock(DateTime at) => digits(DateFormat.jm(language).format(at));
+      final android = defaultTargetPlatform == TargetPlatform.android;
       // On Android the reminder before a prayer counts down to the adhan in a
       // notification of its own, which the platform shows; elsewhere, and
       // without the countdown, it is a normal notification whose words say
       // how long is left.
-      final countdown =
-          settings.beforeCountdown &&
-          defaultTargetPlatform == TargetPlatform.android;
+      final countdown = settings.beforeCountdown && android;
+      DateTime adhanOf(PrayerAlert alert) =>
+          alert.at.add(Duration(minutes: minutes));
       PrayerSoonAlarm soonOf(PrayerAlert alert) {
-        final adhan = alert.at.add(Duration(minutes: minutes));
+        final adhan = adhanOf(alert);
         final channel = _soonChannel(alert);
         return PrayerSoonAlarm(
           id: alert.id,
@@ -667,88 +683,128 @@ class PrayerNotifier extends AsyncNotifier<PrayerState> {
         );
       }
 
-      await _scheduleSoon(
-        l10n,
-        rtl: language == 'ar',
-        sound: settings.beforeSound,
-        alarms: [
-          if (countdown)
-            for (final alert in notices)
-              if (alert.kind == PrayerAlertKind.beforePrayer) soonOf(alert),
-        ],
-      );
-      for (final alert in notices) {
+      _PlainNotice plainOf(PrayerAlert alert) {
         final prayer = _alertName(l10n, alert);
-        switch (alert.kind) {
-          case PrayerAlertKind.beforePrayer:
-            if (countdown) break;
-            await _scheduler.scheduleOnce(
-              id: alert.id,
-              at: alert.at,
-              title: l10n.prayerSoonTitle(prayer),
-              body: l10n.prayerSoonBody(minutes, number(minutes)),
-              channel: _soonChannel(alert),
-              channelName: l10n.prayerSoonChannelNamed(prayer),
-              payload: ReminderPayload.prayerTimes,
-              exact: true,
-              iosSound: iosSounds
-                  ? LibraryIosAdhanSounds.forChannel(_soonChannel(alert))
-                  : null,
-              silent: !settings.beforeSound,
-              settingsLabel: l10n.notificationSettings,
-            );
-          case PrayerAlertKind.iqama:
-            await _scheduler.scheduleOnce(
-              id: alert.id,
-              at: alert.at,
-              title: l10n.iqamaTitle(prayer),
-              body: l10n.iqamaBody,
-              channel: ReminderChannel.iqama,
-              channelName: l10n.iqamaChannelName,
-              payload: ReminderPayload.prayerTimes,
-              exact: true,
-              iosSound: iosSounds
-                  ? LibraryIosAdhanSounds.forChannel(ReminderChannel.iqama)
-                  : null,
-              silent: !settings.iqamaSound,
-              settingsLabel: l10n.notificationSettings,
-            );
-          case PrayerAlertKind.atTime:
-            await _scheduler.scheduleOnce(
-              id: alert.id,
-              at: alert.at,
-              title: l10n.prayerAlertTitle(prayer),
-              body: l10n.prayerAlertBody,
-              channel: ReminderChannel.prayer,
-              channelName: l10n.prayerChannelName,
-              payload: ReminderPayload.prayerTimes,
-              exact: true,
-              iosSound: iosAdhan
-                  ? LibraryIosAdhanSounds.of(
-                      fajr: alert.prayer == DailyPrayer.fajr,
-                    )
-                  : null,
-              settingsLabel: l10n.notificationSettings,
-            );
-          case PrayerAlertKind.afterPrayer:
-            await _scheduler.scheduleOnce(
-              id: alert.id,
-              at: alert.at,
-              title: l10n.adhkarPrayerReminderTitle,
-              body: l10n.adhkarPrayerReminderBody(
-                prayerName(l10n, alert.prayer),
-              ),
-              channel: ReminderChannel.adhkar,
-              channelName: l10n.adhkarReminderChannel,
-              payload: ReminderPayload.forCollection(afterPrayerCollectionId),
-              settingsLabel: l10n.notificationSettings,
-            );
-        }
+        return switch (alert.kind) {
+          PrayerAlertKind.beforePrayer => (
+            title: l10n.prayerSoonTitle(prayer),
+            body: l10n.prayerSoonBody(minutes, number(minutes)),
+            channel: _soonChannel(alert),
+            channelName: l10n.prayerSoonChannelNamed(prayer),
+            payload: ReminderPayload.prayerTimes,
+            exact: true,
+            iosSound: iosSounds
+                ? LibraryIosAdhanSounds.forChannel(_soonChannel(alert))
+                : null,
+            silent: !settings.beforeSound,
+            until: adhanOf(alert),
+          ),
+          PrayerAlertKind.iqama => (
+            title: l10n.iqamaTitle(prayer),
+            body: l10n.iqamaBody,
+            channel: ReminderChannel.iqama,
+            channelName: l10n.iqamaChannelName,
+            payload: ReminderPayload.prayerTimes,
+            exact: true,
+            iosSound: iosSounds
+                ? LibraryIosAdhanSounds.forChannel(ReminderChannel.iqama)
+                : null,
+            silent: !settings.iqamaSound,
+            until: alert.at.add(_lateness(alert.kind)),
+          ),
+          PrayerAlertKind.atTime => (
+            title: l10n.prayerAlertTitle(prayer),
+            body: l10n.prayerAlertBody,
+            channel: ReminderChannel.prayer,
+            channelName: l10n.prayerChannelName,
+            payload: ReminderPayload.prayerTimes,
+            exact: true,
+            iosSound: iosAdhan
+                ? LibraryIosAdhanSounds.of(
+                    fajr: alert.prayer == DailyPrayer.fajr,
+                  )
+                : null,
+            silent: false,
+            until: alert.at.add(_lateness(alert.kind)),
+          ),
+          PrayerAlertKind.afterPrayer => (
+            title: l10n.adhkarPrayerReminderTitle,
+            body: l10n.adhkarPrayerReminderBody(prayerName(l10n, alert.prayer)),
+            channel: ReminderChannel.adhkar,
+            channelName: l10n.adhkarReminderChannel,
+            payload: ReminderPayload.forCollection(afterPrayerCollectionId),
+            exact: false,
+            iosSound: null,
+            silent: false,
+            until: alert.at.add(_lateness(alert.kind)),
+          ),
+        };
+      }
+
+      bool counts(PrayerAlert alert) =>
+          countdown && alert.kind == PrayerAlertKind.beforePrayer;
+
+      // Android keeps every prayer notice itself, handed over in one call:
+      // the plugin takes them one at a time and rewrites its whole list for
+      // each, which held the app's start for seconds.
+      if (android) {
+        final taken = await _scheduleSoon(
+          l10n,
+          rtl: language == 'ar',
+          sound: settings.beforeSound,
+          alarms: [
+            for (final alert in notices)
+              if (counts(alert))
+                soonOf(alert)
+              else
+                _plainAlarm(alert, plainOf(alert)),
+          ],
+        );
+        if (taken) return;
+      } else {
+        await ref.read(prayerSoonPlatformProvider).cancelAll();
+      }
+      // Elsewhere, or when Android did not take them: the plugin, within its
+      // limit, and without the countdown.
+      for (final alert in notices.take(notificationLimit)) {
+        final notice = plainOf(alert);
+        await _scheduler.scheduleOnce(
+          id: alert.id,
+          at: alert.at,
+          title: notice.title,
+          body: notice.body,
+          channel: notice.channel,
+          channelName: notice.channelName,
+          payload: notice.payload,
+          exact: notice.exact,
+          iosSound: notice.iosSound,
+          silent: notice.silent,
+          settingsLabel: l10n.notificationSettings,
+        );
       }
     } on Object catch (error) {
       AppLogger.debug('Prayer schedule failed: ${error.runtimeType}');
     }
   }
+
+  /// [notice] as Android shows it itself.
+  static PrayerSoonAlarm _plainAlarm(PrayerAlert alert, _PlainNotice notice) =>
+      PrayerSoonAlarm.plain(
+        id: alert.id,
+        at: alert.at,
+        until: notice.until,
+        title: notice.title,
+        body: notice.body,
+        channel: notice.channel.id,
+        channelName: notice.channelName,
+        sound: notice.channel.sound,
+        urgent:
+            notice.channel == ReminderChannel.prayer ||
+            notice.channel == ReminderChannel.iqama,
+        silent: notice.silent,
+        payload: notice.payload,
+        settingsPayload: notice.channel.settings,
+      );
 
   /// The channel of the reminder before [alert]'s prayer: one for each, and
   /// one for the Friday prayer.
@@ -786,3 +842,18 @@ String prayerName(AppLocalizations l10n, DailyPrayer prayer) =>
       DailyPrayer.maghrib => l10n.prayerMaghrib,
       DailyPrayer.isha => l10n.prayerIsha,
     };
+
+/// A prayer notice without a countdown, as either the plugin or Android shows
+/// it: its words, channel, what a tap opens, its sound, and how late it may
+/// still come.
+typedef _PlainNotice = ({
+  String title,
+  String body,
+  ReminderChannel channel,
+  String channelName,
+  String payload,
+  bool exact,
+  String? iosSound,
+  bool silent,
+  DateTime until,
+});

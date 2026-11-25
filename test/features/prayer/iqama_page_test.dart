@@ -10,6 +10,7 @@ import 'package:mre_quran/features/prayer/presentation/prayer_times_card.dart';
 import 'package:mre_quran/features/prayer/presentation/prayer_times_page.dart';
 
 import '../../helpers/prayer_pages.dart';
+import '../../helpers/prayer_soon_fixtures.dart';
 
 Future<PrayerPageHarness> _pump(
   WidgetTester tester, {
@@ -32,7 +33,7 @@ Future<PrayerPageHarness> _pump(
 );
 
 Iterable<int> _iqamas(PrayerPageHarness h) => [
-  for (final MapEntry(:key, :value) in h.scheduler.once.entries)
+  for (final MapEntry(:key, :value) in handedOver(h.scheduler, h.soon).entries)
     if (value.channel == ReminderChannel.iqama) key,
 ];
 
@@ -116,7 +117,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(harness.repository.settings.iqamaSound, isFalse);
     expect(
-      harness.scheduler.once.values
+      handedOver(harness.scheduler, harness.soon).values
           .where((value) => value.channel == ReminderChannel.iqama)
           .every((value) => value.silent),
       isTrue,

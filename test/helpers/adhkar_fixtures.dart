@@ -138,6 +138,18 @@ class MemoryRemindersRepository implements RemindersRepository {
   }
 }
 
+/// A one-off notice as it was handed over.
+typedef OnceNotice = ({
+  DateTime at,
+  String title,
+  String body,
+  String payload,
+  ReminderChannel channel,
+  bool exact,
+  bool silent,
+  String? settingsLabel,
+});
+
 /// Records what would be scheduled.
 class FakeReminderScheduler implements ReminderScheduler {
   FakeReminderScheduler({this.allow = true, this.launch});
@@ -213,20 +225,7 @@ class FakeReminderScheduler implements ReminderScheduler {
 
   bool exactAllowed = true;
   int exactRequests = 0;
-  final Map<
-    int,
-    ({
-      DateTime at,
-      String title,
-      String body,
-      String payload,
-      ReminderChannel channel,
-      bool exact,
-      bool silent,
-      String? settingsLabel,
-    })
-  >
-  once = {};
+  final Map<int, OnceNotice> once = {};
 
   /// The iOS sound each notification was scheduled with.
   final Map<int, String?> sounds = {};

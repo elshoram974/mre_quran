@@ -33,6 +33,9 @@ internal object AdhanScheduler {
     private const val PREFERENCES = "adhan_alarms"
     private const val STORED = "stored"
 
+    /** The id of the one alarm armed with the system, so it alone is cancelled. */
+    private const val ARMED = "armed"
+
     /** Replaces every alarm with [alarms] (a JSON array) sharing [config]. */
     fun schedule(context: Context, alarms: JSONArray, config: JSONObject) {
         cancelAll(context)
@@ -69,15 +72,22 @@ internal object AdhanScheduler {
     }
 
     fun cancelAll(context: Context) {
-        val stored = read(context)
-        if (stored != null) {
-            val alarms = stored.getJSONArray("alarms")
-            val manager = context.getSystemService(AlarmManager::class.java)
-            for (index in 0 until alarms.length()) {
-                manager.cancel(pending(context, alarms.getJSONObject(index).getInt("id")))
+        val preferences = context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE)
+        val manager = context.getSystemService(AlarmManager::class.java)
+        if (preferences.contains(ARMED)) {
+            // Only the next one is ever armed: one call, not one per alarm,
+            // which kept the app's start waiting.
+            manager.cancel(pending(context, preferences.getInt(ARMED, 0)))
+        } else {
+            // Stored before the armed one was noted: each is cancelled, once.
+            val alarms = read(context)?.getJSONArray("alarms")
+            if (alarms != null) {
+                for (index in 0 until alarms.length()) {
+                    manager.cancel(pending(context, alarms.getJSONObject(index).getInt("id")))
+                }
             }
         }
-        context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE).edit().clear().apply()
+        preferences.edit().clear().apply()
     }
 
     /**
@@ -120,6 +130,7 @@ internal object AdhanScheduler {
     }
 
     private fun arm(context: Context, id: Int, at: Long) {
+        context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE).edit().putInt(ARMED, id).apply()
         val manager = context.getSystemService(AlarmManager::class.java)
         val exact = Build.VERSION.SDK_INT < Build.VERSION_CODES.S || manager.canScheduleExactAlarms()
         val intent = pending(context, id)

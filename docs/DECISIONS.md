@@ -713,3 +713,18 @@
   until they download it.
 - **Also:** each voice card on the Adhan page now watches only its own state, so a download's progress no longer
   rebuilds the whole page.
+
+## D-065: Android keeps every prayer notice itself, handed over in one call
+
+- **Decision:** On Android, every prayer notice (at the prayer time when the adhan does not play, before the prayer
+  with or without its countdown, at the iqama, and the adhkar after a prayer) goes to the app's own scheduler
+  (`PrayerSoonScheduler`, the one that already kept the countdown reminder) in one call: it stores the month's list
+  and arms only the next alarm, as the adhan's scheduler does. A notice is shown as the plugin would show it, on the
+  same channels, with the same importance, sound, silence, tap and settings button (`PrayerSoonNotice`), and is not
+  shown once too late to help (the iqama's after 15 minutes, the prayer time's after 30, the adhkar's after an hour).
+  iOS, and Android if the call fails, keep the notifications plugin as before. Both native schedulers cancel only the
+  one alarm they armed, not one per stored alarm.
+- **Why:** the app makes the plan again at each start. The plugin takes notices one at a time and rewrites its whole
+  saved list for each, on the main thread, which also runs the app's UI: with up to 300 notices, the start was held
+  for seconds. One call costs one write. The plugin's 300 limit no longer applies on Android, so the iqama and the
+  adhkar after the prayers cover the whole month too.

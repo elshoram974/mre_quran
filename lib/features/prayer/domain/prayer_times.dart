@@ -288,6 +288,21 @@ class PrayerDay {
     DailyPrayer.maghrib => maghrib,
     DailyPrayer.isha => isha,
   };
+
+  // Compared by value, so working it out again as the clock ticks rebuilds
+  // nothing until the day changes.
+  @override
+  bool operator ==(Object other) =>
+      other is PrayerDay &&
+      other.fajr == fajr &&
+      other.sunrise == sunrise &&
+      other.dhuhr == dhuhr &&
+      other.asr == asr &&
+      other.maghrib == maghrib &&
+      other.isha == isha;
+
+  @override
+  int get hashCode => Object.hash(fajr, sunrise, dhuhr, asr, maghrib, isha);
 }
 
 /// The prayer that comes next.
@@ -301,6 +316,15 @@ class NextPrayer {
 
   /// When it begins.
   final DateTime at;
+
+  // Compared by value, so working it out again as the clock ticks rebuilds
+  // nothing until the next prayer changes.
+  @override
+  bool operator ==(Object other) =>
+      other is NextPrayer && other.prayer == prayer && other.at == at;
+
+  @override
+  int get hashCode => Object.hash(prayer, at);
 }
 
 /// Finds the prayer after [now] at [place]: today's, or tomorrow's Fajr.
