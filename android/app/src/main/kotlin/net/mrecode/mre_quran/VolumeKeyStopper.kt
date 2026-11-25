@@ -143,7 +143,6 @@ internal class VolumeKeyStopper(
 
     private fun press() {
         if (SystemClock.elapsedRealtime() - since < SETTLE_MILLIS) return
-        android.util.Log.i("ZZVOLTEST", "press")
         onPress()
     }
 

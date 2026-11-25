@@ -823,13 +823,18 @@
   focus, so nothing the person listens to pauses), owns a media session whose volume is its own (so even a press at
   the end of the scale is seen), and watches the system's note that a volume changed, putting the media volume back
   when a press moved it.
-- **Limit:** checked by compiling only; a phone's own volume handling can differ, so try it on a device
-  with the screen off and the app closed before a release.
+- **The listeners take the application's context:** a receiver's own context may not register a receiver; with it,
+  every notice that had a voice threw and took the app down right after showing itself (seen on the emulator as
+  `ReceiverCallNotAllowedException`). A part of the listening the phone refuses is let go; the sound goes on.
+- **Checked** on the emulator (Android 10), the app closed: a notice fired, a hardware volume key with the screen off
+  reached the app's media session (`musicOnly`, allowed because the silent track is media) and silenced it; with the
+  screen on too. A phone's own volume handling can still differ: try it on a device before a release.
 
 ## D-073: Notifications carry the app's star, not its launcher icon
 
 - **Decision:** Android draws a notification's small icon from its shape alone, so the launcher icon showed as a
   blank disc. Every notice (the adhan's, the reminders', the plugin's) uses `ic_stat_mre`: the app's eight-pointed
-  star, white on transparent, its middle dot cut out, 24 dp, drawn per density by
-  `tool/app_icon/render_notification_icon_test.dart`. It is kept from resource shrinking in `res/raw/keep.xml`
-  because the plugin finds it by name.
+  star, white on transparent, its middle dot cut out. One file, `res/drawable/ic_stat_mre.png`, 96 px (the size
+  the densest screens show at 24 dp), so it is sharp on every phone and the system scales it down where needed;
+  drawn by `tool/app_icon/render_notification_icon_test.dart`. It is kept from resource shrinking in
+  `res/raw/keep.xml` because the plugin finds it by name.
