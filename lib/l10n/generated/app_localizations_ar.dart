@@ -874,6 +874,21 @@ class AppLocalizationsAr extends AppLocalizations {
   String get qiblaHoldFlat => 'أمسك الهاتف أفقيًا لتأكيد الاتجاه';
 
   @override
+  String get qiblaUnconfirmed => 'لا يمكن تأكيد الاتجاه هنا';
+
+  @override
+  String get qiblaZoneCaution =>
+      'أنت قريب من القطب المغناطيسي، حيث قد تنحرف البوصلة عدة درجات. تحقّق من الاتجاه بالشمس أو بخريطة.';
+
+  @override
+  String get qiblaZoneBlackout =>
+      'على هذا القرب من القطب المغناطيسي لا تعمل أي بوصلة، ولا تستطيع هذه البوصلة إظهار القبلة. حدّد الشمال بالشمس أو من خريطة ثم در بالزاوية المذكورة أعلاه.';
+
+  @override
+  String get qiblaTurnedScreen =>
+      'هذه الشاشة تدور مع الجهاز ولا تعرف البوصلة ذلك، فقد يكون اتجاهها منحرفًا ربع دورة. اعتمد على الزاوية المذكورة أعلاه مع بوصلة أخرى، أو تحقّق من هاتف.';
+
+  @override
   String get qiblaHintCalibrate =>
       'إن اضطربت البوصلة فحرّك الهاتف على هيئة رقم 8 لمعايرتها.';
 

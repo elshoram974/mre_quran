@@ -1,12 +1,14 @@
 import 'dart:math' as math;
 
 import 'package:material_ui/material_ui.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/router.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/layout/adaptive_layout.dart';
+import '../../../core/layout/orientation_hold.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/app_notice.dart';
 import '../../../core/widgets/app_page_scaffold.dart';
@@ -14,6 +16,7 @@ import '../../../core/widgets/empty_state.dart';
 import '../../settings/application/digits_provider.dart';
 import '../application/compass_provider.dart';
 import '../application/prayer_provider.dart';
+import '../domain/magnetic_field.dart';
 import '../domain/qibla.dart';
 import 'prayer_labels.dart';
 import 'prayer_no_place.dart';
@@ -29,6 +32,12 @@ const double qiblaTolerance = 4;
 /// The page is drawn at once, before the place has loaded: the dial and the
 /// hints are in their places, dimmed and inert, and the bar says it is
 /// loading. It comes alive where it stands when the place arrives.
+///
+/// The dial is drawn up the screen and the heading is of the phone's own top
+/// edge, so the two agree only while the screen is upright on the phone: the
+/// page holds it so while it is in sight. Where the system turns the screen
+/// whatever the app asks (a tablet), and next to a magnetic pole, where no
+/// compass works, it says so and never claims to face the Qibla.
 class QiblaPage extends ConsumerStatefulWidget {
   /// Creates the page.
   const QiblaPage({super.key});
@@ -60,6 +69,7 @@ class _QiblaPageState extends ConsumerState<QiblaPage> {
     final state = ref.watch(prayerProvider);
     final data = state.value;
     final place = data?.place;
+    final upright = canHoldOrientation(context);
     final Widget body;
     if (state.hasError) {
       body = EmptyState(
@@ -83,29 +93,39 @@ class _QiblaPageState extends ConsumerState<QiblaPage> {
       // Loading or loaded, it is the same compass: it comes alive in place.
       body = ContentContainer(
         key: const ValueKey(_View.compass),
-        child: _Compass(qibla: place == null ? null : qiblaBearing(place)),
+        child: _Compass(
+          qibla: place == null ? null : qiblaBearing(place),
+          turned: !upright,
+        ),
       );
     }
-    return AppPageScaffold(
-      title: l10n.qiblaTitle,
-      // Also while the place the person asked for is being read.
-      loading: state.isLoading || (_locating && place == null),
-      body: AnimatedSwitcher(
-        duration: MediaQuery.disableAnimationsOf(context)
-            ? Duration.zero
-            : AppTokens.motionMedium,
-        child: body,
+    return OrientationHoldScope(
+      orientations: upright ? const [DeviceOrientation.portraitUp] : const [],
+      child: AppPageScaffold(
+        title: l10n.qiblaTitle,
+        // Also while the place the person asked for is being read.
+        loading: state.isLoading || (_locating && place == null),
+        body: AnimatedSwitcher(
+          duration: MediaQuery.disableAnimationsOf(context)
+              ? Duration.zero
+              : AppTokens.motionMedium,
+          child: body,
+        ),
       ),
     );
   }
 }
 
 class _Compass extends ConsumerWidget {
-  const _Compass({required this.qibla});
+  const _Compass({required this.qibla, required this.turned});
 
   /// The Qibla's bearing, or null while the place is loading: everything is
   /// drawn in its place, inert.
   final double? qibla;
+
+  /// Whether the screen may be turned on the device without the app knowing
+  /// which way: the dial may then be a quarter turn off.
+  final bool turned;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -117,6 +137,14 @@ class _Compass extends ConsumerWidget {
     // the lines that follow them are rebuilt, not the whole page. Nothing is
     // read from the sensors before there is a bearing to turn to.
     final noSensor = !inert && ref.watch(compassMissingProvider);
+    // How far a compass can be trusted where the person is.
+    final zone = inert
+        ? null
+        : ref.watch(magneticFieldProvider.select((field) => field?.zone));
+    // A fixed dial is not turned by the screen: only a live one is in doubt.
+    final inDoubt = turned && !noSensor;
+    // Facing the Qibla is not claimed where the dial cannot be trusted.
+    final trusted = !inDoubt && zone != CompassZone.blackout;
     String? line;
     String? semanticLabel;
     String? noSensorNote;
@@ -153,6 +181,7 @@ class _Compass extends ConsumerWidget {
                     dimension: dial,
                     child: _Dial(
                       qibla: qibla,
+                      trusted: trusted,
                       letters: [
                         l10n.compassLetterNorth,
                         l10n.compassLetterEast,
@@ -164,8 +193,25 @@ class _Compass extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
-                if (!noSensor) _TurnLine(qibla: qibla),
+                if (!noSensor) _TurnLine(qibla: qibla, trusted: trusted),
                 const SizedBox(height: 16),
+                if (zone == CompassZone.blackout) ...[
+                  AppNotice(l10n.qiblaZoneBlackout, important: true),
+                  const SizedBox(height: 8),
+                ] else if (zone == CompassZone.caution) ...[
+                  AppNotice(
+                    l10n.qiblaZoneCaution,
+                    icon: Icons.warning_amber_rounded,
+                  ),
+                  const SizedBox(height: 8),
+                ],
+                if (inDoubt) ...[
+                  AppNotice(
+                    l10n.qiblaTurnedScreen,
+                    icon: Icons.screen_rotation_outlined,
+                  ),
+                  const SizedBox(height: 8),
+                ],
                 if (noSensorNote != null)
                   AppNotice(noSensorNote)
                 else ...[
@@ -219,11 +265,15 @@ class _DirectionLine extends StatelessWidget {
 class _Dial extends ConsumerWidget {
   const _Dial({
     required this.qibla,
+    required this.trusted,
     required this.letters,
     required this.semanticLabel,
   });
 
   final double? qibla;
+
+  /// Whether the dial can be trusted to say the phone faces the Qibla.
+  final bool trusted;
   final List<String> letters;
   final String? semanticLabel;
 
@@ -239,9 +289,12 @@ class _Dial extends ConsumerWidget {
       qibla: qibla,
       heading: heading,
       // Facing the Qibla is only claimed of a level phone, or of one that
-      // cannot tell how it is held.
+      // cannot tell how it is held, and only where the dial can be trusted.
       aligned:
-          turn != null && turn.abs() <= qiblaTolerance && (tilt?.level ?? true),
+          trusted &&
+          turn != null &&
+          turn.abs() <= qiblaTolerance &&
+          (tilt?.level ?? true),
       tilt: tilt,
       letters: letters,
       semanticLabel: semanticLabel,
@@ -253,9 +306,12 @@ class _Dial extends ConsumerWidget {
 /// number, pointing at the Qibla, or being level changes. Its line is kept
 /// before the first reading, so nothing under it moves when one comes.
 class _TurnLine extends ConsumerWidget {
-  const _TurnLine({required this.qibla});
+  const _TurnLine({required this.qibla, required this.trusted});
 
   final double? qibla;
+
+  /// Whether the dial can be trusted to say the phone faces the Qibla.
+  final bool trusted;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -281,7 +337,7 @@ class _TurnLine extends ConsumerWidget {
     final theme = Theme.of(context);
     final digits = ref.watch(digitsFormatterProvider);
     final pointing = turn?.pointing ?? false;
-    final aligned = pointing && (level ?? true);
+    final aligned = trusted && pointing && (level ?? true);
     return Semantics(
       // Said aloud when the phone comes round to the Qibla, not at every
       // degree on the way.
@@ -291,6 +347,9 @@ class _TurnLine extends ConsumerWidget {
             ? ''
             : aligned
             ? l10n.qiblaAligned
+            : pointing && !trusted
+            // Next to a magnetic pole, or on a screen that may be turned.
+            ? l10n.qiblaUnconfirmed
             : pointing
             // Tilted, the dial cannot be trusted to the last few degrees.
             ? l10n.qiblaHoldFlat

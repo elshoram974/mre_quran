@@ -805,7 +805,8 @@
   its own orientations (an empty list: the Info.plist on iOS, the manifest on Android); coming back holds it again.
   The *Landscape/Portrait reading* button, and the *Rotate* action of the hint after a pinch, show only on a screen
   whose shortest side is under 600 (a phone); a tablet gets no button and the pinch hint offers the typeset text
-  instead. Upright asks iOS only for portrait, the one upright orientation the iPhone's Info.plist lists.
+  instead. Upright asks iOS only for portrait, the one upright orientation the iPhone's Info.plist lists. Since
+  D-079 the reader asks through the app's one `OrientationHolds`, as the Qibla page does.
 - **Why:** the owner found the button wrong on iOS. iPadOS ignores the orientation an app asks for when the app can
   share the screen (this one can, and every app can from iPadOS 26), so the button did nothing on an iPad; Android 16
   does the same on screens 600 dp across and wider for apps targeting it. The reader is a tab kept alive behind the
@@ -942,3 +943,29 @@
   turns the needle. Still open, and needing a real phone: on iOS `sensors_plus` 7.1.1 reads the raw magnetometer
   (`CMMagnetometerData`), which holds the phone's own bias, so the heading there may be far off until a calibrated
   source replaces it behind `CompassSource`.
+
+## D-079: The Qibla page holds the screen upright, and says where its compass cannot be trusted
+
+- **Decision:** Three things that could turn the dial wrong are closed, or said.
+  - *The screen.* The dial is drawn up the screen and the heading is of the phone's own top edge, so the Qibla page
+    asks the system for portrait while it is the page in sight, and lets go when it is covered or left. Every such
+    request now goes through one `OrientationHolds` (`lib/core/layout/orientation_hold.dart`), which the reader's
+    own handling (D-071) uses too: the system is asked for what the newest holder wants, and one page letting go
+    never undoes what another still holds. Where the system ignores the request (a screen 600 across or more, D-071;
+    the rule is now `canHoldOrientation`) nothing is asked: the page says the dial may be a quarter turn off, goes
+    on saying which way to turn, and never says *You are facing the Qibla*.
+  - *The magnetic poles.* Where the Earth's horizontal field is under 6000 nT (the World Magnetic Model's caution
+    zone) the page warns that a compass may be several degrees off. Under 2000 nT (its blackout zone) it says, in
+    the boxed notice, that no compass works there, and claims nothing. Withheld, the claim's line reads *The
+    direction cannot be confirmed here*.
+  - *The hand.* The heading takes the gravity the level has already steadied (`TiltFilter`, D-076) instead of each
+    raw accelerometer reading (`HeadingFilter.addWith`).
+- **Why:** the owner wants the direction right, and where it cannot be, the page must not say it is. With the
+  screen turned the dial was a quarter turn wrong, upside down a half. A hand moving at half a metre a second
+  squared turned the heading 3° in Cairo, 7° in London and 17° in the north of Canada, the more the steeper the
+  Earth's field dips. Next to the magnetic poles NOAA itself says compasses are not to be relied on.
+- **Limits:** a tablet's dial is right only while the tablet is held the way its sensors count from, and telling
+  that needs the display's rotation, which Flutter does not give: native code, still to do. The two zones are
+  about 2% of the Earth (the Canadian Arctic islands, north-west Greenland, the sea south of Australia). There the
+  notice arrives with the place and moves the hints under it, the one case where the page does not come alive
+  where it stands. None of this has been seen on a phone or a tablet yet.

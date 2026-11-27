@@ -220,5 +220,86 @@ void main() {
       expect(filter.add(0.01, 0.01, 0.01), same(flat));
       expect(filter.tilt, same(flat));
     });
+
+    test('gives the gravity it has steadied, of length one', () {
+      final filter = TiltFilter();
+      expect(filter.gravity, isNull);
+      filter.add(0, 0, g);
+      expect(filter.gravity, (x: 0.0, y: 0.0, z: 1.0));
+      // A jolt to the right moves it only a little of the way.
+      filter.add(g, 0, 0);
+      final steadied = filter.gravity!;
+      expect(steadied.x, inExclusiveRange(0.1, 0.2));
+      expect(
+        steadied.x * steadied.x +
+            steadied.y * steadied.y +
+            steadied.z * steadied.z,
+        closeTo(1, 1e-9),
+      );
+    });
+  });
+
+  group('the heading with a steadied gravity', () {
+    const g = 9.81;
+
+    // A phone lying flat with its top to the north in London, where the
+    // Earth's field dips 66 degrees: 19.6 microtesla level, 44.9 down. The
+    // hand shakes it sideways by half a metre a second squared, about three
+    // degrees of false tilt, one way and then the other. Each heading is
+    // taken whole, to see the gravity's doing alone.
+    double worst({required bool steadied}) {
+      final headings = HeadingFilter(smoothing: 1);
+      final tilts = TiltFilter()..add(0, 0, g);
+      var worst = 0.0;
+      for (var i = 0; i < 60; i++) {
+        final push = i.isEven ? 0.5 : -0.5;
+        tilts.add(push, 0, g);
+        final heading = steadied
+            ? headings.addWith(tilts, 0, 19.6, -44.9)!
+            : headings.add(push, 0, g, 0, 19.6, -44.9)!;
+        worst = math.max(worst, angleBetween(0, heading).abs());
+      }
+      return worst;
+    }
+
+    test('a shaking hand turns the needle by degrees through the raw '
+        'gravity, and hardly at all through the steadied one', () {
+      expect(worst(steadied: false), greaterThan(5));
+      expect(worst(steadied: true), lessThan(1.5));
+    });
+
+    test('a phone that stays tilted is still read right', () {
+      // Leaned 30 degrees, right edge up, top to the north-east: once the
+      // gravity has settled the heading is the one the raw reading gives.
+      const lean = 30 * math.pi / 180;
+      const turn = 45 * math.pi / 180;
+      final ax = g * math.sin(lean);
+      final az = g * math.cos(lean);
+      // The field in the phone's axes: north and down, turned by the
+      // heading and then leaned with the phone.
+      const level = 19.6;
+      const down = 44.9;
+      final across = -level * math.sin(turn);
+      final mx = across * math.cos(lean) - down * math.sin(lean);
+      final my = level * math.cos(turn);
+      final mz = -across * math.sin(lean) - down * math.cos(lean);
+      final exact = HeadingFilter(smoothing: 1).add(ax, 0, az, mx, my, mz)!;
+      expect(exact, closeTo(45, 0.01));
+
+      final headings = HeadingFilter(smoothing: 1);
+      final tilts = TiltFilter()..add(0, 0, g);
+      double? heading;
+      for (var i = 0; i < 80; i++) {
+        tilts.add(ax, 0, az);
+        heading = headings.addWith(tilts, mx, my, mz);
+      }
+      expect(heading, closeTo(exact, 0.05));
+    });
+
+    test('there is no heading before there is any gravity', () {
+      final headings = HeadingFilter();
+      expect(headings.addWith(TiltFilter(), 0, 19.6, -44.9), isNull);
+      expect(headings.heading, isNull);
+    });
   });
 }

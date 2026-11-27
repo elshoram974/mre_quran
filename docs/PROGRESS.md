@@ -94,6 +94,10 @@
   NOAA's test values and its table has the published file's checksum; the declination is unit-tested east and west, at the
   saved place and date; widget tests cover the heading from true north in Cairo and the no-sensor note's compass bearing.
   Not seen on a phone yet; on iOS the magnetometer `sensors_plus` reads is uncalibrated, which a real iPhone has to judge.
+  Trust (D-079): the page holds a phone's screen upright through `OrientationHolds`, shared with the reader (unit and
+  widget tests, with the reader's hold given back on leaving); on a tablet, and next to a magnetic pole, it says the dial
+  cannot be trusted and withholds "facing the Qibla"; the heading takes the level's steadied gravity. A tablet still needs
+  the display's rotation from native code to be right.
 - UI audit: shared row, header, tag, notice and group widgets in `lib/core/widgets`; Settings regrouped; the vibration switch
   is disabled with a reason when the device has no vibrator.
 

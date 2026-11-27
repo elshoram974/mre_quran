@@ -45,24 +45,20 @@ class SensorsCompassSource implements CompassSource {
       onListen: () {
         final headings = HeadingFilter();
         final tilts = TiltFilter();
-        AccelerometerEvent? last;
-        // One accelerometer subscription serves both: the heading needs
-        // gravity to know which way is down, and the tilt is gravity itself.
+        // One accelerometer subscription serves both: the tilt is gravity
+        // itself, and the heading needs gravity to know which way is down.
+        // It takes the gravity the tilt has steadied, not the raw reading.
         gravity =
             accelerometerEventStream(samplingPeriod: SensorInterval.uiInterval)
-                .listen((event) {
-                  last = event;
-                  tilts.add(event.x, event.y, event.z);
-                }, onError: controller.addError);
+                .listen(
+                  (event) => tilts.add(event.x, event.y, event.z),
+                  onError: controller.addError,
+                );
         field =
             magnetometerEventStream(samplingPeriod: SensorInterval.uiInterval)
                 .listen((event) {
-                  final g = last;
-                  if (g == null) return;
-                  final heading = headings.add(
-                    g.x,
-                    g.y,
-                    g.z,
+                  final heading = headings.addWith(
+                    tilts,
                     event.x,
                     event.y,
                     event.z,

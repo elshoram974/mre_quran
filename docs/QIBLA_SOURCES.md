@@ -40,6 +40,10 @@ with carriage returns on Windows; the test drops them before it checks.
   the saved place on today's date, so the dial's north is the north of maps and of the bearing (D-078).
 - A phone with no compass sensor shows the bearing from true north and, for a person holding a real compass, the
   bearing from magnetic north as well.
+- The model also says where a compass cannot be trusted, by the strength of the horizontal field (`CompassZone`).
+  The limits are [NOAA's](https://www.ncei.noaa.gov/products/world-magnetic-model/accuracy-limitations-error-model):
+  under 6000 nT is its "caution zone", where the page warns; under 2000 nT its "blackout zone", where "compasses
+  are not accurate and should not be relied on", and the page says so and never claims to face the Qibla (D-079).
 
 ## What the tests check
 

@@ -881,6 +881,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get qiblaHoldFlat => 'Hold the phone flat to confirm the direction';
 
   @override
+  String get qiblaUnconfirmed => 'The direction cannot be confirmed here';
+
+  @override
+  String get qiblaZoneCaution =>
+      'You are near the magnetic pole, where a compass may be several degrees off. Check the direction against the sun or a map.';
+
+  @override
+  String get qiblaZoneBlackout =>
+      'This close to the magnetic pole a compass does not work, and the dial cannot show the Qibla. Find north by the sun or on a map and turn by the angle above.';
+
+  @override
+  String get qiblaTurnedScreen =>
+      'This screen turns with the device and the dial cannot tell, so its direction may be a quarter turn off. Go by the angle above with another compass, or check on a phone.';
+
+  @override
   String get qiblaHintCalibrate =>
       'If the dial jumps, move the phone in a figure 8 to calibrate it.';
 

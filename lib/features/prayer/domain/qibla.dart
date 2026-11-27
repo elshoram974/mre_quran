@@ -100,6 +100,20 @@ class HeadingFilter {
         : (current + angleBetween(current, next) * smoothing + 360) % 360;
     return _heading;
   }
+
+  /// Takes a magnetic-field reading (`mx`, `my`, `mz`) with the gravity
+  /// [tilts] has steadied, which is how the compass feeds it. Returns the new
+  /// heading, or null when there is none to give ([add]), or no gravity yet.
+  ///
+  /// The accelerometer feels the hand as well as the Earth, and a gravity
+  /// that is a little off turns the heading by more the steeper the Earth's
+  /// field dips: twice as much in London as in Cairo, five times in the far
+  /// north. Steadied, the hand's shaking is mostly gone from it.
+  double? addWith(TiltFilter tilts, double mx, double my, double mz) {
+    final gravity = tilts.gravity;
+    if (gravity == null) return null;
+    return add(gravity.x, gravity.y, gravity.z, mx, my, mz);
+  }
 }
 
 /// How far from lying flat, in degrees, a phone may be and still count as
@@ -175,6 +189,16 @@ class TiltFilter {
 
   /// The latest tilt, or null before the first usable reading.
   PhoneTilt? get tilt => _tilt;
+
+  /// The steadied gravity reading the tilt is worked out from, in the phone's
+  /// own axes and of length one, for [HeadingFilter.addWith]. Null before the
+  /// first usable reading, and while two opposite readings cancel.
+  ({double x, double y, double z})? get gravity {
+    if (_tilt == null) return null;
+    final length = math.sqrt(_x * _x + _y * _y + _z * _z);
+    if (length < 0.1) return null;
+    return (x: _x / length, y: _y / length, z: _z / length);
+  }
 
   /// Takes a gravity reading (`ax`, `ay`, `az`) and returns the tilt. A
   /// reading with no gravity in it (free fall) changes nothing.

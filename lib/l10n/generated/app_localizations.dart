@@ -1597,6 +1597,30 @@ abstract class AppLocalizations {
   /// **'Hold the phone flat to confirm the direction'**
   String get qiblaHoldFlat;
 
+  /// Line under the Qibla dial when the phone points at the Qibla but the compass cannot be trusted there: next to a magnetic pole, or on a screen the app cannot keep upright.
+  ///
+  /// In en, this message translates to:
+  /// **'The direction cannot be confirmed here'**
+  String get qiblaUnconfirmed;
+
+  /// Notice on the Qibla page where the Earth's horizontal magnetic field is weak (the World Magnetic Model's caution zone).
+  ///
+  /// In en, this message translates to:
+  /// **'You are near the magnetic pole, where a compass may be several degrees off. Check the direction against the sun or a map.'**
+  String get qiblaZoneCaution;
+
+  /// Notice on the Qibla page where the Earth's horizontal magnetic field is too weak for any compass (the World Magnetic Model's blackout zone).
+  ///
+  /// In en, this message translates to:
+  /// **'This close to the magnetic pole a compass does not work, and the dial cannot show the Qibla. Find north by the sun or on a map and turn by the angle above.'**
+  String get qiblaZoneBlackout;
+
+  /// Notice on the Qibla page on a tablet or an unfolded phone, where the system turns the screen with the device whatever the app asks, and the app cannot learn which way it is turned.
+  ///
+  /// In en, this message translates to:
+  /// **'This screen turns with the device and the dial cannot tell, so its direction may be a quarter turn off. Go by the angle above with another compass, or check on a phone.'**
+  String get qiblaTurnedScreen;
+
   /// No description provided for @qiblaHintCalibrate.
   ///
   /// In en, this message translates to:

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,7 +12,10 @@ import 'package:mre_quran/core/haptics/haptics.dart';
 import 'package:mre_quran/core/theme/app_theme.dart';
 import 'package:mre_quran/core/theme/app_tokens.dart';
 import 'package:mre_quran/core/time/ticking_clock.dart';
+import 'package:mre_quran/core/widgets/app_notice.dart';
 import 'package:mre_quran/core/widgets/app_shimmer.dart';
+import 'package:mre_quran/features/mushaf/application/reader_orientation_provider.dart';
+import 'package:mre_quran/features/mushaf/presentation/reader_orientation.dart';
 import 'package:mre_quran/features/prayer/application/compass_provider.dart';
 import 'package:mre_quran/features/prayer/application/prayer_provider.dart';
 import 'package:mre_quran/features/prayer/data/location_source.dart';
@@ -95,7 +99,22 @@ class _SlowLocation extends FakeLocationSource {
   }
 }
 
-/// Pumps the page. A page kept loading never settles (its bar's loader
+/// A phone's whole screen, and a tablet's, in logical pixels.
+const _phoneScreen = Size(390, 844);
+const _tabletScreen = Size(820, 1180);
+
+/// How the app asked the system to hold the screen, each time it asked.
+final List<Object?> _asked = [];
+const _upright = ['DeviceOrientation.portraitUp'];
+const _sideways = [
+  'DeviceOrientation.landscapeLeft',
+  'DeviceOrientation.landscapeRight',
+];
+const _appsOwn = <Object?>[];
+
+/// Pumps the page, or [home] in its place, in a window of [size] on a device
+/// whose whole screen is [screen]: a phone's unless the test says otherwise,
+/// whatever the window. A page kept loading never settles (its bar's loader
 /// turns), so those tests pass `settle: false` and pump by hand.
 Future<void> _pump(
   WidgetTester tester,
@@ -105,15 +124,36 @@ Future<void> _pump(
   LocationSource? location,
   String locale = 'ar',
   Size size = const Size(390, 844),
+  Size screen = _phoneScreen,
   double textScale = 1,
   ThemeData? theme,
   bool reduceMotion = false,
   bool settle = true,
+  Widget home = const QiblaPage(),
+  GlobalKey<NavigatorState>? navigatorKey,
 }) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
+  tester.view.display.size = screen;
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
+  addTearDown(tester.view.display.reset);
+  _asked.clear();
+  tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+    SystemChannels.platform,
+    (call) async {
+      if (call.method == 'SystemChrome.setPreferredOrientations') {
+        _asked.add(call.arguments);
+      }
+      return null;
+    },
+  );
+  addTearDown(
+    () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      SystemChannels.platform,
+      null,
+    ),
+  );
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
@@ -130,6 +170,7 @@ Future<void> _pump(
         clockProvider.overrideWithValue(() => _today),
       ],
       child: MaterialApp(
+        navigatorKey: navigatorKey,
         locale: Locale(locale),
         localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
@@ -141,7 +182,7 @@ Future<void> _pump(
           ),
           child: child!,
         ),
-        home: const QiblaPage(),
+        home: home,
       ),
     ),
   );
@@ -788,6 +829,309 @@ void main() {
       expect(find.textContaining('لا يوجد في هذا الجهاز حساس'), findsOneWidget);
       expect(find.textContaining('الهاتف مستوٍ'), findsNothing);
       expect(find.byIcon(Icons.check_circle_outline), findsNothing);
+    });
+  });
+
+  group('the screen held upright', () {
+    const turnedScreen = 'هذه الشاشة تدور مع الجهاز';
+    const unconfirmed = 'لا يمكن تأكيد الاتجاه هنا';
+
+    testWidgets('a phone is held upright while the page is in sight, and '
+        'let go when the page goes', (tester) async {
+      await _pump(tester, _FakeCompass(), place: _cairo);
+      expect(_asked, [_upright]);
+      // The dial is the phone's own way up: nothing is in doubt.
+      expect(find.textContaining(turnedScreen), findsNothing);
+
+      await tester.pumpWidget(const SizedBox());
+      expect(_asked, [_upright, _appsOwn]);
+    });
+
+    testWidgets('leaving the page gives the screen back to the reader held '
+        'sideways, and to the app when the reader lets go', (tester) async {
+      final navigator = GlobalKey<NavigatorState>();
+      await _pump(
+        tester,
+        _FakeCompass(),
+        place: _cairo,
+        navigatorKey: navigator,
+        home: const ReaderOrientationScope(
+          child: Scaffold(body: Text('reader')),
+        ),
+      );
+      final container = ProviderScope.containerOf(
+        tester.element(find.text('reader')),
+      );
+      container
+          .read(readerOrientationProvider.notifier)
+          .hold(ReaderOrientation.landscape);
+      await tester.pump();
+      expect(_asked, [_sideways]);
+
+      // The Qibla page covers the reader, which stays alive behind it.
+      unawaited(
+        navigator.currentState!.push(
+          MaterialPageRoute<void>(builder: (_) => const QiblaPage()),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(QiblaCompass), findsOneWidget);
+      expect(_asked.last, _upright);
+
+      navigator.currentState!.pop();
+      await tester.pumpAndSettle();
+      expect(find.byType(QiblaCompass), findsNothing);
+      expect(find.text('reader'), findsOneWidget);
+      expect(_asked.last, _sideways);
+
+      // The reader's own handling goes on as before.
+      container
+          .read(readerOrientationProvider.notifier)
+          .hold(ReaderOrientation.free);
+      await tester.pump();
+      expect(_asked.last, _appsOwn);
+      // Nothing but those three was ever asked for.
+      for (final asked in _asked) {
+        expect(
+          asked,
+          anyOf([equals(_upright), equals(_sideways), equals(_appsOwn)]),
+        );
+      }
+    });
+
+    testWidgets('a page over the compass lets the screen go, and coming '
+        'back holds it again', (tester) async {
+      final navigator = GlobalKey<NavigatorState>();
+      await _pump(
+        tester,
+        _FakeCompass(),
+        place: _cairo,
+        navigatorKey: navigator,
+      );
+      expect(_asked, [_upright]);
+      unawaited(
+        navigator.currentState!.push(
+          MaterialPageRoute<void>(
+            builder: (_) => const Scaffold(body: Text('a map')),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(_asked, [_upright, _appsOwn]);
+      navigator.currentState!.pop();
+      await tester.pumpAndSettle();
+      expect(_asked, [_upright, _appsOwn, _upright]);
+    });
+
+    for (final (name, size) in [
+      ('a tablet held upright', _tabletScreen),
+      ('a tablet held sideways', _tabletScreen.flipped),
+      ('a small tablet', const Size(700, 900)),
+    ]) {
+      testWidgets('$name turns with the device whatever is asked: nothing is '
+          'asked, the page says so, and never claims to face the Qibla', (
+        tester,
+      ) async {
+        final compass = _FakeCompass();
+        await _pump(tester, compass, place: _cairo, size: size, screen: size);
+        expect(_asked, isEmpty);
+        expect(find.textContaining(turnedScreen), findsOneWidget);
+
+        // Which way to turn is still said.
+        compass.turn(cairoQibla - 40, tilt: _level);
+        await tester.pumpAndSettle();
+        expect(find.textContaining('در يمينًا'), findsOneWidget);
+
+        compass.turn(cairoQibla + 1, tilt: _level);
+        await tester.pumpAndSettle();
+        expect(find.text('أنت تواجه القبلة'), findsNothing);
+        expect(find.text(unconfirmed), findsOneWidget);
+        expect(_compass(tester).aligned, isFalse);
+        expect(tester.takeException(), isNull);
+      });
+    }
+
+    testWidgets('an iPad that gives the app a phone-sized window is still a '
+        'tablet', (tester) async {
+      final compass = _FakeCompass();
+      await _pump(
+        tester,
+        compass,
+        place: _cairo,
+        size: const Size(375, 1180),
+        screen: _tabletScreen,
+      );
+      expect(_asked, isEmpty);
+      expect(find.textContaining(turnedScreen), findsOneWidget);
+      compass.turn(cairoQibla + 1, tilt: _level);
+      await tester.pumpAndSettle();
+      expect(_compass(tester).aligned, isFalse);
+    });
+
+    testWidgets('the tablet\'s notice is there before the place arrives, and '
+        'nothing moves when it does', (tester) async {
+      final repository = _SlowRepository()..place = _cairo;
+      await _pump(
+        tester,
+        _FakeCompass(),
+        repository: repository,
+        size: _tabletScreen,
+        screen: _tabletScreen,
+        settle: false,
+      );
+      await tester.pump(AppTokens.loaderDelay);
+      Rect notice() => tester.getRect(find.textContaining(turnedScreen));
+      Rect hint() => tester.getRect(find.textContaining('رقم 8'));
+      final noticeBefore = notice();
+      final hintBefore = hint();
+      repository.gate.complete();
+      await tester.pumpAndSettle();
+      expect(notice(), noticeBefore);
+      expect(hint(), hintBefore);
+    });
+
+    testWidgets('a tablet with no compass has a fixed dial, which no screen '
+        'turns: it gets the no-sensor note alone', (tester) async {
+      await _pump(
+        tester,
+        _NoCompass(),
+        place: _cairo,
+        size: _tabletScreen,
+        screen: _tabletScreen,
+      );
+      expect(find.textContaining('لا يوجد في هذا الجهاز حساس'), findsOneWidget);
+      expect(find.textContaining(turnedScreen), findsNothing);
+    });
+
+    testWidgets('English LTR in dark mode with large text on a small tablet', (
+      tester,
+    ) async {
+      final compass = _FakeCompass();
+      await _pump(
+        tester,
+        compass,
+        place: _cairo,
+        locale: 'en',
+        theme: AppTheme.dark,
+        size: const Size(700, 900),
+        screen: const Size(700, 900),
+        textScale: 2,
+      );
+      compass.turn(cairoQibla + 1, tilt: _level);
+      await tester.pumpAndSettle();
+      expect(
+        find.text('The direction cannot be confirmed here'),
+        findsOneWidget,
+      );
+      await tester.scrollUntilVisible(
+        find.textContaining('This screen turns with the device'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(tester.takeException(), isNull);
+    });
+  });
+
+  group('near a magnetic pole', () {
+    // Resolute Bay, in the Canadian Arctic, where a compass is weak, and a
+    // point of the Arctic Ocean beside the magnetic pole, where none works.
+    final resolute = PrayerPlace(74.7, -94.83);
+    final besidePole = PrayerPlace(86, 139);
+    const caution = 'قريب من القطب المغناطيسي';
+    const blackout = 'لا تعمل أي بوصلة';
+    const unconfirmed = 'لا يمكن تأكيد الاتجاه هنا';
+
+    MagneticField fieldAt(PrayerPlace place) => magneticField(
+      latitude: place.latitude,
+      longitude: place.longitude,
+      year: decimalYear(_today),
+    );
+
+    /// Points the top of a level phone at [heading] from true north, at
+    /// [place].
+    void turnAt(_FakeCompass compass, PrayerPlace place, double heading) =>
+        compass.reads(fieldAt(place).magneticFromTrue(heading), tilt: _level);
+
+    testWidgets('where a compass works there is no warning', (tester) async {
+      await _pump(tester, _FakeCompass(), place: _cairo);
+      expect(_cairoField.zone, CompassZone.reliable);
+      expect(find.textContaining(caution), findsNothing);
+      expect(find.textContaining(blackout), findsNothing);
+    });
+
+    testWidgets('where a compass is weak the page warns, and still says when '
+        'the phone faces the Qibla', (tester) async {
+      final compass = _FakeCompass();
+      await _pump(tester, compass, place: resolute);
+      expect(fieldAt(resolute).zone, CompassZone.caution);
+      expect(find.textContaining(caution), findsOneWidget);
+      expect(find.textContaining(blackout), findsNothing);
+
+      turnAt(compass, resolute, qiblaBearing(resolute) + 1);
+      await tester.pumpAndSettle();
+      expect(find.text('أنت تواجه القبلة'), findsOneWidget);
+      expect(_compass(tester).aligned, isTrue);
+    });
+
+    testWidgets('where no compass works the page says so, in a box that is '
+        'not missed, and never claims to face the Qibla', (tester) async {
+      final compass = _FakeCompass();
+      await _pump(tester, compass, place: besidePole);
+      expect(fieldAt(besidePole).zone, CompassZone.blackout);
+      expect(find.textContaining(caution), findsNothing);
+      expect(
+        tester
+            .widget<AppNotice>(
+              find.ancestor(
+                of: find.textContaining(blackout),
+                matching: find.byType(AppNotice),
+              ),
+            )
+            .important,
+        isTrue,
+      );
+
+      final qibla = qiblaBearing(besidePole);
+      turnAt(compass, besidePole, qibla + 1);
+      await tester.pumpAndSettle();
+      expect(find.text('أنت تواجه القبلة'), findsNothing);
+      expect(find.text(unconfirmed), findsOneWidget);
+      expect(_compass(tester).aligned, isFalse);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('a phone with no compass is warned too: a hand compass does '
+        'not work there either', (tester) async {
+      await _pump(tester, _NoCompass(), place: besidePole);
+      expect(find.textContaining('لا يوجد في هذا الجهاز حساس'), findsOneWidget);
+      expect(find.textContaining(blackout), findsOneWidget);
+    });
+
+    testWidgets('English LTR in dark mode with large text on a small phone', (
+      tester,
+    ) async {
+      for (final (place, words) in [
+        (resolute, 'You are near the magnetic pole'),
+        (besidePole, 'This close to the magnetic pole a compass does not'),
+      ]) {
+        await _pump(
+          tester,
+          _FakeCompass(),
+          place: place,
+          locale: 'en',
+          theme: AppTheme.dark,
+          size: const Size(320, 640),
+          textScale: 2,
+        );
+        await tester.scrollUntilVisible(
+          find.textContaining(words),
+          200,
+          scrollable: find.byType(Scrollable).first,
+        );
+        expect(tester.takeException(), isNull);
+        // A new page for the next place.
+        await tester.pumpWidget(const SizedBox());
+      }
     });
   });
 }
