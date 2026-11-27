@@ -867,6 +867,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Hold the phone flat, away from metal, speakers and magnetic cases.';
 
   @override
+  String get qiblaLevel =>
+      'The phone is level. Keep it away from metal, speakers and magnetic cases.';
+
+  @override
+  String get qiblaHoldFlat => 'Hold the phone flat to confirm the direction';
+
+  @override
   String get qiblaHintCalibrate =>
       'If the dial jumps, move the phone in a figure 8 to calibrate it.';
 

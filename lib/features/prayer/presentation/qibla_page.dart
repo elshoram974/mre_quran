@@ -113,12 +113,10 @@ class _Compass extends ConsumerWidget {
     final qibla = this.qibla;
     final inert = qibla == null;
     final digits = ref.watch(digitsFormatterProvider);
-    // The heading changes many times a second: only the dial and the line
-    // under it follow it, not the whole page. Nothing is read from the
-    // sensors before there is a bearing to turn to.
-    final noSensor =
-        !inert &&
-        ref.watch(compassHeadingProvider.select((reading) => reading.hasError));
+    // The heading and the tilt change many times a second: only the dial and
+    // the lines that follow them are rebuilt, not the whole page. Nothing is
+    // read from the sensors before there is a bearing to turn to.
+    final noSensor = !inert && ref.watch(compassMissingProvider);
     String? line;
     String? semanticLabel;
     if (qibla != null) {
@@ -163,7 +161,7 @@ class _Compass extends ConsumerWidget {
                 if (noSensor)
                   AppNotice(l10n.qiblaNoSensor)
                 else ...[
-                  AppNotice(l10n.qiblaHintFlat, icon: Icons.phone_android),
+                  _FlatHint(live: !inert),
                   const SizedBox(height: 8),
                   AppNotice(l10n.qiblaHintCalibrate, icon: Icons.gesture),
                 ],
@@ -224,16 +222,19 @@ class _Dial extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final qibla = this.qibla;
-    final heading = qibla == null
-        ? null
-        : ref.watch(compassHeadingProvider.select((reading) => reading.value));
+    final heading = qibla == null ? null : ref.watch(compassHeadingProvider);
+    final tilt = qibla == null ? null : ref.watch(phoneTiltProvider);
     final turn = heading == null || qibla == null
         ? null
         : angleBetween(heading, qibla);
     return QiblaCompass(
       qibla: qibla,
       heading: heading,
-      aligned: turn != null && turn.abs() <= qiblaTolerance,
+      // Facing the Qibla is only claimed of a level phone, or of one that
+      // cannot tell how it is held.
+      aligned:
+          turn != null && turn.abs() <= qiblaTolerance && (tilt?.level ?? true),
+      tilt: tilt,
       letters: letters,
       semanticLabel: semanticLabel,
     );
@@ -241,8 +242,8 @@ class _Dial extends ConsumerWidget {
 }
 
 /// Which way to turn, and by how many degrees: rebuilt only when that whole
-/// number, or being aligned, changes. Its line is kept before the first
-/// reading, so nothing under it moves when one comes.
+/// number, pointing at the Qibla, or being level changes. Its line is kept
+/// before the first reading, so nothing under it moves when one comes.
 class _TurnLine extends ConsumerWidget {
   const _TurnLine({required this.qibla});
 
@@ -254,27 +255,37 @@ class _TurnLine extends ConsumerWidget {
     final turn = qibla == null
         ? null
         : ref.watch(
-            compassHeadingProvider.select((reading) {
-              final heading = reading.value;
+            compassHeadingProvider.select((heading) {
               if (heading == null) return null;
               final turn = angleBetween(heading, qibla);
               return (
                 degrees: turn.round(),
-                aligned: turn.abs() <= qiblaTolerance,
+                pointing: turn.abs() <= qiblaTolerance,
               );
             }),
           );
+    // Null where the phone cannot tell how it is held: nothing is asked of
+    // it then.
+    final level = qibla == null
+        ? null
+        : ref.watch(phoneTiltProvider.select((tilt) => tilt?.level));
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final digits = ref.watch(digitsFormatterProvider);
-    final aligned = turn?.aligned ?? false;
+    final pointing = turn?.pointing ?? false;
+    final aligned = pointing && (level ?? true);
     return Semantics(
-      liveRegion: aligned,
+      // Said aloud when the phone comes round to the Qibla, not at every
+      // degree on the way.
+      liveRegion: pointing,
       child: Text(
         turn == null
             ? ''
             : aligned
             ? l10n.qiblaAligned
+            : pointing
+            // Tilted, the dial cannot be trusted to the last few degrees.
+            ? l10n.qiblaHoldFlat
             : turn.degrees > 0
             ? l10n.qiblaTurnRight(digits(turn.degrees.abs()))
             : l10n.qiblaTurnLeft(digits(turn.degrees.abs())),
@@ -283,6 +294,32 @@ class _TurnLine extends ConsumerWidget {
           color: aligned ? theme.colorScheme.primary : null,
         ),
       ),
+    );
+  }
+}
+
+/// "Hold the phone flat", made live where the phone can tell how it is held:
+/// it confirms a level phone, and asks again of a tilted one. Rebuilt only
+/// when that changes, not with every reading.
+class _FlatHint extends ConsumerWidget {
+  const _FlatHint({required this.live});
+
+  /// Whether the page is live. Inert, the hint is only the advice.
+  final bool live;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final level = live
+        ? ref.watch(phoneTiltProvider.select((tilt) => tilt?.level))
+        : null;
+    final l10n = context.l10n;
+    final advice = AppNotice(l10n.qiblaHintFlat, icon: Icons.phone_android);
+    if (level == null) return advice;
+    // Its words change only when the phone becomes level or stops being so,
+    // and that is when screen readers say them.
+    return Semantics(
+      liveRegion: true,
+      child: level ? AppNotice(l10n.qiblaLevel, confirmed: true) : advice,
     );
   }
 }

@@ -91,4 +91,134 @@ void main() {
       expect(angleBetween(0, filter.heading!).abs(), lessThan(1.5));
     });
   });
+
+  group('TiltFilter', () {
+    const g = 9.81;
+    double rad(double degrees) => degrees * math.pi / 180;
+
+    // Takes each reading whole, to test the geometry apart from the
+    // smoothing.
+    TiltFilter raw() => TiltFilter(smoothing: 1);
+
+    // A phone lying flat, then leaned by [degrees] so that one edge is the
+    // higher: [toward] is that edge as on a clock face, 0 the top edge, 90
+    // the right, 180 the bottom, 270 the left.
+    PhoneTilt lean(TiltFilter filter, double degrees, {double toward = 0}) {
+      final across = g * math.sin(rad(degrees));
+      return filter.add(
+        across * math.sin(rad(toward)),
+        across * math.cos(rad(toward)),
+        g * math.cos(rad(degrees)),
+      )!;
+    }
+
+    test('flat on its back is level, the bubble in the middle', () {
+      final tilt = raw().add(0, 0, g)!;
+      expect(tilt.angle, closeTo(0, 1e-6));
+      expect(tilt.dx, closeTo(0, 1e-9));
+      expect(tilt.dy, closeTo(0, 1e-9));
+      expect(tilt.level, isTrue);
+    });
+
+    test('the bubble floats to the raised side', () {
+      final far = math.sin(rad(20));
+      // (the raised edge, where the bubble goes: right, down the screen)
+      final cases = <double, (double, double)>{
+        0: (0, -far), // top edge up: up the screen
+        90: (far, 0), // right edge up: to the right
+        180: (0, far), // bottom edge up: down the screen
+        270: (-far, 0), // left edge up: to the left
+      };
+      for (final entry in cases.entries) {
+        final tilt = lean(raw(), 20, toward: entry.key);
+        final (dx, dy) = entry.value;
+        expect(tilt.angle, closeTo(20, 1e-6));
+        expect(tilt.dx, closeTo(dx, 1e-9), reason: 'edge ${entry.key}');
+        expect(tilt.dy, closeTo(dy, 1e-9), reason: 'edge ${entry.key}');
+        expect(tilt.level, isFalse);
+      }
+    });
+
+    test('only the direction of gravity counts, not its strength', () {
+      final weak = raw().add(1, 0, 1)!;
+      final strong = raw().add(20, 0, 20)!;
+      expect(weak.angle, closeTo(45, 1e-6));
+      expect(strong.angle, closeTo(45, 1e-6));
+      expect(weak.dx, closeTo(strong.dx, 1e-12));
+    });
+
+    test('upright is 90 degrees, and not level', () {
+      final tilt = raw().add(0, g, 0)!;
+      expect(tilt.angle, closeTo(90, 1e-6));
+      expect(tilt.dy, closeTo(-1, 1e-9));
+      expect(tilt.level, isFalse);
+    });
+
+    test('face down is not level, though no edge is the higher', () {
+      final tilt = raw().add(0, 0, -g)!;
+      expect(tilt.angle, closeTo(180, 1e-6));
+      expect(tilt.level, isFalse);
+    });
+
+    test('past upright the bubble stays at the rim', () {
+      // Leaning over its top edge toward face down: sin(150°) is only a
+      // half, as at 30°, but this is nothing like level.
+      final tilt = lean(raw(), 150);
+      expect(tilt.angle, closeTo(150, 1e-6));
+      expect(tilt.dx, closeTo(0, 1e-9));
+      expect(tilt.dy, closeTo(-1, 1e-9));
+      expect(tilt.level, isFalse);
+    });
+
+    test('level means within ten degrees of flat', () {
+      expect(levelTolerance, 10);
+      expect(lean(raw(), 9.9).level, isTrue);
+      expect(lean(raw(), 10.1).level, isFalse);
+    });
+
+    test('a level phone stays level a little past the line, and a tilted '
+        'one stays tilted until it is back inside it', () {
+      final filter = raw();
+      expect(lean(filter, 9).level, isTrue);
+      expect(lean(filter, 11.5).level, isTrue);
+      expect(lean(filter, 12.5).level, isFalse);
+      expect(lean(filter, 11.5).level, isFalse);
+      expect(lean(filter, 10.5).level, isFalse);
+      expect(lean(filter, 9.5).level, isTrue);
+    });
+
+    test('a hand trembling at the line does not flicker', () {
+      for (final start in [5.0, 20.0]) {
+        final filter = raw();
+        final first = lean(filter, start).level;
+        for (var i = 0; i < 40; i++) {
+          expect(lean(filter, i.isEven ? 10.4 : 11.6).level, first);
+        }
+      }
+    });
+
+    test('smoothing steadies a jolt, and still arrives', () {
+      final filter = TiltFilter();
+      filter.add(0, 0, g);
+      final jolt = lean(filter, 40, toward: 90);
+      expect(jolt.angle, lessThan(levelTolerance));
+      expect(jolt.level, isTrue);
+      var tilt = jolt;
+      for (var i = 0; i < 60; i++) {
+        tilt = lean(filter, 40, toward: 90);
+      }
+      expect(tilt.angle, closeTo(40, 0.5));
+      expect(tilt.dx, closeTo(math.sin(rad(40)), 0.01));
+      expect(tilt.level, isFalse);
+    });
+
+    test('free fall teaches nothing', () {
+      final filter = TiltFilter();
+      expect(filter.add(0, 0, 0), isNull);
+      expect(filter.tilt, isNull);
+      final flat = filter.add(0, 0, g);
+      expect(filter.add(0.01, 0.01, 0.01), same(flat));
+      expect(filter.tilt, same(flat));
+    });
+  });
 }

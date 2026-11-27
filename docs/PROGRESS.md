@@ -87,7 +87,10 @@
   releases before Flutter makes built-in Kotlin mandatory.
 - Qibla compass (`/qibla`, opened from Prayer times): bearing and heading maths unit-tested; widget tests cover Arabic RTL,
   English dark, large text, compact/medium/expanded, no sensor, and the aligned tick. Seen working on the Android emulator
-  (virtual sensors); a real-device check of the live needle and of iOS is still to do.
+  (virtual sensors); a real-device check of the live needle and of iOS is still to do. The dial's level (D-076): tilt maths
+  unit-tested (each edge raised, upright, face down, the line and its slack, smoothing); widget tests cover level, tilted,
+  the gated "facing the Qibla", no tilt readings, no sensor, and the bubble's side in both text directions. The bubble's
+  direction on a real phone, Android and iOS, is still to check.
 - UI audit: shared row, header, tag, notice and group widgets in `lib/core/widgets`; Settings regrouped; the vibration switch
   is disabled with a reason when the device has no vibrator.
 

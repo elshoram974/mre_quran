@@ -9,6 +9,9 @@ import '../theme/app_tokens.dart';
 /// An [important] one is for what the person must not miss, such as a setting
 /// the alerts depend on: red, on a tinted box of its own, with its [action]
 /// inside the box, so it is seen as soon as the page opens.
+///
+/// A [confirmed] one says that what was asked for is now so: in the accent
+/// colour, with a tick.
 class AppNotice extends StatelessWidget {
   /// Creates a notice reading [message].
   const AppNotice(
@@ -17,6 +20,7 @@ class AppNotice extends StatelessWidget {
     this.error = false,
     this.icon,
     this.important = false,
+    this.confirmed = false,
     this.action,
   });
 
@@ -26,11 +30,16 @@ class AppNotice extends StatelessWidget {
   /// Whether it says something went wrong.
   final bool error;
 
-  /// Icon at the start; a default is chosen from [error] and [important].
+  /// Icon at the start; a default is chosen from [error], [important] and
+  /// [confirmed].
   final IconData? icon;
 
   /// Whether it says something the person must act on or not miss.
   final bool important;
+
+  /// Whether it confirms that something is as it should be. An [error] or
+  /// [important] notice stays red.
+  final bool confirmed;
 
   /// What the person can do about it, under the text: only an [important]
   /// notice shows it.
@@ -41,7 +50,11 @@ class AppNotice extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final red = error || important;
-    final color = red ? scheme.error : scheme.onSurfaceVariant;
+    final color = red
+        ? scheme.error
+        : confirmed
+        ? scheme.primary
+        : scheme.onSurfaceVariant;
     final line = Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -51,6 +64,8 @@ class AppNotice extends StatelessWidget {
                   ? Icons.warning_amber_rounded
                   : error
                   ? Icons.error_outline
+                  : confirmed
+                  ? Icons.check_circle_outline
                   : Icons.info_outline),
           size: important ? 22 : 18,
           color: color,

@@ -92,6 +92,32 @@ void main() {
     );
   });
 
+  for (final (name, theme) in [
+    ('light', AppTheme.light),
+    ('dark', AppTheme.dark),
+  ]) {
+    testWidgets('a confirmed notice is in the accent with a tick, and has no '
+        'box in $name', (tester) async {
+      await _pump(
+        tester,
+        const AppNotice('It is so', confirmed: true),
+        theme: theme,
+      );
+      final accent = theme.colorScheme.primary;
+      expect(tester.widget<Text>(find.text('It is so')).style?.color, accent);
+      final icon = tester.widget<Icon>(find.byType(Icon));
+      expect(icon.icon, Icons.check_circle_outline);
+      expect(icon.color, accent);
+      expect(
+        find.descendant(
+          of: find.byType(AppNotice),
+          matching: find.byType(DecoratedBox),
+        ),
+        findsNothing,
+      );
+    });
+  }
+
   testWidgets('an error is red and announced, but not boxed', (tester) async {
     await _pump(tester, const AppNotice('It failed', error: true));
     expect(

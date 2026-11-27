@@ -1573,6 +1573,18 @@ abstract class AppLocalizations {
   /// **'Hold the phone flat, away from metal, speakers and magnetic cases.'**
   String get qiblaHintFlat;
 
+  /// Takes the place of the hold-flat hint on the Qibla page while the phone's sensors say it is lying level.
+  ///
+  /// In en, this message translates to:
+  /// **'The phone is level. Keep it away from metal, speakers and magnetic cases.'**
+  String get qiblaLevel;
+
+  /// Line under the Qibla dial when the phone points at the Qibla but is tilted, so facing it cannot be confirmed yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Hold the phone flat to confirm the direction'**
+  String get qiblaHoldFlat;
+
   /// No description provided for @qiblaHintCalibrate.
   ///
   /// In en, this message translates to:

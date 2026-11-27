@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:flutter/rendering.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -27,18 +28,29 @@ import '../../helpers/memory_settings_repository.dart';
 
 final _cairo = PrayerPlace(30.04, 31.24);
 
-/// A compass the test turns by hand.
+/// A phone lying level, and one leaning with its right edge up.
+const _level = PhoneTilt(angle: 2, dx: 0.02, dy: -0.02, level: true);
+const _tilted = PhoneTilt(angle: 40, dx: 0.64, dy: 0, level: false);
+
+/// A compass the test turns, and tilts, by hand.
 class _FakeCompass implements CompassSource {
-  final StreamController<double> controller = StreamController<double>();
+  final StreamController<CompassReading> controller =
+      StreamController<CompassReading>();
+
+  /// Points the top of the phone at [heading]. With no [tilt] it is a phone
+  /// that cannot tell how it is held.
+  void turn(double heading, {PhoneTilt? tilt}) =>
+      controller.add(CompassReading(heading: heading, tilt: tilt));
 
   @override
-  Stream<double> headings() => controller.stream;
+  Stream<CompassReading> readings() => controller.stream;
 }
 
 /// A device with no compass sensor.
 class _NoCompass implements CompassSource {
   @override
-  Stream<double> headings() => Stream<double>.error('no sensor');
+  Stream<CompassReading> readings() =>
+      Stream<CompassReading>.error('no sensor');
 }
 
 /// Keeps the page loading until the test opens [gate].
@@ -137,6 +149,45 @@ final Finder _drawing = find.descendant(
   matching: find.byType(CustomPaint),
 );
 
+/// The colour the dial is painted at [offset] from its centre, in the
+/// phone's own directions: x to its right edge, y to its bottom edge.
+Future<Color> _dialColour(WidgetTester tester, Offset offset) async {
+  final boundary = tester.renderObject<RenderRepaintBoundary>(
+    find
+        .ancestor(
+          of: find.byType(QiblaCompass),
+          matching: find.byType(RepaintBoundary),
+        )
+        .first,
+  );
+  final at =
+      boundary.globalToLocal(tester.getCenter(find.byType(QiblaCompass))) +
+      offset;
+  late final Color colour;
+  await tester.runAsync(() async {
+    final image = await boundary.toImage();
+    final bytes = await image.toByteData();
+    final i = (at.dy.round() * image.width + at.dx.round()) * 4;
+    colour = Color.fromARGB(
+      bytes!.getUint8(i + 3),
+      bytes.getUint8(i),
+      bytes.getUint8(i + 1),
+      bytes.getUint8(i + 2),
+    );
+    image.dispose();
+  });
+  return colour;
+}
+
+/// Matches a painted colour, give or take the rounding of a channel.
+Matcher _paints(Color expected) => predicate<Color>(
+  (colour) =>
+      (colour.r - expected.r).abs() < 0.02 &&
+      (colour.g - expected.g).abs() < 0.02 &&
+      (colour.b - expected.b).abs() < 0.02,
+  'paints $expected',
+);
+
 void main() {
   final cairoQibla = qiblaBearing(_cairo);
 
@@ -166,12 +217,12 @@ void main() {
     // Cairo's Qibla is about 136° (south-east).
     expect(find.textContaining('الجنوب الشرقي'), findsWidgets);
 
-    compass.controller.add((cairoQibla - 40) % 360);
+    compass.turn((cairoQibla - 40) % 360);
     await tester.pumpAndSettle();
     expect(find.textContaining('در يمينًا'), findsOneWidget);
     expect(haptics.calls, isEmpty);
 
-    compass.controller.add((cairoQibla + 40) % 360);
+    compass.turn((cairoQibla + 40) % 360);
     await tester.pumpAndSettle();
     expect(find.textContaining('در يسارًا'), findsOneWidget);
   });
@@ -189,12 +240,12 @@ void main() {
   ) async {
     final compass = _FakeCompass();
     await _pump(tester, compass, place: _cairo);
-    compass.controller.add(cairoQibla + 1);
+    compass.turn(cairoQibla + 1);
     await tester.pumpAndSettle();
     expect(find.text('أنت تواجه القبلة'), findsOneWidget);
     // Vibration is kept for counting adhkar and for reminders.
     expect(haptics.calls, isEmpty);
-    compass.controller.add(cairoQibla + 60);
+    compass.turn(cairoQibla + 60);
     await tester.pumpAndSettle();
     expect(find.text('أنت تواجه القبلة'), findsNothing);
   });
@@ -291,7 +342,7 @@ void main() {
         expect(hint(), hintBefore);
         expect(title(), titleBefore, reason: 'the loader moved the title');
 
-        compass.controller.add(cairoQibla - 40);
+        compass.turn(cairoQibla - 40);
         await tester.pumpAndSettle();
         expect(find.textContaining('در يمينًا'), findsOneWidget);
         expect(dial(), dialBefore);
@@ -322,7 +373,7 @@ void main() {
         await tester.pump(const Duration(milliseconds: 16));
         expect(drawn(), closeTo(full, 0.01));
       }
-      compass.controller.add(cairoQibla - 40);
+      compass.turn(cairoQibla - 40);
       await tester.pump();
       for (var frame = 0; frame < 6; frame++) {
         await tester.pump(const Duration(milliseconds: 16));
@@ -454,10 +505,25 @@ void main() {
     testWidgets('fits when $name', (tester) async {
       final compass = _FakeCompass();
       await _pump(tester, compass, place: _cairo, size: size, textScale: scale);
-      compass.controller.add(cairoQibla - 20);
+      compass.turn(cairoQibla - 20);
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
       expect(find.byType(QiblaCompass), findsOneWidget);
+      // With the level too, tilted and then level and facing the Qibla.
+      compass.turn(cairoQibla + 1, tilt: _tilted);
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      compass.turn(cairoQibla + 1, tilt: _level);
+      await tester.pumpAndSettle();
+      expect(_compass(tester).aligned, isTrue);
+      // The hint is below the fold with large text on a small phone.
+      await tester.scrollUntilVisible(
+        find.textContaining('الهاتف مستوٍ'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(find.textContaining('الهاتف مستوٍ'), findsOneWidget);
+      expect(tester.takeException(), isNull);
     });
   }
 
@@ -470,10 +536,190 @@ void main() {
       locale: 'en',
       theme: AppTheme.dark,
     );
-    compass.controller.add(cairoQibla - 30);
+    compass.turn(cairoQibla - 30);
     await tester.pumpAndSettle();
     expect(find.textContaining('south-east'), findsWidgets);
     expect(find.textContaining('Turn right'), findsOneWidget);
     expect(tester.takeException(), isNull);
+
+    compass.turn(cairoQibla + 1, tilt: _tilted);
+    await tester.pumpAndSettle();
+    expect(
+      find.text('Hold the phone flat to confirm the direction'),
+      findsOneWidget,
+    );
+    compass.turn(cairoQibla + 1, tilt: _level);
+    await tester.pumpAndSettle();
+    expect(find.text('You are facing the Qibla'), findsOneWidget);
+    expect(
+      tester
+          .widget<Text>(find.textContaining('The phone is level'))
+          .style
+          ?.color,
+      AppTheme.dark.colorScheme.primary,
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  group('the level', () {
+    const flatAdvice = 'أمسك الهاتف أفقيًا وبعيدًا';
+    const holdFlat = 'أمسك الهاتف أفقيًا لتأكيد الاتجاه';
+    final scheme = AppTheme.light.colorScheme;
+
+    testWidgets('a phone that cannot tell its tilt keeps the plain hint and '
+        'the plain hub', (tester) async {
+      final compass = _FakeCompass();
+      await _pump(tester, compass, place: _cairo);
+      compass.turn((cairoQibla + 180) % 360);
+      await tester.pumpAndSettle();
+      expect(_compass(tester).tilt, isNull);
+      expect(find.textContaining(flatAdvice), findsOneWidget);
+      expect(find.textContaining('الهاتف مستوٍ'), findsNothing);
+      expect(find.byIcon(Icons.check_circle_outline), findsNothing);
+      // The hub is the accent dot it always was, on the dial's face.
+      expect(await _dialColour(tester, Offset.zero), _paints(scheme.primary));
+      expect(
+        await _dialColour(tester, const Offset(20, 0)),
+        _paints(scheme.surfaceContainerHigh),
+      );
+    });
+
+    testWidgets('level: the hint confirms it in the accent with a tick, and '
+        'the directions go on', (tester) async {
+      final compass = _FakeCompass();
+      await _pump(tester, compass, place: _cairo);
+      compass.turn((cairoQibla + 180) % 360, tilt: _level);
+      await tester.pumpAndSettle();
+      expect(_compass(tester).tilt, _level);
+      expect(find.textContaining(flatAdvice), findsNothing);
+      expect(
+        tester.widget<Text>(find.textContaining('الهاتف مستوٍ')).style?.color,
+        scheme.primary,
+      );
+      expect(find.byIcon(Icons.check_circle_outline), findsOneWidget);
+      expect(find.textContaining('در يمينًا'), findsOneWidget);
+      // The bubble rests in the middle, in the accent, in its own well.
+      expect(await _dialColour(tester, Offset.zero), _paints(scheme.primary));
+      expect(
+        await _dialColour(tester, const Offset(24, 0)),
+        _paints(scheme.surface),
+      );
+    });
+
+    for (final locale in ['ar', 'en']) {
+      testWidgets('tilted: the bubble goes to the raised side of the phone '
+          'whichever way the text runs ($locale)', (tester) async {
+        final compass = _FakeCompass();
+        await _pump(tester, compass, place: _cairo, locale: locale);
+        // The right edge of the phone is the higher one.
+        compass.turn((cairoQibla + 180) % 360, tilt: _tilted);
+        await tester.pumpAndSettle();
+        expect(
+          await _dialColour(tester, const Offset(20, 0)),
+          _paints(scheme.onSurfaceVariant),
+        );
+        expect(
+          await _dialColour(tester, const Offset(-20, 0)),
+          _paints(scheme.surface),
+        );
+        expect(tester.takeException(), isNull);
+      });
+    }
+
+    testWidgets('tilted: it asks to hold the phone flat, and the directions '
+        'go on', (tester) async {
+      final compass = _FakeCompass();
+      await _pump(tester, compass, place: _cairo);
+      compass.turn(cairoQibla - 40, tilt: _tilted);
+      await tester.pumpAndSettle();
+      expect(_compass(tester).tilt, _tilted);
+      expect(find.textContaining(flatAdvice), findsOneWidget);
+      expect(find.textContaining('الهاتف مستوٍ'), findsNothing);
+      expect(find.byIcon(Icons.check_circle_outline), findsNothing);
+      expect(find.textContaining('در يمينًا'), findsOneWidget);
+      compass.turn(cairoQibla + 40, tilt: _tilted);
+      await tester.pumpAndSettle();
+      expect(find.textContaining('در يسارًا'), findsOneWidget);
+    });
+
+    testWidgets('facing the Qibla is only claimed of a level phone', (
+      tester,
+    ) async {
+      final compass = _FakeCompass();
+      await _pump(tester, compass, place: _cairo);
+      compass.turn(cairoQibla + 1, tilt: _tilted);
+      await tester.pumpAndSettle();
+      expect(find.text('أنت تواجه القبلة'), findsNothing);
+      expect(find.text(holdFlat), findsOneWidget);
+      expect(_compass(tester).aligned, isFalse);
+
+      compass.turn(cairoQibla + 1, tilt: _level);
+      await tester.pumpAndSettle();
+      expect(find.text('أنت تواجه القبلة'), findsOneWidget);
+      expect(find.text(holdFlat), findsNothing);
+      expect(_compass(tester).aligned, isTrue);
+      expect(haptics.calls, isEmpty);
+
+      // Leaning again takes the claim back.
+      compass.turn(cairoQibla + 1, tilt: _tilted);
+      await tester.pumpAndSettle();
+      expect(find.text('أنت تواجه القبلة'), findsNothing);
+      expect(_compass(tester).aligned, isFalse);
+    });
+
+    testWidgets('screen readers are told when the phone becomes level, and '
+        'when it stops', (tester) async {
+      final handle = tester.ensureSemantics();
+      final compass = _FakeCompass();
+      await _pump(tester, compass, place: _cairo);
+      // Before the phone says how it is held, the hint is plain advice.
+      expect(
+        tester.getSemantics(find.textContaining(flatAdvice)),
+        isNot(isSemantics(isLiveRegion: true)),
+      );
+      compass.turn(cairoQibla - 40, tilt: _tilted);
+      await tester.pumpAndSettle();
+      expect(
+        tester.getSemantics(find.textContaining(flatAdvice)),
+        isSemantics(isLiveRegion: true),
+      );
+      compass.turn(cairoQibla - 40, tilt: _level);
+      await tester.pumpAndSettle();
+      expect(
+        tester.getSemantics(find.textContaining('الهاتف مستوٍ')),
+        isSemantics(isLiveRegion: true),
+      );
+      // The line under the dial speaks when it asks for a flat phone.
+      compass.turn(cairoQibla + 1, tilt: _tilted);
+      await tester.pumpAndSettle();
+      expect(
+        tester.getSemantics(find.text(holdFlat)),
+        isSemantics(isLiveRegion: true),
+      );
+      handle.dispose();
+    });
+
+    testWidgets('with animations off the level shows its state at once', (
+      tester,
+    ) async {
+      final compass = _FakeCompass();
+      await _pump(tester, compass, place: _cairo, reduceMotion: true);
+      compass.turn((cairoQibla + 180) % 360, tilt: _level);
+      await tester.pump();
+      await tester.pump();
+      expect(await _dialColour(tester, Offset.zero), _paints(scheme.primary));
+      expect(
+        await _dialColour(tester, const Offset(24, 0)),
+        _paints(scheme.surface),
+      );
+    });
+
+    testWidgets('a device without a compass has no level', (tester) async {
+      await _pump(tester, _NoCompass(), place: _cairo);
+      expect(_compass(tester).tilt, isNull);
+      expect(find.textContaining('لا يوجد في هذا الجهاز حساس'), findsOneWidget);
+      expect(find.textContaining('الهاتف مستوٍ'), findsNothing);
+      expect(find.byIcon(Icons.check_circle_outline), findsNothing);
+    });
   });
 }

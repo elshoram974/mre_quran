@@ -877,3 +877,23 @@
 - **Limits:** the loader follows the prayer settings and place only, never the compass's first reading: a sensor
   may never deliver, and a loader with no end would then turn for ever. The sensors are not read before the place
   is known. A phone with no compass learns so only once the page is live, and its hints change to the note then.
+
+## D-076: The Qibla dial carries a level, and "facing the Qibla" waits for a level phone
+
+- **Decision:** The hub of the Qibla dial is a small spirit level where the phone can tell how it is held: a ring,
+  and a bubble that leaves it toward the raised side of the phone. Level (within 10° of flat, screen up) the two sit
+  together in the accent colour, the hold-flat hint turns into a confirming line, and only then does the page say
+  *You are facing the Qibla*; pointing at it with the phone tilted, the line under the dial asks to hold the phone
+  flat to confirm. Turn right and turn left go on showing while tilted. The tilt comes from gravity alone
+  (`TiltFilter`, beside `HeadingFilter`): smoothed, and with two degrees of slack so a hand at the line does not
+  flicker. It is read from the accelerometer subscription the heading already uses, and reaches the page beside the
+  heading in one `CompassReading`; the heading still enters the page through `compassHeadingProvider` alone.
+- **Why:** the owner asked for a small part that shows the phone's tilt, so that whoever checks the Qibla can trust
+  the direction. The heading is worked out for any tilt, but the dial is drawn in the plane of the screen: tilted,
+  where its marker seems to point on the ground is not where the Qibla is.
+- **Limits:** the level shows only where tilt readings arrive. A phone that cannot tell keeps the plain hub and the
+  plain hint, and is taken at its word when it points at the Qibla; a phone with no compass keeps the fixed dial and
+  its note (D-025), with no level. Nothing new is read: the accelerometer and magnetometer already listed in
+  `docs/STORE_COMPLIANCE.md`. The bubble's side, like the card's turning, is physical on purpose and is tested in
+  both text directions. Seen only in tests and rendered pictures so far: the bubble's direction on a real Android
+  phone and on an iPhone is still to be checked by hand.

@@ -101,3 +101,119 @@ class HeadingFilter {
     return _heading;
   }
 }
+
+/// How far from lying flat, in degrees, a phone may be and still count as
+/// level: within it the compass can be trusted to point where the dial shows.
+const double levelTolerance = 10;
+
+/// How a phone is held, worked out from gravity alone.
+class PhoneTilt {
+  /// Creates a tilt.
+  const PhoneTilt({
+    required this.angle,
+    required this.dx,
+    required this.dy,
+    required this.level,
+  });
+
+  /// Degrees away from lying flat with the screen up: 0 flat, 90 upright,
+  /// 180 face down.
+  final double angle;
+
+  /// How far a spirit level's bubble is pushed toward the right edge of the
+  /// screen, as a share of a full tilt (-1 to 1). A bubble floats to the
+  /// raised side.
+  final double dx;
+
+  /// The same toward the bottom edge of the screen.
+  final double dy;
+
+  /// Whether the phone is level: within [levelTolerance] of flat, screen up.
+  final bool level;
+
+  @override
+  bool operator ==(Object other) =>
+      other is PhoneTilt &&
+      other.angle == angle &&
+      other.dx == dx &&
+      other.dy == dy &&
+      other.level == level;
+
+  @override
+  int get hashCode => Object.hash(angle, dx, dy, level);
+}
+
+/// Works out how a phone is held from its gravity readings, steadies the
+/// jitter, and says when it is level without flickering at the line.
+///
+/// Readings are in the phone's own axes, as [HeadingFilter] takes them. At
+/// rest the accelerometer reads straight up, so a phone lying flat with its
+/// screen up reads (0, 0, +g).
+class TiltFilter {
+  /// Creates a filter. A lower [smoothing] (0 to 1) steadies the bubble more
+  /// and makes it slower to follow.
+  TiltFilter({
+    this.smoothing = 0.15,
+    this.levelWithin = levelTolerance,
+    this.slack = 2,
+  });
+
+  /// Share of each new reading that is taken in.
+  final double smoothing;
+
+  /// How far from flat, in degrees, a phone may be to become level.
+  final double levelWithin;
+
+  /// How many degrees further a level phone may lean before it stops being
+  /// level, so a hand held at the line does not flicker between the two.
+  final double slack;
+
+  double _x = 0;
+  double _y = 0;
+  double _z = 0;
+  PhoneTilt? _tilt;
+
+  /// The latest tilt, or null before the first usable reading.
+  PhoneTilt? get tilt => _tilt;
+
+  /// Takes a gravity reading (`ax`, `ay`, `az`) and returns the tilt. A
+  /// reading with no gravity in it (free fall) changes nothing.
+  PhoneTilt? add(double ax, double ay, double az) {
+    final gravity = math.sqrt(ax * ax + ay * ay + az * az);
+    if (gravity < 0.1) return _tilt;
+    // Only the direction counts, so a jolt weighs no more than a still hand.
+    final ux = ax / gravity;
+    final uy = ay / gravity;
+    final uz = az / gravity;
+    if (_tilt == null) {
+      _x = ux;
+      _y = uy;
+      _z = uz;
+    } else {
+      _x += (ux - _x) * smoothing;
+      _y += (uy - _y) * smoothing;
+      _z += (uz - _z) * smoothing;
+    }
+    final length = math.sqrt(_x * _x + _y * _y + _z * _z);
+    // Flipped right over between two readings: they cancel, wait for more.
+    if (length < 0.1) return _tilt;
+    final angle = math.acos((_z / length).clamp(-1.0, 1.0)) * 180 / math.pi;
+    final wasLevel = _tilt?.level ?? false;
+    final level = angle <= (wasLevel ? levelWithin + slack : levelWithin);
+    // The raised side: the right edge when x reads up, the top edge when y
+    // does, and the top of the screen is the lesser y.
+    var dx = _x / length;
+    var dy = -_y / length;
+    if (_z < 0) {
+      // Past upright the screen faces the ground and the bubble would creep
+      // back to the middle as if the phone were level again: it stays at
+      // the rim, on the side that is still the higher one.
+      final across = math.sqrt(dx * dx + dy * dy);
+      if (across > 0.001) {
+        dx /= across;
+        dy /= across;
+      }
+    }
+    return _tilt = PhoneTilt(angle: angle, dx: dx, dy: dy, level: level);
+  }
+}

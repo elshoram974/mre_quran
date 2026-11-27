@@ -860,6 +860,13 @@ class AppLocalizationsAr extends AppLocalizations {
       'أمسك الهاتف أفقيًا وبعيدًا عن المعادن والسماعات والأغطية المغناطيسية.';
 
   @override
+  String get qiblaLevel =>
+      'الهاتف مستوٍ. أبقِه بعيدًا عن المعادن والسماعات والأغطية المغناطيسية.';
+
+  @override
+  String get qiblaHoldFlat => 'أمسك الهاتف أفقيًا لتأكيد الاتجاه';
+
+  @override
   String get qiblaHintCalibrate =>
       'إن اضطربت البوصلة فحرّك الهاتف على هيئة رقم 8 لمعايرتها.';
 

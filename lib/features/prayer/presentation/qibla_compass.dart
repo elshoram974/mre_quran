@@ -14,13 +14,18 @@ import '../domain/qibla.dart';
 /// the top, and the marker still shows the Qibla's angle from north. While
 /// [qibla] is null too (the place is still loading) the card has no marker.
 ///
+/// With a [tilt] the hub becomes a small spirit level: a ring, and a bubble
+/// that leaves it toward the raised side of the phone. Level, the two sit
+/// together in the accent colour.
+///
 /// The card arrives once, growing into place with a soft overshoot. After
 /// that nothing snaps: the marker fades in when the Qibla becomes known, and
 /// the card swings from north-up to the first heading. With
 /// `MediaQuery.disableAnimations` it all simply appears.
 ///
-/// A compass turns the same way in every language, so this is drawn with
-/// physical angles on purpose; nothing here follows the text direction.
+/// A compass turns the same way in every language, and a bubble floats to
+/// the same side, so this is drawn with physical angles and offsets on
+/// purpose; nothing here follows the text direction.
 class QiblaCompass extends StatelessWidget {
   /// Creates the compass.
   const QiblaCompass({
@@ -30,6 +35,7 @@ class QiblaCompass extends StatelessWidget {
     required this.aligned,
     required this.letters,
     required this.semanticLabel,
+    this.tilt,
   });
 
   /// Direction of the Qibla, degrees clockwise from north, or null while the
@@ -49,12 +55,17 @@ class QiblaCompass extends StatelessWidget {
   /// the drawing from them while it has nothing to say.
   final String? semanticLabel;
 
+  /// How the phone is held, or null where that is not known: the hub is then
+  /// a plain dot.
+  final PhoneTilt? tilt;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final qibla = this.qibla;
     final heading = this.heading;
+    final tilt = this.tilt;
     return Semantics(
       label: semanticLabel,
       image: semanticLabel == null ? null : true,
@@ -68,6 +79,8 @@ class QiblaCompass extends StatelessWidget {
                   aligned: aligned ? 1 : 0,
                   marker: qibla == null ? 0 : 1,
                   live: heading == null ? 0 : 1,
+                  level: tilt == null ? 0 : 1,
+                  flat: tilt != null && tilt.level ? 1 : 0,
                 ),
               ),
               duration: MediaQuery.disableAnimationsOf(context)
@@ -81,10 +94,14 @@ class QiblaCompass extends StatelessWidget {
                   heading: heading == null
                       ? 0
                       : angleBetween(0, heading) * pose.live,
+                  bubble: tilt == null ? null : Offset(tilt.dx, tilt.dy),
                   aligned: pose.aligned,
                   marker: pose.marker,
+                  level: pose.level,
+                  flat: pose.flat,
                   outline: scheme.outlineVariant,
                   face: scheme.surfaceContainerHigh,
+                  well: scheme.surface,
                   tick: scheme.onSurfaceVariant,
                   accent: scheme.primary,
                   onAccent: scheme.onPrimary,
@@ -133,8 +150,14 @@ class _Entrance extends StatelessWidget {
 
 /// How far the dial is into each of its states, from 0 to 1, so a change of
 /// state is eased rather than drawn at once: facing the Qibla, showing the
-/// marker, and following the live heading.
-typedef _Pose = ({double aligned, double marker, double live});
+/// marker, following the live heading, showing the level, and being level.
+typedef _Pose = ({
+  double aligned,
+  double marker,
+  double live,
+  double level,
+  double flat,
+});
 
 class _PoseTween extends Tween<_Pose> {
   _PoseTween({required super.end});
@@ -147,6 +170,8 @@ class _PoseTween extends Tween<_Pose> {
       aligned: lerpDouble(from.aligned, to.aligned, t)!,
       marker: lerpDouble(from.marker, to.marker, t)!,
       live: lerpDouble(from.live, to.live, t)!,
+      level: lerpDouble(from.level, to.level, t)!,
+      flat: lerpDouble(from.flat, to.flat, t)!,
     );
   }
 }
@@ -155,10 +180,14 @@ class _CompassPainter extends CustomPainter {
   _CompassPainter({
     required this.qibla,
     required this.heading,
+    required this.bubble,
     required this.aligned,
     required this.marker,
+    required this.level,
+    required this.flat,
     required this.outline,
     required this.face,
+    required this.well,
     required this.tick,
     required this.accent,
     required this.onAccent,
@@ -172,13 +201,24 @@ class _CompassPainter extends CustomPainter {
   final double? qibla;
   final double heading;
 
+  /// Where the level's bubble is pushed, as a share of full tilt: x toward
+  /// the phone's right edge, y toward its bottom edge. Null without a level.
+  final Offset? bubble;
+
   /// How far into facing the Qibla, 0 to 1.
   final double aligned;
 
   /// How much of the Kaaba marker shows, 0 to 1.
   final double marker;
+
+  /// How much of the level shows in place of the plain hub, 0 to 1.
+  final double level;
+
+  /// How far into being level, 0 to 1.
+  final double flat;
   final Color outline;
   final Color face;
+  final Color well;
   final Color tick;
   final Color accent;
   final Color onAccent;
@@ -187,6 +227,27 @@ class _CompassPainter extends CustomPainter {
   final TextStyle textStyle;
   final List<String> letters;
   final TextDirection direction;
+
+  /// Radius of the plain hub.
+  static const double _hub = 6;
+
+  /// Radius of the well the level's bubble moves in.
+  static const double _well = 30;
+
+  /// Radius of the ring the bubble rests in when the phone is level.
+  static const double _ring = 14;
+
+  /// Radius of the bubble.
+  static const double _bubble = 7;
+
+  /// The furthest the bubble's centre goes from the hub: it stays in the
+  /// well however far the phone leans.
+  static const double _travel = 20;
+
+  /// How far the bubble moves for a full tilt: it reaches the ring from
+  /// inside just as the phone stops being level.
+  static final double _reach =
+      (_ring - _bubble) / math.sin(_rad(levelTolerance));
 
   static double _rad(double degrees) => degrees * math.pi / 180;
 
@@ -215,10 +276,17 @@ class _CompassPainter extends CustomPainter {
     _letters(canvas, radius);
     final qibla = this.qibla;
     if (qibla != null && marker > 0) _marker(canvas, radius, qibla);
-    canvas
-      ..drawCircle(Offset.zero, 6, Paint()..color = accent)
-      ..restore();
+    canvas.restore();
 
+    // The hub: a plain dot, or the level where the phone can tell its tilt.
+    if (level < 1) {
+      canvas.drawCircle(
+        center,
+        _hub,
+        Paint()..color = accent.withValues(alpha: 1 - level),
+      );
+    }
+    _level(canvas, center);
     _lubberLine(canvas, center, radius);
   }
 
@@ -283,11 +351,16 @@ class _CompassPainter extends CustomPainter {
     final dy = -math.cos(angle);
     final spot = Offset(dx * (radius - 62), dy * (radius - 62));
     final tip = Offset(dx * (radius - 84), dy * (radius - 84));
-    final shaft = Paint()
-      ..color = accent.withValues(alpha: 0.5)
-      ..strokeWidth = 3
-      ..strokeCap = StrokeCap.round;
-    canvas.drawLine(Offset.zero, tip, shaft);
+    // The shaft starts at the hub, or at the edge of the level's well: the
+    // level keeps the middle of the dial to itself.
+    final start = _well * level;
+    if (radius - 84 > start) {
+      final shaft = Paint()
+        ..color = accent.withValues(alpha: 0.5)
+        ..strokeWidth = 3
+        ..strokeCap = StrokeCap.round;
+      canvas.drawLine(Offset(dx * start, dy * start), tip, shaft);
+    }
     // The arrowhead makes the physical direction to the Kaaba unmistakable.
     final wing = 9.0;
     final arrow = Path()
@@ -311,6 +384,45 @@ class _CompassPainter extends CustomPainter {
     if (fading) canvas.restore();
   }
 
+  /// The spirit level at the hub: a well, the ring a level bubble rests in,
+  /// and the bubble, pushed toward the raised side of the phone.
+  ///
+  /// It is drawn in the phone's own frame, outside the turning card: the
+  /// bubble shows how this phone leans whichever way it faces. Like the card
+  /// it is physical on purpose: the phone's right edge is on the right in
+  /// every language.
+  void _level(Canvas canvas, Offset center) {
+    final push = bubble;
+    if (push == null || level <= 0) return;
+    final fading = level < 1;
+    if (fading) {
+      canvas.saveLayer(null, Paint()..color = accent.withValues(alpha: level));
+    }
+    final mark = Color.lerp(tick, accent, flat)!;
+    var offset = push * _reach;
+    if (offset.distance > _travel) offset *= _travel / offset.distance;
+    canvas
+      ..drawCircle(center, _well, Paint()..color = well)
+      ..drawCircle(
+        center,
+        _well,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1
+          ..color = outline,
+      )
+      ..drawCircle(
+        center,
+        _ring,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2
+          ..color = mark,
+      )
+      ..drawCircle(center + offset, _bubble, Paint()..color = mark);
+    if (fading) canvas.restore();
+  }
+
   /// The fixed mark at the top of the dial showing where the phone points.
   void _lubberLine(Canvas canvas, Offset center, double radius) {
     final top = center.dy - radius;
@@ -326,10 +438,14 @@ class _CompassPainter extends CustomPainter {
   bool shouldRepaint(_CompassPainter old) =>
       old.heading != heading ||
       old.qibla != qibla ||
+      old.bubble != bubble ||
       old.aligned != aligned ||
       old.marker != marker ||
+      old.level != level ||
+      old.flat != flat ||
       old.outline != outline ||
       old.face != face ||
+      old.well != well ||
       old.accent != accent ||
       old.text != text ||
       old.direction != direction ||
