@@ -121,6 +121,33 @@ class Hizb {
   int get juz => (number - 1) ~/ 2 + 1;
 }
 
+/// A rub' al-hizb (a quarter of a hizb), the unit the Mushaf marks in its
+/// margin: the hizb it is part of, and how far into that hizb it begins.
+@immutable
+class HizbQuarter {
+  /// The quarter numbered [rub], 1–240, through the whole Quran.
+  const HizbQuarter(this.rub) : assert(rub >= 1);
+
+  /// 1–240, in reading order.
+  final int rub;
+
+  /// The hizb (1–60) this quarter is part of: four quarters to a hizb.
+  int get hizb => (rub - 1) ~/ 4 + 1;
+
+  /// How many quarters of [hizb] come before this one: 0 where the hizb
+  /// begins, then 1 (a quarter of it), 2 (half) and 3 (three quarters).
+  int get quarter => (rub - 1) % 4;
+
+  @override
+  bool operator ==(Object other) => other is HizbQuarter && other.rub == rub;
+
+  @override
+  int get hashCode => rub.hashCode;
+
+  @override
+  String toString() => 'rub $rub (hizb $hizb, quarter $quarter)';
+}
+
 /// An ayah at which the reader prostrates (sajdat al-tilawa), as marked in the
 /// Madinah Mushaf: fifteen in all.
 @immutable
@@ -238,6 +265,31 @@ class QuranMetadata {
 
   /// The hizb (1–60) that contains [ref].
   int hizbOf(AyahRef ref) => (rubOf(ref) - 1) ~/ 4 + 1;
+
+  /// The last rub' that begins on or before each page; index 0 is page 1.
+  /// Built once, when first asked: the reader asks for every page it builds.
+  late final List<int> _rubByPage = () {
+    final table = List<int>.filled(pageCount, 1);
+    var rub = 1;
+    for (var page = 1; page <= pageCount; page++) {
+      // The next rub' is rubStarts[rub]: it counts once its page is reached.
+      while (rub < rubStarts.length &&
+          pageOf(rubStarts[rub].surah, rubStarts[rub].ayah) <= page) {
+        rub++;
+      }
+      table[page - 1] = rub;
+    }
+    return table;
+  }();
+
+  /// The rub' al-hizb that [page] belongs to: the last one that begins on or
+  /// before it, the rule [juzOfPage] follows for the juz.
+  ///
+  /// A rub' begins on the page that holds its first ayah. So a page on which
+  /// a hizb or a quarter begins part way down is named by the new one, as the
+  /// mark in its margin names it, though its first ayahs still belong to the
+  /// one before.
+  HizbQuarter quarterOfPage(int page) => HizbQuarter(_rubByPage[page - 1]);
 
   /// Number of Mushaf pages.
   int get pageCount => pageStarts.length;

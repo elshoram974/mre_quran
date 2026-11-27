@@ -7,6 +7,7 @@ import '../../../core/l10n/l10n.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../quran_index/domain/quran_metadata.dart';
 import '../application/reader_immersive_provider.dart';
+import 'hizb_label.dart';
 import 'page_scrubber.dart';
 import 'reader_bar.dart';
 
@@ -15,9 +16,9 @@ import 'reader_bar.dart';
 ///
 /// At rest they are three pills: the surah, the page with its surah and juz,
 /// and the display options. A tap on the page pill grows it into the page
-/// scrubber, and it stays for a second try; it shrinks back into the pill
-/// when its close button, the page or back is tapped, and goes when the bars
-/// are put away.
+/// scrubber, which names the hizb as well, and it stays for a second try; it
+/// shrinks back into the pill when its close button, the page or back is
+/// tapped, and goes when the bars are put away.
 class ReaderControls extends ConsumerStatefulWidget {
   /// Creates the controls for [page].
   const ReaderControls({
@@ -31,7 +32,7 @@ class ReaderControls extends ConsumerStatefulWidget {
     required this.onSurah,
   });
 
-  /// Quran structure, for the surah and juz of a page.
+  /// Quran structure, for the surah, juz and hizb of a page.
   final QuranMetadata metadata;
 
   /// The page the reader is on.
@@ -107,10 +108,25 @@ class _ReaderControlsState extends ConsumerState<ReaderControls>
 
   String _title(int page) => context.l10n.pageNumber(widget.digits(page));
 
+  String _juz(int page) => context.l10n.juzTitle(
+    widget.digits(widget.metadata.juzOfPage(page).number),
+  );
+
+  /// The page pill's line: the surah and the juz. The pill is narrow.
   String _place(int page) => context.l10n.scrubberPlace(
     widget.metadata.surahAtPage(page).arabicName,
-    context.l10n.juzTitle(
-      widget.digits(widget.metadata.juzOfPage(page).number),
+    _juz(page),
+  );
+
+  /// The scrubber's line: its card is as wide as the screen, so it names
+  /// the hizb too, as the page's own labels do.
+  String _placeWithHizb(int page) => context.l10n.scrubberPlaceHizb(
+    widget.metadata.surahAtPage(page).arabicName,
+    _juz(page),
+    hizbQuarterLabel(
+      context.l10n,
+      widget.metadata.quarterOfPage(page),
+      widget.digits,
     ),
   );
 
@@ -215,7 +231,7 @@ class _ReaderControlsState extends ConsumerState<ReaderControls>
                         page: widget.page,
                         pageCount: widget.metadata.pageCount,
                         titleOf: _title,
-                        subtitleOf: _place,
+                        subtitleOf: _placeWithHizb,
                         digits: widget.digits,
                         fineLabel: l10n.fineScrub,
                         cancelHint: l10n.scrubCancelHint,

@@ -2737,6 +2737,30 @@ abstract class AppLocalizations {
   /// **'Hizb {number}'**
   String hizbTitle(String number);
 
+  /// Label of a Mushaf page from the first quarter mark of a hizb, worded as the Mushaf's margin marks it.
+  ///
+  /// In en, this message translates to:
+  /// **'¼ Hizb {number}'**
+  String hizbQuarter(String number);
+
+  /// Label of a Mushaf page from the half mark of a hizb, worded as the Mushaf's margin marks it.
+  ///
+  /// In en, this message translates to:
+  /// **'½ Hizb {number}'**
+  String hizbHalf(String number);
+
+  /// Label of a Mushaf page from the three-quarter mark of a hizb, worded as the Mushaf's margin marks it.
+  ///
+  /// In en, this message translates to:
+  /// **'¾ Hizb {number}'**
+  String hizbThreeQuarters(String number);
+
+  /// The line under the page number in the page scrubber: the page's surah, juz and hizb, each already worded.
+  ///
+  /// In en, this message translates to:
+  /// **'{surah} · {juz} · {hizb}'**
+  String scrubberPlaceHizb(String surah, String juz, String hizb);
+
   /// No description provided for @copyAyah.
   ///
   /// In en, this message translates to:

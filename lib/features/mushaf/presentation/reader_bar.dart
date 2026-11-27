@@ -1,10 +1,11 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../../../core/theme/app_tokens.dart';
+import 'reader_header_layout.dart';
 
-/// A pill on the Mushaf page: the surah, the juz, or the page number. Light
-/// paper-coloured fill with a thin ink outline, so it reads as part of the
-/// page and never as a toolbar over it.
+/// A pill on the Mushaf page: the surah, the juz, the hizb, or the page
+/// number. Light paper-coloured fill with a thin ink outline, so it reads as
+/// part of the page and never as a toolbar over it.
 class ReaderChip extends StatelessWidget {
   /// Creates a chip showing [label], or [icon] when [label] is null.
   const ReaderChip({
@@ -14,6 +15,11 @@ class ReaderChip extends StatelessWidget {
     required this.tooltip,
     required this.onPressed,
   }) : assert((label == null) != (icon == null));
+
+  /// How much narrower a chip with text can be made before its text is cut:
+  /// the padding its two sides can spare.
+  static const double give =
+      2 * (AppTokens.readerChipPadding - AppTokens.spaceSmall);
 
   /// Text shown.
   final String? label;
@@ -56,32 +62,35 @@ class ReaderChip extends StatelessWidget {
                 customBorder: shape,
                 child: SizedBox(
                   height: AppTokens.readerChipHeight,
-                  child: Padding(
-                    padding: EdgeInsetsDirectional.symmetric(
-                      horizontal: label == null ? 4 : 14,
-                    ),
-                    child: Center(
-                      widthFactor: 1,
-                      child: label == null
-                          // The Mushaf turns right to left in every language,
-                          // so its arrows are never mirrored.
-                          ? Directionality(
-                              textDirection: TextDirection.ltr,
-                              child: Icon(
-                                icon,
-                                size: 22,
-                                color: scheme.primary,
-                              ),
-                            )
-                          : Text(
-                              label!,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: theme.textTheme.titleSmall?.copyWith(
-                                color: scheme.onSecondaryContainer,
-                              ),
+                  // Text keeps its padding while the row has room for it,
+                  // and gives it up before it is cut short.
+                  child: YieldingPadding(
+                    most: label == null
+                        ? AppTokens.spaceTiny
+                        : AppTokens.readerChipPadding,
+                    least: label == null
+                        ? AppTokens.spaceTiny
+                        : AppTokens.spaceSmall,
+                    child: label == null
+                        // The Mushaf turns right to left in every language,
+                        // so its arrows are never mirrored.
+                        ? Directionality(
+                            textDirection: TextDirection.ltr,
+                            child: Icon(icon, size: 22, color: scheme.primary),
+                          )
+                        : Text(
+                            label!,
+                            // The page runs right to left in every language,
+                            // but its labels are in the app's: read that
+                            // way, "¾ Hizb 60" keeps its order in English.
+                            textDirection: WidgetsLocalizations.of(context)
+                                .textDirection,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              color: scheme.onSecondaryContainer,
                             ),
-                    ),
+                          ),
                   ),
                 ),
               ),
@@ -93,9 +102,14 @@ class ReaderChip extends StatelessWidget {
   }
 }
 
-/// The row above the Mushaf page: the surah with a step to the next surah
-/// and search at the start, the index in the middle, and the juz and a page
-/// bookmark at the end. It sits in the room the page frame keeps for it.
+/// The row above the Mushaf page: the surah with a step to the next surah at
+/// the start, and the juz and the hizb at the end, with room for an item in
+/// the middle. It sits in the room the page frame keeps for it.
+///
+/// Each chip takes the width it needs, not a fixed share of the row: on a
+/// phone the juz and a long hizb need more than half of it. When the row is
+/// too short for them all, a text chip gives way and a button keeps its size
+/// (see [ReaderHeaderLayout] for the order).
 class ReaderHeader extends StatelessWidget {
   /// Creates the header.
   const ReaderHeader({
@@ -121,19 +135,14 @@ class ReaderHeader extends StatelessWidget {
     child: SizedBox(
       height: AppTokens.readerHeaderExtent,
       child: Padding(
-        padding: const EdgeInsetsDirectional.symmetric(horizontal: 8),
-        child: Row(
+        padding: const EdgeInsetsDirectional.symmetric(
+          horizontal: AppTokens.spaceSmall,
+        ),
+        child: ReaderHeaderLayout(
           children: [
-            Expanded(
-              child: Row(children: [for (final item in start) _fit(item)]),
-            ),
-            middle,
-            Expanded(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [for (final item in end) _fit(item)],
-              ),
-            ),
+            for (final item in start) _slot(ReaderHeaderSide.start, item),
+            ReaderHeaderSlot(side: ReaderHeaderSide.middle, child: middle),
+            for (final item in end) _slot(ReaderHeaderSide.end, item),
           ],
         ),
       ),
@@ -142,8 +151,11 @@ class ReaderHeader extends StatelessWidget {
 }
 
 /// A text chip gives way when the row is short; buttons keep their size.
-Widget _fit(Widget item) =>
-    item is ReaderChip && item.label != null ? Flexible(child: item) : item;
+Widget _slot(ReaderHeaderSide side, Widget item) => ReaderHeaderSlot(
+  side: side,
+  give: item is ReaderChip && item.label != null ? ReaderChip.give : null,
+  child: item,
+);
 
 /// The row below the Mushaf page: the page number in the middle, with a step
 /// to the previous page on its right and to the next on its left. The Mushaf

@@ -5,6 +5,7 @@ import 'package:flutter/rendering.dart' show RenderClipRRect;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mre_quran/core/l10n/l10n.dart';
+import 'package:mre_quran/core/theme/app_theme.dart';
 import 'package:mre_quran/core/theme/app_tokens.dart';
 import 'package:mre_quran/features/mushaf/application/reader_immersive_provider.dart';
 import 'package:mre_quran/features/mushaf/application/reading_position_provider.dart';
@@ -15,6 +16,7 @@ import 'package:mre_quran/features/mushaf/presentation/mushaf_page.dart';
 import 'package:mre_quran/features/mushaf/presentation/mushaf_pager.dart';
 import 'package:mre_quran/features/mushaf/presentation/page_scrubber.dart';
 import 'package:mre_quran/features/quran_index/application/quran_metadata_provider.dart';
+import 'package:mre_quran/features/quran_index/presentation/index_tiles.dart';
 import 'package:mre_quran/features/quran_index/presentation/quran_index_page.dart';
 import 'package:mre_quran/features/bookmarks/application/bookmarks_provider.dart';
 import 'package:mre_quran/features/quran_text/application/quran_text_providers.dart';
@@ -45,6 +47,7 @@ Future<(ProviderContainer, MemoryReadingPositionRepository)> _pump(
   double textScale = 1,
   PageTurnStyle pageTurn = PageTurnStyle.auto,
   ReaderPageLayout layout = ReaderPageLayout.auto,
+  ThemeData? theme,
 }) async {
   tester.view.physicalSize = Size(width, height);
   tester.view.devicePixelRatio = 1;
@@ -79,6 +82,7 @@ Future<(ProviderContainer, MemoryReadingPositionRepository)> _pump(
         data: MediaQueryData.fromView(tester.view)
             .copyWith(textScaler: TextScaler.linear(textScale)),
         child: MaterialApp(
+          theme: theme,
           locale: Locale(locale),
           supportedLocales: AppLocalizations.supportedLocales,
           localizationsDelegates: appLocalizationsDelegates,
@@ -177,6 +181,280 @@ void main() {
     final number = tester.getRect(find.text('٤٢').hitTestable());
     expect(chip.top, greaterThanOrEqualTo(page.top));
     expect(number.bottom, lessThanOrEqualTo(page.bottom));
+  });
+
+  group('every page names its juz and its hizb', () {
+    /// The reader at [page] with its bars away, so the page's own labels
+    /// show.
+    Future<void> labels(
+      WidgetTester tester,
+      int page, {
+      String locale = 'ar',
+      double width = 390,
+      double height = 844,
+      double textScale = 1,
+      ThemeData? theme,
+    }) async {
+      await tester.pumpWidget(const SizedBox());
+      final (container, _) = await _pump(
+        tester,
+        savedPage: page,
+        locale: locale,
+        width: width,
+        height: height,
+        textScale: textScale,
+        theme: theme,
+      );
+      container.read(readerImmersiveProvider.notifier).hide();
+      await tester.pumpAndSettle();
+    }
+
+    /// The chips of the row above the page in sight that holds [label],
+    /// from the left.
+    List<Rect> chips(WidgetTester tester, String label) {
+      final row = find.ancestor(
+        of: find.text(label).hitTestable(),
+        matching: find.byType(ReaderHeader),
+      );
+      final rects = [
+        for (final chip
+            in find
+                .descendant(of: row, matching: find.byType(ReaderChip))
+                .evaluate())
+          tester.getRect(find.byWidget(chip.widget)),
+      ]..sort((a, b) => a.left.compareTo(b.left));
+      final bounds = tester.getRect(row);
+      for (final rect in rects) {
+        expect(rect.left, greaterThanOrEqualTo(bounds.left));
+        expect(rect.right, lessThanOrEqualTo(bounds.right));
+      }
+      for (var i = 1; i < rects.length; i++) {
+        expect(rects[i].left, greaterThanOrEqualTo(rects[i - 1].right));
+      }
+      return rects;
+    }
+
+    testWidgets('worded as the margin of the Mushaf marks it', (tester) async {
+      for (final (page, juz, hizb) in const [
+        (1, 'الجزء ١', 'الحزب ١'),
+        // The first quarter mark is part way down page 5.
+        (5, 'الجزء ١', 'ربع الحزب ١'),
+        // Hizb 2 begins part way down page 11.
+        (11, 'الجزء ١', 'الحزب ٢'),
+        // Half of hizb 2 begins at the very top of page 17.
+        (17, 'الجزء ١', 'نصف الحزب ٢'),
+        (42, 'الجزء ٣', 'الحزب ٥'),
+        (604, 'الجزء ٣٠', 'ثلاثة أرباع الحزب ٦٠'),
+      ]) {
+        await labels(tester, page);
+        expect(find.text(juz).hitTestable(), findsOneWidget, reason: '$page');
+        expect(find.text(hizb).hitTestable(), findsOneWidget, reason: '$page');
+        expect(tester.takeException(), isNull, reason: '$page');
+      }
+    });
+
+    testWidgets('in Arabic the surah leads from the right, and the juz then '
+        'the hizb end the row on the left', (tester) async {
+      await labels(tester, 17);
+      double at(Finder finder) => tester.getCenter(finder.hitTestable()).dx;
+      final row = chips(tester, 'نصف الحزب ٢');
+      // From the left: the hizb, the juz, the step to the next surah, the
+      // surah.
+      expect(row, hasLength(4));
+      expect(at(find.text('نصف الحزب ٢')), closeTo(row[0].center.dx, 1));
+      expect(at(find.text('الجزء ١')), closeTo(row[1].center.dx, 1));
+      expect(at(_chip('السورة التالية')), closeTo(row[2].center.dx, 1));
+      expect(
+        tester
+            .widget<Text>(find.text('نصف الحزب ٢').hitTestable())
+            .textDirection,
+        TextDirection.rtl,
+      );
+      // The row's two ends are at the page's edges.
+      final page = tester.getRect(
+        find.byKey(const ValueKey<int>(17)).hitTestable(),
+      );
+      expect(row.first.left - page.left, lessThan(AppTokens.gutterCompact));
+      expect(page.right - row.last.right, lessThan(AppTokens.gutterCompact));
+    });
+
+    testWidgets('in English the words are English and read left to right, '
+        'on the Mushaf\'s own sides', (tester) async {
+      // The numbers keep the app's digit style, here the default
+      // Arabic-Indic.
+      for (final (page, hizb) in const [
+        (5, '¼ Hizb ١'),
+        (11, 'Hizb ٢'),
+        (604, '¾ Hizb ٦٠'),
+      ]) {
+        await labels(tester, page, locale: 'en');
+        expect(find.text(hizb).hitTestable(), findsOneWidget, reason: '$page');
+      }
+      await labels(tester, 17, locale: 'en');
+      double at(String label) =>
+          tester.getCenter(find.text(label).hitTestable()).dx;
+      // The Mushaf runs right to left in every language, so the sides stay:
+      // from the left, the hizb, the juz, the step onward, the surah.
+      final row = chips(tester, '½ Hizb ٢');
+      expect(row, hasLength(4));
+      expect(at('½ Hizb ٢'), closeTo(row[0].center.dx, 1));
+      expect(at('Juz ١'), closeTo(row[1].center.dx, 1));
+      // The words themselves read left to right, so the fraction leads.
+      for (final label in ['Juz ١', '½ Hizb ٢']) {
+        expect(
+          tester.widget<Text>(find.text(label).hitTestable()).textDirection,
+          TextDirection.ltr,
+          reason: label,
+        );
+      }
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('a tap on the hizb opens the index on its hizb list, at '
+        'that hizb', (tester) async {
+      await labels(tester, 11);
+      await tester.tap(find.text('الحزب ٢').hitTestable());
+      await tester.pumpAndSettle();
+      expect(find.byType(QuranIndexPage), findsOneWidget);
+      final tabs = tester.widget<TabBarView>(find.byType(TabBarView));
+      expect(tabs.controller!.index, 2);
+      final row = find.ancestor(
+        of: find.text('الحزب ٢'),
+        matching: find.byType(IndexRow),
+      );
+      expect(tester.widget<IndexRow>(row.first).current, isTrue);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('the longest labels stay on the page, at every phone width '
+        'and text size, in both languages', (tester) async {
+      // Page 603: the last quarter of the last hizb, in the thirtieth juz.
+      for (final width in [320.0, 360.0, 390.0]) {
+        for (final textScale in [1.0, 2.0]) {
+          for (final (locale, hizb) in const [
+            ('ar', 'ثلاثة أرباع الحزب ٦٠'),
+            ('en', '¾ Hizb ٦٠'),
+          ]) {
+            await labels(
+              tester,
+              603,
+              locale: locale,
+              width: width,
+              textScale: textScale,
+            );
+            expect(chips(tester, hizb), hasLength(4));
+            expect(
+              tester.takeException(),
+              isNull,
+              reason: '$locale, $width wide, text at $textScale',
+            );
+          }
+        }
+      }
+    });
+
+    testWidgets('a medium window keeps one page, labelled the same', (
+      tester,
+    ) async {
+      await labels(tester, 17, width: 700, height: 1000);
+      expect(find.text('الجزء ١').hitTestable(), findsOneWidget);
+      expect(chips(tester, 'نصف الحزب ٢'), hasLength(4));
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('each page of a spread carries its own juz and hizb', (
+      tester,
+    ) async {
+      // Pages 21 and 22 face each other, and the third hizb, with the second
+      // juz, begins on page 22.
+      await labels(tester, 21, width: 1194, height: 834);
+      Finder on(int page, String label) => find.descendant(
+        of: find.byWidgetPredicate(
+          (w) => w is ReaderPageLabels && w.page == page,
+        ),
+        matching: find.text(label),
+      );
+      final right = tester.getRect(
+        find.byKey(const ValueKey<int>(21)).hitTestable(),
+      );
+      final left = tester.getRect(
+        find.byKey(const ValueKey<int>(22)).hitTestable(),
+      );
+      for (final label in ['الجزء ١', 'ثلاثة أرباع الحزب ٢']) {
+        final chip = tester.getRect(on(21, label));
+        expect(chip.left, greaterThanOrEqualTo(right.left), reason: label);
+        expect(chip.right, lessThanOrEqualTo(right.right), reason: label);
+      }
+      for (final label in ['الجزء ٢', 'الحزب ٣']) {
+        final chip = tester.getRect(on(22, label));
+        expect(chip.left, greaterThanOrEqualTo(left.left), reason: label);
+        expect(chip.right, lessThanOrEqualTo(left.right), reason: label);
+      }
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('in the dark theme the chips take the page\'s colours', (
+      tester,
+    ) async {
+      await labels(tester, 17, theme: AppTheme.dark);
+      final scheme = AppTheme.dark.colorScheme;
+      for (final label in ['الجزء ١', 'نصف الحزب ٢']) {
+        final pill = tester.widget<Material>(
+          find
+              .ancestor(
+                of: find.text(label).hitTestable(),
+                matching: find.byType(Material),
+              )
+              .first,
+        );
+        expect(pill.color, scheme.secondaryContainer.withValues(alpha: 0.7));
+        expect(
+          tester.widget<Text>(find.text(label).hitTestable()).style?.color,
+          scheme.onSecondaryContainer,
+        );
+      }
+    });
+  });
+
+  testWidgets('the scrubber names the hizb too; the page pill keeps the '
+      'surah and the juz', (tester) async {
+    await _pump(tester, savedPage: 17);
+    expect(find.text('البقرة · الجزء ١').hitTestable(), findsOneWidget);
+    await tester.tap(find.byType(ReaderPlacePill));
+    await tester.pumpAndSettle();
+    expect(
+      find.descendant(
+        of: find.byType(PageScrubber),
+        matching: find.text('البقرة · الجزء ١ · نصف الحزب ٢'),
+      ),
+      findsOneWidget,
+    );
+    // Closed again, the pill says what it said.
+    await tester.tap(find.byTooltip('إغلاق شريط الصفحات'));
+    await tester.pumpAndSettle();
+    expect(find.text('البقرة · الجزء ١').hitTestable(), findsOneWidget);
+  });
+
+  testWidgets('the scrubber\'s line reads in English, dark, on a narrow '
+      'screen at large text', (tester) async {
+    await _pump(
+      tester,
+      savedPage: 604,
+      locale: 'en',
+      width: 320,
+      textScale: 2,
+      theme: AppTheme.dark,
+    );
+    await tester.tap(find.byType(ReaderPlacePill));
+    await tester.pumpAndSettle();
+    expect(
+      find.descendant(
+        of: find.byType(PageScrubber),
+        matching: find.text('الإخلاص · Juz ٣٠ · ¾ Hizb ٦٠'),
+      ),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('the arrows step to the next page and the next surah', (

@@ -112,6 +112,101 @@ void main() {
     }
   });
 
+  test('a quarter knows its hizb and how far into it it begins', () {
+    expect((const HizbQuarter(1).hizb, const HizbQuarter(1).quarter), (1, 0));
+    expect((const HizbQuarter(2).hizb, const HizbQuarter(2).quarter), (1, 1));
+    expect((const HizbQuarter(3).hizb, const HizbQuarter(3).quarter), (1, 2));
+    expect((const HizbQuarter(4).hizb, const HizbQuarter(4).quarter), (1, 3));
+    expect((const HizbQuarter(5).hizb, const HizbQuarter(5).quarter), (2, 0));
+    expect(
+      (const HizbQuarter(240).hizb, const HizbQuarter(240).quarter),
+      (60, 3),
+    );
+    expect(const HizbQuarter(7), const HizbQuarter(7));
+    expect(const HizbQuarter(7), isNot(const HizbQuarter(8)));
+  });
+
+  test('a page belongs to the last quarter that begins on or before it', () {
+    PageStart start(int page) => metadata.pageStarts[page - 1];
+    // The first page opens the first hizb, and the last page is in the last
+    // quarter of the last.
+    expect(metadata.quarterOfPage(1), const HizbQuarter(1));
+    expect(metadata.quarterOfPage(604), const HizbQuarter(240));
+    expect(
+      (metadata.quarterOfPage(604).hizb, metadata.quarterOfPage(604).quarter),
+      (60, 3),
+    );
+
+    // The first quarter mark, 2:26, is part way down page 5, which begins
+    // at 2:25: the pages before it are the hizb's start, page 5 its quarter.
+    expect((start(5).surah, start(5).ayah), (2, 25));
+    expect(metadata.rubStartingAt(const AyahRef(2, 26)), 2);
+    expect(metadata.quarterOfPage(4), const HizbQuarter(1));
+    expect(metadata.quarterOfPage(5), const HizbQuarter(2));
+
+    // Hizb 2 begins at 2:75, part way down page 11, which begins at 2:70.
+    // The page is named by the new hizb, as its margin marks it, though its
+    // first ayah is still in the first.
+    expect((start(11).surah, start(11).ayah), (2, 70));
+    expect(metadata.hizbs[1].startPage, 11);
+    expect(metadata.hizbOf(metadata.ayahsOnPage(11).first), 1);
+    expect(metadata.quarterOfPage(10), const HizbQuarter(4));
+    expect(metadata.quarterOfPage(11), const HizbQuarter(5));
+    expect(
+      (metadata.quarterOfPage(11).hizb, metadata.quarterOfPage(11).quarter),
+      (2, 0),
+    );
+
+    // Half of hizb 2 begins at 2:106, the very top of page 17.
+    expect((start(17).surah, start(17).ayah), (2, 106));
+    expect(metadata.rubStartingAt(const AyahRef(2, 106)), 7);
+    expect(metadata.quarterOfPage(16), const HizbQuarter(6));
+    expect(metadata.quarterOfPage(17), const HizbQuarter(7));
+    expect(
+      (metadata.quarterOfPage(17).hizb, metadata.quarterOfPage(17).quarter),
+      (2, 2),
+    );
+
+    // A hizb at the very top of a page: the third, with the second juz.
+    expect((start(22).surah, start(22).ayah), (2, 142));
+    expect(metadata.quarterOfPage(21), const HizbQuarter(8));
+    expect(metadata.quarterOfPage(22), const HizbQuarter(9));
+  });
+
+  test('every page\'s quarter agrees with its ayahs, its juz and the hizb '
+      'list', () {
+    var before = 1;
+    for (var page = 1; page <= metadata.pageCount; page++) {
+      final quarter = metadata.quarterOfPage(page);
+      // The last quarter begun by the end of the page is the one its last
+      // ayah is in.
+      expect(
+        quarter.rub,
+        metadata.rubOf(metadata.ayahsOnPage(page).last),
+        reason: 'page $page',
+      );
+      expect(quarter.rub, greaterThanOrEqualTo(before), reason: 'page $page');
+      before = quarter.rub;
+      // Two hizb to a juz, and both are named by the same rule.
+      expect(
+        metadata.hizbs[quarter.hizb - 1].juz,
+        metadata.juzOfPage(page).number,
+        reason: 'page $page',
+      );
+      // The page's hizb is the last in the index that begins by this page.
+      expect(
+        quarter.hizb,
+        metadata.hizbs.lastWhere((hizb) => hizb.startPage <= page).number,
+        reason: 'page $page',
+      );
+    }
+    // Every quarter names at least one page: none is skipped.
+    expect({
+      for (var page = 1; page <= metadata.pageCount; page++)
+        metadata.quarterOfPage(page).rub,
+    }, hasLength(240));
+  });
+
   test('has the fifteen sajda ayahs of the Madinah Mushaf, in order', () {
     final sajdas = metadata.sajdas;
     expect(sajdas, hasLength(15));

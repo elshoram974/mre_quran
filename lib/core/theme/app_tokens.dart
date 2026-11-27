@@ -110,7 +110,7 @@ abstract final class AppTokens {
   /// Space between the floating tab bar and the bottom of the screen.
   static const double floatingBarGap = 12;
 
-  /// Room above a Mushaf page for its header chips (surah, juz).
+  /// Room above a Mushaf page for its header chips (surah, juz, hizb).
   static const double readerHeaderExtent = 48;
 
   /// Room below a Mushaf page for its page-number chip.
@@ -118,6 +118,10 @@ abstract final class AppTokens {
 
   /// Height of a reader chip.
   static const double readerChipHeight = 32;
+
+  /// Padding at each side of a reader chip's text. In a row too short for
+  /// its chips it closes up to [spaceSmall] before any text is cut.
+  static const double readerChipPadding = 14;
 
   /// Side margin of the Mushaf text.
   static const double readerGutter = 12;

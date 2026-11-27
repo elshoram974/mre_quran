@@ -35,6 +35,9 @@ enum IndexOpening {
 
   /// On the juz list, at the juz being read.
   juz,
+
+  /// On the hizb list, at the hizb being read.
+  hizb,
 }
 
 /// The surah, juz and hizb of the page being read, which the index marks.
@@ -69,8 +72,8 @@ class QuranIndexPage extends ConsumerStatefulWidget {
   /// The page being read: its surah, juz and hizb are marked in the lists.
   final int? readerPage;
 
-  /// Where the index opens: at the top, or at the reader's surah or juz,
-  /// scrolled to it. Only with [readerPage].
+  /// Where the index opens: at the top, or at the reader's surah, juz or
+  /// hizb, scrolled to it. Only with [readerPage].
   final IndexOpening opening;
 
   @override
@@ -87,9 +90,11 @@ class _QuranIndexPageState extends ConsumerState<QuranIndexPage>
     vsync: this,
     initialIndex: widget.openOnBookmarks
         ? _IndexTab.bookmarks.index
-        : widget.opening == IndexOpening.juz
-        ? _IndexTab.juz.index
-        : _IndexTab.surahs.index,
+        : switch (widget.opening) {
+            IndexOpening.juz => _IndexTab.juz.index,
+            IndexOpening.hizb => _IndexTab.hizb.index,
+            IndexOpening.top || IndexOpening.surah => _IndexTab.surahs.index,
+          },
   )..addListener(_onTab);
 
   /// The tab the index opened on, the only one scrolled to the reader's place.
@@ -128,12 +133,14 @@ class _QuranIndexPageState extends ConsumerState<QuranIndexPage>
         data: (data) {
           final metadata = data.metadata;
           final page = widget.readerPage;
+          // Each by the rule the page's own labels follow, so the index and
+          // the page never name different places.
           final _Here? here = page == null
               ? null
               : (
                   surah: metadata.surahAtPage(page).number,
                   juz: metadata.juzOfPage(page).number,
-                  hizb: metadata.hizbOf(metadata.ayahsOnPage(page).first),
+                  hizb: metadata.quarterOfPage(page).hizb,
                 );
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,

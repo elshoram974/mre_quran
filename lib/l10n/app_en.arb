@@ -582,6 +582,14 @@
       }
     }
   },
+  "hizbQuarter": "¼ Hizb {number}",
+  "@hizbQuarter": {"description": "Label of a Mushaf page from the first quarter mark of a hizb, worded as the Mushaf's margin marks it.", "placeholders": {"number": {"type": "String"}}},
+  "hizbHalf": "½ Hizb {number}",
+  "@hizbHalf": {"description": "Label of a Mushaf page from the half mark of a hizb, worded as the Mushaf's margin marks it.", "placeholders": {"number": {"type": "String"}}},
+  "hizbThreeQuarters": "¾ Hizb {number}",
+  "@hizbThreeQuarters": {"description": "Label of a Mushaf page from the three-quarter mark of a hizb, worded as the Mushaf's margin marks it.", "placeholders": {"number": {"type": "String"}}},
+  "scrubberPlaceHizb": "{surah} · {juz} · {hizb}",
+  "@scrubberPlaceHizb": {"description": "The line under the page number in the page scrubber: the page's surah, juz and hizb, each already worded.", "placeholders": {"surah": {"type": "String"}, "juz": {"type": "String"}, "hizb": {"type": "String"}}},
   "copyAyah": "Copy ayah",
   "tafsirAction": "Tafsir",
   "tafsirTitle": "Al-Tafsir Al-Muyassar",

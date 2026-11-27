@@ -147,6 +147,38 @@ void main() {
       expect(marked(tester, 'الجزء ٢٤'), isTrue);
     });
 
+    testWidgets('from the hizb it opens on the hizb list at that hizb', (
+      tester,
+    ) async {
+      await _pumpIndex(
+        tester,
+        index: const QuranIndexPage(
+          readerPage: page,
+          opening: IndexOpening.hizb,
+        ),
+      );
+      final tabs = tester.widget<TabBarView>(find.byType(TabBarView));
+      expect(tabs.controller!.index, 2);
+      expect(find.text('الحزب ٤٧'), findsOneWidget);
+      expect(tester.getTopLeft(find.text('الحزب ٤٧')).dy, lessThan(844));
+      expect(marked(tester, 'الحزب ٤٧'), isTrue);
+      // The first hizb are far above it, not built.
+      expect(find.text('الحزب ١'), findsNothing);
+    });
+
+    testWidgets('a page a hizb begins on part way down is marked as that '
+        'hizb, as the page itself is labelled', (tester) async {
+      // Hizb 2 begins at 2:75, part way down page 11: the page's first ayah
+      // is still in hizb 1, and its label and margin say hizb 2.
+      await _pumpIndex(
+        tester,
+        index: const QuranIndexPage(readerPage: 11, opening: IndexOpening.hizb),
+      );
+      expect(marked(tester, 'الحزب ٢'), isTrue);
+      expect(marked(tester, 'الحزب ١'), isFalse);
+      expect(find.text('أنت هنا'), findsOneWidget);
+    });
+
     testWidgets('from the menu it opens at the top, the surah still marked', (
       tester,
     ) async {

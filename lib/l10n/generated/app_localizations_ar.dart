@@ -1548,6 +1548,26 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String hizbQuarter(String number) {
+    return 'ربع الحزب $number';
+  }
+
+  @override
+  String hizbHalf(String number) {
+    return 'نصف الحزب $number';
+  }
+
+  @override
+  String hizbThreeQuarters(String number) {
+    return 'ثلاثة أرباع الحزب $number';
+  }
+
+  @override
+  String scrubberPlaceHizb(String surah, String juz, String hizb) {
+    return '$surah · $juz · $hizb';
+  }
+
+  @override
   String get copyAyah => 'نسخ الآية';
 
   @override

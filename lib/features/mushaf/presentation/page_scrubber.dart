@@ -46,7 +46,7 @@ class PageScrubber extends StatefulWidget {
   /// The headline for a page, such as "Page 213".
   final String Function(int page) titleOf;
 
-  /// The line under the headline: the page's surah and juz.
+  /// The line under the headline: the page's surah, juz and hizb.
   final String Function(int page) subtitleOf;
 
   /// Formats a page number for the tick labels.

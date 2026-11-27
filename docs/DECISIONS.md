@@ -897,3 +897,25 @@
   `docs/STORE_COMPLIANCE.md`. The bubble's side, like the card's turning, is physical on purpose and is tested in
   both text directions. Seen only in tests and rendered pictures so far: the bubble's direction on a real Android
   phone and on an iPhone is still to be checked by hand.
+
+## D-077: Every page names its hizb beside its juz
+
+- **Decision:** Above every Mushaf page the juz chip is followed by a hizb chip, worded as the Mushaf's own margin
+  marks it: *الحزب ٥*, then *ربع الحزب ٥*, *نصف الحزب ٥*, *ثلاثة أرباع الحزب ٥* (*Hizb 5*, *¼ Hizb 5*, *½ Hizb 5*,
+  *¾ Hizb 5*). The page keeps its sides in every language (it runs right to left), but a chip's words are the
+  app's and read in the app's direction, so the English ones keep their order. A tap on the hizb chip opens the
+  index on its hizb list, at that hizb. The page scrubber's line names the hizb
+  too (*البقرة · الجزء ٣ · نصف الحزب ٥*); the resting page pill keeps *surah · juz*, as the longer line does not fit
+  it on a phone.
+- **Which hizb a page is in:** the last quarter (rub') that begins on the page or before it
+  (`QuranMetadata.quarterOfPage`, from the 240 quarters of the bundled `quran-data.xml`), the rule the juz already
+  follows. So a page on which a hizb or a quarter begins part way down is named by the new one, like the mark in its
+  margin. The index marks the reader's hizb by the same rule (it went by the page's first ayah before), so the page
+  and the index never name different hizb.
+- **The row shares its room by need:** `ReaderHeader` no longer gives each side half of the row. Each chip takes the
+  width it needs, the surah's from the reading start and the juz and hizb from the end. When a phone's row is too
+  short it finds room in this order, so that nothing is cut until it must be: the gaps close up (8 to 4), the pills
+  spare padding (14 to 8 at each side, each by the same share), and only then does text give way to an ellipsis, a
+  chip at a time: the surah's name first (it still reads when cut), then the hizb, the juz last (cut short, they
+  lose their number). It never overflows.
+- **Why:** the owner: the hizb and the juz are things that come with every page.

@@ -14,7 +14,8 @@ import '../application/reading_position_provider.dart';
 /// Opens the index or search over the reader and, when the person picks a
 /// place, goes there and highlights the ayah if one was chosen. The index
 /// marks the surah, juz and hizb being read, and opens where [opening] says:
-/// at the surah from the surah's name, at the juz from the juz's.
+/// at the surah from the surah's name, at the juz from the juz's, at the hizb
+/// from the hizb's.
 Future<void> openReaderRoute(
   BuildContext context,
   WidgetRef ref,

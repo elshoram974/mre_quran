@@ -11,7 +11,7 @@ The single rule file for UI/UX. `AGENTS.md` points here. The design plan is in
 4. Branch only inside shared widgets (`AppShell`, `AppCard`, `AppSheet`, `AppSelectField`, `AppSwitchTile`). Feature screens never check the platform.
 5. Glass never goes over Quran text. The reading surface is opaque paper.
 6. Judge glass on a real iOS simulator or device, not only in a scaled preview, which can distort glass sampling.
-7. The Mushaf reader is labelled like a printed Mushaf (surah and juz chips above the page, page number and an onward arrow below, in fixed room that never covers the text). A tap on the page or an ayah shows a floating toolbar and floating controls, opaque on every platform since they lie over the text; turning a page hides them.
+7. The Mushaf reader is labelled like a printed Mushaf (surah, juz and hizb chips above the page, page number and an onward arrow below, in fixed room that never covers the text). The chips above the page share the row by need (`ReaderHeader`): on a short row the gaps and the pills' padding give way before any text is cut, and the surah's name before a juz or hizb number (`docs/DECISIONS.md` D-077). A tap on the page or an ayah shows a floating toolbar and floating controls, opaque on every platform since they lie over the text; turning a page hides them.
 
 ## 2. Components
 

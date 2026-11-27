@@ -7,14 +7,15 @@ import '../../quran_index/domain/quran_metadata.dart';
 import '../../settings/application/digits_provider.dart';
 import '../application/reader_immersive_provider.dart';
 import 'go_to_page_sheet.dart';
+import 'hizb_label.dart';
 import 'reader_bar.dart';
 import 'reader_navigation.dart';
 
-/// What a printed Mushaf prints on its own page: the surah and the juz above
-/// the text, and the page number below it, with an arrow onward. They are
-/// part of the page, so they turn with it and show on the sheet while it
-/// turns. While the floating bars show they would lie under them, so they
-/// step aside.
+/// What a printed Mushaf prints on its own page: the surah, the juz and the
+/// hizb above the text, and the page number below it, with an arrow onward.
+/// Every page carries them. They are part of the page, so they turn with it
+/// and show on the sheet while it turns. While the floating bars show they
+/// would lie under them, so they step aside.
 class ReaderPageLabels extends ConsumerWidget {
   /// Creates the labels of [page].
   const ReaderPageLabels({
@@ -24,7 +25,7 @@ class ReaderPageLabels extends ConsumerWidget {
     this.spread = false,
   });
 
-  /// Quran structure, for the surah and juz of the page.
+  /// Quran structure, for the surah, juz and hizb of the page.
   final QuranMetadata metadata;
 
   /// Page number, 1–604.
@@ -43,6 +44,7 @@ class ReaderPageLabels extends ConsumerWidget {
     final barsShown = !ref.watch(readerImmersiveProvider);
     final surah = metadata.surahAtPage(page);
     final juz = metadata.juzOfPage(page);
+    final quarter = metadata.quarterOfPage(page);
 
     Future<void> goToPage() async {
       final chosen = await showGoToPage(
@@ -106,6 +108,18 @@ class ReaderPageLabels extends ConsumerWidget {
                     ref,
                     AppRoute.quranIndex,
                     opening: IndexOpening.juz,
+                  ),
+                ),
+                // Worded as the margin of the Mushaf marks it: the hizb, then
+                // a quarter, half and three quarters of it.
+                ReaderChip(
+                  label: hizbQuarterLabel(l10n, quarter, digits),
+                  tooltip: l10n.quranIndex,
+                  onPressed: () => openReaderRoute(
+                    context,
+                    ref,
+                    AppRoute.quranIndex,
+                    opening: IndexOpening.hizb,
                   ),
                 ),
               ],
