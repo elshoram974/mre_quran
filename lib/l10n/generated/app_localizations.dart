@@ -925,6 +925,12 @@ abstract class AppLocalizations {
   /// **'Back'**
   String get back;
 
+  /// Announced by screen readers while a page's bar shows that the page is still loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading…'**
+  String get loading;
+
   /// No description provided for @searchOptions.
   ///
   /// In en, this message translates to:

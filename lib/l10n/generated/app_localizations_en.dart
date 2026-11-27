@@ -474,6 +474,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get back => 'Back';
 
   @override
+  String get loading => 'Loading…';
+
+  @override
   String get searchOptions => 'Search options';
 
   @override

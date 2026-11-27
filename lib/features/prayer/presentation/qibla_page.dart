@@ -7,9 +7,9 @@ import 'package:go_router/go_router.dart';
 import '../../../app/router.dart';
 import '../../../core/l10n/l10n.dart';
 import '../../../core/layout/adaptive_layout.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/app_notice.dart';
 import '../../../core/widgets/app_page_scaffold.dart';
-import '../../../core/widgets/app_shimmer.dart';
 import '../../../core/widgets/empty_state.dart';
 import '../../settings/application/digits_provider.dart';
 import '../application/compass_provider.dart';
@@ -25,6 +25,10 @@ const double qiblaTolerance = 4;
 /// A compass that points to the Qibla from the person's approximate place.
 /// Everything is worked out on the phone: the place stays on the device and
 /// the sensors need no permission.
+///
+/// The page is drawn at once, before the place has loaded: the dial and the
+/// hints are in their places, dimmed and inert, and the bar says it is
+/// loading. It comes alive where it stands when the place arrives.
 class QiblaPage extends ConsumerStatefulWidget {
   /// Creates the page.
   const QiblaPage({super.key});
@@ -33,46 +37,64 @@ class QiblaPage extends ConsumerStatefulWidget {
   ConsumerState<QiblaPage> createState() => _QiblaPageState();
 }
 
+/// What the page shows, so a change from one to another cross-fades.
+enum _View { compass, noPlace, error }
+
 class _QiblaPageState extends ConsumerState<QiblaPage> {
   PrayerResult _result = PrayerResult.ok;
+  bool _locating = false;
 
   Future<void> _locate() async {
-    final result = await ref.read(prayerProvider.notifier).locate();
-    if (mounted) setState(() => _result = result);
+    setState(() => _locating = true);
+    try {
+      final result = await ref.read(prayerProvider.notifier).locate();
+      if (mounted) setState(() => _result = result);
+    } finally {
+      if (mounted) setState(() => _locating = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final state = ref.watch(prayerProvider);
+    final data = state.value;
+    final place = data?.place;
+    final Widget body;
+    if (state.hasError) {
+      body = EmptyState(
+        key: const ValueKey(_View.error),
+        icon: Icons.error_outline,
+        title: l10n.adhkarLoadError,
+        message: '',
+        actionLabel: l10n.retry,
+        onAction: () => ref.invalidate(prayerProvider),
+      );
+    } else if (data != null && place == null) {
+      body = ContentContainer(
+        key: const ValueKey(_View.noPlace),
+        child: PrayerNoPlace(
+          denied: _result == PrayerResult.locationDenied,
+          onLocate: _locate,
+          onChooseMap: () => context.push(AppRoute.prayerLocationPicker.path),
+        ),
+      );
+    } else {
+      // Loading or loaded, it is the same compass: it comes alive in place.
+      body = ContentContainer(
+        key: const ValueKey(_View.compass),
+        child: _Compass(qibla: place == null ? null : qiblaBearing(place)),
+      );
+    }
     return AppPageScaffold(
       title: l10n.qiblaTitle,
-      body: state.when(
-        loading: () => const Padding(
-          padding: EdgeInsets.all(16),
-          child: AppShimmer(child: SkeletonBox(height: 320)),
-        ),
-        error: (_, _) => EmptyState(
-          icon: Icons.error_outline,
-          title: l10n.adhkarLoadError,
-          message: '',
-          actionLabel: l10n.retry,
-          onAction: () => ref.invalidate(prayerProvider),
-        ),
-        data: (data) {
-          final place = data.place;
-          if (place == null) {
-            return ContentContainer(
-              child: PrayerNoPlace(
-                denied: _result == PrayerResult.locationDenied,
-                onLocate: _locate,
-                onChooseMap: () =>
-                    context.push(AppRoute.prayerLocationPicker.path),
-              ),
-            );
-          }
-          return ContentContainer(child: _Compass(qibla: qiblaBearing(place)));
-        },
+      // Also while the place the person asked for is being read.
+      loading: state.isLoading || (_locating && place == null),
+      body: AnimatedSwitcher(
+        duration: MediaQuery.disableAnimationsOf(context)
+            ? Duration.zero
+            : AppTokens.motionMedium,
+        child: body,
       ),
     );
   }
@@ -81,62 +103,108 @@ class _QiblaPageState extends ConsumerState<QiblaPage> {
 class _Compass extends ConsumerWidget {
   const _Compass({required this.qibla});
 
-  final double qibla;
+  /// The Qibla's bearing, or null while the place is loading: everything is
+  /// drawn in its place, inert.
+  final double? qibla;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final theme = Theme.of(context);
+    final qibla = this.qibla;
+    final inert = qibla == null;
     final digits = ref.watch(digitsFormatterProvider);
     // The heading changes many times a second: only the dial and the line
-    // under it follow it, not the whole page.
-    final noSensor = ref.watch(
-      compassHeadingProvider.select((reading) => reading.hasError),
-    );
-    final degrees = digits(qibla.round());
-    final point = compassPointName(l10n, CompassPoint.of(qibla));
+    // under it follow it, not the whole page. Nothing is read from the
+    // sensors before there is a bearing to turn to.
+    final noSensor =
+        !inert &&
+        ref.watch(compassHeadingProvider.select((reading) => reading.hasError));
+    String? line;
+    String? semanticLabel;
+    if (qibla != null) {
+      final degrees = digits(qibla.round());
+      final point = compassPointName(l10n, CompassPoint.of(qibla));
+      line = l10n.qiblaDirectionLine(degrees, point);
+      semanticLabel = l10n.qiblaSemantics(degrees, point);
+    }
     return LayoutBuilder(
       builder: (context, constraints) {
         final dial = math.min(constraints.maxWidth, 360.0);
-        return ListView(
-          padding: pagePadding(context),
-          children: [
-            Text(
-              l10n.qiblaDirectionLine(degrees, point),
-              textAlign: TextAlign.center,
-              style: theme.textTheme.titleLarge,
-            ),
-            const SizedBox(height: 16),
-            Center(
-              child: SizedBox.square(
-                dimension: dial,
-                child: _Dial(
-                  qibla: qibla,
-                  letters: [
-                    l10n.compassLetterNorth,
-                    l10n.compassLetterEast,
-                    l10n.compassLetterSouth,
-                    l10n.compassLetterWest,
-                  ],
-                  semanticLabel: l10n.qiblaSemantics(degrees, point),
+        return IgnorePointer(
+          ignoring: inert,
+          child: AnimatedOpacity(
+            opacity: inert ? AppTokens.inertOpacity : 1,
+            duration: MediaQuery.disableAnimationsOf(context)
+                ? Duration.zero
+                : AppTokens.motionMedium,
+            child: ListView(
+              padding: pagePadding(context),
+              children: [
+                _DirectionLine(line),
+                const SizedBox(height: 16),
+                Center(
+                  child: SizedBox.square(
+                    dimension: dial,
+                    child: _Dial(
+                      qibla: qibla,
+                      letters: [
+                        l10n.compassLetterNorth,
+                        l10n.compassLetterEast,
+                        l10n.compassLetterSouth,
+                        l10n.compassLetterWest,
+                      ],
+                      semanticLabel: semanticLabel,
+                    ),
+                  ),
                 ),
-              ),
+                const SizedBox(height: 16),
+                if (!noSensor) _TurnLine(qibla: qibla),
+                const SizedBox(height: 16),
+                if (noSensor)
+                  AppNotice(l10n.qiblaNoSensor)
+                else ...[
+                  AppNotice(l10n.qiblaHintFlat, icon: Icons.phone_android),
+                  const SizedBox(height: 8),
+                  AppNotice(l10n.qiblaHintCalibrate, icon: Icons.gesture),
+                ],
+                const SizedBox(height: 8),
+                AppNotice(l10n.qiblaPlaceNote, icon: Icons.lock_outline),
+              ],
             ),
-            const SizedBox(height: 16),
-            _TurnLine(qibla: qibla),
-            const SizedBox(height: 16),
-            if (noSensor)
-              AppNotice(l10n.qiblaNoSensor)
-            else ...[
-              AppNotice(l10n.qiblaHintFlat, icon: Icons.phone_android),
-              const SizedBox(height: 8),
-              AppNotice(l10n.qiblaHintCalibrate, icon: Icons.gesture),
-            ],
-            const SizedBox(height: 8),
-            AppNotice(l10n.qiblaPlaceNote, icon: Icons.lock_outline),
-          ],
+          ),
         );
       },
+    );
+  }
+}
+
+/// The Qibla's bearing in words. Its line is kept while the bearing is not
+/// known, so nothing under it moves when the words arrive; where large text
+/// needs a second line for them, the room for it eases open.
+class _DirectionLine extends StatelessWidget {
+  const _DirectionLine(this.text);
+
+  final String? text;
+
+  @override
+  Widget build(BuildContext context) {
+    final still = MediaQuery.disableAnimationsOf(context);
+    final line = AnimatedSwitcher(
+      duration: still ? Duration.zero : AppTokens.motionMedium,
+      child: Text(
+        text ?? '',
+        key: ValueKey(text),
+        textAlign: TextAlign.center,
+        style: Theme.of(context).textTheme.titleLarge,
+      ),
+    );
+    // With animations off the room is simply there (and an AnimatedSize
+    // cannot be given no time at all).
+    if (still) return line;
+    return AnimatedSize(
+      duration: AppTokens.motionMedium,
+      alignment: AlignmentDirectional.topCenter,
+      child: line,
     );
   }
 }
@@ -149,16 +217,19 @@ class _Dial extends ConsumerWidget {
     required this.semanticLabel,
   });
 
-  final double qibla;
+  final double? qibla;
   final List<String> letters;
-  final String semanticLabel;
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final heading = ref.watch(
-      compassHeadingProvider.select((reading) => reading.value),
-    );
-    final turn = heading == null ? null : angleBetween(heading, qibla);
+    final qibla = this.qibla;
+    final heading = qibla == null
+        ? null
+        : ref.watch(compassHeadingProvider.select((reading) => reading.value));
+    final turn = heading == null || qibla == null
+        ? null
+        : angleBetween(heading, qibla);
     return QiblaCompass(
       qibla: qibla,
       heading: heading,
@@ -170,37 +241,46 @@ class _Dial extends ConsumerWidget {
 }
 
 /// Which way to turn, and by how many degrees: rebuilt only when that whole
-/// number, or being aligned, changes.
+/// number, or being aligned, changes. Its line is kept before the first
+/// reading, so nothing under it moves when one comes.
 class _TurnLine extends ConsumerWidget {
   const _TurnLine({required this.qibla});
 
-  final double qibla;
+  final double? qibla;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final turn = ref.watch(
-      compassHeadingProvider.select((reading) {
-        final heading = reading.value;
-        if (heading == null) return null;
-        final turn = angleBetween(heading, qibla);
-        return (degrees: turn.round(), aligned: turn.abs() <= qiblaTolerance);
-      }),
-    );
-    if (turn == null) return const SizedBox.shrink();
+    final qibla = this.qibla;
+    final turn = qibla == null
+        ? null
+        : ref.watch(
+            compassHeadingProvider.select((reading) {
+              final heading = reading.value;
+              if (heading == null) return null;
+              final turn = angleBetween(heading, qibla);
+              return (
+                degrees: turn.round(),
+                aligned: turn.abs() <= qiblaTolerance,
+              );
+            }),
+          );
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final digits = ref.watch(digitsFormatterProvider);
+    final aligned = turn?.aligned ?? false;
     return Semantics(
-      liveRegion: turn.aligned,
+      liveRegion: aligned,
       child: Text(
-        turn.aligned
+        turn == null
+            ? ''
+            : aligned
             ? l10n.qiblaAligned
             : turn.degrees > 0
             ? l10n.qiblaTurnRight(digits(turn.degrees.abs()))
             : l10n.qiblaTurnLeft(digits(turn.degrees.abs())),
         textAlign: TextAlign.center,
         style: theme.textTheme.titleMedium?.copyWith(
-          color: turn.aligned ? theme.colorScheme.primary : null,
+          color: aligned ? theme.colorScheme.primary : null,
         ),
       ),
     );

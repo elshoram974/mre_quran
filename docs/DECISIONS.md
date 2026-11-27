@@ -859,3 +859,21 @@
   `main` wires it; before the change one failed line became more than 100 uncaught errors in 50 ms, after it none.
 - **Not known:** why Crashlytics' start-up values sometimes do not arrive; the native side read always supplies them.
   A launch that meets that state now opens and says so in its trace (`unavailable:crashlytics`).
+
+## D-075: A page whose layout is known is drawn first and comes alive when its data arrives
+
+- **Decision:** The Qibla page no longer shimmers while the saved place loads. It draws itself at once: the dial
+  with north up and no Kaaba marker, the room for the bearing and for the line under the dial, and the hints, all
+  dimmed (`AppTokens.inertOpacity`) and deaf to touches; the dial arrives once with a soft bounce. The bar says the
+  page is loading: `AppPageScaffold` takes an opt-in `loading` flag, drawn as a thin line on the bottom edge of the
+  Material bar and as the glass kit's spinner in the trailing slot of the iOS bar, only after
+  `AppTokens.loaderDelay`, announced to screen readers, and moving nothing. When the place arrives the page comes
+  alive where it stands: the bearing and the marker fade in and the card swings to the first heading. With no saved
+  place it cross-fades to the request for one, and the bar shows the same loader while the location the person asked
+  for is read. The rule is `docs/UI_RULES.md`, section 5, rule 9; the other pages keep the shimmer.
+- **Why:** the owner asked for it. A page that is there at once and then starts working reads as faster and calmer
+  than a grey block that something else replaces. It fits only where the layout does not depend on the data, so it
+  is a rule with a condition, not the end of the shimmer.
+- **Limits:** the loader follows the prayer settings and place only, never the compass's first reading: a sensor
+  may never deliver, and a loader with no end would then turn for ever. The sensors are not read before the place
+  is known. A phone with no compass learns so only once the page is live, and its hints change to the note then.

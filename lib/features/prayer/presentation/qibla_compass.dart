@@ -1,13 +1,23 @@
 import 'dart:math' as math;
+import 'dart:ui' show lerpDouble;
 
 import 'package:material_ui/material_ui.dart';
+
+import '../../../core/theme/app_tokens.dart';
+import '../domain/qibla.dart';
 
 /// The compass card: the four directions and a tick every 5°, turning so that
 /// north on the card is north in the world, and a Kaaba marker on the rim at
 /// the Qibla.
 ///
 /// When [heading] is null (no compass sensor) the card is fixed with north at
-/// the top, and the marker still shows the Qibla's angle from north.
+/// the top, and the marker still shows the Qibla's angle from north. While
+/// [qibla] is null too (the place is still loading) the card has no marker.
+///
+/// The card arrives once, growing into place with a soft overshoot. After
+/// that nothing snaps: the marker fades in when the Qibla becomes known, and
+/// the card swings from north-up to the first heading. With
+/// `MediaQuery.disableAnimations` it all simply appears.
 ///
 /// A compass turns the same way in every language, so this is drawn with
 /// physical angles on purpose; nothing here follows the text direction.
@@ -22,8 +32,9 @@ class QiblaCompass extends StatelessWidget {
     required this.semanticLabel,
   });
 
-  /// Direction of the Qibla, degrees clockwise from north.
-  final double qibla;
+  /// Direction of the Qibla, degrees clockwise from north, or null while the
+  /// place is not known yet.
+  final double? qibla;
 
   /// Where the top of the phone points, or null without a sensor.
   final double? heading;
@@ -34,40 +45,55 @@ class QiblaCompass extends StatelessWidget {
   /// North, east, south and west letters, in that order.
   final List<String> letters;
 
-  /// Announced by screen readers in place of the drawing.
-  final String semanticLabel;
+  /// Announced by screen readers in place of the drawing, or null to keep
+  /// the drawing from them while it has nothing to say.
+  final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final qibla = this.qibla;
+    final heading = this.heading;
     return Semantics(
       label: semanticLabel,
-      image: true,
+      image: semanticLabel == null ? null : true,
       child: ExcludeSemantics(
         child: AspectRatio(
           aspectRatio: 1,
-          child: TweenAnimationBuilder<Color?>(
-            tween: ColorTween(
-              end: aligned ? scheme.primary : scheme.outlineVariant,
-            ),
-            duration: MediaQuery.disableAnimationsOf(context)
-                ? Duration.zero
-                : const Duration(milliseconds: 200),
-            builder: (context, ring, _) => CustomPaint(
-              painter: _CompassPainter(
-                qibla: qibla,
-                heading: heading ?? 0,
-                ring: ring ?? scheme.outlineVariant,
-                aligned: aligned,
-                face: scheme.surfaceContainerHigh,
-                tick: scheme.onSurfaceVariant,
-                accent: scheme.primary,
-                onAccent: scheme.onPrimary,
-                north: scheme.error,
-                text: scheme.onSurface,
-                textStyle: Theme.of(context).textTheme.titleMedium!,
-                letters: letters,
-                direction: Directionality.of(context),
+          child: _Entrance(
+            child: TweenAnimationBuilder<_Pose>(
+              tween: _PoseTween(
+                end: (
+                  aligned: aligned ? 1 : 0,
+                  marker: qibla == null ? 0 : 1,
+                  live: heading == null ? 0 : 1,
+                ),
+              ),
+              duration: MediaQuery.disableAnimationsOf(context)
+                  ? Duration.zero
+                  : AppTokens.motionMedium,
+              builder: (context, pose, _) => CustomPaint(
+                painter: _CompassPainter(
+                  qibla: qibla,
+                  // The short way round from north-up to where the phone
+                  // points, so the first reading turns the card into place.
+                  heading: heading == null
+                      ? 0
+                      : angleBetween(0, heading) * pose.live,
+                  aligned: pose.aligned,
+                  marker: pose.marker,
+                  outline: scheme.outlineVariant,
+                  face: scheme.surfaceContainerHigh,
+                  tick: scheme.onSurfaceVariant,
+                  accent: scheme.primary,
+                  onAccent: scheme.onPrimary,
+                  north: scheme.error,
+                  text: scheme.onSurface,
+                  textStyle: theme.textTheme.titleMedium!,
+                  letters: letters,
+                  direction: Directionality.of(context),
+                ),
               ),
             ),
           ),
@@ -77,12 +103,61 @@ class QiblaCompass extends StatelessWidget {
   }
 }
 
+/// Brings the dial in once, when it is first built: it grows into place with
+/// a soft overshoot. Rebuilds and sensor readings never play it again.
+class _Entrance extends StatelessWidget {
+  const _Entrance({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    const from = AppTokens.entranceScale;
+    return TweenAnimationBuilder<double>(
+      // Only the first tween's beginning is used, so this runs once.
+      tween: Tween(
+        begin: MediaQuery.disableAnimationsOf(context) ? 1 : from,
+        end: 1,
+      ),
+      duration: AppTokens.motionEntrance,
+      curve: Curves.easeOutBack,
+      child: child,
+      builder: (context, scale, child) => Opacity(
+        // Full by the time it first reaches its size; the overshoot follows.
+        opacity: ((scale - from) / (1 - from)).clamp(0.0, 1.0),
+        child: Transform.scale(scale: scale, child: child),
+      ),
+    );
+  }
+}
+
+/// How far the dial is into each of its states, from 0 to 1, so a change of
+/// state is eased rather than drawn at once: facing the Qibla, showing the
+/// marker, and following the live heading.
+typedef _Pose = ({double aligned, double marker, double live});
+
+class _PoseTween extends Tween<_Pose> {
+  _PoseTween({required super.end});
+
+  @override
+  _Pose lerp(double t) {
+    final from = begin!;
+    final to = end!;
+    return (
+      aligned: lerpDouble(from.aligned, to.aligned, t)!,
+      marker: lerpDouble(from.marker, to.marker, t)!,
+      live: lerpDouble(from.live, to.live, t)!,
+    );
+  }
+}
+
 class _CompassPainter extends CustomPainter {
   _CompassPainter({
     required this.qibla,
     required this.heading,
-    required this.ring,
     required this.aligned,
+    required this.marker,
+    required this.outline,
     required this.face,
     required this.tick,
     required this.accent,
@@ -94,10 +169,15 @@ class _CompassPainter extends CustomPainter {
     required this.direction,
   });
 
-  final double qibla;
+  final double? qibla;
   final double heading;
-  final Color ring;
-  final bool aligned;
+
+  /// How far into facing the Qibla, 0 to 1.
+  final double aligned;
+
+  /// How much of the Kaaba marker shows, 0 to 1.
+  final double marker;
+  final Color outline;
   final Color face;
   final Color tick;
   final Color accent;
@@ -122,8 +202,8 @@ class _CompassPainter extends CustomPainter {
         radius,
         Paint()
           ..style = PaintingStyle.stroke
-          ..strokeWidth = aligned ? 5 : 2
-          ..color = ring,
+          ..strokeWidth = 2 + 3 * aligned
+          ..color = Color.lerp(outline, accent, aligned)!,
       );
 
     // The card: everything on it turns against the phone.
@@ -133,8 +213,11 @@ class _CompassPainter extends CustomPainter {
       ..rotate(-_rad(heading));
     _ticks(canvas, radius);
     _letters(canvas, radius);
-    _marker(canvas, radius);
-    canvas.restore();
+    final qibla = this.qibla;
+    if (qibla != null && marker > 0) _marker(canvas, radius, qibla);
+    canvas
+      ..drawCircle(Offset.zero, 6, Paint()..color = accent)
+      ..restore();
 
     _lubberLine(canvas, center, radius);
   }
@@ -187,7 +270,14 @@ class _CompassPainter extends CustomPainter {
     }
   }
 
-  void _marker(Canvas canvas, double radius) {
+  void _marker(Canvas canvas, double radius, double qibla) {
+    // Fading in, the marker is drawn whole and then thinned as one, so its
+    // overlapping parts do not show through each other. Only the alpha of
+    // the layer's paint counts.
+    final fading = marker < 1;
+    if (fading) {
+      canvas.saveLayer(null, Paint()..color = accent.withValues(alpha: marker));
+    }
     final angle = _rad(qibla);
     final dx = math.sin(angle);
     final dy = -math.cos(angle);
@@ -218,7 +308,7 @@ class _CompassPainter extends CustomPainter {
         Rect.fromLTWH(cube.left, cube.top + 4, cube.width, 3),
         Paint()..color = accent,
       );
-    canvas.drawCircle(Offset.zero, 6, Paint()..color = accent);
+    if (fading) canvas.restore();
   }
 
   /// The fixed mark at the top of the dial showing where the phone points.
@@ -229,7 +319,7 @@ class _CompassPainter extends CustomPainter {
       ..lineTo(center.dx - 9, top - 10)
       ..lineTo(center.dx + 9, top - 10)
       ..close();
-    canvas.drawPath(path, Paint()..color = aligned ? accent : text);
+    canvas.drawPath(path, Paint()..color = Color.lerp(text, accent, aligned)!);
   }
 
   @override
@@ -237,7 +327,8 @@ class _CompassPainter extends CustomPainter {
       old.heading != heading ||
       old.qibla != qibla ||
       old.aligned != aligned ||
-      old.ring != ring ||
+      old.marker != marker ||
+      old.outline != outline ||
       old.face != face ||
       old.accent != accent ||
       old.text != text ||

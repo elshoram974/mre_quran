@@ -140,6 +140,8 @@
   "exitStay": "Stay",
   "exitClose": "Close",
   "back": "Back",
+  "loading": "Loading…",
+  "@loading": {"description": "Announced by screen readers while a page's bar shows that the page is still loading."},
   "searchOptions": "Search options",
   "noResults": "No results found",
   "selectOption": "Select",

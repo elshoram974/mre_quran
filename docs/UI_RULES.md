@@ -50,6 +50,7 @@ The single rule file for UI/UX. `AGENTS.md` points here. The design plan is in
 6. Small user actions are optimistic: update state first, persist after, roll back on failure. A settings screen never enters a loading state on save.
 7. Show no loader for work under about 150 ms.
 8. Heavy parsing or search runs off the main isolate.
+9. **Drawn first, live when loaded.** Rule 4's shimmer is for content whose layout depends on the data: lists and cards whose number or size is not yet known. Where a page's layout does not wait on its data (the Qibla page: its dial, lines and hints are the same wherever the person is), do not shimmer. Draw the real page at once, every element in its place but inert: dimmed with `AppTokens.inertOpacity`, deaf to touches, and saying nothing that is not yet known, to the eye or to a screen reader. The bar says the page is loading through `AppPageScaffold(loading: true)`: a thin line on the bar's bottom edge on Android, a spinner at the bar's end on iOS, announced, moving nothing, and not shown for a wait under `AppTokens.loaderDelay` (rule 7). The page's centrepiece may arrive once with a soft bounce (`AppTokens.motionEntrance` from `AppTokens.entranceScale`, the one motion longer than section 6 allows), never again on a rebuild and not at all with `MediaQuery.disableAnimations`. When the data arrives the page comes alive where it stands, with no jump; empty and error states cross-fade in. Never tie the loader to something that may never come, such as a sensor's first reading.
 
 ## 6. Motion and feedback
 

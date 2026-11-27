@@ -49,6 +49,24 @@ abstract final class AppTokens {
   /// The size a pressed card gives to, as a share of its own.
   static const double pressScale = 0.97;
 
+  /// How long a page's centrepiece takes to arrive when the page opens: long
+  /// enough for its soft overshoot to be seen.
+  static const Duration motionEntrance = Duration(milliseconds: 450);
+
+  /// The size an arriving centrepiece grows from, as a share of its own.
+  static const double entranceScale = 0.7;
+
+  /// How much of itself a page shows while what it needs is still loading:
+  /// all in place, and plainly not live yet.
+  static const double inertOpacity = 0.5;
+
+  /// How long a wait lasts before a bar says the page is loading. A shorter
+  /// one shows no loader at all.
+  static const Duration loaderDelay = Duration(milliseconds: 150);
+
+  /// Thickness of the loading line on the bottom edge of a Material bar.
+  static const double barProgressHeight = 3;
+
   /// Corner radius of bottom sheets.
   static const double radiusSheet = 28;
 

@@ -466,6 +466,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get back => 'رجوع';
 
   @override
+  String get loading => 'جارٍ التحميل…';
+
+  @override
   String get searchOptions => 'ابحث في الخيارات';
 
   @override
