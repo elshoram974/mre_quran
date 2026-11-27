@@ -39,10 +39,11 @@ class _Entry {
 /// Where everything in the app comes from, and on what terms: the Quran's
 /// text, the Mushaf and its readings, the tafsir, the adhkar, every adhan
 /// and dua recording (listed from the catalogue itself, so a new voice is
-/// never left out), the reminder sounds, the prayer-time libraries, the fonts
-/// and the icons; and the licences of the software libraries. Each entry
-/// says on a tag whether it is under an open licence, the publisher's terms,
-/// or still waiting for permission. Reached from the privacy settings.
+/// never left out), the reminder sounds, the prayer-time libraries, the
+/// magnetic model behind the Qibla compass, the fonts and the icons; and the
+/// licences of the software libraries. Each entry says on a tag whether it
+/// is under an open licence or in the public domain, on the publisher's
+/// terms, or still waiting for permission. Reached from the privacy settings.
 class LicencesPage extends ConsumerWidget {
   /// Creates the page.
   const LicencesPage({super.key});
@@ -119,7 +120,14 @@ class LicencesPage extends ConsumerWidget {
               ),
               _Section(
                 title: l10n.sourcesPrayer,
-                entries: [_Entry(l10n.creditsPrayer, _Terms.open, 'MIT · BSD')],
+                entries: [
+                  _Entry(l10n.creditsPrayer, _Terms.open, 'MIT · BSD'),
+                  _Entry(
+                    l10n.creditsMagneticModel,
+                    _Terms.open,
+                    l10n.licencePublicDomain,
+                  ),
+                ],
               ),
               _Section(
                 title: l10n.sourcesDesign,

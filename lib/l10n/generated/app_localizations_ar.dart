@@ -377,6 +377,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get licencePublisher => 'بشروط الناشر';
 
   @override
+  String get licencePublicDomain => 'ملك عام';
+
+  @override
   String get creditsLibraries => 'تراخيص المكتبات البرمجية';
 
   @override
@@ -390,6 +393,10 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get creditsPrayer =>
       'تُحسب المواقيت على جهازك بمكتبة adhan (رخصة MIT)، والتاريخ الهجري بمكتبة hijri (رخصة BSD). البحث عن المدن بخدمة نظام جهازك، والخريطة من Google Maps. لا يُرسل موقعك إلى أي خادم لنا.';
+
+  @override
+  String get creditsMagneticModel =>
+      'الشمال الحقيقي في بوصلة القبلة من النموذج المغناطيسي العالمي 2025 (World Magnetic Model)، من إعداد المراكز الوطنية للمعلومات البيئية التابعة لـ NOAA الأمريكية وهيئة المسح الجيولوجي البريطانية، https://www.ncei.noaa.gov/products/world-magnetic-model. معاملاته مضمَّنة كما نُشرت ويُتحقق منها بالبصمة. وهي من مواد حكومة الولايات المتحدة، ملك عام لا تخضع لحماية حقوق النشر.';
 
   @override
   String creditsAudioVoice(
@@ -881,8 +888,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get adhanSuggestionAction => 'إعداد مواقيت الصلاة';
 
   @override
-  String get qiblaNoSensor =>
-      'لا يوجد في هذا الجهاز حساس بوصلة. تُظهر البوصلة زاوية القبلة من الشمال: حدّد الشمال ببوصلة أو بالشمس ثم در بهذه الزاوية.';
+  String qiblaNoSensor(String degrees) {
+    return 'لا يوجد في هذا الجهاز حساس بوصلة. تُظهر البوصلة زاوية القبلة من الشمال الحقيقي: حدّد الشمال بالشمس أو من خريطة ثم در بهذه الزاوية. وعلى البوصلة المغناطيسية تقع القبلة عند $degrees°.';
+  }
 
   @override
   String get qiblaPlaceNote =>

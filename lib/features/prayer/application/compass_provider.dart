@@ -4,7 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:meta/meta.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 
+import '../../../core/time/ticking_clock.dart';
+import '../domain/magnetic_field.dart';
 import '../domain/qibla.dart';
+import 'prayer_provider.dart';
 
 /// What the phone's sensors say at one moment.
 @immutable
@@ -93,12 +96,34 @@ final compassReadingProvider = StreamProvider.autoDispose<CompassReading>(
   (ref) => ref.watch(compassSourceProvider).readings(),
 );
 
+/// The Earth's magnetic field at the person's saved place today, from the
+/// World Magnetic Model, or null while there is no place. Worked out once
+/// each time the Qibla page opens: the field moves by about a tenth of a
+/// degree in a year.
+final magneticFieldProvider = Provider.autoDispose<MagneticField?>((ref) {
+  final place = ref.watch(prayerProvider.select((state) => state.value?.place));
+  if (place == null) return null;
+  return magneticField(
+    latitude: place.latitude,
+    longitude: place.longitude,
+    year: decimalYear(ref.watch(clockProvider)()),
+    altitude: (place.altitude ?? 0) / 1000,
+  );
+});
+
 /// The live heading while the Qibla page is open, in degrees clockwise from
-/// magnetic north, or null before the first reading and on a device with no
+/// true north, or null before the first reading and on a device with no
 /// compass. Every heading the page shows comes through here.
-final compassHeadingProvider = Provider.autoDispose<double?>(
-  (ref) => ref.watch(compassReadingProvider).value?.heading,
-);
+///
+/// The sensors count from magnetic north and the Qibla's bearing from true
+/// north, so this is where the one becomes the other: the magnetic
+/// declination at the saved place ([magneticFieldProvider]) is added.
+final compassHeadingProvider = Provider.autoDispose<double?>((ref) {
+  final magnetic = ref.watch(compassReadingProvider).value?.heading;
+  if (magnetic == null) return null;
+  return ref.watch(magneticFieldProvider)?.trueFromMagnetic(magnetic) ??
+      magnetic;
+});
 
 /// Whether the device turned out to have no usable compass.
 final compassMissingProvider = Provider.autoDispose<bool>(

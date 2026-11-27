@@ -90,7 +90,10 @@
   (virtual sensors); a real-device check of the live needle and of iOS is still to do. The dial's level (D-076): tilt maths
   unit-tested (each edge raised, upright, face down, the line and its slack, smoothing); widget tests cover level, tilted,
   the gated "facing the Qibla", no tilt readings, no sensor, and the bubble's side in both text directions. The bubble's
-  direction on a real phone, Android and iOS, is still to check.
+  direction on a real phone, Android and iOS, is still to check. True north (D-078): the magnetic model gives all 112 of
+  NOAA's test values and its table has the published file's checksum; the declination is unit-tested east and west, at the
+  saved place and date; widget tests cover the heading from true north in Cairo and the no-sensor note's compass bearing.
+  Not seen on a phone yet; on iOS the magnetometer `sensors_plus` reads is uncalibrated, which a real iPhone has to judge.
 - UI audit: shared row, header, tag, notice and group widgets in `lib/core/widgets`; Settings regrouped; the vibration switch
   is disabled with a reason when the device has no vibrator.
 

@@ -210,6 +210,7 @@
 - **Decision:** `/qibla` shows a compass card drawn on the phone: the bearing comes from the `adhan` package and the heading
   from the accelerometer and magnetometer (`sensors_plus`), tilt-compensated and smoothed in `HeadingFilter`. A Kaaba marker
   sits at the Qibla; the phone ticks once when it faces it. Without a sensor the card is fixed with north up and says so.
+  Amended by D-078: the heading is counted from true north, as the bearing is.
 - **Alternatives:** A map with tiles (needs the network and sends the person's place to a tile server; breaks the privacy
   promise and offline use); only a bearing number.
 - **Reason:** It answers the same question, works offline, adds no permission, and keeps the location on the device.
@@ -919,3 +920,25 @@
   chip at a time: the surah's name first (it still reads when cut), then the hizb, the juz last (cut short, they
   lose their number). It never overflows.
 - **Why:** the owner: the hizb and the juz are things that come with every page.
+
+## D-078: The Qibla compass counts from true north
+
+- **Decision:** The heading the Qibla page uses is counted from true north. The sensors give it from magnetic north;
+  `compassHeadingProvider` adds the magnetic declination at the saved place on today's date, worked out on the phone
+  from the World Magnetic Model 2025 (`magneticField`, its 90 coefficient lines bundled as a Dart table; provenance,
+  checksums and the public-domain notice are in `docs/QIBLA_SOURCES.md` and on the licences page). The dial's north
+  is then the north of maps and of the bearing. A phone with no compass sensor shows the bearing from true north
+  and, in its note, the bearing a hand compass reads. This amends D-025, which set a heading from magnetic north
+  against a bearing from true north.
+- **Alternatives:** the phone's own true heading (iOS `CLHeading.trueHeading`, Android `GeomagneticField`): native
+  code on each platform, and on iOS the location has to be read while the page is open. Turning the bearing to
+  magnetic north instead: the dial's N would not be the north of maps, and "136° from north" would stop being true.
+- **Why:** the owner wants the Qibla right in every country, not in Egypt only. The error was the declination
+  itself: about 5° in Cairo, where the page forgives 4°; 12° in New York, 15° in Seattle, 20° in Auckland, 27° in
+  Cape Town.
+- **Limits:** the model is made for 2025 to 2030. After that the app carries each coefficient on at its yearly rate,
+  and the table is to be replaced by WMM2030 (`docs/QIBLA_SOURCES.md` says how). It is the field of the Earth's core
+  only: NOAA puts its declination within about 0.3° at middle latitudes, and steel or a magnet near the phone still
+  turns the needle. Still open, and needing a real phone: on iOS `sensors_plus` 7.1.1 reads the raw magnetometer
+  (`CMMagnetometerData`), which holds the phone's own bias, so the heading there may be far off until a calibrated
+  source replaces it behind `CompassSource`.

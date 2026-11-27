@@ -119,11 +119,19 @@ class _Compass extends ConsumerWidget {
     final noSensor = !inert && ref.watch(compassMissingProvider);
     String? line;
     String? semanticLabel;
+    String? noSensorNote;
     if (qibla != null) {
       final degrees = digits(qibla.round());
       final point = compassPointName(l10n, CompassPoint.of(qibla));
       line = l10n.qiblaDirectionLine(degrees, point);
       semanticLabel = l10n.qiblaSemantics(degrees, point);
+      if (noSensor) {
+        // The dial's angle is from true north; whoever finds north with a
+        // hand compass needs it from magnetic north.
+        final onCompass =
+            ref.watch(magneticFieldProvider)?.magneticFromTrue(qibla) ?? qibla;
+        noSensorNote = l10n.qiblaNoSensor(digits(onCompass.round() % 360));
+      }
     }
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -158,8 +166,8 @@ class _Compass extends ConsumerWidget {
                 const SizedBox(height: 16),
                 if (!noSensor) _TurnLine(qibla: qibla),
                 const SizedBox(height: 16),
-                if (noSensor)
-                  AppNotice(l10n.qiblaNoSensor)
+                if (noSensorNote != null)
+                  AppNotice(noSensorNote)
                 else ...[
                   _FlatHint(live: !inert),
                   const SizedBox(height: 8),

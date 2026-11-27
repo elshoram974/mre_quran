@@ -10,16 +10,19 @@ import 'package:mre_quran/core/l10n/l10n.dart';
 import 'package:mre_quran/core/haptics/haptics.dart';
 import 'package:mre_quran/core/theme/app_theme.dart';
 import 'package:mre_quran/core/theme/app_tokens.dart';
+import 'package:mre_quran/core/time/ticking_clock.dart';
 import 'package:mre_quran/core/widgets/app_shimmer.dart';
 import 'package:mre_quran/features/prayer/application/compass_provider.dart';
 import 'package:mre_quran/features/prayer/application/prayer_provider.dart';
 import 'package:mre_quran/features/prayer/data/location_source.dart';
 import 'package:mre_quran/features/prayer/data/prayer_repository.dart';
+import 'package:mre_quran/features/prayer/domain/magnetic_field.dart';
 import 'package:mre_quran/features/prayer/domain/prayer_alerts.dart';
 import 'package:mre_quran/features/prayer/domain/prayer_times.dart';
 import 'package:mre_quran/features/prayer/domain/qibla.dart';
 import 'package:mre_quran/features/prayer/presentation/qibla_compass.dart';
 import 'package:mre_quran/features/prayer/presentation/qibla_page.dart';
+import 'package:mre_quran/features/settings/application/digits_provider.dart';
 import 'package:mre_quran/features/settings/application/settings_provider.dart';
 import 'package:mre_quran/l10n/generated/app_localizations.dart';
 
@@ -27,6 +30,15 @@ import '../../helpers/adhkar_fixtures.dart';
 import '../../helpers/memory_settings_repository.dart';
 
 final _cairo = PrayerPlace(30.04, 31.24);
+
+/// The day the tests run on, and the Earth's magnetic field in Cairo that
+/// day: magnetic north is nearly five degrees east of true north there.
+final _today = DateTime.utc(2026, 11, 27);
+final _cairoField = magneticField(
+  latitude: _cairo.latitude,
+  longitude: _cairo.longitude,
+  year: decimalYear(_today),
+);
 
 /// A phone lying level, and one leaning with its right edge up.
 const _level = PhoneTilt(angle: 2, dx: 0.02, dy: -0.02, level: true);
@@ -37,10 +49,16 @@ class _FakeCompass implements CompassSource {
   final StreamController<CompassReading> controller =
       StreamController<CompassReading>();
 
-  /// Points the top of the phone at [heading]. With no [tilt] it is a phone
-  /// that cannot tell how it is held.
+  /// Points the top of the phone at [heading], counted from true north as the
+  /// page shows it: in Cairo, where the tests stand, the sensors then read it
+  /// from magnetic north. With no [tilt] it is a phone that cannot tell how
+  /// it is held.
   void turn(double heading, {PhoneTilt? tilt}) =>
-      controller.add(CompassReading(heading: heading, tilt: tilt));
+      reads(_cairoField.magneticFromTrue(heading), tilt: tilt);
+
+  /// Makes the sensors read [magnetic], degrees from magnetic north.
+  void reads(double magnetic, {PhoneTilt? tilt}) =>
+      controller.add(CompassReading(heading: magnetic, tilt: tilt));
 
   @override
   Stream<CompassReading> readings() => controller.stream;
@@ -109,6 +127,7 @@ Future<void> _pump(
         settingsRepositoryProvider.overrideWithValue(
           MemorySettingsRepository(),
         ),
+        clockProvider.overrideWithValue(() => _today),
       ],
       child: MaterialApp(
         locale: Locale(locale),
@@ -259,6 +278,55 @@ void main() {
     expect(find.textContaining('در يمينًا'), findsNothing);
     expect(find.textContaining('در يسارًا'), findsNothing);
     expect(haptics.calls, isEmpty);
+  });
+
+  group('true north', () {
+    testWidgets('facing the Qibla is judged from true north, not from the '
+        'needle\'s north', (tester) async {
+      final compass = _FakeCompass();
+      await _pump(tester, compass, place: _cairo);
+      // In Cairo the needle's north is nearly five degrees east of true
+      // north, more than the page forgives. A phone whose compass reads the
+      // Qibla's own bearing has gone that far past it.
+      expect(_cairoField.declination, greaterThan(qiblaTolerance));
+      compass.reads(cairoQibla, tilt: _level);
+      await tester.pumpAndSettle();
+      expect(
+        _compass(tester).heading,
+        closeTo(cairoQibla + _cairoField.declination, 0.001),
+      );
+      expect(_compass(tester).aligned, isFalse);
+      expect(find.text('أنت تواجه القبلة'), findsNothing);
+      expect(find.textContaining('در يسارًا'), findsOneWidget);
+
+      // The one that faces it reads the bearing less the declination.
+      compass.reads(cairoQibla - _cairoField.declination, tilt: _level);
+      await tester.pumpAndSettle();
+      expect(_compass(tester).heading, closeTo(cairoQibla, 0.001));
+      expect(_compass(tester).aligned, isTrue);
+      expect(find.text('أنت تواجه القبلة'), findsOneWidget);
+    });
+
+    for (final (locale, north, onCompass) in [
+      ('ar', 'من الشمال الحقيقي', 'وعلى البوصلة المغناطيسية تقع القبلة عند'),
+      ('en', 'from true north', 'On a magnetic compass the Qibla is at'),
+    ]) {
+      testWidgets('without a compass the note also gives the bearing a hand '
+          'compass reads ($locale)', (tester) async {
+        await _pump(tester, _NoCompass(), place: _cairo, locale: locale);
+        // 136° on the dial, from true north; about 131° on a needle.
+        final magnetic = _cairoField.magneticFromTrue(cairoQibla).round();
+        expect(magnetic, lessThan(cairoQibla.round() - qiblaTolerance));
+        expect(find.textContaining(north), findsOneWidget);
+        expect(
+          find.textContaining(
+            '$onCompass ${formatDigits(magnetic, arabic: true)}°',
+          ),
+          findsOneWidget,
+        );
+        expect(tester.takeException(), isNull);
+      });
+    }
   });
 
   testWidgets('the dial is announced to screen readers', (tester) async {

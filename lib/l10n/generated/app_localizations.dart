@@ -776,6 +776,12 @@ abstract class AppLocalizations {
   /// **'Publisher\'s terms'**
   String get licencePublisher;
 
+  /// Tag on the licences page for a source that is in the public domain.
+  ///
+  /// In en, this message translates to:
+  /// **'Public domain'**
+  String get licencePublicDomain;
+
   /// No description provided for @creditsLibraries.
   ///
   /// In en, this message translates to:
@@ -799,6 +805,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Times are worked out on your device with the adhan library (MIT licence), and the Hijri date with the hijri library (BSD licence). Cities are found by your device\'s own service, and the map is Google Maps. Your location is never sent to any server of ours.'**
   String get creditsPrayer;
+
+  /// Licences page: where the magnetic model behind the Qibla compass's true north comes from, with the notice that it is US Government material in the public domain.
+  ///
+  /// In en, this message translates to:
+  /// **'True north on the Qibla compass comes from the World Magnetic Model 2025, made by NOAA\'s National Centers for Environmental Information and the British Geological Survey, https://www.ncei.noaa.gov/products/world-magnetic-model. Its coefficients are bundled as published and verified by checksum. They are United States Government material, in the public domain and not subject to copyright protection.'**
+  String get creditsMagneticModel;
 
   /// No description provided for @creditsAudioVoice.
   ///
@@ -1609,11 +1621,11 @@ abstract class AppLocalizations {
   /// **'Set up prayer times'**
   String get adhanSuggestionAction;
 
-  /// No description provided for @qiblaNoSensor.
+  /// Note on the Qibla page of a device with no compass sensor. The dial's angle is from true north; {degrees} is the same direction as a hand compass reads it, from magnetic north.
   ///
   /// In en, this message translates to:
-  /// **'This device has no compass sensor. The dial shows the Qibla measured from north: find north with a compass or the sun, then turn by that angle.'**
-  String get qiblaNoSensor;
+  /// **'This device has no compass sensor. The dial shows the Qibla measured from true north: find north by the sun or on a map, then turn by that angle. On a magnetic compass the Qibla is at {degrees}°.'**
+  String qiblaNoSensor(String degrees);
 
   /// No description provided for @qiblaPlaceNote.
   ///

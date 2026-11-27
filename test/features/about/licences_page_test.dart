@@ -61,6 +61,8 @@ void main() {
       'Seen-Arabic',
       'hadith-api',
       'adhan',
+      'World Magnetic Model',
+      'ncei.noaa.gov/products/world-magnetic-model',
       'Material Icons',
     ]) {
       expect(all, contains(words), reason: words);
@@ -76,6 +78,9 @@ void main() {
     expect(find.text('CC BY 3.0'), findsOneWidget);
     expect(find.text('بشروط الناشر'), findsWidgets);
     expect(find.text('OFL 1.1'), findsNWidgets(2));
+    // The magnetic model is US Government material: the notice says so.
+    expect(find.text('ملك عام'), findsOneWidget);
+    expect(all, contains('حكومة الولايات المتحدة'));
   });
 
   for (final (name, locale, theme, scale) in [

@@ -384,6 +384,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get licencePublisher => 'Publisher\'s terms';
 
   @override
+  String get licencePublicDomain => 'Public domain';
+
+  @override
   String get creditsLibraries => 'Licences of the software libraries';
 
   @override
@@ -397,6 +400,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get creditsPrayer =>
       'Times are worked out on your device with the adhan library (MIT licence), and the Hijri date with the hijri library (BSD licence). Cities are found by your device\'s own service, and the map is Google Maps. Your location is never sent to any server of ours.';
+
+  @override
+  String get creditsMagneticModel =>
+      'True north on the Qibla compass comes from the World Magnetic Model 2025, made by NOAA\'s National Centers for Environmental Information and the British Geological Survey, https://www.ncei.noaa.gov/products/world-magnetic-model. Its coefficients are bundled as published and verified by checksum. They are United States Government material, in the public domain and not subject to copyright protection.';
 
   @override
   String creditsAudioVoice(
@@ -888,8 +895,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adhanSuggestionAction => 'Set up prayer times';
 
   @override
-  String get qiblaNoSensor =>
-      'This device has no compass sensor. The dial shows the Qibla measured from north: find north with a compass or the sun, then turn by that angle.';
+  String qiblaNoSensor(String degrees) {
+    return 'This device has no compass sensor. The dial shows the Qibla measured from true north: find north by the sun or on a map, then turn by that angle. On a magnetic compass the Qibla is at $degrees°.';
+  }
 
   @override
   String get qiblaPlaceNote =>
