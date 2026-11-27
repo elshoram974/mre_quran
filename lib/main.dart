@@ -183,9 +183,13 @@ Duration _atLeastZero(Duration left) => left.isNegative ? Duration.zero : left;
 /// earlier launch that never got there, with where it stopped, when it was
 /// a real stall (never from a debug build, and only when the person was
 /// kept on the launch screen for twice the hold's limit, or it ended there).
+/// A launch without a working reporter leaves it for the next one.
 Future<void> _reportStalledLaunch(CrashReporter reporter) async {
   await WidgetsBinding.instance.waitUntilFirstFrameRasterized;
   _trace.mark('dart:firstFrame');
+  // Kept on the device for a launch that can send it: taken now, it would
+  // be lost.
+  if (reporter is NoopCrashReporter) return;
   final unfinished = _trace.takeStalled();
   if (unfinished == null) return;
   if (isLaunchStallWorthReporting(

@@ -38,8 +38,15 @@ class NoopCrashReporter implements CrashReporter {
 
 /// Firebase-backed crash reporter.
 class FirebaseCrashReporter implements CrashReporter {
+  /// Throws when Crashlytics cannot be used, so the caller can fall back to
+  /// [NoopCrashReporter]: when its start-up values never reached Dart, every
+  /// call to it throws (`type 'Null' is not a subtype of type 'bool'`), and
+  /// reading one of them here finds that out before anything is reported
+  /// (D-074).
   FirebaseCrashReporter({FirebaseCrashlytics? crashlytics})
-    : _crashlytics = crashlytics ?? FirebaseCrashlytics.instance;
+    : _crashlytics = crashlytics ?? FirebaseCrashlytics.instance {
+    _crashlytics.isCrashlyticsCollectionEnabled;
+  }
 
   final FirebaseCrashlytics _crashlytics;
 

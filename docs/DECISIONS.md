@@ -298,7 +298,8 @@
   was an argument to `_optionalStartup`, so nothing caught it. Now `optionalStartup` takes the step as a
   function and catches it where it is called, `FirebaseCrashReporter`'s methods are `async` so a plugin that
   is not ready fails the future and never the caller, and `main` falls back to opening the app on its defaults
-  if anything else before `runApp` throws (the failure is then rethrown, so it is reported).
+  if anything else before `runApp` throws (the failure is then rethrown, so it is reported). The same state still
+  held the launch screen another way, closed in D-074.
 
 ## D-033: Vibration is for counting only
 
@@ -838,3 +839,23 @@
   the densest screens show at 24 dp), so it is sharp on every phone and the system scales it down where needed;
   drawn by `tool/app_icon/render_notification_icon_test.dart`. It is kept from resource shrinking in
   `res/raw/keep.xml` because the plugin finds it by name.
+
+## D-074: A report that fails is dropped, never reported again
+
+- **Found** (2026-11-27, from the source, after the stall of D-032 was seen again on the same Android 12 phone, the
+  app opened after a few hours closed and swiped away, then the icon tapped): D-032's fix turned Crashlytics' throw
+  into a failed future but left the state it came from. When Crashlytics' start-up values never reach Dart
+  (`isCrashlyticsCollectionEnabled` missing while Firebase itself answered), every call to it fails. `AppLogger`
+  handed each line to the reporter unhandled, so each failure came back through `PlatformDispatcher.onError`, which
+  logged and reported it: two new failures for each one. That loop lives in the microtask queue, which the engine
+  empties before anything else, so no timer ran again: not the root widget's attach, not the hold's 4 s limit
+  (D-032). The launch screen stayed until the process was killed.
+- **Decision:** `AppLogger` drops a report that fails, whether the reporter throws or its future fails: a reporter
+  that cannot report has nowhere to say so. `FirebaseCrashReporter` reads one of Crashlytics' start-up values when
+  it is made, so a Crashlytics without them is refused at once and `main` reports nothing that launch
+  (`NoopCrashReporter`, trace step `unavailable:crashlytics`). An earlier stalled launch's trace is taken only by a
+  launch whose reporter works, so it is no longer lost.
+- **Checked:** `test/core/diagnostics/failing_reporter_test.dart` runs a reporter that fails on every call the way
+  `main` wires it; before the change one failed line became more than 100 uncaught errors in 50 ms, after it none.
+- **Not known:** why Crashlytics' start-up values sometimes do not arrive; the native side read always supplies them.
+  A launch that meets that state now opens and says so in its trace (`unavailable:crashlytics`).

@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/foundation.dart';
 
 import '../crash/crash_reporter.dart';
@@ -10,6 +8,12 @@ import '../crash/crash_reporter.dart';
 /// a breadcrumb: a crash report then carries what the app did just before it
 /// (Crashlytics keeps the last ones with the next report). The lines name
 /// kinds of failures and steps, never what the person read or where they are.
+///
+/// A report that fails is dropped, never left unhandled: an unhandled error
+/// comes back here through `PlatformDispatcher.onError`, and a reporter that
+/// fails on every call (Crashlytics whose start-up values never arrived)
+/// would fail again on it, twice, without end. That loop never lets the
+/// event loop turn, so no timer runs and the launch screen stays (D-074).
 final class AppLogger {
   const AppLogger._();
 
@@ -25,7 +29,18 @@ final class AppLogger {
   static void debug(String message) {
     if (kDebugMode) debugPrint('[Mushafi] $message');
     final reporter = _reporter;
-    if (reporter != null) unawaited(reporter.log(message));
+    if (reporter != null) _send(() => reporter.log(message));
+  }
+
+  /// Hands one report to the reporter, and drops its failure, whether it
+  /// throws or its future fails: a reporter that cannot report has nowhere
+  /// to say so.
+  static void _send(Future<void> Function() report) {
+    try {
+      report().ignore();
+    } on Object {
+      // Dropped, as the class comment says why.
+    }
   }
 
   /// Reports an error the app recovered from, with its whole stack and
@@ -37,7 +52,7 @@ final class AppLogger {
     if (!kReleaseMode) debugPrint('[Mushafi] $error\n$stackTrace');
     final reporter = _reporter;
     if (reporter == null) return;
-    unawaited(reporter.recordError(error, stackTrace, reason: reason));
+    _send(() => reporter.recordError(error, stackTrace, reason: reason));
   }
 
   static void flutterError(
@@ -46,7 +61,7 @@ final class AppLogger {
   ) {
     FlutterError.presentError(details);
     debug('Flutter error: ${details.exceptionAsString()}');
-    unawaited(reporter.recordFlutterFatalError(details));
+    _send(() => reporter.recordFlutterFatalError(details));
   }
 
   static bool uncaughtPlatformError(
@@ -55,8 +70,8 @@ final class AppLogger {
     StackTrace stackTrace,
   ) {
     debug('Uncaught platform error: $error');
-    unawaited(
-      reporter.recordError(
+    _send(
+      () => reporter.recordError(
         error,
         stackTrace,
         reason: 'Uncaught platform error',
@@ -71,8 +86,8 @@ final class AppLogger {
   /// the report says where it stopped.
   static void launchStalled(CrashReporter reporter, String trace) {
     debug('An earlier launch stalled on the launch screen: $trace');
-    unawaited(
-      reporter.recordError(
+    _send(
+      () => reporter.recordError(
         LaunchStalled(trace),
         StackTrace.current,
         reason: 'Launch stayed on the launch screen',

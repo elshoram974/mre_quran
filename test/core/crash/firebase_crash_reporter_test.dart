@@ -7,6 +7,9 @@ import 'package:mre_quran/core/crash/crash_reporter.dart';
 /// throws at once, before it returns a future.
 class _NotReadyCrashlytics extends Fake implements FirebaseCrashlytics {
   @override
+  bool get isCrashlyticsCollectionEnabled => true;
+
+  @override
   Future<void> setCrashlyticsCollectionEnabled(bool enabled) =>
       throw StateError("type 'Null' is not a subtype of type 'bool'");
 
@@ -29,8 +32,24 @@ class _NotReadyCrashlytics extends Fake implements FirebaseCrashlytics {
   ) => throw StateError('not ready');
 }
 
+/// Crashlytics whose start-up values never reached Dart: reading any of them,
+/// as every call does, throws.
+class _WithoutStartUpValues extends Fake implements FirebaseCrashlytics {
+  // As in the field: type 'Null' is not a subtype of type 'bool'.
+  @override
+  bool get isCrashlyticsCollectionEnabled => throw TypeError();
+}
+
 void main() {
   final reporter = FirebaseCrashReporter(crashlytics: _NotReadyCrashlytics());
+
+  test('a Crashlytics without its start-up values is refused at once, so '
+      'the app reports nothing instead of failing at every report', () {
+    expect(
+      () => FirebaseCrashReporter(crashlytics: _WithoutStartUpValues()),
+      throwsA(isA<TypeError>()),
+    );
+  });
 
   test('a plugin that is not ready fails the future, not the caller', () async {
     // Called as an argument, as `main` does: a throw here would end `main`
